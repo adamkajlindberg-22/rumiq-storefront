@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<base href="../">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RumIQ Studio · Planera ditt hem med trygghet</title>
+<meta name="description" content="Verktyg som hjälper dig att välja rätt från början. Allt är gratis, och resultaten är förslag, inte garantier.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#EDEDEA">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RumIQ">
+<meta property="og:title" content="RumIQ Studio · Planera ditt hem med trygghet">
+<meta property="og:description" content="Verktyg som hjälper dig att välja rätt från början. Allt är gratis, och resultaten är förslag, inte garantier.">
+<meta property="og:image" content="https://adamkajlindberg-22.github.io/rumiq-storefront/assets/img/og.jpg">
+<meta property="og:url" content="https://adamkajlindberg-22.github.io/rumiq-storefront/studio/">
+<link rel="canonical" href="https://adamkajlindberg-22.github.io/rumiq-storefront/studio/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/brand/favicon.png">
+<link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/familjen-grotesk-latin-wght-normal.woff2" crossorigin>
+<script>/* Daylight: by day the site is fog-white, after sunset (Stockholm, never before 17:00) it dims. */
+(function(){var m="auto";try{m=localStorage.getItem("rumiq-light")||"auto"}catch(e){}
+var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17.7],[6.2,19.9],[4.8,21],[3.7,22],[4,21.9],[5.2,20.7],[6.6,19.1],[7.9,17.4],[7.4,15.4],[8.6,14.8]][d.getMonth()];
+var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
+r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
+var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
+<link rel="stylesheet" href="assets/css/site.min.css?v=8b0ef7c0">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
+</head>
+<body>
+<a class="skip" href="#view">Hoppa till innehållet</a>
+
+
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="nav-logo" href="./" aria-label="RumIQ, till startsidan"><img class="logo-day" src="assets/brand/rumiq-grafit.webp" alt="RumIQ" width="480" height="120"><img class="logo-night" src="assets/brand/rumiq-vit.webp" alt="" aria-hidden="true" width="480" height="120"></a>
+    <ul class="menu">
+      <li><a href="upptack/">Upptäck</a></li>
+      <li><button type="button" data-mega="megaShop" aria-expanded="false" aria-controls="megaShop">Butik <svg viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg></button></li>
+      <li><a href="looks/">Looks</a></li>
+    </ul>
+    <div class="tools">
+      <a class="roompill" href="mitt-rum/"><span class="rp-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span><span>Mitt rum</span><span class="badge" data-count="scene"></span></a>
+      <button class="searchbtn" type="button" data-open-search><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Sök</span><kbd>/</kbd></button>
+      <button class="iconbtn msearch" type="button" data-open-search aria-label="Sök"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg></button>
+      <button class="lang" type="button" translate="no" data-lang-short aria-label="In English" lang="en">EN</button>
+      <div class="lampwrap"><button class="iconbtn lamp" type="button" id="lampBtn" aria-haspopup="true" aria-expanded="false" aria-controls="lightMenu" aria-label="Ljus på sajten"><svg viewBox="0 0 24 24"><path class="shade" d="M8 4h8l3 7H5z"/><path d="M12 11v8M8.5 20h7"/><path class="ray" d="M7 14l-1.5 2M17 14l1.5 2M12 14v2.5"/></svg></button>
+        <div class="lightmenu" id="lightMenu" role="menu" aria-label="Ljus">
+          <p>Sajten följer dagsljuset. Välj själv om du vill.</p>
+          <button type="button" role="menuitemradio" data-light-set="auto" aria-checked="false"><span>Följ dagsljuset<small>Dämpas efter solnedgången</small></span></button>
+          <button type="button" role="menuitemradio" data-light-set="dag" aria-checked="false"><span>Dag<small>Ljust hela tiden</small></span></button>
+          <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
+        </div></div>
+      <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
+      <a class="iconbtn wishlink" href="onskelista/" aria-label="Önskelista"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
+      <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
+      <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
+    </div>
+  </div>
+  <div class="mega" id="megaShop" role="region" aria-label="Butik">
+    <div class="mega-in">
+      <div><h4>Kategorier</h4><ul>
+        <li><a href="butik/">Alla produkter</a></li>
+        <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
+        <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-smarta-hem-teknik/">Smarta hem & teknik</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
+      <div><h4>Mer i butiken</h4><ul><li><a href="nyheter/">Nyheter</a></li><li><a href="favoriter/">Utvalda favoriter</a></li><li><a href="erbjudanden/">Erbjudanden</a></li><li><a href="kollektioner/">Kollektioner</a></li></ul>
+        <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
+        </div>
+      <div class="feature"><a href="kategori-belysning-atmosfar/"><img src="assets/img/p/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy"><span>Belysning & atmosfär</span></a><a href="kategori-sovrum-komfort/"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy"><span>Sovrum & komfort</span></a></div>
+    </div>
+  </div>
+</header>
+
+<nav class="mnav" id="mnav" aria-label="Meny">
+  <button class="iconbtn close" id="mnavClose" type="button" aria-label="Stäng meny"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <h4>Upptäck</h4><a href="upptack/">Allt att upptäcka</a><a href="looks/">Färdiga looks</a><a href="rum/">Rum att handla i</a><a href="svep/">Hitta din stil</a><a href="magasin/">Magasin</a>
+  <h4>Butik</h4><a href="butik/">Alla produkter</a><a href="for-dig/">För dig</a><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a>
+  <h4>Mitt rum</h4><a href="mitt-rum/">Mitt rum</a><a href="studio-plus/">Studio Plus</a><a href="studio/">Fler verktyg</a>
+  <h4>Konto och hjälp</h4><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Var är mitt paket?</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a>
+  <div><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Följ dagsljuset</span></button></div>
+</nav>
+
+<nav class="dock" id="dock" aria-label="Snabbmeny">
+  <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
+  <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
+  <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
+  <a href="onskelista/" data-dock="onskelista"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
+</nav>
+
+<main id="view" class="view" tabindex="-1"><header class="page-head wrap"><ol class="crumbs"><li><a href="./">Hem</a></li><li>RumIQ Studio</li></ol><span class="eyebrow" style="display:block;margin-top:1rem">RumIQ Studio</span><h1 class="h1">Planera ditt hem med trygghet</h1><p class="lead">Verktyg som hjälper dig att välja rätt från början. Allt är gratis, och resultaten är förslag, inte garantier.</p></header>
+      <section class="wrap split" style="padding-bottom:5rem;align-items:center"><figure class=""><div class="ba" id="ba" style="--x:50%"><img src="assets/img/studio/fore-1600.webp" alt="Rummet före inredning"><img class="after" src="assets/img/rum-1600.webp" alt="En möjlig inredningsidé i samma rum"><span class="bar"></span><span class="knob">⇆</span><span class="lab l">Före</span><span class="lab r">Inredningsidé</span><input type="range" min="0" max="100" value="50" aria-label="Jämför före och efter"></div><figcaption class="caption">AI-skapat inspirationsexempel. Inte ett verkligt kundresultat och inte produkter ur sortimentet.</figcaption></figure>
+        <div><span class="eyebrow">Så funkar det</span><ol class="studio-steps" style="grid-template-columns:1fr 1fr;margin-top:1.4rem">
+          <li><h3>Välj produkter</h3><p>Upp till tre ur sortimentet.</p></li>
+          <li><h3>Lägg till ditt rum</h3><p>Ladda upp ett foto eller välj ett exempelrum.</p></li>
+          <li><h3>Placera</h3><p>Dra dit varje produkt ska stå och ändra storlek.</p></li>
+          <li><h3>Se resultatet</h3><p>Jämför före och efter, spara och handla.</p></li></ol></div></section>
+      <section class="sec kalk"><div class="wrap"><div class="sec-head"><span class="eyebrow">Hur vill du börja?</span><h2 class="h2">Två vägar in</h2></div>
+        <div class="cols3" style="grid-template-columns:1fr 1fr">
+          <a class="colcard" href="studio-kombinera/"><div class="im"><img src="assets/img/p/glob-bordslampa-opalglas-900.webp" alt="" loading="lazy" style="object-position:50% 40%"></div><div class="tx"><span class="eyebrow">Börja med produkter</span><h3 style="margin-top:.5rem">Välj upp till tre, lägg sedan till ditt rum</h3><p>För dig som redan har sett något du gillar.</p><span class="btn sm" style="margin-top:1rem">Kom igång</span></div></a>
+          <a class="colcard" href="#studio-rum"><div class="im"><img src="assets/img/rum/vardagsrum-900.webp" alt="" loading="lazy"></div><div class="tx"><span class="eyebrow">Börja med ditt rum</span><h3 style="margin-top:.5rem">Lägg till ett foto eller välj ett exempelrum</h3><p>För dig som vill se vad som passar där du bor.</p><span class="btn sm" style="margin-top:1rem">Kom igång</span></div></a>
+        </div>
+        <div class="ctrl-row" style="margin-top:1.6rem"><a class="link arrow" href="studio-stil/">Fri inredningsidé</a><span style="width:1.5rem"></span><a class="link arrow" href="inspiration/">Upptäck inspirerande rum</a></div></div></section>
+      <section class="sec"><div class="wrap"><div class="sec-head"><span class="eyebrow">Fler verktyg i Studio</span><h2 class="h2">Allt du behöver för att välja rätt</h2></div>
+        <h3 class="eyebrow" style="margin:2.2rem 0 1rem">Hitta din stil</h3><div class="toolgrid stagger in" data-watch=""><a class="tool" href="studio-stil/"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"></path><circle cx="7.5" cy="11" r="1"></circle><circle cx="10" cy="7" r="1"></circle><circle cx="15" cy="7.5" r="1"></circle></svg></span><h3>Hitta min stil</h3><p>Välj rum och bilderna som känns mest som hemma. Ingen bild behövs.</p><span class="need">Inget konto, ingen bild</span></a><a class="tool" href="studio-analys/"><span class="ic"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></span><h3>Stilanalys</h3><p>Ladda upp ett foto och se rummets färgpalett, stil och material.</p><span class="need">Kräver en bild</span></a></div><h3 class="eyebrow" style="margin:2.2rem 0 1rem">Hitta rätt produkter</h3><div class="toolgrid stagger in" data-watch=""><a class="tool" href="studio-stylist/"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"></path></svg></span><h3>AI-stylist</h3><p>Beskriv ditt rum och vad du vill ändra. Få råd och förslag ur sortimentet.</p><span class="need">Inget konto</span></a><a class="tool" href="studio-sok/"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2"></path></svg></span><h3>Smart sökning</h3><p>Beskriv i en mening vad du behöver, så hittar vi det.</p><span class="need">Inget konto</span></a><a class="tool" href="studio-hemurval/"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M15.5 8.5l-2 5-5 2 2-5z"></path></svg></span><h3>Hitta ditt hemurval</h3><p>Välj ett rum och vad du behöver mest. Två val, sedan förslag.</p><span class="need">Inget konto</span></a><a class="tool" href="studio-kombinera/"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"></rect><rect x="13" y="4" width="7" height="7" rx="1.5"></rect><rect x="4" y="13" width="7" height="7" rx="1.5"></rect><rect x="13" y="13" width="7" height="7" rx="1.5"></rect></svg></span><h3>Kombinera och matcha</h3><p>Bygg en look av flera produkter, se totalpris och få stylingråd.</p><span class="need">Inget konto</span></a></div><h3 class="eyebrow" style="margin:2.2rem 0 1rem">Se och spara</h3><div class="toolgrid stagger in" data-watch=""><a class="tool" href="#studio-rum"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 15l5-4 4 3 3-2 6 4"></path></svg></span><h3>Se det i ditt rum</h3><p>Placera upp till tre produkter i ett foto av ditt rum.</p><span class="need">Ditt foto stannar hos dig</span></a><a class="tool" href="presentguiden/"><span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="1"></rect><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S10 9 12 9c2 0 6-.5 6-1.5S14 5 12 9z"></path></svg></span><h3>Presentguiden</h3><p>Tre frågor och ett maxpris, sedan presentförslag.</p><span class="need">Inget konto</span></a><a class="tool" href="mitt-hem/"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v9H4z"></path><path d="M10 20v-5h4v5"></path></svg></span><h3>Mitt hem</h3><p>Rumsprojekt, favoriter, looks och din stil på ett ställe.</p><span class="need">Sparas i din webbläsare</span></a></div></div></section>
+      <section class="sec kalk"><div class="wrap split" style="align-items:start"><div><span class="eyebrow">Ny i Studio?</span><h2 class="h2" style="margin-top:.9rem">Gratis, och du bestämmer över dina bilder</h2><p class="lead" style="margin-top:1rem">Bläddra bland produkter, se dem i ditt rum, spara idéer och beställ när du är redo.</p><div class="ctrl-row" style="margin-top:1.6rem"><a class="btn ghost" href="sa-fungerar-det/">Så fungerar RumIQ</a><a class="btn ghost" href="mitt-hem/">Mitt hem</a></div></div>
+        <div class="panel"><h3 class="h3" style="margin-bottom:1rem">Regler för verktygen</h3><ul class="rules"><li>Alla verktyg i Studio är gratis.</li><li>I den här versionen sker allt i din webbläsare. Dina foton lämnar aldrig din enhet.</li><li>AI-stylisten och den smarta sökningen bygger i den här versionen på regler och RumIQs sortiment, inte på en AI-tjänst. Det står i verktyget.</li><li>När riktiga AI-bilder kopplas in kommer det att finnas en veckogräns för rumsbilder. Misslyckade försök räknas aldrig.</li><li>Bilderna är illustrationer. Storlek, färg och detaljer kan skilja sig från den riktiga produkten. Kontrollera produktsidan innan du köper.</li></ul></div></div></section></main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div class="brand"><img class="logo-day" src="assets/brand/rumiq-grafit.webp" alt="RumIQ" width="480" height="120"><img class="logo-night" src="assets/brand/rumiq-vit.webp" alt="" aria-hidden="true" width="480" height="120"><p>Färre, bättre saker för hemmet. Utvalda i Sverige.</p>
+        <form class="news" id="newsForm" novalidate><label for="newsEmail">Nyhetsbrev</label><div class="field"><input type="email" id="newsEmail" name="email" placeholder="Din e-post"><button class="btn sm" type="submit">Prenumerera</button></div></form></div>
+      <div><h4>Butik</h4><ul><li><a href="butik/">Alla produkter</a></li><li><a href="nyheter/">Nyheter</a></li><li><a href="kollektioner/">Kollektioner</a></li><li><a href="favoriter/">Utvalda favoriter</a></li><li><a href="erbjudanden/">Erbjudanden</a></li></ul></div>
+      <div><h4>Inspiration</h4><ul><li><a href="upptack/">Upptäck</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="rum/">Efter rum</a></li><li><a href="magasin/">Magasin</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><a href="om/">Om RumIQ</a></li></ul></div>
+      <div><h4>Kundservice</h4><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Var är mitt paket?</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li><li><a href="ideer/">Dela en idé</a></li></ul></div>
+      <div><h4>Juridisk information</h4><ul><li><a href="juridik-villkor/">Köpvillkor</a></li><li><a href="juridik-integritet/">Integritetspolicy</a></li><li><a href="juridik-cookies/">Cookiepolicy</a></li><li><a href="juridik-angerratt/">Ångerrätt</a></li><li><a href="juridik-garanti/">Reklamation & garanti</a></li><li><a href="juridik-produktsakerhet/">Produktsäkerhet</a></li><li><a href="juridik-sakerhet/">Säkerhet</a></li><li><a href="juridik-foretag/">Företagsinformation</a></li></ul></div>
+    </div>
+    <p class="ai">Bilderna på produkter och rum är skapade med AI medan vi väntar på de första produkterna. Produkterna är exempel och går inte att köpa än.</p>
+    <div class="bottom"><span>© 2026 RumIQ · <a href="mailto:support@rumiq.se">support@rumiq.se</a></span><span style="display:flex;gap:1.2rem;flex-wrap:wrap"><button type="button" data-action="cookies">Cookieinställningar</button><a class="bottom-link" href="angra/">Ångra avtalet här</a><button type="button" class="lang" translate="no" data-lang-long lang="en">English</button></span></div>
+  </div>
+</footer>
+
+
+<div class="scrim-all" id="scrimAll"></div>
+<aside class="drawer" id="cart" aria-label="Varukorg" aria-hidden="true">
+  <header><h2>Varukorg <small data-count="cartline"></small></h2><button class="iconbtn close" type="button" data-close aria-label="Stäng varukorgen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <div class="body"></div><footer></footer>
+</aside>
+
+<div class="search" id="search" role="dialog" aria-modal="true" aria-label="Sök">
+  <button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div class="wrap"><label class="sr" for="searchInput">Sök</label><div class="sfield"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" enterkeyhint="search"></div>
+    <p class="hint">Sök på produkt, material, rum eller färg. Vill du hellre beskriva med egna ord? Prova <a href="studio-sok/" data-close>Smart sökning</a> eller fråga <a href="studio-stylist/" data-close>stylisten</a>.</p>
+    <div class="res" id="searchRes"></div></div>
+</div>
+
+<div class="cookie" id="cookie" role="dialog" aria-label="Cookies">
+  <h3>Cookies</h3><p>Nödvändiga cookies får butiken att fungera. Statistik och marknadsföring bara om du vill. <a href="juridik-cookies/">Läs mer</a></p>
+  <div class="opts" hidden><label class="check"><input type="checkbox" checked disabled> Nödvändiga</label><label class="check"><input type="checkbox" id="ckStats"> Statistik</label><label class="check"><input type="checkbox" id="ckMkt"> Marknadsföring</label><button class="btn sm" type="button" id="ckSave">Spara val</button></div>
+  <div class="row"><button class="btn sm" type="button" id="ckNeed">Bara nödvändiga</button><button class="btn ghost sm" type="button" id="ckAll">Godkänn alla</button><button class="btn ghost sm" type="button" id="ckMore">Välj själv</button></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/site.min.js?v=8b0ef7c0"></script>
+</body>
+</html>
