@@ -462,6 +462,7 @@
     [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
   ];
   let current = null, cleanup = null, firstRun = true;
+  let routing = null; // the route being drawn, until render() has run: popstate and hashchange both report one navigation
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
   function render(raw) {
     let view = null;
@@ -471,7 +472,7 @@
     if (!view) view = V.notfound();
     if (view.lazy) { // a tool that has not loaded yet: keep what is on screen (the prerendered page), load, then draw
       document.documentElement.classList.add("loading-tools");
-      RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); }, () => { document.documentElement.classList.remove("loading-tools"); RQ.toast("Sidan kunde inte laddas. Kontrollera anslutningen och försök igen."); });
+      RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); else if (routing === raw) routing = null; }, () => { routing = null; document.documentElement.classList.remove("loading-tools"); RQ.toast("Sidan kunde inte laddas. Kontrollera anslutningen och försök igen."); });
       return;
     }
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
@@ -485,9 +486,14 @@
     const h1 = !view.title && !isHome && root.querySelector("h1");
     document.title = view.title || (isHome ? "RumIQ · Skandinavisk inredning och smarta verktyg för hemmet" : h1 ? `${h1.textContent.trim().replace(/\s+/g, " ")} · RumIQ` : "RumIQ");
     if (current !== raw) window.scrollTo(0, 0);
-    current = raw;
-    if (view.mount) cleanup = view.mount(root) || null;
-    if (RQ.mountBav && root.querySelector(".bav")) { const a = cleanup, b = RQ.mountBav(root); cleanup = () => { a && a(); b(); }; }
+    current = raw; routing = null;
+    // #view outlives every page: whatever a page listens for on it is taken away again when the page leaves
+    const offs = [], add = root.addEventListener.bind(root);
+    root.addEventListener = (t, f, o) => { offs.push(() => root.removeEventListener(t, f, o)); add(t, f, o); };
+    let un = null;
+    try { un = view.mount ? view.mount(root) : null; } finally { delete root.addEventListener; }
+    if (RQ.mountBav && root.querySelector(".bav")) { const b = RQ.mountBav(root); offs.push(() => b && b()); }
+    cleanup = () => { offs.forEach((f) => { try { f(); } catch (e) {} }); if (typeof un === "function") un(); };
     RQ.watch(root);
     RQ.paintShell();
     RQ.markImages(root);
@@ -529,10 +535,11 @@
     if (el) { el.scrollIntoView({ block: "start" }); if (el.matches("main,section,[tabindex]")) el.focus({ preventScroll: true }); }
     else location.hash = h;
   }, true);
-  window.addEventListener("popstate", () => { if (currentRaw() !== current) RQ.router(); });
+  const onNav = () => { const raw = currentRaw(); if (raw === current) { routing = null; return; } if (raw !== routing) RQ.router(); };
+  window.addEventListener("popstate", onNav);
   const COARSE = matchMedia("(pointer: coarse), (max-width: 900px)").matches;
   RQ.router = () => {
-    const raw = currentRaw();
+    const raw = currentRaw(); routing = raw;
     if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw) && !/^studio-kombinera-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
     // phones and tablets: no view transition. Taking a picture of the whole page before every change costs more
     // than the fade is worth there; the new view gets a short fade instead.
@@ -859,7 +866,7 @@
   const showFlags = () => { const c = window.RQ_CONFIG || {}, h = document.documentElement; h.toggleAttribute("data-no-offers", !RQ.PRODUCTS.some((p) => p.was)); h.toggleAttribute("data-no-news", !c.showNews); };
   showFlags();
 
-  window.addEventListener("hashchange", RQ.router);
+  window.addEventListener("hashchange", onNav);
   document.addEventListener("DOMContentLoaded", () => {
     RQ.router(); navCheck();
     /* the first screen of the home page belongs to the offer: on the home page the cookie bar waits
