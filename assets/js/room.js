@@ -19,10 +19,10 @@
   const PLACE = {
     "glob-bordslampa-opalglas": { y: 80, w: 12 }, "lysa-keramiklampa": { y: 80, w: 14 }, "svamp-uppladdningsbar-lampa": { y: 80, w: 9 },
     "skarbrada-ek-med-handtag": { y: 82, w: 11 }, "forradsburkar-glas-ek-3-pack": { y: 82, w: 13 }, "plad-ullblandning-havre": { y: 78, w: 22 },
-    "lin-kuddfodral": { y: 74, w: 12 }, "sand-keramikvas": { y: 80, w: 8 }, "rund-vaggspegel-ek": { y: 46, w: 20 },
+    "lin-kuddfodral": { y: 74, w: 12 }, "sand-keramikvas": { y: 80, w: 8 }, "affisch-linje-ekram": { y: 44, w: 14 }, "affisch-horisont-ekram": { y: 44, w: 14 },
     "forvaringslada-filt": { y: 94, w: 16 }, "flatad-forvaringskorg": { y: 95, w: 17 }, "vaffelhandduk-bomull": { y: 82, w: 12 },
-    "tvalpump-stengods": { y: 82, w: 5 }, "kabelbox-vit": { y: 95, w: 12 }, "skrivbordsorganisator-ek": { y: 82, w: 10 },
-    "orbit-tradlost-laddstall": { y: 82, w: 6 }, "terrakottakruka-rafflad": { y: 95, w: 12 },
+    "tvalpump-stengods": { y: 82, w: 5 }, "glod-doftljus-keramik": { y: 82, w: 6 }, "stilla-ljusstake-massing-2-pack": { y: 82, w: 6 }, "skrivbordsorganisator-ek": { y: 82, w: 10 },
+    "dagsljus-linnegardin-2-pack": { y: 88, w: 15 }, "vila-paslakanset-linne": { y: 82, w: 22 }, "strand-jutematta": { y: 99, w: 40 }, "terrakottakruka-rafflad": { y: 95, w: 12 },
   };
   const placeFor = (p) => PLACE[p.handle] || { y: p.wall ? 46 : 84, w: 14 };
   const SLOTS = [50, 30, 70, 18, 82, 40, 60];
@@ -111,7 +111,7 @@
     saveScene(list) { ls.set(SCENE, list); emit("scene"); },
     inScene: (h) => R.scene().some((it) => it.h === h),
     add(h, quiet) {
-      const p = RQ.byHandle(h); if (!p) return false;
+      const p = RQ.byHandle(h); if (!p) return false; RQ.track && RQ.track("studio_place", { item_id: h });
       const list = R.scene(); if (list.some((it) => it.h === h)) return false;
       const pl = placeFor(p); const used = list.map((it) => it.x);
       const slots = p.wall ? [72, 28, 50] : SLOTS;

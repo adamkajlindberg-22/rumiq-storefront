@@ -23,7 +23,16 @@
   const toneDist = (p, rgb) => Math.min(...p.tone.map((t) => dist(hex2rgb(t), rgb)));
   const formEndpoint = () => RQ.FORM_ENDPOINT || (window.RQ_CONFIG && window.RQ_CONFIG.formEndpoint) || "";
   // resolves "sent", "preview" (no endpoint configured: nothing leaves the browser) or "error"
-  const post = (body) => { const u = formEndpoint(); if (!u) return Promise.resolve("preview"); return fetch(u, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => (r.ok ? "sent" : "error"), () => "error"); };
+  // sign-ups go to a form service if one is set, otherwise to RumIQ's own Supabase table (insert-only for visitors)
+  const toSupabase = (body) => {
+    const c = (window.RQ_CONFIG || {}), a = c.auth || {}, t = (c.waitlist || {}).table;
+    if (!a.supabaseUrl || !a.supabaseAnonKey || !t) return Promise.resolve("preview");
+    const row = { email: String(body.email || "").toLowerCase().slice(0, 254), list: String(body.lista || "väntelista").slice(0, 120), note: body.roster ? String(body.roster).slice(0, 500) : null, lang: window.RQ_LANG === "en" ? "en" : "sv", consent: true };
+    return fetch(`${a.supabaseUrl}/rest/v1/${t}`, { method: "POST", headers: { apikey: a.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(row) })
+      .then((r) => (r.ok || r.status === 409 ? "sent" : "error"), () => "preview");
+  };
+  const post = (body) => { const u = formEndpoint(); if (!u) return toSupabase(body); return fetch(u, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => (r.ok ? "sent" : "error"), () => "error"); };
+  RQ.subscribe = (body) => post(body).then((res) => { if (res === "sent" && RQ.track) RQ.track("sign_up", { list: body.lista || "" }); return res; });
   const PREVIEW_NOTE = "Förhandsversion: adressen sparas inte än. När butiken öppnar fungerar det här på riktigt.";
   const afterPost = (f, res, okText) => {
     const ok = $(".nt-ok", f), err = $(".nt-err", f);
@@ -75,14 +84,17 @@
     cfg(p) { const c = (window.RQ_CONFIG && window.RQ_CONFIG.delivery) || {}; return Object.assign({}, c, (p && p.ship) || {}); },
     range(c) {
       if (!c.minDays || !c.maxDays) return "";
-      const f = (d) => { const x = new Date(); x.setDate(x.getDate() + d); return x.toLocaleDateString(RQ_LANG === "en" ? "en-GB" : "sv-SE", { day: "numeric", month: "short" }); };
+      // business days: orders placed after the cut-off hour or at weekends start counting on the next weekday
+      const add = (n) => { const x = new Date(); if (x.getHours() >= (c.cutoffHour || 14)) x.setDate(x.getDate() + 1); while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() + 1);
+        let left = n; while (left > 0) { x.setDate(x.getDate() + 1); if (x.getDay() !== 0 && x.getDay() !== 6) left--; } return x; };
+      const f = (d) => add(d).toLocaleDateString(RQ_LANG === "en" ? "en-GB" : "sv-SE", { weekday: "short", day: "numeric", month: "short" });
       return `${f(c.minDays)} – ${f(c.maxDays)}`;
     },
     html(p) {
       const c = this.cfg(p), r = this.range(c);
       return `<div class="lk" role="group" aria-label="Leveranskoll"><p class="lk-h">Leveranskoll</p>
         <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="${c.fromCountry ? "on" : ""}"><i></i><b>Skickas från</b><span>${c.fromCountry ? esc(c.fromCountry) : PENDING}</span></li><li class="${r ? "on" : ""}"><i></i><b>Hos dig</b><span>${r || PENDING}</span></li></ol>
-        <p class="lk-f">14 dagars ångerrätt. ${c.returnText ? esc(c.returnText) : "Hur returen går till står här när den är bekräftad."}</p></div>`;
+        <p class="lk-f">${c.openPurchaseDays ? `${c.openPurchaseDays} dagars öppet köp.` : "14 dagars ångerrätt."} ${c.returnText ? esc(c.returnText) : "Hur returen går till står här när den är bekräftad."}</p></div>`;
     },
   };
 

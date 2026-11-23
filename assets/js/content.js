@@ -43,9 +43,9 @@
       lead: "Så kommer dina saker hem till dig, och vad som gäller om något dröjer.",
       html: () => `${draft}
         <h2>Leveranssätt och pris</h2>
-        <p>Vilka länder vi skickar till, vilka leveranssätt som finns och vad frakten kostar beror på produkten, leverantören och din adress. Du ser alltid leveranssätt, fraktkostnad och totalsumma i kassan innan du betalar.</p>
+        <p>Vi skickar från lager inom EU till adresser i Sverige. Hämta hos ombud eller i paketskåp kostar 49 kr och hemleverans 89 kr. Handlar du för 799 kr eller mer är frakten till ombud och paketskåp fri. Du ser alltid leveranssätt, fraktkostnad och totalsumma i kassan innan du betalar.</p>
         <h2>Leveranstid</h2>
-        <p>En generell leveranstid är inte bekräftad än. Varje produktsida visar en beräknad leveranstid innan du köper, så snart leverantören har bekräftat den.</p>
+        <p>Målet är 2–5 arbetsdagar. Varje produktsida visar vilka datum paketet beräknas komma, och beställningar före klockan 14 på vardagar räknas från samma dag.</p>
         <h2>Flera paket</h2>
         <p>Varor från olika leverantörer kan komma i separata paket. Om det innebär en extra kostnad ser du det innan du betalar.</p>
         <h2>Om leveransen dröjer eller inte kommer</h2>
@@ -54,24 +54,24 @@
         <h2>Spårning</h2>
         <p>Använd länken till orderstatus i orderbekräftelsen. Spårning från fraktbolaget visas när leverantören eller fraktbolaget skickar den. Du kan också använda <a href="#spara-order">Spåra min beställning</a>.</p>
         <h2>Tull och avgifter</h2>
-        <p>Skatter, tull och eventuella avgifter för import ska framgå innan du köper. Vi lovar inte tullfri eller fri frakt förrän det är bekräftat.</p>
+        <p>Varorna skickas från lager inom EU, så det tillkommer ingen tull eller importavgift. Priset du ser är inklusive moms.</p>
         <h2>Vårt ansvar</h2>
         <p>RumIQ är din kontakt för leverans, ånger och reklamation, även när en leverantör skickar varan. Leverantörens villkor kan aldrig begränsa dina rättigheter som konsument.</p>
         <h2>Att bekräfta före försäljning</h2>
-        <ul class="checklist"><li>Leverantörernas leveransregler</li><li>Länder vi säljer till</li><li>Fraktpriser</li></ul>`,
+        <ul class="checklist"><li>Leverantörernas leveransregler och lagerplats</li><li>Länder vi säljer till</li><li>Fraktpriser och gränsen för fri frakt</li></ul>`,
     },
     returer: {
       title: "Returer & återbetalning", kicker: "Kundservice",
       lead: "Ångrat dig eller blivit något fel? Så här gör du.",
       html: () => `${draft}
-        <h2>14 dagars ångerrätt</h2>
-        <p>Du har 14 dagars ångerrätt från den dag du tog emot varan. Du behöver inte ange något skäl. Det enklaste sättet att ångra är <a href="#angra">Ångra avtalet här</a>, som finns i sidfoten och under varje beställning i ditt konto.</p>
+        <h2>30 dagars öppet köp</h2>
+        <p>Lagen ger dig 14 dagars ångerrätt. Hos oss har du 30 dagars öppet köp från den dag du tog emot varan. Du behöver inte ange något skäl. Det enklaste sättet att ångra är <a href="#angra">Ångra avtalet här</a>, som finns i sidfoten och under varje beställning i ditt konto.</p>
         <h2>Så skickar du tillbaka</h2>
         <ol><li>Ångra köpet via knappen. Du får en bekräftelse direkt.</li><li>Packa varan väl, gärna i originalförpackningen.</li><li>Skicka varan inom 14 dagar från att du ångrade köpet. Returadressen står i bekräftelsen.</li></ol>
         <h2>Återbetalning</h2>
         <p>Vi betalar tillbaka utan onödigt dröjsmål och senast 14 dagar från ditt meddelande om att du ångrar köpet, inklusive den ursprungliga fraktkostnaden för standardleverans. Vi får vänta tills vi fått tillbaka varan eller bevis på att den skickats. Pengarna kommer tillbaka på samma sätt som du betalade, om vi inte kommer överens om något annat utan kostnad för dig.</p>
         <h2>Returfrakt</h2>
-        <p>${miss("Vem som betalar returfrakten")}</p>
+        <p>Returen skickas till en adress i Sverige, inte till leverantören utomlands. ${miss("Vem som betalar returfrakten")}</p>
         <h2>Varans skick</h2>
         <p>Du får undersöka varan på samma sätt som i en butik. Om varan har hanterats mer än så kan vi göra avdrag för värdeminskningen.</p>
         <h2>Fel på varan</h2>
@@ -270,21 +270,21 @@
       lead: "Färgerna, texturerna och kontrasterna du gillar att bära kan bli utgångspunkten för ett hem som känns som du.",
       body: `<p>De flesta har en tydligare stil i garderoben än i vardagsrummet. Det är inte konstigt: kläder väljer vi varje dag, möbler några gånger i livet. Men smaken är densamma, och den går att låna.</p>
         <h2>Öppna garderoben</h2><p>Vilka färger dominerar? Vilka material tar du helst på dig: stickat, linne, denim? Är du mer för det rena och enkla eller det mjuka och lagrade? Svaren är en bra start för hemmet också.</p>
-        <h2>Översätt materialen</h2><p>Älskar du ullkoftor blir en pläd i ullblandning ett naturligt val. Gillar du linneskjortor passar kuddfodral i linne. Den som bär mycket grafit trivs ofta med mörka detaljer, som ett laddställ i grafit eller en tvålpump i mörkt stengods.</p>
+        <h2>Översätt materialen</h2><p>Älskar du ullkoftor blir en pläd i ullblandning ett naturligt val. Gillar du linneskjortor passar kuddfodral i linne. Den som bär mycket grafit trivs ofta med mörka detaljer, som en tvålpump i mörkt stengods eller en grafisk affisch.</p>
         <h2>Gör testet</h2><p>Vill du ha hjälp att sätta ord på stilen? <a href="#studio-stil">Hitta min stil</a> tar en minut och ger förslag ur sortimentet.</p>`,
-      picks: ["plad-ullblandning-havre", "rund-vaggspegel-ek", "glob-bordslampa-opalglas"] },
+      picks: ["plad-ullblandning-havre", "vila-paslakanset-linne", "glob-bordslampa-opalglas"] },
     { slug: "harmoniskt-hem", img: "assets/img/mag/harmoniskt-1200.webp", minutes: 5, rooms: ["vardagsrum", "hall", "sovrum"],
       title: "7 sätt att skapa ett mer harmoniskt hem",
       lead: "Ett lugnare hem börjar med hur du använder det, inte med hur mycket du köper.",
       body: `<ol class="numbered">
         <li><h3>Ge varje sak en adress</h3><p>Det som saknar en fast plats blir liggande. Bestäm var nycklarna, laddaren och fjärrkontrollen bor.</p></li>
         <li><h3>Lägre ljus på kvällen</h3><p>Släck taklampan och tänd två eller tre lampor på lägre höjd. Rummet blir lugnare direkt.</p></li>
-        <li><h3>Dölj det som surrar</h3><p>Sladdar och grenuttag syns mer än man tror. En kabelbox gör stor skillnad för liten insats.</p></li>
+        <li><h3>Dölj det som surrar</h3><p>Sladdar och laddare syns mer än man tror. En låda med lock gör stor skillnad för liten insats.</p></li>
         <li><h3>Låt ytorna andas</h3><p>En tom bänk eller hylla är inte oanvänd. Den ger blicken vila.</p></li>
         <li><h3>Samla småsaker i korgar</h3><p>Tio saker i en korg ser ut som en sak. Tio saker utspridda ser ut som tio.</p></li>
         <li><h3>Upprepa material</h3><p>Samma trä, samma metall eller samma textil i flera rum gör att hemmet hänger ihop.</p></li>
         <li><h3>Byt hellre än lägg till</h3><p>När något nytt kommer in, fundera på vad som kan få gå. Det håller hemmet lätt.</p></li></ol>`,
-      picks: ["kabelbox-vit", "flatad-forvaringskorg", "glob-bordslampa-opalglas"] },
+      picks: ["forvaringslada-filt", "flatad-forvaringskorg", "glod-doftljus-keramik"] },
     { slug: "skandinavisk-inspiration", img: "assets/img/mag/skandinavisk-1200.webp", minutes: 4, rooms: ["vardagsrum", "kok"],
       title: "Skandinavisk inredningsinspiration",
       lead: "Naturligt ljus, genomtänkta proportioner och enkla vardagsrutiner.",
@@ -293,7 +293,7 @@
         <h2>Ljust trä och mjuka material</h2><p>Ek, björk, lin och ull. Material som är fina att ta i och som åldras med värdighet.</p>
         <h2>Lagom mycket</h2><p>Färre saker, men saker med en tydlig funktion och plats. Det är inte asketiskt, det är lugnt.</p>
         <h2>Ljus i lager när mörkret kommer</h2><p>Flera små ljuskällor på olika höjd i stället för en stark lampa i taket. Det är så skandinaviska hem håller värmen under de mörka månaderna.</p>`,
-      picks: ["lysa-keramiklampa", "rund-vaggspegel-ek", "lin-kuddfodral"] },
+      picks: ["lysa-keramiklampa", "dagsljus-linnegardin-2-pack", "lin-kuddfodral"] },
     { slug: "varmt-vardagsrum", img: "assets/img/mag/vardagsrum-1200.webp", minutes: 3, rooms: ["vardagsrum"],
       title: "Så skapar du ett varmt och välkomnande vardagsrum",
       lead: "Små ändringar i ljus och möblering kan ändra hur ett rum känns.",

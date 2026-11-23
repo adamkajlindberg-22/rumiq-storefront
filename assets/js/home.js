@@ -74,9 +74,9 @@
       </section>
 
       <section class="sec cta-band" id="bli-forst">
-                <div class="wrap"><div><h2>Bli först när vi öppnar.</h2><p class="lead">Produkterna är exempel tills butiken öppnar. Ett mejl när dörren öppnas. Inget annat.</p></div>
-          <div class="signup" id="formBox"><form id="signup" novalidate><label for="email">Din e-post</label><div class="field"><input id="email" name="email" type="email" autocomplete="email" placeholder="namn@exempel.se" required><button class="btn" type="submit">Skriv upp mig</button></div><p class="status" id="formErr" role="alert"></p><p class="fine">Vi delar aldrig din adress. Du kan avregistrera dig när du vill.</p></form>
-            <div class="ok" role="status" aria-live="polite"><h3>Tack. Du står på listan.</h3><p>Vi hör av oss när RumIQ öppnar.</p></div></div></div>
+                <div class="wrap"><div><h2>Bli först när vi öppnar.</h2><p class="lead">Skriv upp dig så får du 10 % på första köpet när vi öppnar. Till dess kan du prova Studio gratis och se produkterna i ditt eget rum.</p></div>
+          <div class="signup" id="formBox"><form id="signup" novalidate><label for="email">Din e-post</label><div class="field"><input id="email" name="email" type="email" autocomplete="email" placeholder="namn@exempel.se" required><button class="btn" type="submit">Skriv upp mig</button></div><p class="status" id="formErr" role="alert"></p><p class="fine">Vi mejlar när vi öppnar och ibland med stylingtips. Vi delar aldrig din adress, och du kan avregistrera dig när du vill.</p></form>
+            <div class="ok" role="status" aria-live="polite"><h3>Tack. Du står på listan.</h3><p id="okText">Vi hör av oss med din rabattkod när RumIQ öppnar.</p><a class="btn ghost sm" href="#mitt-rum">Prova Studio under tiden</a></div></div></div>
       </section>`,
       mount: mountHome,
     };
@@ -173,9 +173,10 @@
       e.preventDefault(); const v = form.email.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { err.textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; form.email.focus(); return; }
       err.textContent = "";
-      if (RQ.FORM_ENDPOINT) { btn.disabled = true; btn.textContent = "Skickar…";
-        try { const r = await fetch(RQ.FORM_ENDPOINT, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ email: v, lista: "RumIQ väntelista" }) }); if (!r.ok) throw new Error(r.status); }
-        catch (x) { btn.disabled = false; btn.textContent = "Skriv upp mig"; err.textContent = "Det gick inte att skicka just nu. Försök igen om en stund."; return; } }
+      btn.disabled = true; btn.textContent = "Skickar…";
+      const res = await RQ.subscribe({ email: v, lista: "Väntelista" });
+      if (res === "error") { btn.disabled = false; btn.textContent = "Skriv upp mig"; err.textContent = "Det gick inte att skicka just nu. Försök igen om en stund."; return; }
+      if (res === "preview") $("#okText", root).textContent = "Förhandsversion: adressen sparas inte här. På den riktiga sajten hamnar du på listan.";
       $("#formBox", root).classList.add("sent");
     });
 

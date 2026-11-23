@@ -613,6 +613,9 @@ footer.site .news input{padding:.65rem .9rem;font-size:.92rem}
 footer.site .bottom{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-top:1px solid var(--line2);margin-top:3rem;padding-top:1.5rem;font-size:.86rem;color:var(--muted)}
 footer.site .bottom button{background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:.2em;font-size:.86rem}
 footer.site .ai{margin-top:1.4rem;font-size:.85rem;color:var(--muted);max-width:44rem}
+footer.site .co{margin-top:1.4rem;font-size:.85rem;color:var(--muted)}
+footer.site .co + .ai{margin-top:.4rem}
+.cta-band .ok .btn{margin-top:1rem}
 
 /* ---------------------------------------------------------------- account, auth, lists */
 .acct{display:grid;grid-template-columns:14rem minmax(0,1fr);gap:3rem;align-items:start}
@@ -1604,3 +1607,11 @@ body.on-checkout footer.site,body.on-checkout .menu,body.on-checkout .roompill,b
 .lk .pending,li .pending{color:#5a5c59}
 :root[data-light=kvall] .lk .pending,:root[data-light=kvall] li .pending{color:#3d3f3c}
 @media (max-width:900px){.bav .rh-card{position:static;margin-top:.7rem;box-shadow:none;border:1px solid var(--line)}}
+
+.price.sale,.pprice.sale{color:var(--terra,#B8714A)}
+.low30{display:block;font-size:.78rem;color:var(--muted);margin-top:.15rem}
+.gap{margin:.2rem 0 1.2rem;padding:.9rem 1rem;border:1px solid var(--line);border-radius:14px}
+.gap .eyebrow{margin-bottom:.6rem}
+.gap-i{display:grid;grid-template-columns:2.6rem 1fr auto;gap:.8rem;align-items:center;padding:.35rem 0}
+.gap-i img{width:2.6rem;height:2.6rem;object-fit:contain}
+.gap-i span{display:grid;line-height:1.25}.gap-i b{font-weight:500;font-size:.9rem}.gap-i small{color:var(--muted);font-size:.8rem}

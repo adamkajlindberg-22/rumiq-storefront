@@ -14,7 +14,10 @@
    redirect: where the provider sends people back after signing in (your live address).
 
    DELIVERY (Leveranskoll on every product)
-   fromCountry: the country orders ship from, e.g. "Sverige". minDays/maxDays: delivery time in days.
+   fromCountry: where orders ship from, e.g. "Lager i EU". minDays/maxDays: delivery time in business days
+   (weekends skipped; orders after cutoffHour count from the next weekday). openPurchaseDays: days of open
+   purchase shown instead of the legal 14-day withdrawal line. The values below are RumIQ's TARGET from the
+   business plan; confirm them with the chosen supplier before launch.
    returnText: one sentence on how returns work. Empty = the page says "Bekräftas innan vi öppnar".
    A product can override these later with its own "ship" field.
 
@@ -23,6 +26,8 @@
                  The same discount must exist in Shopify (automatic discount) before launch.
    freeShippingFrom: order value in kr from which shipping is free, shown as a meter in the cart.
                      null = no meter (do not promise free shipping before it is decided).
+
+   COMPANY: shown in the footer. Empty fields = the footer says the details are published before launch.
 
    payments: the payment methods switched on in Shopify, shown as a row on product pages and in the
              checkout. Empty = no row (do not show methods that are not live).
@@ -40,8 +45,10 @@ window.RQ_CONFIG = {
     redirect: "",
   },
   formEndpoint: "",
-  delivery: { fromCountry: "", minDays: null, maxDays: null, returnText: "" },
+  delivery: { fromCountry: "Lager i EU", minDays: 2, maxDays: 5, cutoffHour: 14, openPurchaseDays: 30, returnText: "Returen skickas till en adress i Sverige." },
+  company: { name: "", orgnr: "", address: "", phone: "", email: "support@rumiq.se" },
+  waitlist: { table: "waitlist", offer: "10 % på första köpet när vi öppnar" },
   lookDiscount: 0.1,
-  freeShippingFrom: null,
+  freeShippingFrom: 799,
   payments: [], // e.g. ["Kort", "Klarna", "Swish", "Apple Pay", "Google Pay"] once they are switched on in Shopify
 };

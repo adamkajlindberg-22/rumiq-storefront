@@ -52,7 +52,7 @@
       <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${roomIco}</button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <button class="qv" type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
-      <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3><span class="price">${kr(p.price)}</span></div>
+      <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
       <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
   };
@@ -212,7 +212,7 @@
           <div class="pinfo">
             <a class="eyebrow" href="#kategori-${c.id}">${esc(c.name)}</a>
             <h1>${esc(p.name)}</h1>
-            <div class="priceline"><span class="pprice">${kr(p.price)}</span><span class="vat">inkl. moms</span></div>
+            <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span></div>
             <p class="short">${esc(p.short)}</p>
             ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div></div>` : ""}
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
@@ -230,8 +230,8 @@
             ${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}
             <div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div>
             <ul class="pfacts">
-              <li>${ic.truck}<span>Leveranssätt, pris och leveranstid visas i kassan innan du betalar. <a href="#frakt">Om frakt</a></span></li>
-              <li>${ic.undo}<span>14 dagars ångerrätt. Du ångrar med en knapp. <a href="#returer">Om returer</a></span></li>
+              <li>${ic.truck}<span>${(window.RQ_CONFIG || {}).freeShippingFrom ? `Fri frakt till ombud och paketskåp från ${kr(window.RQ_CONFIG.freeShippingFrom)}, annars från 49 kr.` : "Leveranssätt, pris och leveranstid visas i kassan innan du betalar."} <a href="#frakt">Om frakt</a></span></li>
+              <li>${ic.undo}<span>${((window.RQ_CONFIG || {}).delivery || {}).openPurchaseDays ? `${window.RQ_CONFIG.delivery.openPurchaseDays} dagars öppet köp. Du ångrar med en knapp och returen går till en adress i Sverige.` : "14 dagars ångerrätt. Du ångrar med en knapp."} <a href="#returer">Om returer</a></span></li>
               <li>${ic.lock}<span>Säker betalning i Shopifys kassa. Vi ser aldrig ditt kort.</span></li>
             </ul>
             <div class="example-note"><span>●</span><span><b>Exempelprodukt.</b> Den är inte verifierad för försäljning än. Du kan prova varukorgen och kassan, men exempelprodukter går inte att betala för.</span></div>
@@ -555,14 +555,31 @@
       foot.innerHTML = ""; return;
     }
     const sub = S.cartSubtotal(), disc = S.lookDiscounts(), net = sub - S.cartDiscount();
-    body.innerHTML = RQ.freeShipHtml(net) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close><img src="${RQ.img(l.product, 600)}" alt=""></a><div><h4><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h4>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska">−</button><input value="${l.quantity}" aria-label="Antal" readonly><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka">+</button></div><button class="rm" type="button" data-rm="${l.id}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}</span></div>`).join("") +
+    body.innerHTML = RQ.freeShipHtml(net) + RQ.fillGapHtml(lines, net) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close><img src="${RQ.img(l.product, 600)}" alt=""></a><div><h4><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h4>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska">−</button><input value="${l.quantity}" aria-label="Antal" readonly><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka">+</button></div><button class="rm" type="button" data-rm="${l.id}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}</span></div>`).join("") +
       `<div class="example-note" style="margin-top:1.2rem"><span>●</span><span><b>Testläge.</b> Varukorgen innehåller exempelprodukter. Du kan prova kassan, men inget betalas och inget skickas.</span></div>`;
-    foot.innerHTML = `<div class="sum"><span>Delsumma</span><span>${kr(sub)}</span></div>${disc.map((d) => `<div class="sum disc"><span>Hela looken ${esc(d.look.name)}</span><span>−${kr(d.amount)}</span></div>`).join("")}<div class="sum small"><span>Frakt</span><span>Beräknas i kassan</span></div><div class="sum small"><span>Varav moms (25 %)</span><span>${kr(S.vatIncluded(net))}</span></div><a class="btn block" href="#kassa" data-close>Till kassan</a><button class="btn ghost block" type="button" data-cart-room>${RQ.roomIco}Se varorna i ditt rum</button>`;
+    foot.innerHTML = `<div class="sum"><span>Delsumma</span><span>${kr(sub)}</span></div>${disc.map((d) => `<div class="sum disc"><span>Hela looken ${esc(d.look.name)}</span><span>−${kr(d.amount)}</span></div>`).join("")}<div class="sum small"><span>Frakt</span><span>${S.freeShipping && S.freeShipping() ? "Fri till ombud och paketskåp" : "Från 49 kr"}</span></div><div class="sum small"><span>Varav moms (25 %)</span><span>${kr(S.vatIncluded(net))}</span></div><a class="btn block" href="#kassa" data-close>Till kassan</a><button class="btn ghost block" type="button" data-cart-room>${RQ.roomIco}Se varorna i ditt rum</button>`;
   }
   S.onChange((w) => { RQ.paintShell(); if (drawer.classList.contains("open")) renderCart(); });
   // day/evening on a room picture: the same room after sunset, so you see how the lamps change it
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-dn]"); if (!b) return; const sec = b.closest(".rm-shop"); const st = sec && $(".hs-stage", sec); if (!st) return; st.classList.toggle("eve", b.dataset.dn === "kvall"); $$("[data-dn]", sec).forEach((x) => x.setAttribute("aria-pressed", x === b)); });
   RQ.payRow = () => { const m = (window.RQ_CONFIG || {}).payments || []; return m.length ? `<ul class="payrow" aria-label="Betalsätt">${m.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""; };
+  // price with the Swedish rule for reductions: when a product is on sale (p.was = earlier price) the lowest price of
+  // the last 30 days (p.low30, from Shopify price history) is shown next to the new price (prisinformationslagen 7 a §)
+  RQ.priceHtml = (p, kind) => {
+    const cls = kind === "pdp" ? "pprice" : "price";
+    if (!p.was || p.was <= p.price) return `<span class="${cls}">${kr(p.price)}</span>`;
+    const low = p.low30 || p.was;
+    return `<span class="${cls} sale">${kr(p.price)}</span><span class="low30">Tidigare lägsta pris (30 dagar): ${kr(low)}</span>`;
+  };
+  // two things that close the gap to free shipping, picked from the rooms already in the cart
+  RQ.fillGapHtml = (lines, net) => {
+    const from = (window.RQ_CONFIG || {}).freeShippingFrom; if (!from || !lines.length || net >= from) return "";
+    const gap = from - net, inCart = new Set(lines.map((l) => l.product.handle)), rooms = new Set(lines.flatMap((l) => l.product.rooms));
+    const picks = RQ.PRODUCTS.filter((p) => !inCart.has(p.handle) && p.price >= gap && p.price <= gap + 400)
+      .sort((a, b) => (b.rooms.some((r) => rooms.has(r)) - a.rooms.some((r) => rooms.has(r))) || a.price - b.price).slice(0, 2);
+    if (!picks.length) return "";
+    return `<div class="gap"><p class="eyebrow">Passar till det du valt</p>${picks.map((p) => `<div class="gap-i"><img src="${RQ.cut(p)}" alt="" loading="lazy"><span><b>${esc(p.name)}</b><small>${kr(p.price)}</small></span><button class="btn sm ghost" type="button" data-add="${p.handle}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">Lägg till</button></div>`).join("")}</div>`;
+  };
   RQ.freeShipHtml = (net) => {
     const from = (window.RQ_CONFIG || {}).freeShippingFrom; if (!from) return "";
     const left = Math.max(0, from - net), pct = Math.min(100, Math.round((net / from) * 100));
@@ -773,8 +790,13 @@
   }
   $$(".lang").forEach((b) => b.addEventListener("click", () => { S.setLang(window.RQ_LANG === "en" ? "sv" : "en"); location.reload(); }));
 
-  // footer newsletter (preview: nothing is stored on a server)
-  $("#newsForm").addEventListener("submit", (e) => { e.preventDefault(); const v = e.currentTarget.email.value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { RQ.toast("Skriv en giltig e-postadress."); return; } RQ.toast("Förhandsversion: nyhetsbrevet är inte kopplat än, adressen sparades inte."); e.currentTarget.reset(); });
+  // footer newsletter: RumIQ's sign-up table (or a form service, see config.js)
+  $("#newsForm").addEventListener("submit", async (e) => { e.preventDefault(); const f = e.currentTarget, v = f.email.value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { RQ.toast("Skriv en giltig e-postadress."); return; }
+    const res = await RQ.subscribe({ email: v, lista: "Nyhetsbrev" });
+    RQ.toast(res === "sent" ? "Tack. Du får nyhetsbrevet och 10 % på första köpet när vi öppnar." : res === "preview" ? "Förhandsversion: adressen sparades inte här." : "Det gick inte att skicka just nu. Försök igen om en stund."); if (res !== "error") f.reset(); });
+  // company details in the footer (RQ_CONFIG.company)
+  (() => { const c = (window.RQ_CONFIG || {}).company || {}, el = $("#coInfo"); if (!el) return; const parts = [c.name, c.orgnr && "Org.nr " + c.orgnr, c.address, c.phone].filter(Boolean);
+    el.textContent = parts.length ? parts.join(" · ") : "Företagsnamn, organisationsnummer, adress och telefon visas här när bolaget är registrerat."; })();
 
   window.addEventListener("hashchange", RQ.router);
   document.addEventListener("DOMContentLoaded", () => { RQ.router(); navCheck(); setTimeout(() => RQ.showCookies(false), 1200); });

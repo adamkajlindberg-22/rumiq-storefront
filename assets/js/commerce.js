@@ -71,6 +71,7 @@
     cartTotalBeforeShipping: () => S.cartSubtotal() - S.cartDiscount(),
     addToCart(variantId, qty = 1) {
       if (!S.variantById(variantId)) return;
+      { const v = S.variantById(variantId); RQ.track && RQ.track("add_to_cart", { item_id: v && v.product ? v.product.handle : variantId, quantity: qty }); }
       const it = S._cart.find((x) => x.v === variantId);
       if (it) it.q = Math.min(99, it.q + qty); else S._cart.push({ v: variantId, q: qty });
       store.set("rumiq-cart", S._cart); emit("cart");
@@ -83,11 +84,13 @@
 
     /* Shipping options are examples until suppliers are confirmed. */
     SHIPPING: [
-      { id: "ombud", title: "Hämta hos ombud", eta: "Bekräftas", price: 49 },
-      { id: "skap", title: "Paketskåp", eta: "Bekräftas", price: 39 },
-      { id: "hem", title: "Hemleverans", eta: "Bekräftas", price: 89 },
+      { id: "ombud", title: "Hämta hos ombud", eta: "2–5 arbetsdagar", price: 49, free: true },
+      { id: "skap", title: "Paketskåp", eta: "2–5 arbetsdagar", price: 49, free: true },
+      { id: "hem", title: "Hemleverans", eta: "2–5 arbetsdagar", price: 89 },
     ],
-    shippingCost(id) { const o = S.SHIPPING.find((s) => s.id === id) || S.SHIPPING[0]; return o.price; },
+    // free to pickup point and parcel locker from RQ_CONFIG.freeShippingFrom (order value after look discounts)
+    freeShipping() { const from = (window.RQ_CONFIG || {}).freeShippingFrom; return !!from && S.cartTotalBeforeShipping() >= from; },
+    shippingCost(id) { const o = S.SHIPPING.find((s) => s.id === id) || S.SHIPPING[0]; return o.free && S.freeShipping() ? 0 : o.price; },
     vatIncluded: (total) => total - total / 1.25,
 
     /* ---------------- orders (test orders, kept in this browser) */
@@ -138,7 +141,7 @@
       store.set("rumiq-compare", S._cmp); emit("compare"); return S._cmp.includes(h);
     },
     _seen: store.get("rumiq-seen", []),
-    markSeen(h) { S._seen = [h, ...S._seen.filter((x) => x !== h)].slice(0, 8); store.set("rumiq-seen", S._seen); },
+    markSeen(h) { RQ.track && RQ.track("view_item", { item_id: h }); S._seen = [h, ...S._seen.filter((x) => x !== h)].slice(0, 8); store.set("rumiq-seen", S._seen); },
     recentlySeen: (except) => S._seen.filter((h) => h !== except).map(RQ.byHandle).filter(Boolean),
 
     /* ---------------- customer (demo sign-in: nothing leaves this browser) */
@@ -171,10 +174,14 @@
 
     /* ---------------- settings */
     consent: () => store.get("rumiq-consent", null),
+    /* Analytics hook. Pushes events to window.dataLayer only after the visitor accepted statistics cookies.
+       Google Tag Manager (GA4, Meta, Pinterest) reads dataLayer once it is added; nothing is sent before that. */
+    track(ev, data) { const c = S.consent(); if (!c || !c.stats) return; (window.dataLayer = window.dataLayer || []).push(Object.assign({ event: ev }, data || {})); },
     setConsent(c) { store.set("rumiq-consent", { ...c, at: new Date().toISOString() }); emit("consent"); },
     lang: () => store.get("rumiq-lang", "sv"),
     setLang(l) { store.set("rumiq-lang", l); emit("lang"); },
     clearAll() { ["rumiq-cart", "rumiq-wish", "rumiq-compare", "rumiq-seen", "rumiq-customer", "rumiq-style", "rumiq-projects", "rumiq-articles", "rumiq-looks", "rumiq-orders", "rumiq-ideas", "rumiq-lists", "rumiq-taste", "rumiq-votes", "rumiq-notify"].forEach((k) => { try { localStorage.removeItem(k); } catch (e) {} });
       S._cart = []; S._wish = []; S._cmp = []; S._seen = []; emit("all"); },
   });
+  RQ.track = (ev, data) => S.track(ev, data);
 })();

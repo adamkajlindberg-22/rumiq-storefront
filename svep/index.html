@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=8b0ef7c0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=0649edc5">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -64,7 +64,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <div><h4>Kategorier</h4><ul>
         <li><a href="butik/">Alla produkter</a></li>
         <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
-        <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-smarta-hem-teknik/">Smarta hem & teknik</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
+        <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
       <div><h4>Mer i butiken</h4><ul><li><a href="nyheter/">Nyheter</a></li><li><a href="favoriter/">Utvalda favoriter</a></li><li><a href="erbjudanden/">Erbjudanden</a></li><li><a href="kollektioner/">Kollektioner</a></li></ul>
         <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
         </div>
@@ -107,7 +107,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <div class="sv-info"><div><b>Skärbräda ek med handtag</b><span>449 kr</span></div><small><span>Kök</span></small></div>
     </article></div>
         <div class="sv-ctrl" id="svCtrl"><button class="sv-b no" type="button" id="svNo" aria-label="Nej tack"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></button><button class="sv-b room" type="button" id="svRoom" aria-label="Ställ in i mitt rum" data-room-btn="lysa-keramiklampa"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button><button class="sv-b yes" type="button" id="svYes" aria-label="Spara"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button></div>
-        <p class="sv-meta"><span id="svCount">1 av 17</span><span class="sv-chip" id="svChip" hidden=""></span></p>
+        <p class="sv-meta"><span id="svCount">1 av 21</span><span class="sv-chip" id="svChip" hidden=""></span></p>
         <p class="small sv-keys">Tips: piltangenterna fungerar också. Stilen räknas fram med enkla regler, i din webbläsare.</p>
       </div></section></main>
 
@@ -121,6 +121,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <div><h4>Kundservice</h4><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Var är mitt paket?</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li><li><a href="ideer/">Dela en idé</a></li></ul></div>
       <div><h4>Juridisk information</h4><ul><li><a href="juridik-villkor/">Köpvillkor</a></li><li><a href="juridik-integritet/">Integritetspolicy</a></li><li><a href="juridik-cookies/">Cookiepolicy</a></li><li><a href="juridik-angerratt/">Ångerrätt</a></li><li><a href="juridik-garanti/">Reklamation & garanti</a></li><li><a href="juridik-produktsakerhet/">Produktsäkerhet</a></li><li><a href="juridik-sakerhet/">Säkerhet</a></li><li><a href="juridik-foretag/">Företagsinformation</a></li></ul></div>
     </div>
+    <p class="co" id="coInfo"></p>
     <p class="ai">Bilderna på produkter och rum är skapade med AI medan vi väntar på de första produkterna. Produkterna är exempel och går inte att köpa än.</p>
     <div class="bottom"><span>© 2026 RumIQ · <a href="mailto:support@rumiq.se">support@rumiq.se</a></span><span style="display:flex;gap:1.2rem;flex-wrap:wrap"><button type="button" data-action="cookies">Cookieinställningar</button><a class="bottom-link" href="angra/">Ångra avtalet här</a><button type="button" class="lang" translate="no" data-lang-long lang="en">English</button></span></div>
   </div>
@@ -150,6 +151,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=8b0ef7c0"></script>
+<script src="assets/js/site.min.js?v=0649edc5"></script>
 </body>
 </html>

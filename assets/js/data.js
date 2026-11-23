@@ -1,5 +1,5 @@
 /* RumIQ catalogue and site structure.
-   The 17 products are the example products in RumIQ's store (names, prices and variants as on
+   The products are the example products in RumIQ's store (names, prices and variants as on
    rumiq.lovable.app, Nov 2026). They are examples and cannot be bought yet.
    Facts we do not have yet (exact size, weight, supplier, country of dispatch) are marked as
    "pending" so the page says so instead of guessing. */
@@ -7,12 +7,12 @@
   const RQ = (window.RQ = window.RQ || {});
 
   RQ.CATEGORIES = [
-    { id: "hem-inredning", name: "Hem & inredning", en: "Home & living", lead: "Speglar, vaser och detaljer som gör rummet färdigt." },
+    { id: "hem-inredning", name: "Hem & inredning", en: "Home & living", lead: "Gardiner, mattor, vaser och detaljer som gör rummet färdigt." },
     { id: "kok-matplats", name: "Kök & matplats", en: "Kitchen & dining", lead: "Saker du använder varje dag, gjorda för att stå framme." },
     { id: "badrum-valmaende", name: "Badrum & välmående", en: "Bath & wellbeing", lead: "Mjuka handdukar och lugna material för morgon och kväll." },
     { id: "forvaring-organisering", name: "Förvaring & organisering", en: "Storage & organising", lead: "En plats för allt som annars blir liggande." },
-    { id: "belysning-atmosfar", name: "Belysning & atmosfär", en: "Lighting & atmosphere", lead: "Mjukt ljus i flera nivåer, för dag, kväll och allt däremellan." },
-    { id: "smarta-hem-teknik", name: "Smarta hem & teknik", en: "Smart home & tech", lead: "Teknik som syns mindre och fungerar bättre." },
+    { id: "belysning-atmosfar", name: "Belysning & atmosfär", en: "Lighting & atmosphere", lead: "Lampor, levande ljus och ljusstakar för dag, kväll och allt däremellan." },
+    { id: "tavlor-vaggar", name: "Tavlor & väggar", en: "Art & walls", lead: "Affischer i ekram som gör väggen till en del av rummet." },
     { id: "sovrum-komfort", name: "Sovrum & komfort", en: "Bedroom & comfort", lead: "Textil och ljus som hjälper dig att varva ner." },
     { id: "uteliv", name: "Uteliv", en: "Outdoor living", lead: "För balkongen, trappan och de ljusa kvällarna." },
   ];
@@ -20,7 +20,7 @@
   RQ.ROOMS = [
     { id: "vardagsrum", name: "Vardagsrum", en: "Living room", lead: "Stillsamma former, varmt ljus och plats att umgås.",
       tips: ["Arbeta med tre ljuskällor på olika höjd: tak, bord och golv.", "Låt en mjuk textil, en pläd eller ett par kuddar, binda ihop soffan med resten av rummet.", "Ge blicken en vilopunkt: en spegel eller en tom vägg gör mer än en full hylla."],
-      cats: ["belysning-atmosfar", "hem-inredning", "sovrum-komfort"] },
+      cats: ["belysning-atmosfar", "hem-inredning", "sovrum-komfort", "tavlor-vaggar"] },
     { id: "sovrum", name: "Sovrum", en: "Bedroom", lead: "Mjuka material, dämpat ljus och ingenting som stör.",
       tips: ["Välj ett varmt, lågt ljus vid sängen och släck taklampan på kvällen.", "Förvaring med lock gör att rummet ser lugnt ut även när det inte är städat.", "Lin och ull andas och blir bara finare med tiden."],
       cats: ["sovrum-komfort", "belysning-atmosfar", "forvaring-organisering"] },
@@ -31,11 +31,11 @@
       tips: ["Häll över tvål och schampo i likadana behållare så ser hyllan genast lugnare ut.", "Rulla handdukarna i en korg om du saknar hyllplats.", "Två handdukstoner räcker, till exempel vit och sand."],
       cats: ["badrum-valmaende", "forvaring-organisering"] },
     { id: "hall", name: "Hall", en: "Hallway", lead: "Ett första intryck som gör det lätt att komma hem.",
-      tips: ["En spegel i hallen gör ett litet utrymme större och ljusare.", "Ge varje familjemedlem en egen korg eller låda för vantar och mössor.", "En liten lampa som alltid är tänd gör hallen välkomnande även en mörk vinterkväll."],
-      cats: ["hem-inredning", "forvaring-organisering", "belysning-atmosfar"] },
+      tips: ["En tavla eller affisch i ögonhöjd ger hallen ett lugnt första intryck.", "Ge varje familjemedlem en egen korg eller låda för vantar och mössor.", "En liten lampa som alltid är tänd gör hallen välkomnande även en mörk vinterkväll."],
+      cats: ["hem-inredning", "forvaring-organisering", "belysning-atmosfar", "tavlor-vaggar"] },
     { id: "hemmakontor", name: "Hemmakontor", en: "Home office", lead: "Färre sladdar, bättre ljus och plats att tänka.",
-      tips: ["Dölj grenuttaget så försvinner hälften av röran.", "Ge telefonen en fast plats som inte är bredvid tangentbordet.", "En lampa med varmt ljus gör kvällsjobbet mindre ansträngande för ögonen."],
-      cats: ["smarta-hem-teknik", "belysning-atmosfar", "forvaring-organisering"] },
+      tips: ["Samla sladdar och laddare i en låda med lock så försvinner hälften av röran.", "Ge telefonen en fast plats som inte är bredvid tangentbordet.", "En lampa med varmt ljus gör kvällsjobbet mindre ansträngande för ögonen."],
+      cats: ["forvaring-organisering", "belysning-atmosfar", "tavlor-vaggar"] },
     { id: "uteliv", name: "Uteliv", en: "Outdoor", lead: "Balkongen, trappan och de ljusa kvällarna.",
       tips: ["En sladdlös lampa kan följa med ut när solen går ner.", "Terrakotta andas och passar växter som inte vill stå för blött.", "Ta in textilierna när det regnar så håller de längre."],
       cats: ["uteliv", "belysning-atmosfar"] },
@@ -52,6 +52,10 @@
     korg: "Dammsug eller borsta av. Håll borta från väta och stark värme.",
     stengods: "Diska för hand. Skölj ur pumpen med varmt vatten när du byter tvål.",
     plast: "Torka av med en torr eller lätt fuktad trasa. Koppla ur sladdar innan du rengör.",
+    massing: "Torka av med en torr, mjuk trasa. Borstad mässing får med tiden en varm patina, det hör till.",
+    ljus: "Låt ljuset brinna tills hela ytan smält första gången. Klipp veken till 5 mm och lämna aldrig ett tänt ljus utan uppsikt.",
+    jute: "Dammsug utan borste och vänd mattan ibland. Torka fläckar direkt med en torr trasa, jute tål inte väta.",
+    papper: "Häng tavlan där den inte får starkt direkt solljus, så behåller färgerna sin lyster längre. Torka ramen med en torr trasa.",
     terrakotta: "Låt krukan torka mellan vattningarna. Ta in den över vintern om det finns risk för frost.",
   };
   RQ.CARE = CARE;
@@ -107,12 +111,6 @@
       story: "Den smala halsen gör att en enda kvist räcker. Sandtonen passar mot både ljust trä och mörkare ytor, och vasen är fin även tom.",
       use: ["Sätt en kvist från skogen eller ett par torkade strån i den.", "Ställ den på ett bord eller en hylla där den får lite ljus.", "Kontrollera på produktsidan om den tål vatten innan du använder den till snittblommor."],
       collections: ["skandinaviskt-hemmaliv"], added: 8 },
-    { handle: "rund-vaggspegel-ek", name: "Rund väggspegel ek", en: "Round oak wall mirror", price: 1190, cat: "hem-inredning",
-      rooms: ["hall", "sovrum", "vardagsrum", "badrum"], material: "Spegelglas och ek", care: ["glas", "ek"], tone: ["#C9A57A", "#E8E4DC"], styles: ["skandinavisk", "klassisk", "minimalistisk"], needs: ["detaljer"], gift: ["familj"], occ: ["inflyttning"], wall: true,
-      short: "Rund väggspegel med ram i ek.",
-      story: "En rund spegel mjukar upp ett rum fullt av raka linjer. Ramen i ek ger värme, och spegeln fångar ljuset från fönstret och gör hallen eller sovrummet större.",
-      use: ["Häng den mitt emot eller snett mot ett fönster för mer ljus.", "I hallen: häng den i ögonhöjd ovanför en byrå eller bänk.", "Kontrollera väggens material och använd rätt fästen."],
-      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 9 },
     { handle: "forvaringslada-filt", name: "Förvaringslåda filt", en: "Felt storage box", price: 199, cat: "forvaring-organisering",
       rooms: ["sovrum", "hall", "hemmakontor"], material: "Filt", care: ["filt"], tone: ["#9E9890", "#D9D3CA"], styles: ["minimalistisk", "skandinavisk"], needs: ["forvaring", "rutiner"], gift: [], occ: [],
       short: "Förvaringslåda i filt för textilier och småsaker.",
@@ -137,30 +135,60 @@
       story: "Byt ut plastflaskan mot något som får stå framme. Stengods är tungt nog att stå stadigt och lugnt nog att passa i både badrum och kök.",
       use: ["Fyll med flytande handtvål eller diskmedel.", "Två likadana, en i köket och en i badrummet, binder ihop hemmet.", "Skölj pumpen när du byter innehåll."],
       collections: ["vardagens-favoriter"], added: 13 },
-    { handle: "kabelbox-vit", name: "Kabelbox vit", en: "Cable box, white", price: 249, cat: "smarta-hem-teknik",
-      rooms: ["hemmakontor", "vardagsrum"], material: "Plast", care: ["plast"], tone: ["#F3F1EC", "#CFCBC4"], styles: ["minimalistisk"], needs: ["forvaring", "rutiner"], gift: [], occ: [],
-      short: "Låda som döljer grenuttag och sladdar.",
-      story: "Det är sällan möblerna som gör ett rum rörigt, det är sladdarna. Kabelboxen döljer grenuttaget och låter sladdarna gå ut genom sidorna.",
-      use: ["Ställ den bakom tv-bänken eller under skrivbordet.", "Låt inte laddare som blir varma ligga helt instängda.", "Se produktsidan för vilka grenuttag som får plats."],
-      collections: ["det-organiserade-hemmet"], added: 14 },
-    { handle: "skrivbordsorganisator-ek", name: "Skrivbordsorganisatör ek", en: "Oak desk organiser", price: 349, cat: "smarta-hem-teknik",
+    { handle: "skrivbordsorganisator-ek", name: "Skrivbordsorganisatör ek", en: "Oak desk organiser", price: 349, cat: "forvaring-organisering",
       rooms: ["hemmakontor"], material: "Ek", care: ["ek"], tone: ["#B88A5A", "#E6D3B8"], styles: ["skandinavisk", "minimalistisk"], needs: ["forvaring", "rutiner"], gift: ["van"], occ: ["fodelsedag"],
       short: "Organisatör i ek med fack för pennor, telefon och papper.",
       story: "En fast plats för det som annars sprids över hela skrivbordet. Facken är gjorda för det man faktiskt har framme: pennor, telefonen och några papper.",
       use: ["Ställ den på den sida du inte skriver med.", "Låt telefonen stå i sitt fack under arbetstid.", "Olja in eken då och då."],
       collections: ["det-organiserade-hemmet"], added: 15 },
-    { handle: "orbit-tradlost-laddstall", name: "Orbit trådlöst laddställ", en: "Orbit wireless charging stand", price: 449, cat: "smarta-hem-teknik",
-      rooms: ["hemmakontor", "sovrum"], material: "Bekräftas på produktsidan", care: ["plast"], variants: ["Vit", "Grafit"], tone: ["#F2F0EC", "#3A3936"], styles: ["minimalistisk"], needs: ["rutiner"], gift: ["van", "familj"], occ: ["fodelsedag", "jul"],
-      short: "Laddställ för trådlös laddning av telefonen.",
-      story: "Ställ telefonen där, så laddar den. Laddstället ger telefonen en egen plats på nattduksbordet eller skrivbordet, och färre sladdar att leta efter.",
-      use: ["Kontrollera att din telefon stöder trådlös laddning.", "Vit passar ljusa bord, grafit mörkare ytor.", "Ta av tjocka skal om laddningen inte startar."],
-      collections: ["vardagens-favoriter"], added: 16 },
     { handle: "terrakottakruka-rafflad", name: "Terrakottakruka räfflad", en: "Fluted terracotta pot", price: 329, cat: "uteliv",
       rooms: ["uteliv", "vardagsrum", "kok"], material: "Terrakotta", care: ["terrakotta"], tone: ["#B8714A", "#D9A27E"], styles: ["skandinavisk", "klassisk", "mjuk"], needs: ["detaljer"], gift: ["vard", "van"], occ: ["inflyttning", "tack"],
       short: "Räfflad kruka i terrakotta. Växten på bilden ingår inte.",
       story: "Terrakotta andas, vilket många växter mår bra av. De räfflade sidorna fångar ljuset och gör krukan fin även när växten vilar.",
       use: ["Använd ett fat under om den står inomhus.", "Passar olivträd, örter och växter som vill torka upp mellan vattningarna.", "Ta in den före frosten."],
       collections: ["skandinaviskt-hemmaliv"], added: 17 },
+    { handle: "glod-doftljus-keramik", name: "Glöd doftljus i keramik", en: "Glöd scented candle in ceramic", price: 349, cat: "belysning-atmosfar",
+      rooms: ["vardagsrum", "sovrum", "badrum"], material: "Vegetabiliskt vax i keramikkärl med lock i ek", care: ["ljus", "keramik"], tone: ["#D9C4A3", "#B88A5A"], styles: ["skandinavisk", "mjuk", "klassisk"], needs: ["ljus", "detaljer"], gift: ["van", "vard", "familj"], occ: ["jul", "tack", "fodelsedag", "inflyttning"],
+      short: "Doftljus i sandfärgad keramik med lock i ek. En mild doft av ved och vanilj.",
+      story: "Ett levande ljus gör mer för en mörk kväll än nästan något annat. Keramikkärlet är fint nog att stå kvar när ljuset har brunnit ut, och locket i ek håller doften kvar mellan gångerna.",
+      use: ["Låt ljuset brinna i minst en timme första gången så smälter ytan jämnt.", "Lägg på locket när du släcker, då stannar doften i vaxet.", "Använd kärlet som kruka eller penselburk när ljuset är slut."],
+      collections: ["skandinaviskt-hemmaliv", "vardagens-favoriter"], featured: true, added: 18 },
+    { handle: "stilla-ljusstake-massing-2-pack", name: "Stilla ljusstake mässing, 2-pack", en: "Stilla brass candlestick, 2-pack", price: 449, cat: "belysning-atmosfar",
+      rooms: ["kok", "vardagsrum", "hall"], material: "Borstad mässing", care: ["massing"], tone: ["#C9A36A", "#F1EDE6"], styles: ["klassisk", "skandinavisk", "minimalistisk"], needs: ["ljus", "detaljer"], gift: ["vard", "familj"], occ: ["jul", "inflyttning", "tack"],
+      short: "Två smala ljusstakar i borstad mässing, en hög och en låg. Ljusen ingår inte.",
+      story: "Två höjder gör att paret ser levande ut även när ljusen inte brinner. Den borstade mässingen fångar ljuset varmt utan att glänsa, och får med tiden en mjuk patina.",
+      use: ["Ställ dem mitt på middagsbordet eller på en skänk i hallen.", "Använd kronljus med standardmått, 2,2 cm i diameter.", "Ställ dem på ett fat om du låter ljusen brinna ner helt."],
+      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 19 },
+    { handle: "dagsljus-linnegardin-2-pack", name: "Dagsljus linnegardin, 2-pack", en: "Dagsljus linen curtain, 2-pack", price: 899, cat: "hem-inredning",
+      rooms: ["vardagsrum", "sovrum"], material: "Tvättat lin, halvtransparent", care: ["lin"], variants: ["Havre", "Vit"], tone: ["#DCCBB0", "#F2EFE9"], styles: ["skandinavisk", "minimalistisk", "mjuk"], needs: ["ljus", "detaljer"], gift: [], occ: ["inflyttning"],
+      short: "Två halvtransparenta gardinlängder i tvättat lin, 140 × 250 cm. Släpper in ljuset men tar bort skärpan.",
+      story: "Linnegardiner är det snabbaste sättet att göra ett rum mjukare. De filtrerar dagsljuset så att det sprider sig, och de skrynkliga vecken gör att de ser lika bra ut slarvigt dragna som perfekt hängda.",
+      use: ["Häng dem högt, nära taket, så ser fönstret större ut.", "Låt dem gå ända ner till golvet eller någon centimeter ovanför.", "Två längder per fönster ger fina, fylliga veck."],
+      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 20 },
+    { handle: "vila-paslakanset-linne", name: "Vila påslakanset linne", en: "Vila linen duvet set", price: 1290, cat: "sovrum-komfort",
+      rooms: ["sovrum"], material: "Tvättat lin", care: ["lin"], variants: ["Havre", "Vit", "Salvia"], tone: ["#D8C6A8", "#EFE6D6"], styles: ["skandinavisk", "mjuk", "klassisk"], needs: ["detaljer", "rutiner"], gift: ["familj"], occ: ["inflyttning", "jul"],
+      short: "Påslakan 150 × 210 cm och örngott 50 × 60 cm i tvättat lin. Andas, värmer lagom och blir mjukare för varje tvätt.",
+      story: "Lin är svalt på sommaren och varmt på vintern, och det blir bara finare med åren. Det tvättade linnet är mjukt redan från början och ska få vara skrynkligt, så slipper du stryka.",
+      use: ["Tvätta setet före första användningen.", "Skaka ut påslakanet när det kommer ur maskinen och låt det torka på sängen.", "Ha två set och växla, så håller båda längre."],
+      collections: ["skandinaviskt-hemmaliv", "vardagens-favoriter"], featured: true, added: 21 },
+    { handle: "strand-jutematta", name: "Strand jutematta 160 × 230", en: "Strand jute rug 160 × 230", price: 1490, cat: "hem-inredning",
+      rooms: ["vardagsrum", "sovrum", "hall"], material: "Handvävd jute", care: ["jute"], tone: ["#B9935F", "#D8C6A8"], styles: ["skandinavisk", "klassisk", "mjuk"], needs: ["detaljer"], gift: [], occ: ["inflyttning"],
+      short: "Handvävd matta i naturlig jute, 160 × 230 cm. Ger golvet värme och struktur.",
+      story: "En matta binder ihop möblerna till en plats. Jute har en grov, varm struktur som passar mot ljust trä och linne, och den naturliga färgen tål vardagen utan att se sliten ut.",
+      use: ["Låt soffans framben stå på mattan så hänger rummet ihop.", "Lägg en halkskyddsmatta under på hala golv.", "Jute trivs bäst i torra rum, inte i badrum eller kök."],
+      collections: ["skandinaviskt-hemmaliv"], added: 22 },
+    { handle: "affisch-linje-ekram", name: "Affisch Linje med ekram, 50 × 70", en: "Linje print with oak frame, 50 × 70", price: 549, cat: "tavlor-vaggar",
+      rooms: ["vardagsrum", "hemmakontor", "hall"], material: "Tryck på matt papper, ram i ek med passepartout", care: ["papper", "ek"], tone: ["#EFE8DA", "#B8714A"], styles: ["minimalistisk", "skandinavisk"], needs: ["detaljer"], gift: ["van"], occ: ["inflyttning", "fodelsedag"], wall: true,
+      short: "Grafiskt motiv med en sol i terrakotta och en fri linje, i ram av ek. Tryckt i Sverige.",
+      story: "En enda linje och en sol. Motivet är tillräckligt enkelt för att passa nästan var som helst och tillräckligt varmt för att ge en tom vägg liv. Ramen i ek knyter an till resten av rummet.",
+      use: ["Häng tavlan så att mitten hamnar i ögonhöjd, ungefär 150 cm från golvet.", "Ovanför en byrå eller soffa: låt tavlan vara ungefär två tredjedelar så bred som möbeln.", "Ställ den lutad mot väggen på en hylla för ett mer avslappnat uttryck."],
+      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 23 },
+    { handle: "affisch-horisont-ekram", name: "Affisch Horisont med ekram, 50 × 70", en: "Horisont print with oak frame, 50 × 70", price: 549, cat: "tavlor-vaggar",
+      rooms: ["vardagsrum", "sovrum", "hall"], material: "Tryck på matt papper, ram i ek med passepartout", care: ["papper", "ek"], tone: ["#D6C2A2", "#A9B39A"], styles: ["skandinavisk", "mjuk", "klassisk"], needs: ["detaljer"], gift: ["van", "familj"], occ: ["inflyttning", "fodelsedag"], wall: true,
+      short: "Bågar i havre, sand, salvia och terrakotta över en horisont, i ram av ek. Tryckt i Sverige.",
+      story: "Färgerna är hämtade från resten av sortimentet, så tavlan passar ihop med plädarna, lampan och krukan. Bågarna ger ett lugnt, nästan solnedgångslikt intryck.",
+      use: ["Häng den där du vill att blicken ska vila, till exempel mitt emot sängen.", "Två tavlor bredvid varandra: håll 5–8 cm mellanrum.", "Passar med Linje om du vill bygga en liten tavelvägg."],
+      collections: ["skandinaviskt-hemmaliv"], added: 24 },
   ];
 
   RQ.COLLECTIONS = [
@@ -206,28 +234,30 @@
 (function () {
   const RQ = window.RQ;
   RQ.HOTSPOTS = {
-    hall: { pos: "52% 50%", spots: [["glob-bordslampa-opalglas", 10.5, 53], ["rund-vaggspegel-ek", 57, 34], ["forvaringslada-filt", 37, 78], ["flatad-forvaringskorg", 61, 77]] },
-    vardagsrum: { pos: "68% 50%", spots: [["rund-vaggspegel-ek", 67, 31], ["plad-ullblandning-havre", 62, 66], ["terrakottakruka-rafflad", 76, 48]] },
+    hall: { pos: "52% 50%", spots: [["glob-bordslampa-opalglas", 10.5, 53], ["forvaringslada-filt", 37, 78], ["flatad-forvaringskorg", 61, 77]] },
+    vardagsrum: { pos: "68% 50%", spots: [["plad-ullblandning-havre", 62, 66], ["terrakottakruka-rafflad", 76, 48]] },
     kok: { pos: "38% 50%", spots: [["forradsburkar-glas-ek-3-pack", 27, 27], ["skarbrada-ek-med-handtag", 30, 49], ["tvalpump-stengods", 45.5, 58], ["sand-keramikvas", 64.5, 59], ["vaffelhandduk-bomull", 21, 85]] },
     sovrum: { pos: "34% 50%", spots: [["svamp-uppladdningsbar-lampa", 14, 65], ["lin-kuddfodral", 28, 55], ["plad-ullblandning-havre", 63, 64], ["forvaringslada-filt", 26, 88]] },
-    badrum: { pos: "34% 50%", spots: [["rund-vaggspegel-ek", 23, 18], ["tvalpump-stengods", 21, 53], ["vaffelhandduk-bomull", 19, 80], ["flatad-forvaringskorg", 66, 85]] },
-    hemmakontor: { pos: "68% 50%", spots: [["skrivbordsorganisator-ek", 61, 53], ["lysa-keramiklampa", 70, 45], ["kabelbox-vit", 61, 89], ["terrakottakruka-rafflad", 86, 56]] },
+    badrum: { pos: "34% 50%", spots: [["tvalpump-stengods", 21, 53], ["vaffelhandduk-bomull", 19, 80], ["flatad-forvaringskorg", 66, 85]] },
+    hemmakontor: { pos: "68% 50%", spots: [["skrivbordsorganisator-ek", 61, 53], ["lysa-keramiklampa", 70, 45], ["terrakottakruka-rafflad", 86, 56]] },
     uteliv: { pos: "50% 50%", spots: [["terrakottakruka-rafflad", 21, 75], ["svamp-uppladdningsbar-lampa", 70, 52], ["lin-kuddfodral", 57, 47]] },
   };
   RQ.JOURNEY = ["hall", "vardagsrum", "kok", "sovrum", "badrum"];
 
   RQ.LOOKS = [
-    { id: "lugn-hall", name: "Lugn hall", room: "hall", lead: "Spegel, ljus och en plats för vantarna. Hallen blir lugn på en kväll.", items: ["rund-vaggspegel-ek", "glob-bordslampa-opalglas", "forvaringslada-filt", "flatad-forvaringskorg"] },
-    { id: "mjuk-kvall", name: "Mjuk kväll", room: "vardagsrum", lead: "Lågt ljus och mjuk textil för soffan när dagen är slut.", items: ["lysa-keramiklampa", "plad-ullblandning-havre", "lin-kuddfodral"] },
+    { id: "lugn-hall", name: "Lugn hall", room: "hall", lead: "En tavla, ljus och en plats för vantarna. Hallen blir lugn på en kväll.", items: ["affisch-horisont-ekram", "glob-bordslampa-opalglas", "forvaringslada-filt", "flatad-forvaringskorg"] },
+    { id: "mjuk-kvall", name: "Mjuk kväll", room: "vardagsrum", lead: "Lågt ljus och mjuk textil för soffan när dagen är slut.", items: ["lysa-keramiklampa", "plad-ullblandning-havre", "lin-kuddfodral", "glod-doftljus-keramik"] },
     { id: "frukostbanken", name: "Frukostbänken", room: "kok", lead: "Det du använder varje morgon, fint nog att stå framme.", items: ["forradsburkar-glas-ek-3-pack", "skarbrada-ek-med-handtag", "tvalpump-stengods", "sand-keramikvas"] },
-    { id: "sov-gott", name: "Sov gott", room: "sovrum", lead: "Varmt ljus vid sängen och lin som andas.", items: ["svamp-uppladdningsbar-lampa", "lin-kuddfodral", "plad-ullblandning-havre"] },
+    { id: "sov-gott", name: "Sov gott", room: "sovrum", lead: "Varmt ljus vid sängen, lin som andas och gardiner som mjukar upp morgonljuset.", items: ["svamp-uppladdningsbar-lampa", "vila-paslakanset-linne", "plad-ullblandning-havre", "dagsljus-linnegardin-2-pack"] },
+    { id: "vardagsmiddag", name: "Vardagsmiddag", room: "kok", lead: "Levande ljus, en bräda med bröd och en kvist i vasen. Middagen blir en stund.", items: ["stilla-ljusstake-massing-2-pack", "skarbrada-ek-med-handtag", "sand-keramikvas", "glod-doftljus-keramik"] },
     { id: "spa-hemma", name: "Spa hemma", room: "badrum", lead: "Mjuka handdukar och lugna ytor för morgon och kväll.", items: ["vaffelhandduk-bomull", "tvalpump-stengods", "flatad-forvaringskorg"] },
-    { id: "fokus", name: "Fokus", room: "hemmakontor", lead: "Färre sladdar, bättre ljus och en plats för telefonen.", items: ["skrivbordsorganisator-ek", "kabelbox-vit", "orbit-tradlost-laddstall", "lysa-keramiklampa"] },
+    { id: "fokus", name: "Fokus", room: "hemmakontor", lead: "Bättre ljus, en fast plats för det som annars sprids ut och något fint att vila blicken på.", items: ["skrivbordsorganisator-ek", "lysa-keramiklampa", "affisch-linje-ekram", "forvaringslada-filt"] },
   ];
 
   RQ.CANDIDATES = [
     { id: "linneduk", name: "Linneduk havre", line: "En duk som blir finare för varje tvätt.", tone: "#D8C6A8" },
     { id: "ljuslykta", name: "Ljuslykta i glas", line: "Levande ljus som tål ett öppet fönster.", tone: "#E9E4DA" },
+    { id: "ullmatta", name: "Ullmatta havre", line: "Mjuk under fötterna, tålig i vardagsrummet.", tone: "#D8C6A8" },
     { id: "muggar", name: "Stengodsmuggar, 4-pack", line: "Tunga, varma i handen och diskmaskinståliga.", tone: "#E7E0D4" },
     { id: "krokar", name: "Krokar i ek, 3-pack", line: "En plats för jackan, väskan och nycklarna.", tone: "#B88A5A" },
     { id: "badmatta", name: "Badrumsmatta bomull", line: "Mjuk under fötterna och snabb att torka.", tone: "#F2EFE9" },
@@ -243,6 +273,6 @@
   /* Approximate 3D models (assets/3d, made by tools/models.py). wall: placed on a wall in AR. */
   RQ.MODELS = {
     "glob-bordslampa-opalglas": {}, "lysa-keramiklampa": {}, "svamp-uppladdningsbar-lampa": {}, "sand-keramikvas": {},
-    "terrakottakruka-rafflad": {}, "rund-vaggspegel-ek": { wall: true }, "kabelbox-vit": {}, "forradsburkar-glas-ek-3-pack": {},
+    "terrakottakruka-rafflad": {}, "forradsburkar-glas-ek-3-pack": {},
   };
 })();
