@@ -380,7 +380,8 @@
     title: "Looks · RumIQ",
     html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", "Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.")}
       <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}</div>
-        <a class="own-look" href="#studio-kombinera"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look</b><small>Välj upp till sex saker, se totalpriset och hur väl de går ihop.</small></span></a></section>`,
+        <a class="own-look" href="#mitt-rum"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look i ditt rum</b><small>Ställ in det du gillar, se totalpriset och hur väl sakerna går ihop.</small></span></a>
+        <div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Samlat kring en idé</h2><p>Större urval för den som vill bläddra vidare.</p></div>${RQ.colCards()}</section>`,
   });
   V.look = (id) => {
     const l = lookById(id); if (!l) return null; const room = RQ.roomById(l.room);

@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=d061b1d0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=850b2de3">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -94,8 +94,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <nav class="fr-tabs" aria-label="Hur vill du hitta?"><a class="chip" href="hitta-ratt/" aria-current="true">Till mitt hem</a><a class="chip" href="hitta-ratt-present/">Som present</a><a class="chip" href="hitta-ratt-ord/">Med egna ord</a><a class="fr-ai" href="studio-stylist/"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"></path></svg><span>Hellre prata? <b>Fråga stylisten</b></span></a></nav></header>
         
       <section class="wrap quiz" style="padding-bottom:5rem">
-        <div class="q"><h3>Vilket rum?</h3><div class="chips" data-q="room"><button class="chip" type="button" data-v="vardagsrum" aria-pressed="false">Vardagsrum</button><button class="chip" type="button" data-v="sovrum" aria-pressed="false">Sovrum</button><button class="chip" type="button" data-v="kok" aria-pressed="false">Kök</button><button class="chip" type="button" data-v="badrum" aria-pressed="false">Badrum</button><button class="chip" type="button" data-v="hall" aria-pressed="false">Hall</button><button class="chip" type="button" data-v="hemmakontor" aria-pressed="false">Hemmakontor</button><button class="chip" type="button" data-v="uteliv" aria-pressed="false">Uteliv</button></div></div>
-        <div class="q"><h3>Vad behöver du mest?</h3><div class="chips" data-q="need"><button class="chip" type="button" data-v="forvaring" aria-pressed="false">Mer förvaring</button><button class="chip" type="button" data-v="ljus" aria-pressed="false">Varmare belysning</button><button class="chip" type="button" data-v="detaljer" aria-pressed="false">Inredningsdetaljer</button><button class="chip" type="button" data-v="rutiner" aria-pressed="false">Enklare rutiner</button></div></div>
+        <div class="q"><h3>Vilket rum?</h3><div class="imgopts pick" data-q="room" role="group" aria-label="Vilket rum?"><button type="button" data-v="vardagsrum" aria-pressed="false"><img src="assets/img/rum/vardagsrum-600.webp" alt="" loading="lazy" width="600" height="750"><span>Vardagsrum</span></button><button type="button" data-v="sovrum" aria-pressed="false"><img src="assets/img/rum/sovrum-600.webp" alt="" loading="lazy" width="600" height="750"><span>Sovrum</span></button><button type="button" data-v="kok" aria-pressed="false"><img src="assets/img/rum/kok-600.webp" alt="" loading="lazy" width="600" height="750"><span>Kök</span></button><button type="button" data-v="badrum" aria-pressed="false"><img src="assets/img/rum/badrum-600.webp" alt="" loading="lazy" width="600" height="750"><span>Badrum</span></button><button type="button" data-v="hall" aria-pressed="false"><img src="assets/img/rum/hall-600.webp" alt="" loading="lazy" width="600" height="750"><span>Hall</span></button><button type="button" data-v="hemmakontor" aria-pressed="false"><img src="assets/img/rum/hemmakontor-600.webp" alt="" loading="lazy" width="600" height="750"><span>Hemmakontor</span></button><button type="button" data-v="uteliv" aria-pressed="false"><img src="assets/img/rum/uteliv-600.webp" alt="" loading="lazy" width="600" height="750"><span>Uteliv</span></button></div></div>
+        <div class="q"><h3>Vad behöver du mest?</h3><div class="imgopts pick" data-q="need" role="group" aria-label="Vad behöver du mest?"><button type="button" data-v="forvaring" aria-pressed="false"><img src="assets/img/p/flatad-forvaringskorg-600.webp" alt="" loading="lazy" width="600" height="750"><span>Mer förvaring</span></button><button type="button" data-v="ljus" aria-pressed="false"><img src="assets/img/p/lysa-keramiklampa-600.webp" alt="" loading="lazy" width="600" height="750"><span>Varmare belysning</span></button><button type="button" data-v="detaljer" aria-pressed="false"><img src="assets/img/p/sand-keramikvas-600.webp" alt="" loading="lazy" width="600" height="750"><span>Inredningsdetaljer</span></button><button type="button" data-v="rutiner" aria-pressed="false"><img src="assets/img/p/tvalpump-stengods-600.webp" alt="" loading="lazy" width="600" height="750"><span>Enklare rutiner</span></button></div></div>
         <div class="q"><label style="max-width:20rem">Högsta pris per produkt (kr, valfritt)<input type="number" id="gmax" min="0" step="50"></label></div>
         <button class="btn" type="button" id="gGo">Visa mitt hemurval</button><div id="gOut" style="margin-top:2.4rem"></div></section></main>
 
@@ -139,7 +139,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=d061b1d0";</script>
-<script src="assets/js/site.min.js?v=d061b1d0"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=850b2de3";</script>
+<script src="assets/js/site.min.js?v=850b2de3"></script>
 </body>
 </html>

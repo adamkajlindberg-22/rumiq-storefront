@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=d061b1d0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=850b2de3">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -92,10 +92,10 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <main id="view" class="view" tabindex="-1"><header class="page-head wrap"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li><li>AI-stylist</li></ol><h1 class="h1">AI-stylist</h1><p class="lead">Beskriv ditt rum och vad du vill förändra. Du får praktiska råd och, när det passar, produkter ur sortimentet.</p></header>
       <section class="wrap tool-shell" style="padding-bottom:5rem">
-        <div class="chat"><div class="log" id="log" aria-live="polite"><div class="msg ai">Hej! Vad vill du förändra hemma? Berätta gärna vilket rum det gäller och hur det känns i dag.</div></div>
-          <form id="chatForm"><label class="sr" for="chatIn">Din fråga</label><input id="chatIn" type="text" placeholder="Till exempel: mitt vardagsrum känns kalt" autocomplete="off"><button class="btn" type="submit">Fråga</button></form></div>
-        <aside><div class="panel"><h3 class="h3" style="font-size:1.2rem">Prova till exempel</h3><div style="display:grid;gap:.5rem;margin-top:1rem"><button class="chip" type="button" data-try="Mitt vardagsrum känns kalt, hur gör jag det mysigare?" style="white-space:normal;text-align:left">Mitt vardagsrum känns kalt, hur gör jag det mysigare?</button><button class="chip" type="button" data-try="Jag behöver mjukare ljus vid läsfåtöljen" style="white-space:normal;text-align:left">Jag behöver mjukare ljus vid läsfåtöljen</button><button class="chip" type="button" data-try="Hur får jag en liten hall att kännas mer ordnad?" style="white-space:normal;text-align:left">Hur får jag en liten hall att kännas mer ordnad?</button><button class="chip" type="button" data-try="En present till en inflyttning under 500 kr" style="white-space:normal;text-align:left">En present till en inflyttning under 500 kr</button></div>
-          <label style="margin-top:1.4rem">Högsta pris per produkt (kr, valfritt)<input type="number" id="maxP" min="0" step="50" placeholder="Inget maxpris"></label></div>
+        <div class="chat"><div class="log" id="log" aria-live="polite"><div class="msg ai">Hej! Vad vill du förändra hemma? Välj en fråga att börja med, eller skriv en egen.</div>
+            <div class="starters" id="starters" role="group" aria-label="Frågor att börja med"><button class="chip" type="button" data-try="Mitt vardagsrum känns kalt, hur gör jag det mysigare?">Mitt vardagsrum känns kalt, hur gör jag det mysigare?</button><button class="chip" type="button" data-try="Jag behöver mjukare ljus vid läsfåtöljen">Jag behöver mjukare ljus vid läsfåtöljen</button><button class="chip" type="button" data-try="Hur får jag en liten hall att kännas mer ordnad?">Hur får jag en liten hall att kännas mer ordnad?</button><button class="chip" type="button" data-try="Vad passar i ett litet sovrum?">Vad passar i ett litet sovrum?</button><button class="chip" type="button" data-try="En present till en inflyttning under 500 kr">En present till en inflyttning under 500 kr</button></div></div>
+          <form id="chatForm"><label class="sr" for="chatIn">Din fråga</label><input id="chatIn" type="text" placeholder="Till exempel: mitt vardagsrum känns kalt" autocomplete="off" enterkeyhint="send"><button class="btn" type="submit">Fråga</button></form></div>
+        <aside><div class="panel"><label>Högsta pris per produkt (kr, valfritt)<input type="number" id="maxP" min="0" step="50" inputmode="numeric" placeholder="Inget maxpris"></label></div>
           <p class="note">Råden är inspiration, inte verifierade produktuppgifter. I förhandsversionen bygger stylisten på regler och RumIQs sortiment, inte på en AI-tjänst.</p><p class="small" id="chatNote" style="margin-top:.8rem">Som gäst finns samtalet bara kvar i den här fliken. Logga in för att spara det.</p><button class="link" type="button" id="chatClear" style="border:0;background:none;margin-top:.4rem;font-size:.88rem">Rensa samtalet</button></aside>
       </section></main>
 
@@ -139,7 +139,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=d061b1d0";</script>
-<script src="assets/js/site.min.js?v=d061b1d0"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=850b2de3";</script>
+<script src="assets/js/site.min.js?v=850b2de3"></script>
 </body>
 </html>

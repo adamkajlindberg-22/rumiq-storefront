@@ -87,12 +87,12 @@
     const R = RQ.room, mine = R.has() && R.scene().length;
     /* sample: a real photo pair (same room before and after), with small product tags in the "after" half */
     const SAMPLE = [{ h: "lysa-keramiklampa", x: 14, y: 47 }, { h: "plad-ullblandning-havre", x: 56, y: 57 }, { h: "flatad-forvaringskorg", x: 25, y: 74 }];
-    const items = mine ? R.scene().slice(0, 6) : SAMPLE;
+    const items = mine ? R.ordered().slice(0, 8) : SAMPLE;
     const total = items.reduce((s, it) => s + RQ.byHandle(it.h).price, 0);
     const set = (k) => `assets/img/rum/sovrum-${k}-600.webp 600w, assets/img/rum/sovrum-${k}-900.webp 900w, assets/img/rum/sovrum-${k}-1344.webp 1344w`;
     const sizes = "(max-width: 900px) 100vw, 60vw";
     const stage = mine
-      ? `<div class="rh-stage" style="aspect-ratio:${R.get().w} / ${R.get().h}"><img class="rh-bg" src="${R.url()}" alt="Ditt rum med produkterna du ställt in" loading="lazy"><div class="ba-after">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-item" style="left:${it.x}%;top:${it.y}%;width:${it.w}%"><img src="${RQ.cut(p)}" alt="" loading="lazy" style="filter:${R.lightFilter(it.light)}"></span>`; }).join("")}</div>`
+      ? `<div class="rh-stage" style="aspect-ratio:${R.get().w} / ${R.get().h}"><img class="rh-bg" src="${R.url()}" alt="Ditt rum med produkterna du ställt in" loading="lazy"><div class="ba-after">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-item" style="left:${it.x}%;top:${it.y}%;width:${it.w}%"><img src="${RQ.cut(p)}" alt="" loading="lazy" style="${it.sy ? `aspect-ratio:1 / ${(R.PLACE[it.h][2] * it.sy).toFixed(3)};` : ""}filter:${R.lightFilter(it.light)}"></span>`; }).join("")}</div>`
       : `<div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg" src="assets/img/rum/sovrum-fore-900.webp" srcset="${set("fore")}" sizes="${sizes}" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async"><div class="ba-after"><img class="rh-bg" src="assets/img/rum/sovrum-efter-900.webp" srcset="${set("efter")}" sizes="${sizes}" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-tag" style="left:${it.x}%;top:${it.y}%"><i></i><span><b>${RQ.esc(p.name)}</b> ${S.kr(p.price)}</span></span>`; }).join("")}</div>`;
     return `<figure class="rh-fig bav" style="--ba:58%">${stage}
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>

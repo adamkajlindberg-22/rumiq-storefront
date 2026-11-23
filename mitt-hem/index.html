@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=d061b1d0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=850b2de3">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -102,7 +102,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <h3 class="h3" style="font-size:1.15rem" id="hrTitle">Lägg till ditt första rum</h3>
           <div class="hr-grid">
             <label>Rum<select name="type"><option value="vardagsrum">Vardagsrum</option><option value="sovrum">Sovrum</option><option value="kok">Kök</option><option value="badrum">Badrum</option><option value="hall">Hall</option><option value="hemmakontor">Hemmakontor</option><option value="uteliv">Uteliv</option></select></label>
-            <label>Eget namn <span class="opt">valfritt</span><input name="label" maxlength="30" placeholder="Till exempel Sovrum uppe"></label>
+            <label><span>Eget namn <small class="hr-opt">valfritt</small></span><input name="label" maxlength="30" placeholder="Till exempel Sovrum uppe"></label>
             <label>Golvets bredd, cm<input name="floorW" inputmode="numeric" placeholder="350"></label>
             <label>Golvets djup, cm<input name="floorD" inputmode="numeric" placeholder="420"></label>
             <label>Fri väggbredd, cm<input name="wallW" inputmode="numeric" placeholder="240"></label>
@@ -114,7 +114,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <div id="mh-stil"><div class="sec-head"><span class="eyebrow">Min stil</span></div><div class="empty"><h3>Ingen stil sparad än</h3><p>Svep tio kort eller svara på fyra snabba frågor.</p><a class="btn ghost" href="svep/">Svep fram din stil</a></div></div>
           <div id="mh-rum"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Rumsprojekt</span></div></div>
             <div class="empty"><h3>Inga rumsprojekt än</h3><p>Placera produkter i ett foto av ditt rum och spara resultatet här.</p><a class="btn ghost" href="mitt-rum/">Se det i ditt rum</a></div></div>
-          <div id="mh-looks"><div class="sec-head"><span class="eyebrow">Sparade looks</span></div><div class="empty"><h3>Inga looks än</h3><p>Bygg en look i Kombinera och matcha.</p><a class="btn ghost" href="studio-kombinera/">Kombinera och matcha</a></div></div>
+          <div id="mh-looks"><div class="sec-head"><span class="eyebrow">Sparade looks</span></div><div class="empty"><h3>Inga looks än</h3><p>Ställ in det du gillar i ditt rum och välj Spara som look, eller spara en färdig look.</p><a class="btn ghost" href="mitt-rum/">Till Mitt rum</a></div></div>
           <div id="mh-art"><div class="sec-head"><span class="eyebrow">Sparade artiklar</span></div><div class="empty"><h3>Inga sparade artiklar</h3><p>Spara en artikel i magasinet så hamnar den här.</p><a class="btn ghost" href="magasin/">Till magasinet</a></div></div>
           <div class="panel"><h3 class="h3" style="font-size:1.2rem">Dina uppgifter</h3><p class="small" style="margin-top:.5rem">I förhandsversionen sparas allt i Mitt hem bara i den här webbläsaren. Inget skickas till oss. Du kan ta bort allt när du vill.</p><button class="btn ghost sm" type="button" id="clearAll" style="margin-top:1rem">Rensa allt sparat</button></div>
         </section></main>
@@ -159,7 +159,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=d061b1d0";</script>
-<script src="assets/js/site.min.js?v=d061b1d0"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=850b2de3";</script>
+<script src="assets/js/site.min.js?v=850b2de3"></script>
 </body>
 </html>

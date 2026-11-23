@@ -252,7 +252,7 @@
         <h2>En bas, en värme, en kontrast</h2><p>Tänk i tre lager. En lugn bas för väggar och stora ytor, ofta ljus kalk eller havre. En värme från trä, terrakotta eller ull. Och en kontrast, något mörkare som får resten att vila: grafit, en djup grön eller svart metall.</p>
         <h2>Ljuset bestämmer</h2><p>Samma vita vägg ser blå ut i norrljus och gul i kvällslampans sken. Titta på färgprover vid olika tider på dygnet innan du bestämmer dig. Varmt ljus från lampor med opal- eller textilskärm gör det mesta mjukare.</p>
         <h2>Upprepa, men inte exakt</h2><p>En färg som återkommer i två eller tre rum binder ihop hemmet. Låt den komma tillbaka i olika material: en kudde i ett rum, en kruka i ett annat.</p>
-        <p>Vill du veta vilka färger ditt rum redan har? <a href="#studio-analys">Färger ur ditt rum</a> plockar ut paletten ur ett foto.</p>`,
+        <p>Vill du veta vilka färger ditt rum redan har? <a href="#mitt-rum">Mitt rum</a> plockar ut paletten ur ditt foto och visar vad som passar.</p>`,
       picks: ["plad-ullblandning-havre", "terrakottakruka-rafflad", "lysa-keramiklampa"] },
     { slug: "texturer-och-material", img: "assets/img/mag/texturer-1200.webp", minutes: 3, rooms: ["vardagsrum", "badrum"],
       title: "Texturer och material: ge ett enkelt rum personlighet",
@@ -329,14 +329,6 @@
         <h2>En matta som ramar in</h2><p>En matta under soffbordet eller i hallen gör att ytan känns som en egen plats. Jute och ull tål vardag och syns på ett bra sätt.</p>
         <h2>Textil gör mest</h2><p>Gardiner, kuddar och en pläd ändrar ett rum mer än man tror, och det är det första du packar när du flyttar.</p>`,
       picks: ["affisch-linje-ekram", "svamp-uppladdningsbar-lampa", "strand-jutematta", "lin-kuddfodral"] },
-  ];
-
-  RQ.STUDIO_RULES = [
-    "Alla verktyg i Studio är gratis.",
-    "I den här versionen sker allt i din webbläsare. Dina foton lämnar aldrig din enhet.",
-    "AI-stylisten och den smarta sökningen bygger i den här versionen på regler och RumIQs sortiment, inte på en AI-tjänst. Det står i verktyget.",
-    "När riktiga AI-bilder kopplas in kommer det att finnas en veckogräns för rumsbilder. Misslyckade försök räknas aldrig.",
-    "Bilderna är illustrationer. Storlek, färg och detaljer kan skilja sig från den riktiga produkten. Kontrollera produktsidan innan du köper.",
   ];
 
   RQ.articleBySlug = (s) => RQ.ARTICLES.find((a) => a.slug === s) || null;

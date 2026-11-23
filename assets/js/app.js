@@ -43,11 +43,13 @@
   RQ.roomIco = roomIco;
   RQ.card = (p) => {
     const R = RQ.room, on = R && R.mode(), m = on ? R.match(p) : null;
-    const ph = on ? `${R.layer(p)}<img class="hov fade" src="${RQ.img(p, 600)}" alt="" loading="lazy" decoding="async">`
-      : `<img class="fade" src="${RQ.img(p, 600)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="${esc(p.name)}" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" src="assets/img/d/${p.handle}-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
+    const photo = `<img class="fade" src="${RQ.img(p, 600)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="${esc(p.name)}" loading="lazy" decoding="async" width="600" height="750">`;
+    // with "Visa i mitt rum" on, the product photo still comes first; the room is the second picture (hover, or swipe on a phone)
+    const ph = on ? `${photo}<span class="hov inroom">${R.layer(p)}<i class="inr-tag">I ditt rum</i></span>`
+      : `${photo}<img class="hov fade" src="assets/img/d/${p.handle}-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
     return `
     <article class="card${on ? " in-room" : ""}" style="--tone:${p.tone[0]}22">
-      <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>
+      <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
       <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)} i önskelistan">${I.heart}</button>
       <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${roomIco}</button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
@@ -79,7 +81,7 @@
             <aside class="filters" id="filters" aria-label="Filter">
               <div><h4>Kategorier</h4><ul><li><a class="${!cat && !room && !col ? "on" : ""}" href="#butik">Alla produkter<span class="count">${RQ.PRODUCTS.length}</span></a></li>${sideCats}</ul></div>
               <div><h4>Rum</h4><ul>${sideRooms}</ul></div>
-              <div><h4>Mer</h4><ul><li><a href="#favoriter">Populärt</a></li><li data-show="news"><a href="#nyheter">Nyheter</a></li><li data-show="offers"><a href="#erbjudanden">Erbjudanden</a></li><li><a href="#hitta-ratt-present">Presenttips</a></li><li><a href="#jamfor">Jämför</a></li></ul></div>
+              <div><h4>Mer</h4><ul><li><a href="#favoriter">Populärt</a></li><li data-show="news"><a href="#nyheter">Nyheter</a></li><li data-show="offers"><a href="#erbjudanden">Erbjudanden</a></li><li><a href="#hitta-ratt-present">Presenttips</a></li></ul></div>
             </aside>
             <div>
               <div class="toolbar">
@@ -143,17 +145,13 @@
     const m0 = v.mount; v.mount = (root) => { if (m0) m0(root); return RQ.hotspots ? RQ.hotspots.mount(root) : null; };
     return v;
   };
-  V.kollektioner = () => ({
-    html: `${head(crumbs([["Hem", "hem"], ["Kollektioner"]]), "Utvalda kollektioner", "Saker som hör ihop, samlade kring en idé.")}
-      <section class="wrap" style="padding-bottom:6rem">${colCards()}</section>`,
-  });
   V.kollektion = (id) => {
     const c = RQ.colById(id); if (!c) return null;
-    return shopView({ title: c.name, lead: `${c.lead} ${c.text}`, col: id, banner: colImg(id, 1600), trail: [["Hem", "hem"], ["Kollektioner", "kollektioner"], [c.name]] });
+    return shopView({ title: c.name, lead: `${c.lead} ${c.text}`, col: id, banner: colImg(id, 1600), trail: [["Hem", "hem"], ["Looks", "looks"], [c.name]] });
   };
   const COL_IMG = { "det-organiserade-hemmet": "forradsburkar-glas-ek-3-pack", "skandinaviskt-hemmaliv": "rum", "vardagens-favoriter": "svamp-uppladdningsbar-lampa" };
   const colImg = (id, w) => (COL_IMG[id] === "rum" ? `assets/img/rum-${w >= 1600 ? 1600 : 900}.webp` : `assets/img/p/${COL_IMG[id]}-${w >= 1600 ? 900 : 600}.webp`);
-  const colCards = () => `<div class="cols3 stagger" data-watch>${RQ.COLLECTIONS.map((c) => `<a class="colcard" href="#kollektion-${c.id}"><div class="im"><img src="${colImg(c.id, 900)}" alt="" loading="lazy"></div><div class="tx"><span class="eyebrow">${S.list({ col: c.id }).length} produkter</span><h3 style="margin-top:.5rem">${esc(c.name)}</h3><p>${esc(c.lead)}</p></div></a>`).join("")}</div>`;
+  const colCards = RQ.colCards = () => `<div class="cols3 stagger" data-watch>${RQ.COLLECTIONS.map((c) => `<a class="colcard" href="#kollektion-${c.id}"><div class="im"><img src="${colImg(c.id, 900)}" alt="" loading="lazy"></div><div class="tx"><span class="eyebrow">${S.list({ col: c.id }).length} produkter</span><h3 style="margin-top:.5rem">${esc(c.name)}</h3><p>${esc(c.lead)}</p></div></a>`).join("")}</div>`;
   RQ.colCards = colCards;
 
   /* ---------------- product page */
@@ -254,7 +252,7 @@
           </div>
         </section>
 
-        ${pairs.length ? `<section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ihop</h2><p>Bocka ur det du inte vill ha. Du kan ändra antal i varukorgen.</p></div><a class="link" href="#studio-kombinera-${p.handle}">Bygg en egen look</a></div>
+        ${pairs.length ? `<section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ihop</h2><p>Bocka ur det du inte vill ha. Du kan ändra antal i varukorgen.</p></div><a class="link" href="#mitt-rum-${p.handle}">Bygg en look i ditt rum</a></div>
           <div class="look"><div class="look-items">${look.map((x, i) => `<label class="look-item"><input type="checkbox" data-look="${x.handle}" checked><img src="${RQ.img(x, 600)}" alt="" loading="lazy"><span class="nm">${i === 0 ? "Den här: " : ""}${esc(x.name)}</span><span class="pr">${kr(x.price)}</span></label>`).join("")}</div>
           <div class="look-sum"><div class="sum total"><span>Totalt</span><span id="lookTotal">${kr(look.reduce((s, x) => s + x.price, 0))}</span></div><button class="btn block" type="button" id="lookAdd">Lägg ${look.length} produkter i varukorgen</button></div></div></div></section>` : ""}
         ${related.length ? `<section class="sec tight"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Liknande produkter</h2></div><a class="link" href="#kategori-${c.id}">Visa alla</a></div>${RQ.grid(related.slice(0, 4))}</div></section>` : ""}
@@ -340,7 +338,7 @@
         <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Favoriter (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="padding:.5rem .9rem;border-radius:999px;width:10rem"><button class="chip" type="submit">Skapa</button></form></div>
         <div class="listhead"><div><h2 class="h3">${esc(cur.name)}</h2><p class="small">${items.length} produkter · ${kr(total)}</p></div>
-          <div class="ctrl-row" style="margin:0">${items.length ? `<button class="btn sm" type="button" id="allCart">Lägg alla i varukorgen</button><a class="btn ghost sm" href="#studio-kombinera-${items[0].handle}">Se dem tillsammans</a><button class="btn ghost sm" type="button" id="share">Kopiera lista</button>` : ""}${active !== "fav" ? `<button class="chip" type="button" id="ren">Byt namn</button><button class="chip" type="button" id="del">Ta bort listan</button>` : ""}</div></div>
+          <div class="ctrl-row" style="margin:0">${items.length ? `<button class="btn sm" type="button" id="allCart">Lägg alla i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${items.slice(0, 8).map((p) => p.handle).join(",")}">Se dem i ditt rum</button><button class="btn ghost sm" type="button" id="share">Kopiera lista</button>` : ""}${active !== "fav" ? `<button class="chip" type="button" id="ren">Byt namn</button><button class="chip" type="button" id="del">Ta bort listan</button>` : ""}</div></div>
         ${active === "fav" && items.length && RQ.priceWatch ? RQ.priceWatch.html(items.map((x) => x.handle)) : ""}
         ${items.length ? RQ.grid(items) : `<div class="empty"><h3>Listan är tom</h3><p>${active === "fav" ? "Tryck på hjärtat på en produkt för att spara den här." : "Öppna en produkt och välj Spara i ett rum."}</p><a class="btn ghost" href="#butik">Utforska butiken</a></div>${active === "fav" && RQ.svepNudge ? RQ.svepNudge() : ""}`}
       </section>`,
@@ -434,7 +432,7 @@
      studio.js (Snabbval, Hitta rätt, Mitt hem, Bygg din egen look, Färger ur ditt rum, the stylist) is its own
      file on the live site. Until it has loaded, its views are stubs that ask the router to fetch it first.
      In the unbundled shell the real views replace the stubs straight away. */
-  const TOOL_VIEWS = ["findRight", "giftFinder", "myHome", "studioAnalysis", "studioGuide", "studioMix", "studioRoom", "studioSearch", "studioStyle", "studioStylist"];
+  const TOOL_VIEWS = ["findRight", "giftFinder", "myHome", "studioGuide", "studioSearch", "studioStyle", "studioStylist"];
   TOOL_VIEWS.forEach((n) => { if (!V[n]) V[n] = Object.assign(() => ({ lazy: true }), { stub: true }); });
   let toolsP = null;
   RQ.loadTools = () => {
@@ -451,13 +449,13 @@
     [/^(hem)?$/, () => V.home()],
     [/^butik$/, () => V.butik()], [/^nyheter$/, () => V.nyheter()], [/^favoriter$/, () => V.favoriter()], [/^erbjudanden$/, () => V.erbjudanden()],
     [/^kategori-(.+)$/, (m) => V.kategori(m[1])], [/^rum$/, () => V.rumindex()], [/^rum-(.+)$/, (m) => V.rum(m[1])],
-    [/^kollektioner$/, () => V.kollektioner()], [/^kollektion-(.+)$/, (m) => V.kollektion(m[1])],
+    [/^kollektioner$/, () => V.looks()], [/^kollektion-(.+)$/, (m) => V.kollektion(m[1])],
     [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.jamfor()],
     [/^magasin$/, () => V.magasin()], [/^artikel-(.+)$/, (m) => V.artikel(m[1])], [/^inspiration$/, () => V.inspiration()],
     [/^juridik-(.+)$/, (m) => V.juridik(m[1])], [/^ideer$/, () => V.onska()],
     [/^(kontakt|faq|frakt|returer|betalning|om|sa-fungerar-det)$/, (m) => V[m[1]]()],
-    [/^studio$/, () => V.studio()], [/^(?:studio|mitt)-rum(?:-(.+))?$/, (m) => V.myRoom(m[1])], [/^studio-stil$/, () => V.studioStyle()], [/^studio-analys$/, () => V.studioAnalysis()],
-    [/^studio-stylist$/, () => V.studioStylist()], [/^studio-sok$/, () => V.findRight("ord")], [/^studio-hemurval$/, () => V.findRight("")], [/^hitta-ratt(?:-(present|ord))?$/, (m) => V.findRight(m[1] || "")], [/^studio-kombinera(?:-(.+))?$/, (m) => V.studioMix(m[1])],
+    [/^studio$/, () => V.studio()], [/^(?:studio|mitt)-rum(?:-(.+))?$/, (m) => V.myRoom(m[1])], [/^studio-stil$/, () => V.studioStyle()], [/^studio-analys$/, () => V.myRoom()],
+    [/^studio-stylist$/, () => V.studioStylist()], [/^studio-sok$/, () => V.findRight("ord")], [/^studio-hemurval$/, () => V.findRight("")], [/^hitta-ratt(?:-(present|ord))?$/, (m) => V.findRight(m[1] || "")], [/^studio-kombinera(?:-(.+))?$/, (m) => V.myRoom(m[1])],
     [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^delad(?:-(.+))?$/, (m) => V.shared(m[1])], [/^presentkort$/, () => V.giftCard()], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^(?:rosta|onska)$/, () => V.onska()],
     [/^studio-plus$/, () => V.studioPlus(false)], [/^studio-plus-tack$/, () => V.studioPlus(true)],
     [/^presentguiden$/, () => V.findRight("present")], [/^mitt-hem$/, () => V.myHome()],
@@ -552,6 +550,9 @@
     const a = e.target.closest(".card a[href^='#produkt-']"); if (!a) return;
     const img = $(".ph img", a.closest(".card")); if (img) img.style.viewTransitionName = "pimg";
   }, true);
+
+  /* shop cards in room mode on touch screens: the dots follow the swipe between photo and room */
+  document.addEventListener("scroll", (e) => { const t = e.target; if (t.classList && t.classList.contains("ph")) { const c = t.closest(".card.in-room"); if (c) c.dataset.i = Math.round(t.scrollLeft / Math.max(1, t.clientWidth)); } }, { capture: true, passive: true });
 
   /* images fade in on their tone colour once decoded */
   document.addEventListener("load", (e) => { const t = e.target; if (t.tagName === "IMG" && t.classList.contains("fade")) t.classList.add("ok"); }, true);

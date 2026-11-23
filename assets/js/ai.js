@@ -94,9 +94,9 @@
       const R = RQ.room, room = R.get(); const bg = await load(room.img);
       const k = Math.min(1, max / Math.max(room.w, room.h)), W = Math.round(room.w * k), H = Math.round(room.h * k);
       const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
-      for (const it of R.scene()) {
+      for (const it of R.ordered()) {
         const p = RQ.byHandle(it.h); let im; try { im = await load(RQ.cut(p)); } catch (e) { continue; }
-        const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth, x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h;
+        const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h;
         cx.save(); cx.filter = R.lightFilter(it.light); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(im, 0, 0, w, h); } else cx.drawImage(im, x, y, w, h); cx.restore();
       }
       return cv.toDataURL("image/jpeg", 0.86);

@@ -46,7 +46,7 @@
           <h3 class="h3" style="font-size:1.15rem" id="hrTitle">${rooms.length ? "Lägg till ett rum" : "Lägg till ditt första rum"}</h3>
           <div class="hr-grid">
             <label>Rum<select name="type">${RQ.ROOMS.map((r) => `<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></label>
-            <label>Eget namn <span class="opt">valfritt</span><input name="label" maxlength="30" placeholder="Till exempel Sovrum uppe"></label>
+            <label><span>Eget namn <small class="hr-opt">valfritt</small></span><input name="label" maxlength="30" placeholder="Till exempel Sovrum uppe"></label>
             <label>Golvets bredd, cm<input name="floorW" inputmode="numeric" placeholder="350"></label>
             <label>Golvets djup, cm<input name="floorD" inputmode="numeric" placeholder="420"></label>
             <label>Fri väggbredd, cm<input name="wallW" inputmode="numeric" placeholder="240"></label>
@@ -187,7 +187,7 @@
   RQ.shareWishLink = async (btn) => {
     const hs = S.wishlist().map((p) => p.handle); if (!hs.length) return;
     const nm = ((S.customer && S.customer()) || {}).name || "";
-    const url = location.origin + location.pathname.replace(/[^/]*$/, "") + "delad/#delad-" + encList(hs, nm);
+    const url = new URL("delad/", document.baseURI).href + "#delad-" + encList(hs, nm); // from the site root, whatever page we are on
     try { if (navigator.share) { await navigator.share({ title: "Min önskelista på RumIQ", url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
     try { await navigator.clipboard.writeText(url); RQ.toast("Länken till din önskelista är kopierad."); } catch (e) { window.prompt("Kopiera länken:", url); }
     RQ.track("wishlist_share", { items: hs.length });
