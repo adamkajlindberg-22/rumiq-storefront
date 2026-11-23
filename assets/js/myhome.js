@@ -165,4 +165,79 @@
     }
     if (stop) { send(w.email, [], "Prisbevakning avslutad"); ls.del("rumiq-watch"); RQ.toast("Bevakningen är avslutad."); RQ.router(); }
   });
+
+  /* ---------------- Delad önskelista: favourites shared as a link. The list lives only in the link
+     (product numbers + an optional first name), nothing is stored on a server. #delad-<n.n.n>~<namn> */
+  const V = RQ.views, kr = (n) => S.kr(n);
+  const gen = (n) => (/[sxz]$/i.test(n) ? n : n + "s");
+  const cleanName = (n) => String(n || "").replace(/[^\p{L}\p{N} '\-]/gu, "").trim().slice(0, 24);
+  const encList = (hs, name) => {
+    const idx = hs.map((h) => RQ.PRODUCTS.findIndex((p) => p.handle === h)).filter((i) => i >= 0).map((i) => i.toString(36));
+    const n = cleanName(name);
+    return idx.join(".") + (n ? "~" + encodeURIComponent(n) : "");
+  };
+  const decList = (raw) => {
+    if (!raw) return null;
+    let core = raw, name = "";
+    const t = raw.indexOf("~"); if (t >= 0) { core = raw.slice(0, t); try { name = cleanName(decodeURIComponent(raw.slice(t + 1))); } catch (e) { name = ""; } }
+    const hs = [...new Set(core.split(".").filter((x) => /^[0-9a-z]{1,2}$/.test(x)).map((x) => RQ.PRODUCTS[parseInt(x, 36)]).filter(Boolean).map((p) => p.handle))].slice(0, 40);
+    return hs.length ? { hs, name } : null;
+  };
+  RQ.sharedList = { enc: encList, dec: decList };
+  RQ.shareWishLink = async (btn) => {
+    const hs = S.wishlist().map((p) => p.handle); if (!hs.length) return;
+    const nm = ((S.customer && S.customer()) || {}).name || "";
+    const url = location.origin + location.pathname.replace(/[^/]*$/, "") + "delad/#delad-" + encList(hs, nm);
+    try { if (navigator.share) { await navigator.share({ title: "Min önskelista på RumIQ", url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(url); RQ.toast("Länken till din önskelista är kopierad."); } catch (e) { window.prompt("Kopiera länken:", url); }
+    RQ.track("wishlist_share", { items: hs.length });
+  };
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-share-wish]"); if (b) RQ.shareWishLink(b); });
+  V.shared = (payload) => {
+    const L = decList(payload), crumbs = RQ.crumbs([["Hem", "hem"], ["Delad önskelista"]]);
+    if (!L) return { title: "Delad önskelista · RumIQ", html: `<header class="page-head wrap">${crumbs}<h1 class="h1">Den här listan är tom.</h1><p class="lead">Länken saknar produkter, eller så har den klippts av. Be om en ny länk, eller titta runt i butiken.</p><div class="ctrl-row" style="margin-top:1.4rem"><a class="btn" href="#butik">Till butiken</a></div></header>` };
+    const ps = L.hs.map(RQ.byHandle), total = ps.reduce((a, p) => a + p.price, 0);
+    return {
+      title: (L.name ? `${gen(L.name)} önskelista` : "Delad önskelista") + " · RumIQ",
+      html: `<header class="page-head wrap">${crumbs}<span class="eyebrow">Delad önskelista</span><h1 class="h1">${L.name ? `${esc(gen(L.name))} önskelista` : "En önskelista till dig"}</h1>
+          <p class="lead">${ps.length} ${ps.length === 1 ? "sak" : "saker"} · ${kr(total)}. Köp något som present, spara det du också gillar eller se allt i ditt eget rum.</p>
+          <div class="ctrl-row" style="margin-top:1.4rem"><button class="btn" type="button" id="shAll">Lägg alla i varukorgen · ${kr(total)}</button><button class="btn ghost" type="button" id="shSave">Spara i mina favoriter</button></div></header>
+        <section class="wrap" style="padding-bottom:5rem"><div class="grid">${ps.map(RQ.card).join("")}</div>
+          <p class="small" style="margin-top:1.6rem">Listan finns bara i länken. Vi sparar inget om den på någon server.</p></section>`,
+      mount(root) {
+        const a = $("#shAll", root); a.addEventListener("click", () => RQ.addMany(L.hs, a, "önskelistan"));
+        const b = $("#shSave", root); b.addEventListener("click", () => { let n = 0; L.hs.forEach((h) => { if (!S.isWished(h)) { S.toggleWish(h); n++; } }); RQ.toast(n ? `${n} ${n === 1 ? "sak sparad" : "saker sparade"} i Mitt hem.` : "Du har redan sparat allt."); });
+        RQ.track("wishlist_open", { items: L.hs.length });
+      },
+    };
+  };
+
+  /* ---------------- Presentkort: the page is ready, the card itself comes with Shopify (gift cards are
+     built in there). Until then the page collects e-mails on the list "Presentkort". */
+  const AMOUNTS = [250, 500, 1000, 1500];
+  V.giftCard = () => ({
+    title: "Presentkort · RumIQ",
+    html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Presentkort"]])}</header>
+      <section class="wrap gc" style="padding-bottom:5rem">
+        <div class="gc-card" aria-hidden="true"><img src="assets/brand/rumiq-vit.webp" alt="" width="480" height="120"><span class="gc-amt" id="gcAmt">${kr(500)}</span><span class="gc-sub">Presentkort · gäller i två år</span></div>
+        <div class="gc-info"><span class="eyebrow">Present</span><h1 class="h1">Ge bort ett lugnare hem.</h1>
+          <p class="lead">Ett presentkort på RumIQ, så väljer mottagaren själv. Och kan se allt i sitt eget rum innan hen bestämmer sig.</p>
+          <div class="gc-amts" role="radiogroup" aria-label="Belopp">${AMOUNTS.map((a, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === 1}" data-gc="${a}">${kr(a)}</button>`).join("")}</div>
+          <ul class="gc-points"><li>Skickas med e-post direkt, eller på ett datum du väljer</li><li>Med en egen hälsning</li><li>Går att använda på allt i butiken, flera gånger</li></ul>
+          <div class="gc-soon"><p><b>Presentkorten kommer när butiken öppnar.</b> Skriv upp dig, så mejlar vi när de går att köpa.</p>
+            <form id="gcForm" novalidate><label class="sr" for="gcEmail">Din e-post</label><div class="field"><input id="gcEmail" type="email" autocomplete="email" placeholder="namn@exempel.se"><button class="btn" type="submit">Säg till mig</button></div><p class="status" id="gcSt" role="alert"></p></form></div>
+          <p class="small" style="margin-top:1.4rem">Letar du efter en present nu? <a href="#hitta-ratt-present">Hitta rätt present</a> hjälper dig att välja.</p></div>
+      </section>`,
+    mount(root) {
+      $$("[data-gc]", root).forEach((b) => b.addEventListener("click", () => { $$("[data-gc]", root).forEach((x) => x.setAttribute("aria-checked", String(x === b))); $("#gcAmt", root).textContent = kr(+b.dataset.gc); }));
+      const f = $("#gcForm", root), st = $("#gcSt", root);
+      f.addEventListener("submit", async (e) => {
+        e.preventDefault(); const v = $("#gcEmail", root).value.trim();
+        if (!emailOk(v)) { st.textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
+        const amt = ($("[data-gc][aria-checked=true]", root) || {}).dataset;
+        const res = await (RQ.subscribe ? RQ.subscribe({ email: v, lista: "Presentkort", roster: amt ? amt.gc + " kr" : "" }) : Promise.resolve("preview"));
+        st.textContent = res === "error" ? "Det gick inte att skicka just nu. Försök igen om en stund." : res === "preview" ? "Förhandsversion: adressen sparas inte här. På den riktiga sajten hamnar du på listan." : "Tack. Vi mejlar när presentkorten går att köpa. Inget annat.";
+      });
+    },
+  });
 })();

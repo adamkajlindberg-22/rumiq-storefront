@@ -299,6 +299,36 @@
         <h2>Tre ljuspunkter</h2><p>En lampa vid soffan, en på en skänk och en lägre i ett hörn. Varmt, dämpat ljus i ögonhöjd och nedåt.</p>
         <h2>Textil i lager</h2><p>En pläd över armstödet, två kuddar i olika material och kanske en korg med fler filtar. Det är de mjuka sakerna som gör att man stannar kvar.</p>`,
       picks: ["plad-ullblandning-havre", "lysa-keramiklampa", "lin-kuddfodral"] },
+    { slug: "belysning-i-lager", img: "assets/img/rum/sovrum-efter-1344.webp", minutes: 4, rooms: ["vardagsrum", "sovrum"],
+      title: "Belysning i lager: så blir hemmet mysigt på kvällen",
+      lead: "En taklampa räcker inte. Med tre ljuskällor på olika höjd blir samma rum lugnt, varmt och lätt att vara i.",
+      body: `<p>Det vanligaste felet i ett mörkt svenskt vinterhem är för få lampor. En stark taklampa lyser upp allt lika mycket, och då känns rummet platt. Lösningen är att tänka i lager.</p>
+        <h2>Lager 1: grundljuset</h2><p>Taklampan eller en golvlampa som ger ljus i hela rummet. Den behövs när du städar eller letar efter något, men den kan gärna vara släckt resten av kvällen.</p>
+        <h2>Lager 2: ljus där du gör något</h2><p>En lampa vid läsfåtöljen, på nattduksbordet eller över skrivbordet. Ljuset ska falla på det du tittar på, inte i ögonen. En skärm i textil eller veckat tyg sprider ljuset mjukt.</p>
+        <h2>Lager 3: stämningsljuset</h2><p>Små, låga ljuskällor som gör rummet levande: en lampa på en hylla, en uppladdningsbar lampa på fönsterbänken eller levande ljus på bordet. De lyser inte upp mycket, men de gör att man vill stanna.</p>
+        <h2>Välj varmt ljus</h2><p>Titta efter 2 700 kelvin eller lägre på lampans förpackning. Det ger det gula, varma ljuset som liknar en solnedgång. Kallare ljus passar i badrummet och vid arbetsbänken, inte i soffan.</p>
+        <h2>Prova innan du köper</h2><p>Det är svårt att föreställa sig en lampa i sitt eget rum. Ta en bild av rummet i Mitt rum och ställ in lampan där, så ser du storlek och stil innan du bestämmer dig.</p>`,
+      picks: ["lysa-keramiklampa", "svamp-uppladdningsbar-lampa", "glob-bordslampa-opalglas", "stilla-ljusstake-massing-2-pack"] },
+    { slug: "litet-sovrum", img: "assets/img/rum/sovrum-1600.webp", minutes: 4, rooms: ["sovrum"],
+      title: "Inred ett litet sovrum: sex sätt att få det att kännas större",
+      lead: "Ljusa textilier, smart förvaring och rätt ljus gör mer än kvadratmetrarna.",
+      body: `<p>Ett litet sovrum behöver inte kännas trångt. Det handlar mindre om ytan och mer om hur mycket som syns på en gång.</p>
+        <h2>1. Ljusa textilier i samma ton</h2><p>Påslakan, gardiner och pläd i närliggande ljusa färger flyter ihop och gör att rummet upplevs större. Lin och bomull i havre, sand och vitt är lätta att kombinera.</p>
+        <h2>2. Gardiner från tak till golv</h2><p>Häng gardinstången högt och nära taket och låt gardinerna nå golvet. Fönstret ser större ut och takhöjden känns högre.</p>
+        <h2>3. Förvaring som syns, men lugnt</h2><p>Korgar med lock eller i flätat material under sängen och nattduksbordet samlar det lösa. Ett fåtal korgar i samma material ser ordnat ut, många olika ser stökiga ut.</p>
+        <h2>4. Ljus från sidan, inte bara uppifrån</h2><p>En lampa på nattduksbordet ger ett varmt ljus i ögonhöjd och gör rummet mjukare på kvällen. Det tar mindre plats än en golvlampa.</p>
+        <h2>5. En sak på väggen</h2><p>En affisch eller en tavla ovanför sängen ger rummet en mittpunkt. Fler små saker splittrar och krymper väggen.</p>
+        <h2>6. Fri golvyta</h2><p>Ju mer golv som syns, desto större känns rummet. Välj ett nattduksbord eller en hylla på väggen i stället för en byrå om det går.</p>`,
+      picks: ["vila-paslakanset-linne", "dagsljus-linnegardin-2-pack", "flatad-forvaringskorg", "lysa-keramiklampa"] },
+    { slug: "hyresvanlig-inredning", img: "assets/img/rum/hall-1600.webp", minutes: 3, rooms: ["hall", "vardagsrum"],
+      title: "Hyresvänlig inredning: gör om utan att borra",
+      lead: "Bor du i hyresrätt eller i andra hand? Så gör du hemmet personligt utan hål i väggarna.",
+      body: `<p>Många vill inte, eller får inte, borra i väggarna. Det mesta som gör ett hem personligt går ändå att lösa utan verktyg, och allt följer med när du flyttar.</p>
+        <h2>Ställ tavlorna i stället för att hänga dem</h2><p>Luta en affisch med ram mot väggen på en hylla, en byrå eller direkt på golvet. Flera ramar i olika storlek som lutar mot varandra ser genomtänkt ut, och du kan byta när du vill.</p>
+        <h2>Ljus utan sladdar</h2><p>En uppladdningsbar lampa kan stå där det saknas uttag: på hyllan i hallen, på balkongbordet eller i bokhyllan. Ladda den på dagen och låt den lysa på kvällen.</p>
+        <h2>En matta som ramar in</h2><p>En matta under soffbordet eller i hallen gör att ytan känns som en egen plats. Jute och ull tål vardag och syns på ett bra sätt.</p>
+        <h2>Textil gör mest</h2><p>Gardiner, kuddar och en pläd ändrar ett rum mer än man tror, och det är det första du packar när du flyttar.</p>`,
+      picks: ["affisch-linje-ekram", "svamp-uppladdningsbar-lampa", "strand-jutematta", "lin-kuddfodral"] },
   ];
 
   RQ.STUDIO_RULES = [

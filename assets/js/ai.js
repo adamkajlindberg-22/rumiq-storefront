@@ -120,7 +120,7 @@
   const balanceLine = (st) => st.demo ? `Förhandsvisning: ${FREE_IMAGES} bilder i månaden när sajten är live` : `${st.balance} ${st.balance === 1 ? "bild" : "bilder"} kvar${st.plan === "plus" ? " i Studio Plus" : " den här månaden"}`;
   const productsList = (scene) => {
     const total = scene.reduce((s, it) => s + RQ.byHandle(it.h).price, 0);
-    return `<ul class="ai-prods">${scene.map((it) => { const p = RQ.byHandle(it.h); return `<li><button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}${p.variants ? ` · <em>Bilden visar färgen ${esc(p.variants[0])}</em>` : ""}</span></div></li>`; }).join("")}</ul>
+    return `<ul class="ai-prods">${scene.map((it) => { const p = RQ.byHandle(it.h); return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}${p.variants ? ` · <em>Bilden visar färgen ${esc(p.variants[0])}</em>` : ""}</span></div></li>`; }).join("")}</ul>
       <div class="ai-sum"><span>Det här finns i bilden</span><b>${kr(total)}</b></div>`;
   };
 

@@ -255,13 +255,14 @@
   ];
 
   RQ.CANDIDATES = [
-    { id: "linneduk", name: "Linneduk havre", line: "En duk som blir finare för varje tvätt.", tone: "#D8C6A8" },
-    { id: "ljuslykta", name: "Ljuslykta i glas", line: "Levande ljus som tål ett öppet fönster.", tone: "#E9E4DA" },
-    { id: "ullmatta", name: "Ullmatta havre", line: "Mjuk under fötterna, tålig i vardagsrummet.", tone: "#D8C6A8" },
-    { id: "muggar", name: "Stengodsmuggar, 4-pack", line: "Tunga, varma i handen och diskmaskinståliga.", tone: "#E7E0D4" },
-    { id: "krokar", name: "Krokar i ek, 3-pack", line: "En plats för jackan, väskan och nycklarna.", tone: "#B88A5A" },
-    { id: "badmatta", name: "Badrumsmatta bomull", line: "Mjuk under fötterna och snabb att torka.", tone: "#F2EFE9" },
-    { id: "vagglampa", name: "Vägglampa opalglas", line: "Ljus vid sängen utan att ta bordsplats.", tone: "#F1EDE6" },
+    { id: "linneduk", img: "assets/img/soon/linneduk-400.webp", name: "Linneduk havre", line: "En duk som blir finare för varje tvätt.", tone: "#D8C6A8" },
+    { id: "ljuslykta", img: "assets/img/soon/ljuslykta-400.webp", name: "Ljuslykta i glas", line: "Levande ljus som tål ett öppet fönster.", tone: "#E9E4DA" },
+    { id: "ullmatta", img: "assets/img/soon/ullmatta-400.webp", name: "Ullmatta havre", line: "Mjuk under fötterna, tålig i vardagsrummet.", tone: "#D8C6A8" },
+    { id: "muggar", img: "assets/img/soon/muggar-400.webp", name: "Stengodsmuggar, 4-pack", line: "Tunga, varma i handen och diskmaskinståliga.", tone: "#E7E0D4" },
+    { id: "krokar", img: "assets/img/soon/krokar-400.webp", name: "Krokar i ek, 3-pack", line: "En plats för jackan, väskan och nycklarna.", tone: "#B88A5A" },
+    { id: "badmatta", img: "assets/img/soon/badmatta-400.webp", name: "Badrumsmatta bomull", line: "Mjuk under fötterna och snabb att torka.", tone: "#F2EFE9" },
+    { id: "vagglampa", img: "assets/img/soon/vagglampa-400.webp", name: "Vägglampa opalglas", line: "Ljus vid sängen utan att ta bordsplats.", tone: "#F1EDE6" },
+    { id: "skal", img: "assets/img/soon/skal-400.webp", name: "Skål i stengods", line: "För frukten, nycklarna eller ingenting alls.", tone: "#D6C2A2" },
   ];
 
   RQ.TONES = [

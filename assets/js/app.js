@@ -213,7 +213,7 @@
           <div class="pinfo">
             <a class="eyebrow" href="#kategori-${c.id}">${esc(c.name)}</a>
             <h1>${esc(p.name)}</h1>
-            <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span></div>
+            <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span></div>${RQ.shipNote(p)}
             <p class="short">${esc(p.short)}</p>
             ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div></div>` : ""}
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
@@ -394,8 +394,8 @@
       <section class="sec kalk"><div class="wrap split"><div><span class="eyebrow">Mitt rum</span><h2 class="h2" style="margin-top:.9rem">Fri inredningsidé för ditt eget rum</h2><p class="lead" style="margin-top:1rem">Lägg till ett foto av ditt rum och prova produkterna där, eller svep fram en riktning.</p><div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-rum">Se det i ditt rum</a><a class="btn ghost" href="#svep">Svep fram din stil</a></div></div><div class="im"><img src="assets/img/rum/sovrum-900.webp" alt="" loading="lazy"></div></div></section>` });
 
   /* ---------------- info + legal */
-  const infoNav = (active) => `<ul class="sidenav"><h4>Kundservice</h4>${[["kontakt", "Kontakt"], ["ideer", "Dela en idé"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}">${t}</a></li>`).join("")}
-    <h4>Juridisk information</h4>${Object.entries(RQ.LEGAL).map(([k, v]) => `<li><a class="${"juridik-" + k === active ? "on" : ""}" href="#juridik-${k}">${v.title}</a></li>`).join("")}</ul>`;
+  const infoNav = (active) => `<ul class="sidenav"><li><h4>Kundservice</h4></li>${[["kontakt", "Kontakt"], ["onska", "Önska en produkt"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}"${h === active ? ' aria-current="page"' : ""}>${t}</a></li>`).join("")}
+    <li><h4 style="margin-top:1rem">Juridisk information</h4></li>${Object.entries(RQ.LEGAL).map(([k, v]) => `<li><a class="${"juridik-" + k === active ? "on" : ""}" href="#juridik-${k}"${"juridik-" + k === active ? ' aria-current="page"' : ""}>${v.title}</a></li>`).join("")}</ul>`;
   RQ.infoPage = (route, kicker, title, lead, body, mount) => ({ title: `${title} · RumIQ`, html: `${head(`<span class="eyebrow">${esc(kicker)}</span>`, esc(title), lead)}<section class="wrap layout-side" style="padding-bottom:6rem">${infoNav(route)}<div class="prose">${body}</div></section>`, mount });
   Object.entries(RQ.INFO).forEach(([k, v]) => {
     V[k] = () => RQ.infoPage(k, v.kicker, v.title, v.lead, v.html(), k === "kontakt" ? mountContact : null);
@@ -458,7 +458,7 @@
     [/^(kontakt|faq|frakt|returer|betalning|om|sa-fungerar-det)$/, (m) => V[m[1]]()],
     [/^studio$/, () => V.studio()], [/^(?:studio|mitt)-rum(?:-(.+))?$/, (m) => V.myRoom(m[1])], [/^studio-stil$/, () => V.studioStyle()], [/^studio-analys$/, () => V.studioAnalysis()],
     [/^studio-stylist$/, () => V.studioStylist()], [/^studio-sok$/, () => V.findRight("ord")], [/^studio-hemurval$/, () => V.findRight("")], [/^hitta-ratt(?:-(present|ord))?$/, (m) => V.findRight(m[1] || "")], [/^studio-kombinera(?:-(.+))?$/, (m) => V.studioMix(m[1])],
-    [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^(?:rosta|onska)$/, () => V.onska()],
+    [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^delad(?:-(.+))?$/, (m) => V.shared(m[1])], [/^presentkort$/, () => V.giftCard()], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^(?:rosta|onska)$/, () => V.onska()],
     [/^studio-plus$/, () => V.studioPlus(false)], [/^studio-plus-tack$/, () => V.studioPlus(true)],
     [/^presentguiden$/, () => V.findRight("present")], [/^mitt-hem$/, () => V.myHome()],
     [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
@@ -534,7 +534,7 @@
   window.addEventListener("popstate", () => { if (currentRaw() !== current) RQ.router(); });
   RQ.router = () => {
     const raw = currentRaw();
-    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
+    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
     if (firstRun || !document.startViewTransition || reduced() || raw === current) { firstRun = false; render(raw); return; }
     const t = document.startViewTransition(() => render(raw));
     t.ready.catch(() => {}); t.updateCallbackDone.catch(() => {});
@@ -582,6 +582,13 @@
   S.onChange((w) => { RQ.paintShell(); if (drawer.classList.contains("open")) renderCart(); });
   // day/evening on a room picture: the same room after sunset, so you see how the lamps change it
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-dn]"); if (!b) return; const sec = b.closest(".rm-shop"); const st = sec && $(".hs-stage", sec); if (!st) return; st.classList.toggle("eve", b.dataset.dn === "kvall"); $$("[data-dn]", sec).forEach((x) => x.setAttribute("aria-pressed", x === b)); });
+  /* the total cost up front: shipping on the product page, so nothing new appears in the checkout */
+  RQ.shipNote = (p) => {
+    const free = (window.RQ_CONFIG || {}).freeShippingFrom, ship = (S.SHIPPING || [])[0];
+    if (!ship) return "";
+    if (free && p.price >= free) return `<p class="ship-note"><b>Fri frakt</b> till ombud och paketskåp. Totalt ${S.kr(p.price)}.</p>`;
+    return `<p class="ship-note">Frakt ${S.kr(ship.price)} till ombud och paketskåp${free ? `, fri frakt från ${S.kr(free)}` : ""}.</p>`;
+  };
   RQ.payRow = () => { const m = (window.RQ_CONFIG || {}).payments || []; return m.length ? `<ul class="payrow" aria-label="Betalsätt">${m.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""; };
   // price with the Swedish rule for reductions: when a product is on sale (p.was = earlier price) the lowest price of
   // the last 30 days (p.low30, from Shopify price history) is shown next to the new price (prisinformationslagen 7 a §)
@@ -829,5 +836,13 @@
   showFlags();
 
   window.addEventListener("hashchange", RQ.router);
-  document.addEventListener("DOMContentLoaded", () => { RQ.router(); navCheck(); setTimeout(() => RQ.showCookies(false), 1200); });
+  document.addEventListener("DOMContentLoaded", () => {
+    RQ.router(); navCheck();
+    /* the first screen of the home page belongs to the offer: on the home page the cookie bar waits
+       for the first scroll or tap (or 8 s); everywhere else it shows after a moment */
+    if (!document.body.classList.contains("on-home")) { setTimeout(() => RQ.showCookies(false), 1200); return; }
+    let done = false; const go = () => { if (done) return; done = true; window.removeEventListener("scroll", onScroll); document.removeEventListener("pointerdown", go); RQ.showCookies(false); };
+    const onScroll = () => { if (window.scrollY > 120) go(); };
+    window.addEventListener("scroll", onScroll, { passive: true }); document.addEventListener("pointerdown", go); setTimeout(go, 8000);
+  });
 })();

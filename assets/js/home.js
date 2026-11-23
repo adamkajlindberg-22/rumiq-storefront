@@ -71,8 +71,10 @@
           <div class="looks-row">${RQ.LOOKS.map(RQ.lookCard).join("")}</div></div>
       </section>
 
+      ${RQ.whyHtml()}
+
       <section class="sec cta-band" id="bli-forst">
-                <div class="wrap"><div><h2>Bli först när vi öppnar.</h2><p class="lead">Skriv upp dig så får du 10 % på första köpet när vi öppnar. Till dess kan du prova Studio gratis och se produkterna i ditt eget rum.</p></div>
+                <div class="wrap"><div><h2>Bli först när vi öppnar.</h2><p class="lead">Skriv upp dig så får du 10 % på första köpet när vi öppnar. Till dess kan du prova Mitt rum gratis och se produkterna i ditt eget rum.</p></div>
           <div class="signup" id="formBox"><form id="signup" novalidate><label for="email">Din e-post</label><div class="field"><input id="email" name="email" type="email" autocomplete="email" placeholder="namn@exempel.se" required><button class="btn" type="submit">Skriv upp mig</button></div><p class="status" id="formErr" role="alert"></p><p class="fine">Vi mejlar när vi öppnar och ibland med stylingtips. Vi delar aldrig din adress, och du kan avregistrera dig när du vill.</p></form>
             <div class="ok" role="status" aria-live="polite"><h3>Tack. Du står på listan.</h3><p id="okText">Vi hör av oss med din rabattkod när RumIQ öppnar.</p><a class="btn ghost sm" href="#mitt-rum">Prova Studio under tiden</a></div></div></div>
       </section>`,
@@ -97,6 +99,23 @@
       <input class="ba-range" type="range" min="0" max="100" value="58" aria-label="Jämför rummet före och efter. Dra åt höger för att visa fler produkter."></div>
       <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total)}</span></span><a class="btn sm" href="${mine ? "#mitt-rum" : "#butik"}">${mine ? "Fortsätt" : "Till butiken"}</a></figcaption></figure>`;
   }
+
+  /* Why RumIQ: four reasons to trust a new shop, every figure read from RQ_CONFIG */
+  RQ.whyHtml = () => {
+    const C = window.RQ_CONFIG || {}, d = C.delivery || {}, mail = (C.company || {}).email || "support@rumiq.se";
+    const ico = (path) => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
+    const items = [
+      [ico('<path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/>'), "Se det hemma först", "Ställ in produkterna i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare."],
+      [ico('<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>'), d.minDays ? `Hemma om ${d.minDays}–${d.maxDays} arbetsdagar` : "Snabb leverans", `${d.fromCountry || "Lager i EU"}. Du ser leveransdatumet innan du beställer, och kan välja ombud, paketskåp eller hem.`],
+      [ico('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/>'), d.openPurchaseDays ? `${d.openPurchaseDays} dagars öppet köp` : "14 dagars ångerrätt", `Ångra med en knapp på sajten. ${d.returnText || ""}`.trim()],
+      [ico('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'), "Du är med och väljer", "Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in."],
+    ];
+    return `<section class="sec why" id="varfor" aria-labelledby="whyH"><div class="wrap">
+        <div class="sec-head"><h2 class="h2" id="whyH">Därför RumIQ</h2><p>En ny butik ska vara lätt att lita på. Det här kan du räkna med.</p></div>
+        <ul class="why-grid">${items.map(([i, b, t]) => `<li>${i}<b>${b}</b><span>${t}</span></li>`).join("")}</ul>
+        <p class="why-foot">Frågor? Skriv till <a href="mailto:${mail}">${mail}</a>, eller läs mer <a href="#om">om oss</a> och <a href="#sa-fungerar-det">hur det fungerar</a>.</p>
+      </div></section>`;
+  };
 
   RQ.demoFig = demoFig;
 

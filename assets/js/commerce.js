@@ -95,14 +95,14 @@
 
     /* ---------------- orders (test orders, kept in this browser) */
     orders: () => store.get("rumiq-orders", []),
-    placeTestOrder({ contact, address, shippingId }) {
+    placeTestOrder({ contact, address, shippingId, gift }) {
       const lines = S.cartLines();
       if (!lines.length) return null;
       const subtotal = S.cartSubtotal(), discount = S.cartDiscount();
       const ship = S.shippingCost(shippingId);
       const order = {
         number: "TEST-" + String(1001 + S.orders().length),
-        createdAt: new Date().toISOString(), contact, address, shippingId,
+        createdAt: new Date().toISOString(), contact, address, shippingId, gift: gift || null,
         lines: lines.map((l) => ({ handle: l.product.handle, title: l.product.name, variant: l.variant.title, quantity: l.quantity, price: l.variant.price })),
         subtotal, discount, shipping: ship, total: subtotal - discount + ship, status: "test", withdrawn: false,
       };

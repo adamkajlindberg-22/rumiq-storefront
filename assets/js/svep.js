@@ -80,7 +80,7 @@
       <div class="sv-info"><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><small>${p.rooms.slice(0, 3).map((r) => `<span>${esc(RQ.roomById(r).name)}</span>`).join(" · ")}</small></div>
     </article>`;
   const svSoon = (c, i) => `<article class="sv-card soon" data-h="soon:${c.id}" style="--i:${i};--tone:${c.tone}" aria-hidden="${i ? "true" : "false"}">
-      <div class="sv-soon"><span class="sv-soon-tag">Kommer snart?</span><span class="sv-soon-sw" aria-hidden="true"></span><b>${esc(c.name)}</b><p>${esc(c.line)}</p>
+      <div class="sv-soon"><span class="sv-soon-tag">Kommer snart?</span>${c.img ? `<img class="sv-soon-img" src="${c.img}" alt="${esc(c.name)}" draggable="false">` : `<span class="sv-soon-sw" aria-hidden="true"></span>`}<b>${esc(c.name)}</b><p>${esc(c.line)}</p>
         <small>Vi har inget lager, så vi kan fråga först. Svep höger om du vill att vi tar in den.</small></div>
       ${stamps("Ja tack", "Ja tack")}
     </article>`;

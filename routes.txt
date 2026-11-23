@@ -17,6 +17,8 @@ upptack
 looks
 svep
 svep-ihop
+delad
+presentkort
 hitta-ratt
 hitta-ratt-present
 hitta-ratt-ord
@@ -88,6 +90,9 @@ artikel-fran-garderob-till-hem
 artikel-harmoniskt-hem
 artikel-skandinavisk-inspiration
 artikel-varmt-vardagsrum
+artikel-belysning-i-lager
+artikel-litet-sovrum
+artikel-hyresvanlig-inredning
 look-lugn-hall
 look-mjuk-kvall
 look-frukostbanken

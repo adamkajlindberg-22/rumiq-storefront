@@ -393,7 +393,7 @@
         <div class="lp-grid">
           <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage" })}${RQ.hotspots.caption()}</div>
           <div class="lp-tx"><span class="eyebrow">Look · <span>${esc(room.name)}</span></span><h1 class="h1">${esc(l.name)}</h1><p class="lead">${esc(l.lead)}</p>
-            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item"><button type="button" data-sheet="${h}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
+            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
             <div class="lp-sum"><span>Hela looken${lookNet(l) < lookTotal(l) ? ` <small>du sparar ${kr(lookTotal(l) - lookNet(l))}</small>` : ""}</span><b>${lookNet(l) < lookTotal(l) ? `<s>${kr(lookTotal(l))}</s> ` : ""}${kr(lookNet(l))}</b></div>
             <div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button><button class="btn ghost" type="button" data-look-save="${l.id}">Spara looken</button></div>
             <p class="small" style="margin-top:1rem">Produkterna är exempel tills butiken öppnar.</p></div>
@@ -411,7 +411,7 @@
     html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Önska"]]), "Önska", "Vi har inget lager, så vi kan lyssna först. Rösta fram nästa produkt eller föreslå något helt eget.")}
       <section class="wrap onska" style="padding-bottom:3rem"><h2 class="h3" id="rosta">Rösta fram nästa produkt</h2><p class="small" style="margin:.4rem 0 1.2rem">Välj upp till tre saker du vill att vi tar in.</p>
         <p class="vote-left" id="voteLeft" aria-live="polite"></p>
-        <div class="vote-grid">${RQ.CANDIDATES.map((c) => `<button type="button" class="vote" data-vote="${c.id}" aria-pressed="false"><span class="sw" style="background:${c.tone}"></span><b>${esc(c.name)}</b><span>${esc(c.line)}</span><i aria-hidden="true">${ICO.heart}</i></button>`).join("")}</div>
+        <div class="vote-grid">${RQ.CANDIDATES.map((c) => `<button type="button" class="vote" data-vote="${c.id}" aria-pressed="false">${c.img ? `<img class="vote-img" src="${c.img}" alt="" loading="lazy" width="400" height="400">` : `<span class="sw" style="background:${c.tone}"></span>`}<b>${esc(c.name)}</b><span>${esc(c.line)}</span><i aria-hidden="true">${ICO.heart}</i></button>`).join("")}</div>
         <p class="small" style="margin-top:1.4rem">Vi räknar rösterna när butiken öppnar. Din röst sparas i den här webbläsaren.</p>
         <form class="vote-mail" id="voteMail" novalidate><label for="voteEmail">Vill du veta vad som vann?</label><div class="field"><input id="voteEmail" type="email" autocomplete="email" placeholder="Din e-post"><button class="btn sm" type="submit">Mejla mig</button></div><p class="nt-err" role="alert"></p><p class="nt-ok" role="status">Tack. Ett mejl när resultatet är klart. Inget annat.</p></form>
       </section>
@@ -524,7 +524,7 @@
     });
     return () => offs.forEach((f) => f());
   };
-  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.map((c) => `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
+  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>
       <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Färdiga looks</a></nav>`;
 
