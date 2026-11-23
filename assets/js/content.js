@@ -26,15 +26,11 @@
         </ol>
         <h2>Verktygen, alla gratis</h2>
         <table class="tbl"><thead><tr><th>Verktyg</th><th>Vad det gör</th><th>Konto</th></tr></thead><tbody>
-          <tr><td><a href="#studio-stil">Hitta min stil</a></td><td>Välj bilderna som känns mest som hemma och få din stil.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#studio-hemurval">Hitta ditt hemurval</a></td><td>Välj rum och behov, få passande produkter.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#presentguiden">Presentguiden</a></td><td>Tre frågor och ett maxpris.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#studio-stylist">AI-stylist</a></td><td>Ställ frågor om ditt rum och få råd och förslag.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#studio-sok">Smart sökning</a></td><td>Beskriv i en mening vad du letar efter.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#studio-analys">Stilanalys</a></td><td>Färgpalett och stil ur ett foto av ditt rum.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#studio-rum">Se det i ditt rum</a></td><td>Placera produkter i ett foto av ditt rum.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#studio-kombinera">Kombinera och matcha</a></td><td>Bygg en look, se totalpriset och få stylingråd.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#mitt-hem">Mitt hem</a></td><td>Allt du sparat, samlat på ett ställe.</td><td>Sparas i din webbläsare</td></tr>
+          <tr><td><a href="#svep">Svep fram din stil</a></td><td>Svep tio kort eller svara på fyra snabba frågor och få din stilprofil.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#mitt-rum">Mitt rum</a></td><td>Se produkterna i ett foto av ditt rum, dag som kväll. Här finns också Färger ur ditt rum.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#hitta-ratt">Hitta rätt</a></td><td>Till ditt hem, som present eller med egna ord. AI-stylisten finns ett tryck bort.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#looks">Looks</a></td><td>Färdiga looks med rabatt, eller bygg din egen.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#mitt-hem">Mitt hem</a></td><td>Favoriter, dina rum och mått, din stil och dina projekt på ett ställe.</td><td>Sparas i din webbläsare</td></tr>
         </tbody></table>
         <p class="note">Verktygens resultat är förslag, inte garantier eller produktfakta. Kontrollera alltid mått, material och pris på produktsidan innan du köper.</p>`,
     },
@@ -177,7 +173,7 @@
         <h2>Där vi är i dag</h2>
         <p>RumIQ är i en tidig fas. Sortimentet växer och vissa produkter är tydligt märkta exempel som inte går att köpa än. Tanken är att leverantörerna skickar direkt till dig, men inga leverantörer eller leveransregler är bekräftade ännu.</p>
         <h2>Frågor eller idéer?</h2>
-        <p>Skriv till ${mail} eller <a href="#ideer">dela en idé</a>. Vi läser allt.</p>`,
+        <p>Skriv till ${mail} eller <a href="#onska">önska något</a>. Vi läser allt.</p>`,
     },
   };
 
@@ -256,7 +252,7 @@
         <h2>En bas, en värme, en kontrast</h2><p>Tänk i tre lager. En lugn bas för väggar och stora ytor, ofta ljus kalk eller havre. En värme från trä, terrakotta eller ull. Och en kontrast, något mörkare som får resten att vila: grafit, en djup grön eller svart metall.</p>
         <h2>Ljuset bestämmer</h2><p>Samma vita vägg ser blå ut i norrljus och gul i kvällslampans sken. Titta på färgprover vid olika tider på dygnet innan du bestämmer dig. Varmt ljus från lampor med opal- eller textilskärm gör det mesta mjukare.</p>
         <h2>Upprepa, men inte exakt</h2><p>En färg som återkommer i två eller tre rum binder ihop hemmet. Låt den komma tillbaka i olika material: en kudde i ett rum, en kruka i ett annat.</p>
-        <p>Vill du veta vilka färger ditt rum redan har? <a href="#studio-analys">Stilanalysen</a> plockar ut paletten ur ett foto.</p>`,
+        <p>Vill du veta vilka färger ditt rum redan har? <a href="#studio-analys">Färger ur ditt rum</a> plockar ut paletten ur ett foto.</p>`,
       picks: ["plad-ullblandning-havre", "terrakottakruka-rafflad", "lysa-keramiklampa"] },
     { slug: "texturer-och-material", img: "assets/img/mag/texturer-1200.webp", minutes: 3, rooms: ["vardagsrum", "badrum"],
       title: "Texturer och material: ge ett enkelt rum personlighet",
@@ -272,7 +268,7 @@
       body: `<p>De flesta har en tydligare stil i garderoben än i vardagsrummet. Det är inte konstigt: kläder väljer vi varje dag, möbler några gånger i livet. Men smaken är densamma, och den går att låna.</p>
         <h2>Öppna garderoben</h2><p>Vilka färger dominerar? Vilka material tar du helst på dig: stickat, linne, denim? Är du mer för det rena och enkla eller det mjuka och lagrade? Svaren är en bra start för hemmet också.</p>
         <h2>Översätt materialen</h2><p>Älskar du ullkoftor blir en pläd i ullblandning ett naturligt val. Gillar du linneskjortor passar kuddfodral i linne. Den som bär mycket grafit trivs ofta med mörka detaljer, som en tvålpump i mörkt stengods eller en grafisk affisch.</p>
-        <h2>Gör testet</h2><p>Vill du ha hjälp att sätta ord på stilen? <a href="#studio-stil">Hitta min stil</a> tar en minut och ger förslag ur sortimentet.</p>`,
+        <h2>Gör testet</h2><p>Vill du ha hjälp att sätta ord på stilen? <a href="#svep">Svep fram din stil</a> tar en minut och ger förslag ur sortimentet.</p>`,
       picks: ["plad-ullblandning-havre", "vila-paslakanset-linne", "glob-bordslampa-opalglas"] },
     { slug: "harmoniskt-hem", img: "assets/img/mag/harmoniskt-1200.webp", minutes: 5, rooms: ["vardagsrum", "hall", "sovrum"],
       title: "7 sätt att skapa ett mer harmoniskt hem",

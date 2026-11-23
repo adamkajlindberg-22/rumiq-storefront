@@ -17,6 +17,10 @@ upptack
 looks
 svep
 svep-ihop
+hitta-ratt
+hitta-ratt-present
+hitta-ratt-ord
+onska
 for-dig
 rosta
 studio-plus

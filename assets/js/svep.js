@@ -72,6 +72,8 @@
   const stamps = (yes, up) => `<span class="sv-stamp yes" aria-hidden="true">${yes}</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">${up}</span>`;
   const svCard = (p, i, why) => `<article class="sv-card" data-h="${p.handle}" data-img="0" style="--i:${i}" aria-hidden="${i ? "true" : "false"}">
       <div class="sv-ims">${svImgs(p).map((m, k) => `<img class="${k ? "" : "on"}" src="${m.src}" srcset="${m.set}" sizes="(min-width:900px) 26rem, 88vw" alt="${esc(m.alt)}" draggable="false" ${i > 1 || k ? 'loading="lazy"' : ""}>`).join("")}</div>
+      ${!i && RQ.film && RQ.film(p) ? `<video class="sv-film" src="${RQ.film(p)}" muted playsinline loop autoplay preload="metadata" aria-hidden="true"></video>` : ""}
+      ${!i && RQ.LAMPS && RQ.LAMPS.includes(p.handle) ? `<img class="sv-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" draggable="false" onerror="this.remove()">` : ""}
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       ${why ? `<span class="sv-why">${esc(why)}</span>` : ""}
       ${stamps("Spara", "I varukorgen")}

@@ -43,9 +43,12 @@
 
   /* ------------------------------------------------------------------ fly to cart */
   const cartTarget = () => [...$$(".dock [data-open-cart], .tools [data-open-cart]")].find((b) => { const r = b.getBoundingClientRect(); return r.width > 0 && getComputedStyle(b).visibility !== "hidden" && r.bottom > 0 && r.top < innerHeight; });
-  RQ.fly = (from, src) => {
+  // a saved product flies to the heart (Sparat in the dock, or the heart in the header)
+  const wishTarget = () => [...$$(".dock [data-dock=sparat], .tools .wishlink")].find((b) => { const r = b.getBoundingClientRect(); return r.width > 0 && getComputedStyle(b).visibility !== "hidden" && r.bottom > 0 && r.top < innerHeight; });
+  RQ.flyWish = (btn) => { const src = flySource(btn); if (src) RQ.fly(src, null, wishTarget()); };
+  RQ.fly = (from, src, to) => {
     if (reduced() || !from || !from.getBoundingClientRect) return;
-    const t = cartTarget(); if (!t) return;
+    const t = to || cartTarget(); if (!t) return;
     const a = from.getBoundingClientRect(), b = t.getBoundingClientRect(); if (!a.width) return;
     const size = Math.min(140, Math.max(48, a.width));
     const im = document.createElement("img");
@@ -94,7 +97,7 @@
       const c = this.cfg(p), r = this.range(c);
       return `<div class="lk" role="group" aria-label="Leveranskoll"><p class="lk-h">Leveranskoll</p>
         <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="${c.fromCountry ? "on" : ""}"><i></i><b>Skickas från</b><span>${c.fromCountry ? esc(c.fromCountry) : PENDING}</span></li><li class="${r ? "on" : ""}"><i></i><b>Hos dig</b><span>${r || PENDING}</span></li></ol>
-        <p class="lk-f">${c.openPurchaseDays ? `${c.openPurchaseDays} dagars öppet köp.` : "14 dagars ångerrätt."} ${c.returnText ? esc(c.returnText) : "Hur returen går till står här när den är bekräftad."}</p></div>`;
+        <p class="lk-f">${c.openPurchaseDays ? `${c.openPurchaseDays} dagars öppet köp.` : "14 dagars ångerrätt."} ${c.returnText ? esc(c.returnText) : "Hur returen går till står här när den är bekräftad."}${(window.RQ_CONFIG || {}).freeShippingFrom ? ` Fri frakt till ombud och paketskåp från ${kr(window.RQ_CONFIG.freeShippingFrom)}.` : ""}</p></div>`;
     },
   };
 
@@ -341,9 +344,11 @@
       if (w > 0) { const c = hex2rgb(p.tone[0]); t.tone = t.tone ? t.tone.map((v, i) => (v * t.likes + c[i]) / (t.likes + 1)) : c; t.likes++; }
       t.seen[h] = w; t.n++; ls.set("rumiq-taste", t);
       const top = this.top(t)[0];
-      if (top) { const old = S.style && S.style(); if (!old || old.source !== "quiz") S.saveStyle({ ...(old || {}), style: top, source: "svep" }); }
+      if (top) { const old = S.style && S.style(); S.saveStyle({ ...(old || {}), style: top, source: "svep" }); }
       return t;
     },
+    // Snabbval (the four quick questions) feeds the same profile, so there is only one style
+    boost(style, w) { const t = this.get(); t.styles[style] = (t.styles[style] || 0) + w; t.n++; ls.set("rumiq-taste", t); return t; },
     top(t = this.get()) { return Object.entries(t.styles).filter((e) => e[1] > 0).sort((a, b) => b[1] - a[1]).map((e) => e[0]); },
     score(p, t = this.get()) {
       let s = p.styles.reduce((a, k) => a + (t.styles[k] || 0), 0) + (t.cats[p.cat] || 0) * 0.8;
@@ -376,7 +381,8 @@
   V.looks = () => ({
     title: "Looks · RumIQ",
     html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", "Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.")}
-      <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}</div></section>`,
+      <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}</div>
+        <a class="own-look" href="#studio-kombinera"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look</b><small>Välj upp till sex saker, se totalpriset och hur väl de går ihop.</small></span></a></section>`,
   });
   V.look = (id) => {
     const l = lookById(id); if (!l) return null; const room = RQ.roomById(l.room);
@@ -399,15 +405,17 @@
 
   /* ------------------------------------------------------------------ Rösta */
   const MAXV = 3;
-  V.rosta = () => ({
-    title: "Rösta fram nästa produkt · RumIQ",
-    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Rösta"]]), "Rösta fram nästa produkt", "Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker du vill att vi tar in.")}
-      <section class="wrap" style="padding-bottom:6rem">
+  /* Önska: vote for the next product and share your own ideas, on one page (was Rösta and Dela en idé) */
+  V.onska = () => ({
+    title: "Önska · RumIQ",
+    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Önska"]]), "Önska", "Vi har inget lager, så vi kan lyssna först. Rösta fram nästa produkt eller föreslå något helt eget.")}
+      <section class="wrap onska" style="padding-bottom:3rem"><h2 class="h3" id="rosta">Rösta fram nästa produkt</h2><p class="small" style="margin:.4rem 0 1.2rem">Välj upp till tre saker du vill att vi tar in.</p>
         <p class="vote-left" id="voteLeft" aria-live="polite"></p>
         <div class="vote-grid">${RQ.CANDIDATES.map((c) => `<button type="button" class="vote" data-vote="${c.id}" aria-pressed="false"><span class="sw" style="background:${c.tone}"></span><b>${esc(c.name)}</b><span>${esc(c.line)}</span><i aria-hidden="true">${ICO.heart}</i></button>`).join("")}</div>
         <p class="small" style="margin-top:1.4rem">Vi räknar rösterna när butiken öppnar. Din röst sparas i den här webbläsaren.</p>
         <form class="vote-mail" id="voteMail" novalidate><label for="voteEmail">Vill du veta vad som vann?</label><div class="field"><input id="voteEmail" type="email" autocomplete="email" placeholder="Din e-post"><button class="btn sm" type="submit">Mejla mig</button></div><p class="nt-err" role="alert"></p><p class="nt-ok" role="status">Tack. Ett mejl när resultatet är klart. Inget annat.</p></form>
-      </section>`,
+      </section>
+      <section class="wrap onska" id="ideer" style="padding-bottom:6rem">${ideasHtml()}</section>`,
     mount(root) {
       const left = $("#voteLeft", root);
       const paint = () => { const v = ls.get("rumiq-votes", []); $$("[data-vote]", root).forEach((b) => { const on = v.includes(b.dataset.vote); b.setAttribute("aria-pressed", on); b.classList.toggle("on", on); }); const n = MAXV - v.length; left.textContent = n ? `Du har ${n} av ${MAXV} röster kvar.` : "Tack. Du har använt dina tre röster. Tryck igen för att ändra."; };
@@ -423,8 +431,22 @@
         $(".nt-err", f).textContent = ""; post({ email: val, lista: "Rösta", roster: ls.get("rumiq-votes", []).join(", ") }).then((res) => afterPost(f, res, "Tack. Ett mejl när resultatet är klart. Inget annat."));
       });
       paint();
+      root.addEventListener("click", (e) => { const b = e.target.closest("[data-idea-vote]"); if (b) { S.voteIdea(b.dataset.ideaVote); $("#ideer", root).innerHTML = ideasHtml(); } });
+      root.addEventListener("submit", (e) => {
+        const f = e.target.closest("#ideaForm"); if (!f) return; e.preventDefault();
+        if (!f.title.value.trim()) { $("#ideaStatus", root).textContent = "Skriv en kort rubrik."; return; }
+        S.addIdea(f.title.value.trim(), f.text.value.trim()); RQ.toast("Tack för idén!"); $("#ideer", root).innerHTML = ideasHtml();
+      });
     },
   });
+  const ideasHtml = () => {
+    const ideas = S.ideas().sort((a, b) => b.votes - a.votes);
+    return `<h2 class="h3">Föreslå något eget</h2><p class="small" style="margin:.4rem 0 1.2rem">En produkt du saknar eller något vi kan göra bättre. Rösta gärna på andras idéer.</p>
+      ${ideas.length ? `<div class="idea-list">${ideas.map((i) => `<div class="order idea"><button class="chip" type="button" data-idea-vote="${i.id}" aria-pressed="${!!i.voted}">▲ ${i.votes}</button><div><b>${esc(i.title)}</b><p class="small">${esc(i.text)}</p></div></div>`).join("")}</div>` : ""}
+      <form id="ideaForm" class="form-grid" novalidate style="margin-top:1.4rem;max-width:44rem"><label class="full">Rubrik<input name="title" maxlength="80" required placeholder="Till exempel: Fler mörka textilier"></label><label class="full">Beskriv gärna lite mer<textarea name="text" rows="3" maxlength="600"></textarea></label><button class="btn" type="submit">Skicka idén</button><p class="status full" id="ideaStatus"></p></form>
+      <p class="note">I förhandsversionen sparas idéerna bara i din webbläsare och syns inte för andra.</p>`;
+  };
+  V.rosta = V.onska;
 
   /* ------------------------------------------------------------------ Dra solen (moved from home) */
   RQ.sunSection = () => `<section class="sec kalk" id="solen"><div class="wrap sun">
@@ -502,20 +524,20 @@
     });
     return () => offs.forEach((f) => f());
   };
-  RQ.voteTeaser = () => `<a class="vtz" href="#rosta"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.map((c) => `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
+  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.map((c) => `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>
-      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Hitta din stil</a><a class="chip" href="#looks">Färdiga looks</a><a class="chip" href="#studio">Fler verktyg</a></nav>`;
+      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Färdiga looks</a></nav>`;
 
   /* ------------------------------------------------------------------ Upptäck */
   V.upptack = () => ({
     title: "Upptäck · RumIQ",
     html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck"]]), "Upptäck", "Gå in i rummen, svep fram din stil eller ta en färdig look. Allt går att handla där du står.")}
       <section class="wrap up-top">${RQ.svepTeaser()}</section>
-      <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Rum att handla i</h2><p>Tryck på ett rum och sedan på prickarna.</p></div><a class="link" href="#rum">Alla rum</a></div>
-        <div class="up-rooms">${RQ.ROOMS.map((r) => `<a class="up-room" href="#rum-${r.id}"><img src="assets/img/rum/${r.id}-600.webp" alt="" loading="lazy" decoding="async"><span><b>${esc(r.name)}</b><small>${RQ.hotspots.handles(r.id).length} saker i bilden</small></span></a>`).join("")}</div></div></section>
+      ${RQ.journey.html()}
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Färdiga looks</h2><p>Saker som hör ihop, med ett tryck.</p></div><a class="link" href="#looks">Alla looks</a></div><div class="looks-row">${RQ.LOOKS.map(RQ.lookCard).join("")}</div></div></section>
       <section class="wrap" style="margin-bottom:4rem">${RQ.voteTeaser()}</section>
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Magasin</h2><p>Korta texter om ljus, material, färg och vardag.</p></div><a class="link" href="#magasin">Alla artiklar</a></div><div class="mag-grid">${RQ.ARTICLES.slice(0, 3).map(RQ.magCard).join("")}</div></div></section>`,
+    mount: (root) => RQ.journey.mount(root),
   });
 
   /* ------------------------------------------------------------------ colour and mood search */

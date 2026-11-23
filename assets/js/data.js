@@ -270,6 +270,11 @@
     { id: "vit", name: "Vit", hex: "#F2F0EC" }, { id: "grafit", name: "Grafit", hex: "#3A3936" },
   ];
 
+  /* Product films: short silent loops (5–6 s) shown on the product page and on Svep cards.
+     Add a line per film, e.g. "glob-bordslampa-opalglas": "assets/video/p/glob-bordslampa-opalglas.mp4". */
+  RQ.FILMS = {};
+  RQ.film = (p) => (p && RQ.FILMS[p.handle]) || "";
+
   /* Approximate 3D models (assets/3d, made by tools/models.py). wall: placed on a wall in AR. */
   RQ.MODELS = {
     "glob-bordslampa-opalglas": {}, "lysa-keramiklampa": {}, "svamp-uppladdningsbar-lampa": {}, "sand-keramikvas": {},

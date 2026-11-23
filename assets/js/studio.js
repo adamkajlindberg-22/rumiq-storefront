@@ -2,7 +2,7 @@
    No photo leaves the device. Where a tool uses rules instead of an AI service, it says so. */
 (function () {
   const RQ = window.RQ, S = RQ.shop, V = RQ.views, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc, I = RQ.I, kr = S.kr;
-  const crumbs = (last) => RQ.crumbs([["Hem", "hem"], ["RumIQ Studio", "studio"], [last]]);
+  const crumbs = (last, parent = ["Mitt rum", "mitt-rum"]) => RQ.crumbs([["Hem", "hem"], parent, [last]]);
   const icon = (k) => `<span class="ic">${I[k]}</span>`;
   const priceOk = (p, max) => !max || p.price <= max;
 
@@ -34,7 +34,7 @@
   RQ.beforeAfter = (cls = "") => `<figure class="${cls}"><div class="ba" id="ba" style="--x:50%"><img src="assets/img/studio/fore-1600.webp" alt="Rummet före inredning"><img class="after" src="assets/img/rum-1600.webp" alt="En möjlig inredningsidé i samma rum"><span class="bar"></span><span class="knob">⇆</span><span class="lab l">Före</span><span class="lab r">Inredningsidé</span><input type="range" min="0" max="100" value="50" aria-label="Jämför före och efter"></div><figcaption class="caption">AI-skapat inspirationsexempel. Inte ett verkligt kundresultat och inte produkter ur sortimentet.</figcaption></figure>`;
   RQ.mountBA = (root) => { const ba = $("#ba", root); if (!ba) return; const r = $("input", ba); r.addEventListener("input", () => ba.style.setProperty("--x", r.value + "%")); };
 
-  V.studio = () => ({
+  V.studioOld = () => ({
     title: "RumIQ Studio · Planera ditt hem med trygghet",
     html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["RumIQ Studio"]])}<span class="eyebrow" style="display:block;margin-top:1rem">RumIQ Studio</span><h1 class="h1">Planera ditt hem med trygghet</h1><p class="lead">Verktyg som hjälper dig att välja rätt från början. Allt är gratis, och resultaten är förslag, inte garantier.</p></header>
       <section class="wrap split" style="padding-bottom:5rem;align-items:center">${RQ.beforeAfter()}
@@ -55,6 +55,23 @@
         <div class="panel"><h3 class="h3" style="margin-bottom:1rem">Regler för verktygen</h3><ul class="rules">${RQ.STUDIO_RULES.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div></div></section>`,
     mount: RQ.mountBA,
   });
+
+
+  /* ---------------------------------------------------------------- Hitta rätt
+     One helper instead of four: the home guide, the gift guide and "in your own words" share one page
+     with tabs; the AI stylist is one tap away. The old addresses open the matching tab. */
+  const FR = [["", "Till mitt hem"], ["present", "Som present"], ["ord", "Med egna ord"]];
+  V.findRight = (mode = "") => {
+    const inner = mode === "present" ? V.giftFinder() : mode === "ord" ? V.studioSearch() : V.studioGuide();
+    const body = inner.html.replace(/^\s*<header class="page-head[\s\S]*?<\/header>/, "");
+    return {
+      title: inner.title,
+      html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Hitta rätt"]])}<h1 class="h1">Hitta rätt.</h1><p class="lead">Svara på några frågor eller beskriv med egna ord, så visar vi det som passar.</p>
+        <nav class="fr-tabs" aria-label="Hur vill du hitta?">${FR.map(([m, t]) => `<a class="chip" href="#hitta-ratt${m ? "-" + m : ""}"${m === mode ? ' aria-current="true"' : ""}>${t}</a>`).join("")}<a class="fr-ai" href="#studio-stylist">${I.chat || ""}<span>Hellre prata? <b>Fråga stylisten</b></span></a></nav></header>
+        ${body}`,
+      mount: inner.mount,
+    };
+  };
 
   /* ---------------------------------------------------------------- photo input helper */
   function photoInput(root, onImage, { sample = true } = {}) {
@@ -81,7 +98,7 @@
   V.studioRoom = (preselect) => {
     let chosen = preselect && RQ.byHandle(preselect) ? [preselect] : [];
     return {
-      title: "Se det i ditt rum · RumIQ Studio",
+      title: "Se det i ditt rum · Mitt rum · RumIQ",
       html: `<header class="page-head wrap">${crumbs("Se det i ditt rum")}<h1 class="h1">Se det i ditt rum</h1><p class="lead">Lägg till ett foto av ditt rum, välj upp till tre produkter och dra dem dit du vill ha dem.</p></header>
         <section class="wrap tool-shell" style="padding-bottom:5rem">
           <div>
@@ -190,8 +207,8 @@
       <div class="sec-head" style="margin:2.4rem 0 1.4rem"><span class="eyebrow">Förslag ur sortimentet</span></div>${RQ.grid(picks, "three")}`;
   };
   V.studioStyle = () => ({
-    title: "Hitta min stil · RumIQ Studio",
-    html: `<header class="page-head wrap">${crumbs("Hitta min stil")}<h1 class="h1">Hitta min stil</h1><p class="lead">Fyra snabba val, ingen bild behövs. Du får en stil, en färgpalett och förslag ur sortimentet.</p></header>
+    title: "Snabbval · Svep · RumIQ",
+    html: `<header class="page-head wrap">${crumbs("Snabbval", ["Svep", "svep"])}<h1 class="h1">Fyra snabba val</h1><p class="lead">Ingen tid att svepa? Fyra val ger din stil, en färgpalett och förslag. Svaren hamnar i samma stilprofil som Svep.</p></header>
       <section class="wrap quiz" style="padding-bottom:5rem">
         <div class="q"><h3>1. Vilket rum tänker du på?</h3><div class="chips" data-q="room">${RQ.ROOMS.map((r) => `<button class="chip" type="button" data-v="${r.id}" aria-pressed="false">${esc(r.name)}</button>`).join("")}</div></div>
         <div class="q"><h3>2. Vilken bild känns mest som hemma?</h3><div class="imgopts" data-q="img">${Object.entries(RQ.STYLES).map(([k, s]) => `<button type="button" data-v="${k}" aria-pressed="false"><img src="${STYLE_IMG[k]}" alt="${esc(s.name)} rum" loading="lazy"><span>${["Ljust och naturligt", "Rent och stilla", "Tidlöst och varmt", "Mjukt och ombonat"][Object.keys(RQ.STYLES).indexOf(k)]}</span></button>`).join("")}</div></div>
@@ -213,6 +230,7 @@
         score[ans.img] += 3; ans.mat.forEach((m) => MATERIALS[m].forEach((s, i) => (score[s] += i ? 0.5 : 1))); (FEEL[ans.feel] || []).forEach((s, i) => (score[s] += i ? 0.5 : 1.5));
         const style = Object.entries(score).sort((a, b) => b[1] - a[1])[0][0];
         S.saveStyle({ style, room: ans.room, materials: ans.mat, feel: ans.feel, source: "quiz" });
+        if (RQ.taste && RQ.taste.boost) RQ.taste.boost(style, 3);
         $("#styleOut", root).innerHTML = RQ.styleResult(style, ans.room) + `<div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-hem">Sparad i Mitt hem</a><a class="btn ghost" href="#studio-stylist">Fråga stylisten</a></div>`;
         RQ.watch(root); $("#styleOut", root).scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -257,8 +275,8 @@
     return { bright, temp, satw, style, mats, tips };
   }
   V.studioAnalysis = () => ({
-    title: "Stilanalys · RumIQ Studio",
-    html: `<header class="page-head wrap">${crumbs("Stilanalys")}<h1 class="h1">Stilanalys</h1><p class="lead">Ladda upp ett foto av ditt rum. Du får rummets färgpalett, en stil som passar och förslag på vad som skulle lyfta det.</p></header>
+    title: "Färger ur ditt rum · Mitt rum · RumIQ",
+    html: `<header class="page-head wrap">${crumbs("Färger ur ditt rum")}<h1 class="h1">Färger ur ditt rum</h1><p class="lead">Ladda upp ett foto av ditt rum. Du får rummets färgpalett, en stil som passar och förslag på vad som skulle lyfta det.</p></header>
       <section class="wrap tool-shell" style="padding-bottom:5rem"><div><div id="anStart">${dropHtml("Lägg till ett foto av rummet")}</div><div id="anOut" hidden></div></div>
         <aside class="panel"><h3 class="h3" style="font-size:1.2rem">Så görs analysen</h3><p class="small" style="margin-top:.6rem">Analysen görs i din webbläsare utifrån färgerna och ljuset i bilden. Den använder ingen AI-tjänst och fotot skickas ingenstans. Den ser alltså färger och ljus, inte föremål.</p></aside></section>`,
     mount(root) {
@@ -324,8 +342,8 @@
   };
 
   V.studioStylist = () => ({
-    title: "AI-stylist · RumIQ Studio",
-    html: `<header class="page-head wrap">${crumbs("AI-stylist")}<h1 class="h1">AI-stylist</h1><p class="lead">Beskriv ditt rum och vad du vill förändra. Du får praktiska råd och, när det passar, produkter ur sortimentet.</p></header>
+    title: "AI-stylist · Hitta rätt · RumIQ",
+    html: `<header class="page-head wrap">${crumbs("AI-stylist", ["Hitta rätt", "hitta-ratt"])}<h1 class="h1">AI-stylist</h1><p class="lead">Beskriv ditt rum och vad du vill förändra. Du får praktiska råd och, när det passar, produkter ur sortimentet.</p></header>
       <section class="wrap tool-shell" style="padding-bottom:5rem">
         <div class="chat"><div class="log" id="log" aria-live="polite"><div class="msg ai">Hej! Vad vill du förändra hemma? Berätta gärna vilket rum det gäller och hur det känns i dag.</div></div>
           <form id="chatForm"><label class="sr" for="chatIn">Din fråga</label><input id="chatIn" type="text" placeholder="Till exempel: mitt vardagsrum känns kalt" autocomplete="off"><button class="btn" type="submit">Fråga</button></form></div>
@@ -358,7 +376,7 @@
   });
 
   V.studioSearch = () => ({
-    title: "Smart sökning · RumIQ Studio",
+    title: "Med egna ord · Hitta rätt · RumIQ",
     html: `<header class="page-head wrap">${crumbs("Smart sökning")}<h1 class="h1">Smart sökning</h1><p class="lead">Beskriv i en mening vad du behöver, med egna ord. Rum, färg, stil och maxpris förstår vi.</p></header>
       <section class="wrap" style="padding-bottom:5rem"><form id="ssForm" class="signup" style="background:var(--natt);max-width:52rem"><label for="ssIn">Vad letar du efter?</label><div class="field"><input id="ssIn" placeholder="Till exempel: något grönt och mjukt till soffan under 300 kr"><button class="btn champ" type="submit">Sök</button></div></form>
         <div class="chips" style="margin-top:1rem">${["Mjukt ljus till sovrummet", "Ordning i hallen under 400 kr", "Något i ek till köket", "Present till en värd"].map((s) => `<button class="chip" type="button" data-ss="${s}">${s}</button>`).join("")}</div>
@@ -378,7 +396,7 @@
 
   /* ---------------------------------------------------------------- Hitta ditt hemurval */
   V.studioGuide = () => ({
-    title: "Hitta ditt hemurval · RumIQ Studio",
+    title: "Hitta rätt · RumIQ",
     html: `<header class="page-head wrap">${crumbs("Hitta ditt hemurval")}<h1 class="h1">Hitta ditt hemurval</h1><p class="lead">Vad skulle göra hemmet bättre? Välj ett rum och vad du behöver mest, så visar vi passande produkter ur sortimentet.</p></header>
       <section class="wrap quiz" style="padding-bottom:5rem">
         <div class="q"><h3>Vilket rum?</h3><div class="chips" data-q="room">${RQ.ROOMS.map((r) => `<button class="chip" type="button" data-v="${r.id}" aria-pressed="false">${esc(r.name)}</button>`).join("")}</div></div>
@@ -424,8 +442,8 @@
     let board = start && RQ.byHandle(start) ? [start] : [];
     if (!board.length) board = S.cartLines().map((l) => l.product.handle).filter((h, i, a) => a.indexOf(h) === i).slice(0, 6);
     return {
-      title: "Kombinera och matcha · RumIQ Studio",
-      html: `<header class="page-head wrap">${crumbs("Kombinera och matcha")}<h1 class="h1">Kombinera och matcha</h1><p class="lead">Bygg en look av upp till sex produkter. Du ser totalpriset, hur väl sakerna går ihop och får stylingråd.</p></header>
+      title: "Bygg din egen look · Looks · RumIQ",
+      html: `<header class="page-head wrap">${crumbs("Bygg din egen look", ["Looks", "looks"])}<h1 class="h1">Bygg din egen look</h1><p class="lead">Bygg en look av upp till sex produkter. Du ser totalpriset, hur väl sakerna går ihop och får stylingråd.</p></header>
         <section class="wrap tool-shell" style="padding-bottom:5rem">
           <div><div class="board" id="board"></div>
             <div class="panel" style="margin-top:1.4rem"><div class="harmony"><span class="eyebrow">Harmoni</span><div class="meter"><i id="hm" style="width:0"></i></div><b id="hmv">0</b></div><p id="advice" style="margin-top:.8rem;color:#4a4741"></p>
@@ -459,7 +477,7 @@
 
   /* ---------------------------------------------------------------- Presentguiden */
   V.giftFinder = () => ({
-    title: "Presentguiden · RumIQ",
+    title: "Som present · Hitta rätt · RumIQ",
     html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Butik", "butik"], ["Presentguiden"]])}<h1 class="h1">Presentguiden</h1><p class="lead">Svara på tre korta frågor och ange ett maxpris, så visar vi passande saker ur sortimentet.</p></header>
       <section class="wrap quiz" style="padding-bottom:5rem">
         <div class="q"><h3>Vem är presenten till?</h3><div class="chips" data-q="for">${Object.entries(RQ.GIFT_FOR).map(([k, v]) => `<button class="chip" type="button" data-v="${k}" aria-pressed="false">${v}</button>`).join("")}</div></div>
@@ -485,13 +503,13 @@
     return {
       title: "Mitt hem · RumIQ",
       html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Mitt hem"]])}<span class="eyebrow" style="display:block;margin-top:1rem">Ditt privata bibliotek</span><h1 class="h1">Mitt hem</h1><p class="lead">Rumsprojekt, Studio-bilder, favoriter och din stil, samlat på ett ställe så att du kan fortsätta där du slutade.</p>
-          <div class="chips" style="margin-top:1.6rem"><a class="chip" href="#mh-matt">Mina rum och mått (${RQ.homeRooms ? RQ.homeRooms.list().length : 0})</a><a class="chip" href="#mh-rum">Rumsprojekt (${projects.length})</a><a class="chip" href="#mh-fav">Favoriter (${wish.length})</a><a class="chip" href="#mh-stil">Min stil</a><a class="chip" href="#mh-looks">Looks (${looks.length})</a><a class="chip" href="#mh-art">Artiklar (${arts.length})</a></div></header>
+          <div class="chips" style="margin-top:1.6rem"><a class="chip" href="#mh-fav">Favoriter (${wish.length})</a><a class="chip" href="#mh-matt">Mina rum och mått (${RQ.homeRooms ? RQ.homeRooms.list().length : 0})</a><a class="chip" href="#mh-stil">Min stil</a><a class="chip" href="#mh-rum">Rumsprojekt (${projects.length})</a><a class="chip" href="#mh-looks">Looks (${looks.length})</a><a class="chip" href="#mh-art">Artiklar (${arts.length})</a></div></header>
         <section class="wrap" style="padding-bottom:5rem;display:grid;gap:4rem">
+          <div id="mh-fav"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Favoriter</span></div>${wish.length ? `<a class="link" href="#onskelista">Listor per rum och jämför</a>` : ""}</div>${wish.length && RQ.priceWatch ? RQ.priceWatch.html(wish.map((p) => p.handle), "mhw") : ""}${wish.length ? RQ.grid(wish) : `<div class="empty"><h3>Inga favoriter än</h3><p>Tryck på hjärtat på en produkt.</p></div>${RQ.svepNudge ? RQ.svepNudge() : ""}`}</div>
           ${RQ.homeRooms ? RQ.homeRooms.html() : ""}
+          <div id="mh-stil"><div class="sec-head"><span class="eyebrow">Min stil</span></div>${style ? `<div class="result"><h2>${RQ.STYLES[style.style].name}</h2><p style="margin-top:.5rem">${RQ.STYLES[style.style].text}</p>${style.palette ? `<div class="palette">${style.palette.map((t) => `<i style="background:${t}"></i>`).join("")}</div>` : ""}${RQ.styleProfile && RQ.taste.get().n ? `<div class="sp-mix" style="max-width:30rem;margin-top:1rem">${RQ.styleProfile().mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>` : ""}<p class="small">Uppdaterad ${new Date(style.at).toLocaleDateString("sv-SE")}.</p><div class="ctrl-row"><a class="btn sm" href="#svep">Svep mer</a><a class="btn ghost sm" href="#studio-stil">Fyra snabba val</a></div></div>` : `<div class="empty"><h3>Ingen stil sparad än</h3><p>Svep tio kort eller svara på fyra snabba frågor.</p><a class="btn ghost" href="#svep">Svep fram din stil</a></div>`}</div>
           <div id="mh-rum"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Rumsprojekt</span></div>${projects.length > 1 ? `<button class="chip" type="button" id="cmpBtn">Jämför två sida vid sida</button>` : ""}</div>
             ${projects.length ? `<div class="cols3" id="projects">${projects.map((p) => `<article class="colcard" style="cursor:default"><div class="im" style="aspect-ratio:4/3"><img src="${p.img}" alt="${esc(p.title)}"></div><div class="tx"><label class="check" style="font-size:.85rem;margin-bottom:.6rem"><input type="checkbox" data-cmp="${p.id}"> Välj för jämförelse</label><h3 style="font-size:1.2rem">${esc(p.title)}</h3><p class="small">${new Date(p.at).toLocaleDateString("sv-SE")}</p><label style="margin-top:.8rem">Anteckning<textarea rows="2" data-note="${p.id}">${esc(p.note || "")}</textarea></label><div class="ctrl-row"><a class="btn sm" href="#studio-kombinera-${p.handles[0] || ""}">Handla looken</a><button class="chip" type="button" data-del="${p.id}">Ta bort</button></div></div></article>`).join("")}</div><div id="cmpOut"></div>` : `<div class="empty"><h3>Inga rumsprojekt än</h3><p>Placera produkter i ett foto av ditt rum och spara resultatet här.</p><a class="btn ghost" href="#studio-rum">Se det i ditt rum</a></div>`}</div>
-          <div id="mh-fav"><div class="sec-head"><span class="eyebrow">Favoriter</span></div>${wish.length ? RQ.grid(wish) : `<div class="empty"><h3>Inga favoriter än</h3><p>Tryck på hjärtat på en produkt.</p></div>${RQ.svepNudge ? RQ.svepNudge() : ""}`}</div>
-          <div id="mh-stil"><div class="sec-head"><span class="eyebrow">Min stil</span></div>${style ? `<div class="result"><h2>${RQ.STYLES[style.style].name}</h2><p style="margin-top:.5rem">${RQ.STYLES[style.style].text}</p>${style.palette ? `<div class="palette">${style.palette.map((t) => `<i style="background:${t}"></i>`).join("")}</div>` : ""}<p class="small">Från ${style.source === "analys" ? "Stilanalys" : "Hitta min stil"}, ${new Date(style.at).toLocaleDateString("sv-SE")}.</p><div class="ctrl-row"><a class="btn sm" href="#svep">Gör om testet</a><a class="btn ghost sm" href="#studio-stylist">Fråga stylisten</a></div></div>` : `<div class="empty"><h3>Ingen stil sparad än</h3><p>Fyra snabba val ger dig en stil och en palett.</p><a class="btn ghost" href="#svep">Hitta min stil</a></div>`}</div>
           <div id="mh-looks"><div class="sec-head"><span class="eyebrow">Sparade looks</span></div>${looks.length ? looks.map((l) => `<div class="order"><header><b>${esc(l.name)}</b><span class="price" style="font-family:var(--mono)">${kr(l.handles.map(RQ.byHandle).filter(Boolean).reduce((s, p) => s + p.price, 0))}</span></header><div class="board">${l.handles.map(RQ.byHandle).filter(Boolean).map((p) => `<a class="slot" href="#produkt-${p.handle}"><img src="${RQ.img(p, 600)}" alt="${esc(p.name)}"></a>`).join("")}</div><div class="ctrl-row"><a class="btn sm" href="#studio-kombinera-${l.handles[0]}">Öppna</a><button class="chip" type="button" data-dellook="${l.id}">Ta bort</button></div></div>`).join("") : `<div class="empty"><h3>Inga looks än</h3><p>Bygg en look i Kombinera och matcha.</p><a class="btn ghost" href="#studio-kombinera">Kombinera och matcha</a></div>`}</div>
           <div id="mh-art"><div class="sec-head"><span class="eyebrow">Sparade artiklar</span></div>${arts.length ? `<div class="mag-grid">${arts.map(RQ.magCard).join("")}</div>` : `<div class="empty"><h3>Inga sparade artiklar</h3><p>Spara en artikel i magasinet så hamnar den här.</p><a class="btn ghost" href="#magasin">Till magasinet</a></div>`}</div>
           <div class="panel"><h3 class="h3" style="font-size:1.2rem">Dina uppgifter</h3><p class="small" style="margin-top:.5rem">I förhandsversionen sparas allt i Mitt hem bara i den här webbläsaren. Inget skickas till oss. Du kan ta bort allt när du vill.</p><button class="btn ghost sm" type="button" id="clearAll" style="margin-top:1rem">Rensa allt sparat</button></div>

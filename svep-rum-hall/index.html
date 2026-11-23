@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=c00f15ba">
+<link rel="stylesheet" href="assets/css/site.min.css?v=e99701e1">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -54,7 +54,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
         </div></div>
       <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
-      <a class="iconbtn wishlink" href="onskelista/" aria-label="Önskelista"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
+      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat i Mitt hem"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
       <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
       <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
     </div>
@@ -65,7 +65,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <li><a href="butik/">Alla produkter</a></li>
         <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
         <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
-      <div><h4>Mer i butiken</h4><ul><li><a href="nyheter/">Nyheter</a></li><li><a href="favoriter/">Utvalda favoriter</a></li><li><a href="erbjudanden/">Erbjudanden</a></li><li><a href="kollektioner/">Kollektioner</a></li></ul>
+      <div><h4>Mer i butiken</h4><ul><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li></ul>
         <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
         </div>
       <div class="feature"><a href="kategori-belysning-atmosfar/"><img src="assets/img/p/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy"><span>Belysning & atmosfär</span></a><a href="kategori-sovrum-komfort/"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy"><span>Sovrum & komfort</span></a></div>
@@ -77,7 +77,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <button class="iconbtn close" id="mnavClose" type="button" aria-label="Stäng meny"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <h4>Upptäck</h4><a href="upptack/">Allt att upptäcka</a><a href="looks/">Färdiga looks</a><a href="rum/">Rum att handla i</a><a href="svep/">Hitta din stil</a><a href="magasin/">Magasin</a>
   <h4>Butik</h4><a href="butik/">Alla produkter</a><a href="for-dig/">För dig</a><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a>
-  <h4>Mitt rum</h4><a href="mitt-rum/">Mitt rum</a><a href="studio-plus/">Studio Plus</a><a href="studio/">Fler verktyg</a>
+  <h4>Mitt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat och mina rum</a><a href="hitta-ratt/">Hitta rätt</a><a href="studio-plus/">Studio Plus</a>
   <h4>Konto och hjälp</h4><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Var är mitt paket?</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a>
   <div><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Följ dagsljuset</span></button></div>
 </nav>
@@ -86,7 +86,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
   <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
   <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
-  <a href="onskelista/" data-dock="onskelista"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
   <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
 </nav>
 
@@ -105,18 +105,24 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <div class="sv-prog" aria-hidden="true"><i id="svBar" style="width: 0%;"></i></div>
       <div class="sv-deck" id="svDeck" aria-live="polite"><article class="sv-card" data-h="sand-keramikvas" data-img="0" style="--i:2" aria-hidden="true">
       <div class="sv-ims"><img class="on" src="assets/img/p/sand-keramikvas-900.webp" srcset="assets/img/p/sand-keramikvas-600.webp 600w, assets/img/p/sand-keramikvas-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Sand keramikvas" draggable="false" loading="lazy"><img class="" src="assets/img/d/sand-keramikvas-1200.webp" srcset="assets/img/d/sand-keramikvas-600.webp 600w, assets/img/d/sand-keramikvas-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Sand keramikvas, detalj" draggable="false" loading="lazy"></div>
+      
+      
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
       <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
       <div class="sv-info"><div><b>Sand keramikvas</b><span>399 kr</span></div><small><span>Vardagsrum</span> · <span>Kök</span> · <span>Hall</span></small></div>
     </article><article class="sv-card" data-h="forvaringslada-filt" data-img="0" style="--i:1" aria-hidden="true">
       <div class="sv-ims"><img class="on" src="assets/img/p/forvaringslada-filt-900.webp" srcset="assets/img/p/forvaringslada-filt-600.webp 600w, assets/img/p/forvaringslada-filt-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Förvaringslåda filt" draggable="false"><img class="" src="assets/img/d/forvaringslada-filt-1200.webp" srcset="assets/img/d/forvaringslada-filt-600.webp 600w, assets/img/d/forvaringslada-filt-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Förvaringslåda filt, detalj" draggable="false" loading="lazy"></div>
+      
+      
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
       <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
       <div class="sv-info"><div><b>Förvaringslåda filt</b><span>199 kr</span></div><small><span>Sovrum</span> · <span>Hall</span> · <span>Hemmakontor</span></small></div>
     </article><article class="sv-card hint" data-h="stilla-ljusstake-massing-2-pack" data-img="0" style="--i:0" aria-hidden="false">
       <div class="sv-ims"><img class="on" src="assets/img/p/stilla-ljusstake-massing-2-pack-900.webp" srcset="assets/img/p/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/p/stilla-ljusstake-massing-2-pack-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2-pack" draggable="false"><img class="" src="assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp" srcset="assets/img/d/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2-pack, detalj" draggable="false" loading="lazy"></div>
+      
+      
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
       <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
@@ -138,9 +144,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <div class="cols">
       <div class="brand"><img class="logo-day" src="assets/brand/rumiq-grafit.webp" alt="RumIQ" width="480" height="120"><img class="logo-night" src="assets/brand/rumiq-vit.webp" alt="" aria-hidden="true" width="480" height="120"><p>Färre, bättre saker för hemmet. Utvalda i Sverige.</p>
         <form class="news" id="newsForm" novalidate><label for="newsEmail">Nyhetsbrev</label><div class="field"><input type="email" id="newsEmail" name="email" placeholder="Din e-post"><button class="btn sm" type="submit">Prenumerera</button></div></form></div>
-      <div><h4>Butik</h4><ul><li><a href="butik/">Alla produkter</a></li><li><a href="nyheter/">Nyheter</a></li><li><a href="kollektioner/">Kollektioner</a></li><li><a href="favoriter/">Utvalda favoriter</a></li><li><a href="erbjudanden/">Erbjudanden</a></li></ul></div>
-      <div><h4>Inspiration</h4><ul><li><a href="upptack/">Upptäck</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="rum/">Efter rum</a></li><li><a href="magasin/">Magasin</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><a href="om/">Om RumIQ</a></li></ul></div>
-      <div><h4>Kundservice</h4><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Var är mitt paket?</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li><li><a href="ideer/">Dela en idé</a></li></ul></div>
+      <div><h4>Butik</h4><ul><li><a href="butik/">Alla produkter</a></li><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li></ul></div>
+      <div><h4>Inspiration</h4><ul><li><a href="upptack/">Upptäck</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="rum/">Efter rum</a></li><li><a href="magasin/">Magasin</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><a href="onska/">Önska</a></li><li><a href="om/">Om RumIQ</a></li></ul></div>
+      <div><h4>Kundservice</h4><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Var är mitt paket?</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li></ul></div>
       <div><h4>Juridisk information</h4><ul><li><a href="juridik-villkor/">Köpvillkor</a></li><li><a href="juridik-integritet/">Integritetspolicy</a></li><li><a href="juridik-cookies/">Cookiepolicy</a></li><li><a href="juridik-angerratt/">Ångerrätt</a></li><li><a href="juridik-garanti/">Reklamation & garanti</a></li><li><a href="juridik-produktsakerhet/">Produktsäkerhet</a></li><li><a href="juridik-sakerhet/">Säkerhet</a></li><li><a href="juridik-foretag/">Företagsinformation</a></li></ul></div>
     </div>
     <p class="co" id="coInfo"></p>
@@ -159,7 +165,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="search" id="search" role="dialog" aria-modal="true" aria-label="Sök">
   <button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="wrap"><label class="sr" for="searchInput">Sök</label><div class="sfield"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" enterkeyhint="search"></div>
-    <p class="hint">Sök på produkt, material, rum eller färg. Vill du hellre beskriva med egna ord? Prova <a href="studio-sok/" data-close>Smart sökning</a> eller fråga <a href="studio-stylist/" data-close>stylisten</a>.</p>
+    <p class="hint">Sök på produkt, material, rum eller färg. Vill du hellre beskriva med egna ord? Prova <a href="hitta-ratt-ord/" data-close>Hitta rätt med egna ord</a> eller fråga <a href="studio-stylist/" data-close>stylisten</a>.</p>
     <div class="res" id="searchRes"></div></div>
 </div>
 
@@ -173,6 +179,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=c00f15ba"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=e99701e1";</script>
+<script src="assets/js/site.min.js?v=e99701e1"></script>
 </body>
 </html>

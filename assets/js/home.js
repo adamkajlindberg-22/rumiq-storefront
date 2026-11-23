@@ -22,6 +22,7 @@
           <img class="still wide" src="assets/img/rum-1600.webp" srcset="assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w" sizes="100vw" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="2400" height="1340">
           <img class="still start" src="assets/img/hero-start-1600.webp" alt="" aria-hidden="true" width="1600" height="900">
           <video id="heroVideo" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+          <video class="mloop" id="heroLoop" muted playsinline preload="none" aria-hidden="true" tabindex="-1" poster="assets/img/hero-m-start.webp"></video>
           <canvas id="dust" aria-hidden="true"></canvas>
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
@@ -37,7 +38,17 @@
         </div>
       </section>
 
-      <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li><b>14 dagars ångerrätt</b>, ångra med en knapp</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
+      <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li>${((window.RQ_CONFIG || {}).delivery || {}).openPurchaseDays ? `<b>${window.RQ_CONFIG.delivery.openPurchaseDays} dagars öppet köp</b>, ångra med en knapp` : `<b>14 dagars ångerrätt</b>, ångra med en knapp`}</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
+
+      <section class="hrooms" aria-label="Handla efter rum"><div class="wrap hrooms-in">
+        ${RQ.ROOMS.map((r) => `<a class="hroom" href="#rum-${r.id}"><span class="hroom-im"><img src="assets/img/rum/${r.id}-600.webp" alt="" loading="lazy" decoding="async"></span><span>${esc(r.name)}</span></a>`).join("")}
+        <a class="hroom all" href="#butik"><span class="hroom-im"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></span><span>Alla produkter</span></a>
+      </div></section>
+
+      <section class="sec" id="utvalt">
+        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">${forYou ? "Utvalt för dig" : "Populärt just nu"}</h2><p>${forYou ? "Sorterat efter det du sparat i Svep." : "Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning."}</p></div><a class="link" href="${forYou ? "#for-dig" : "#butik"}">${forYou ? "Hela butiken för dig" : "Alla produkter"}</a></div>
+          ${RQ.grid(featured, "three")}</div>
+      </section>
 
       ${RQ.svepHome ? RQ.svepHome.html() : ""}
 
@@ -54,21 +65,10 @@
         </div>
       </section>
 
-      ${RQ.journey.html()}
 
       <section class="sec looks-sec" id="looks-hem">
         <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Färdiga looks</h2><p>Tre eller fyra saker som hör ihop. Ett tryck, så ligger allt i varukorgen.</p></div><a class="link" href="#looks">Alla looks</a></div>
           <div class="looks-row">${RQ.LOOKS.map(RQ.lookCard).join("")}</div></div>
-      </section>
-
-      <section class="sec" id="utvalt">
-        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">${forYou ? "Utvalt för dig" : "Utvalt just nu"}</h2><p>${forYou ? "Sorterat efter det du sparat i Svep." : "Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning."}</p></div><a class="link" href="${forYou ? "#for-dig" : "#butik"}">${forYou ? "Hela butiken för dig" : "Alla produkter"}</a></div>
-          ${RQ.grid(featured, "three")}</div>
-      </section>
-
-      <section class="sec">
-        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Magasin</h2><p>Korta texter om ljus, material, färg och vardag.</p></div><a class="link" href="#magasin">Alla artiklar</a></div>
-          <div class="mag-grid compact">${RQ.ARTICLES.slice(0, 3).map(RQ.magCard).join("")}</div></div>
       </section>
 
       <section class="sec cta-band" id="bli-forst">
@@ -163,7 +163,6 @@
     };
 
 
-    off.push(RQ.journey.mount(root));
     if (RQ.svepHome) off.push(RQ.svepHome.mount(root));
 
     // waiting list
@@ -182,6 +181,13 @@
     const onScroll = () => { wake(); RQ.navCheck(); };
     on(window, "scroll", onScroll, { passive: true });
     on(window, "resize", () => { lastP = -1; onScroll(); }, { passive: true });
+    // phones: the standing cut of the film plays once behind the headline and rests on its last frame
+    const loop = $("#heroLoop", root);
+    if (isStatic && loop && mq("(max-width: 820px)") && !mq("(prefers-reduced-motion: reduce)") && conn.saveData !== true && !/(^|-)2g$/.test(conn.effectiveType || "")) {
+      loop.src = "assets/video/hero-m.mp4"; loop.classList.add("on");
+      const pl = loop.play(); if (pl && pl.catch) pl.catch(() => loop.classList.remove("on"));
+      on(loop, "error", () => loop.classList.remove("on"));
+    }
     if (isStatic) paint(1);
     else { paint(prog()); dust($("#dust", root), { count: 60, rgb: "255,244,222", alpha: (x, y) => Math.max(0, 1 - Math.abs(x - (0.7 - y * 0.35)) * 3.2) * 0.55 }); load(); wake(); }
 

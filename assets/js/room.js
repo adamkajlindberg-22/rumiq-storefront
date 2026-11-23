@@ -213,6 +213,7 @@
   /* ---------------------------------------------------------------- the room editor (#mitt-rum) */
   const V = RQ.views;
   const ICO = {
+    moon: '<svg viewBox="0 0 24 24"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg>',
     wand: '<svg viewBox="0 0 24 24"><path d="M4 20L15 9M14 4v3M19 9h-3M17.5 5.5l-2 2M9 4l.6 1.4L11 6l-1.4.6L9 8l-.6-1.4L7 6l1.4-.6zM19 14l.6 1.4L21 16l-1.4.6L19 18l-.6-1.4L17 16l1.4-.6z"/></svg>',
     plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
     swap: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
@@ -237,7 +238,8 @@
     if (pre && RQ.byHandle(pre) && !room) RQ.ss && RQ.ss.set("rumiq-room-pre", pre);
     return {
       title: "Mitt rum · RumIQ",
-      html: `<section class="wrap rm-top">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? `<p class="lead">Ställ in produkter, flytta dem med fingret och nyp för att ändra storlek. Allt du ser kan du handla direkt.</p>` : ""}</div></section>
+      html: `<section class="wrap rm-top">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? `<p class="lead">Ställ in produkter, flytta dem med fingret och nyp för att ändra storlek. Allt du ser kan du handla direkt.</p>` : ""}</div>
+        <nav class="rm-more" aria-label="Fler sätt att välja"><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-kombinera">Bygg din egen look</a><a class="chip" href="#studio-analys">Färger ur ditt rum</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav></section>
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap">
             <div class="rm-stage" id="rmStage" style="aspect-ratio:${room.w} / ${room.h}"><img class="rm-bg" src="${R.url()}" alt="Ditt rum" draggable="false"><div class="rm-items" id="rmItems"></div>
@@ -249,6 +251,7 @@
               <button type="button" class="rm-tool" id="rmAdd">${ICO.plus}<span>Lägg till</span></button>
               <button type="button" class="rm-tool rm-ai" data-ai-create><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg><span>AI-bild</span></button>
               <button type="button" class="rm-tool" id="rmSave">${ICO.save}<span>Spara</span></button>
+              <button type="button" class="rm-tool" id="rmNight" aria-pressed="false">${ICO.moon}<span>Kväll</span></button>
               <button type="button" class="rm-tool" data-room-setup>${ICO.swap}<span>Byt rum</span></button>
               <button type="button" class="rm-tool rm-hold2" id="rmHold2" aria-label="Håll inne för att se rummet utan produkterna">${ICO.eye}<span>Före</span></button>
             </div>
@@ -283,7 +286,7 @@
         const fits = () => { const list = RQ.PRODUCTS.map((p) => ({ p, m: match(p) || 0 })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };
         const draw = () => {
           const list = R.scene();
-          wrap.innerHTML = list.map((it, i) => { const p = RQ.byHandle(it.h); return `<div class="rm-item${p.wall ? " wall" : ""}${sel === it.h ? " sel" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}"><img src="${RQ.cut(p)}" alt="" draggable="false" style="transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
+          wrap.innerHTML = list.map((it, i) => { const p = RQ.byHandle(it.h); return `<div class="rm-item${p.wall ? " wall" : ""}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}"><img src="${RQ.cut(p)}" alt="" draggable="false" style="transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
           $("#rmHint", root).hidden = list.length > 0;
           $("#rmList", root).innerHTML = list.length ? list.map((it) => { const p = RQ.byHandle(it.h); return `<li class="${sel === it.h ? "on" : ""}"><button type="button" class="rm-li" data-pick="${it.h}"><img src="${RQ.img(p, 600)}" alt=""><span><b>${esc(p.name)}</b><span>${kr(p.price)}</span></span></button><button type="button" class="iconbtn" data-del="${it.h}" aria-label="Ta bort ${esc(p.name)} ur rummet">${ICO.trash}</button></li>`; }).join("") : `<li class="rm-none">Inget i rummet än. Tryck på <b>Inred åt mig</b> eller <b>Lägg till</b>.</li>`;
           const t = kr(R.total()); $("#rmTotal", root).textContent = t; $("#rmBarSum", root).textContent = `${list.length} ${list.length === 1 ? "produkt" : "produkter"} · ${t}`;
@@ -361,6 +364,10 @@
         $("#rmAdd", root).addEventListener("click", () => RQ.room.openPicker());
         const cartAll = (btn) => { const list = R.scene(); if (!list.length) return; list.forEach((it) => S.addToCart(it.h + "::0", 1)); RQ.confirmAdd(btn, ""); RQ.toast(`${list.length} produkter från ditt rum ligger i varukorgen. <a href="#" data-open-cart>Visa</a>`); };
         $("#rmCart", root).addEventListener("click", (e) => cartAll(e.currentTarget)); $("#rmCart2", root).addEventListener("click", (e) => cartAll(e.currentTarget));
+        // evening: the room dims and every lamp and candle you placed glows, so you see the light at home
+        const night = $("#rmNight", root), setNight = (on) => { stage.classList.toggle("night", on); night.setAttribute("aria-pressed", on); $("span", night).textContent = on ? "Dag" : "Kväll"; try { localStorage.setItem("rumiq-room-night", on ? "1" : "0"); } catch (e) {} };
+        night.addEventListener("click", () => { setNight(!stage.classList.contains("night")); RQ.track && RQ.track("room_night", { on: stage.classList.contains("night") }); });
+        try { if (localStorage.getItem("rumiq-room-night") === "1") setNight(true); } catch (e) {}
         $("#rmSave", root).addEventListener("click", async () => {
           try {
             const bg = $(".rm-bg", root); const W = 1100, H = Math.round(W * room.h / room.w);

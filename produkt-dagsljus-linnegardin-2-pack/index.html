@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=c00f15ba">
+<link rel="stylesheet" href="assets/css/site.min.css?v=e99701e1">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Product", "name": "Dagsljus linnegardin, 2-pack", "description": "Två halvtransparenta gardinlängder i tvättat lin, 140 × 250 cm. Släpper in ljuset men tar bort skärpan.", "image": "https://adamkajlindberg-22.github.io/rumiq-storefront/assets/img/p/dagsljus-linnegardin-2-pack-900.webp", "category": "Hem & inredning", "brand": {"@type": "Brand", "name": "RumIQ"}, "offers": {"@type": "Offer", "priceCurrency": "SEK", "price": 899, "availability": "https://schema.org/PreOrder", "url": "https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-dagsljus-linnegardin-2-pack/"}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Hem", "item": "https://adamkajlindberg-22.github.io/rumiq-storefront/"}, {"@type": "ListItem", "position": 2, "name": "Butik", "item": "https://adamkajlindberg-22.github.io/rumiq-storefront/butik/"}, {"@type": "ListItem", "position": 3, "name": "Dagsljus linnegardin, 2-pack", "item": "https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-dagsljus-linnegardin-2-pack/"}]}</script>
@@ -56,7 +56,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
         </div></div>
       <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
-      <a class="iconbtn wishlink" href="onskelista/" aria-label="Önskelista"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
+      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat i Mitt hem"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
       <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
       <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
     </div>
@@ -67,7 +67,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <li><a href="butik/">Alla produkter</a></li>
         <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
         <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
-      <div><h4>Mer i butiken</h4><ul><li><a href="nyheter/">Nyheter</a></li><li><a href="favoriter/">Utvalda favoriter</a></li><li><a href="erbjudanden/">Erbjudanden</a></li><li><a href="kollektioner/">Kollektioner</a></li></ul>
+      <div><h4>Mer i butiken</h4><ul><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li></ul>
         <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
         </div>
       <div class="feature"><a href="kategori-belysning-atmosfar/"><img src="assets/img/p/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy"><span>Belysning & atmosfär</span></a><a href="kategori-sovrum-komfort/"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy"><span>Sovrum & komfort</span></a></div>
@@ -79,7 +79,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <button class="iconbtn close" id="mnavClose" type="button" aria-label="Stäng meny"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <h4>Upptäck</h4><a href="upptack/">Allt att upptäcka</a><a href="looks/">Färdiga looks</a><a href="rum/">Rum att handla i</a><a href="svep/">Hitta din stil</a><a href="magasin/">Magasin</a>
   <h4>Butik</h4><a href="butik/">Alla produkter</a><a href="for-dig/">För dig</a><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a>
-  <h4>Mitt rum</h4><a href="mitt-rum/">Mitt rum</a><a href="studio-plus/">Studio Plus</a><a href="studio/">Fler verktyg</a>
+  <h4>Mitt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat och mina rum</a><a href="hitta-ratt/">Hitta rätt</a><a href="studio-plus/">Studio Plus</a>
   <h4>Konto och hjälp</h4><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Var är mitt paket?</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a>
   <div><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Följ dagsljuset</span></button></div>
 </nav>
@@ -88,7 +88,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
   <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
   <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
-  <a href="onskelista/" data-dock="onskelista"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
   <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
 </nav>
 
@@ -120,26 +120,17 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <form id="newList" style="display:flex;gap:.5rem;margin-top:.8rem"><label class="sr" for="nl">Ny lista</label><input id="nl" placeholder="Ny lista, till exempel Sommarstugan" maxlength="40"><button class="btn sm" type="submit">Skapa</button></form></div>
             <div class="lk" role="group" aria-label="Leveranskoll"><p class="lk-h">Leveranskoll</p>
         <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="on"><i></i><b>Skickas från</b><span>Lager i EU</span></li><li class="on"><i></i><b>Hos dig</b><span>ons 25 nov. – mån 30 nov.</span></li></ol>
-        <p class="lk-f">30 dagars öppet köp. Returen skickas till en adress i Sverige.</p></div>
+        <p class="lk-f">30 dagars öppet köp. Returen skickas till en adress i Sverige. Fri frakt till ombud och paketskåp från 799 kr.</p></div>
             <a class="hf hf-ask" href="mitt-hem/"><span class="hf-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></span><span><b>Ryms den hos dig?</b><small>Mät fönstret och spara måttet i Mitt hem, så räknar vi ut det åt dig.</small></span></a>
             <form class="notify" data-notify="dagsljus-linnegardin-2-pack" novalidate="">
         <button type="button" class="tlink nt-open">Säg till när den finns</button>
         <div class="nt-f" hidden=""><label class="sr" for="nt-dagsljus-linnegardin-2-pack">Din e-post</label><input id="nt-dagsljus-linnegardin-2-pack" type="email" autocomplete="email" placeholder="Din e-post"><button class="btn sm" type="submit">Säg till</button></div>
         <p class="nt-err" role="alert"></p><p class="nt-ok" role="status">Klart. Vi mejlar när den går att köpa. Inget annat.</p></form>
-            <div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips"><a class="chip" href="look-sov-gott/">Sov gott</a></div></div>
-            <div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div>
-            <ul class="pfacts">
-              <li><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><span>Fri frakt till ombud och paketskåp från 799 kr, annars från 49 kr. <a href="frakt/">Om frakt</a></span></li>
-              <li><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg><span>30 dagars öppet köp. Du ångrar med en knapp och returen går till en adress i Sverige. <a href="returer/">Om returer</a></span></li>
-              <li><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg><span>Säker betalning i Shopifys kassa. Vi ser aldrig ditt kort.</span></li>
-            </ul>
             <div class="example-note"><span>●</span><span><b>Exempelprodukt.</b> Den är inte verifierad för försäljning än. Du kan prova varukorgen och kassan, men exempelprodukter går inte att betala för.</span></div>
-            <div class="acc">
-              <details open=""><summary>Om produkten<span class="pm"></span></summary><div class="body"><p>Linnegardiner är det snabbaste sättet att göra ett rum mjukare. De filtrerar dagsljuset så att det sprider sig, och de skrynkliga vecken gör att de ser lika bra ut slarvigt dragna som perfekt hängda.</p></div></details>
-              <details><summary>Passar den hemma?<span class="pm"></span></summary><div class="body"><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#studio-rum-dagsljus-linnegardin-2-pack">Se det i ditt rum</a>.</li><li>Fråga <a href="studio-stylist/">stylisten</a> om vad som passar ihop.</li></ul></div></details>
-              <details><summary>Så använder du den<span class="pm"></span></summary><div class="body"><ul><li>Häng dem högt, nära taket, så ser fönstret större ut.</li><li>Låt dem gå ända ner till golvet eller någon centimeter ovanför.</li><li>Två längder per fönster ger fina, fylliga veck.</li></ul></div></details>
-              <details><summary>Material och skötsel<span class="pm"></span></summary><div class="body"><p><b>Material:</b> Tvättat lin, halvtransparent</p><p style="margin-top:.6rem">Tvätta på 40 °C, gärna med liknande färger. Låt lufttorka och skaka ut före torkning så slipper du stryka.</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p></div></details>
-              <details><summary>Mått och fakta<span class="pm"></span></summary><div class="body"><ul class="facts" style="margin-top:0;border-top:0">
+            <div class="ptabs" data-ptabs="">
+              <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
+              <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>Linnegardiner är det snabbaste sättet att göra ett rum mjukare. De filtrerar dagsljuset så att det sprider sig, och de skrynkliga vecken gör att de ser lika bra ut slarvigt dragna som perfekt hängda.</p><h3>Så använder du den</h3><ul><li>Häng dem högt, nära taket, så ser fönstret större ut.</li><li>Låt dem gå ända ner till golvet eller någon centimeter ovanför.</li><li>Två längder per fönster ger fina, fylliga veck.</li></ul><div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips"><a class="chip" href="look-sov-gott/">Sov gott</a></div></div><div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
+              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden=""><h3>Passar den hemma?</h3><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#studio-rum-dagsljus-linnegardin-2-pack">Se det i ditt rum</a>.</li><li>Fråga <a href="studio-stylist/">stylisten</a> om vad som passar ihop.</li></ul><h3>Material och skötsel</h3><p><b>Material:</b> Tvättat lin, halvtransparent</p><p style="margin-top:.6rem">Tvätta på 40 °C, gärna med liknande färger. Låt lufttorka och skaka ut före torkning så slipper du stryka.</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h3>Mått och fakta</h3><ul class="facts" style="margin-top:0;border-top:0">
                 <li><span>Artikel</span><span>DAGSLJUS-LINNE</span></li>
                 <li><span>Mått</span><span class="pending">Bekräftas när produkten är verifierad</span></li>
                 <li><span>Vikt</span><span class="pending">Bekräftas</span></li>
@@ -150,7 +141,12 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
                 <li><span>Tillverkare</span><span class="pending">Anges innan försäljning</span></li>
                 <li><span>Skickas från</span><span class="pending">Anges innan försäljning</span></li>
                 <li><span>Leveranstid</span><span class="pending">Visas när leverantören bekräftat</span></li>
-              </ul></div></details>
+              </ul></div>
+              <div class="ptab" role="tabpanel" id="pt-frakt" aria-labelledby="ptb-frakt" hidden=""><ul class="pfacts">
+              <li><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><span>Fri frakt till ombud och paketskåp från 799 kr, annars från 49 kr. <a href="frakt/">Om frakt</a></span></li>
+              <li><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg><span>30 dagars öppet köp. Du ångrar med en knapp och returen går till en adress i Sverige. <a href="returer/">Om returer</a></span></li>
+              <li><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg><span>Säker betalning i Shopifys kassa. Vi ser aldrig ditt kort.</span></li>
+            </ul><p class="small"><a href="frakt/">Frakt och leverans</a> · <a href="returer/">Returer och återbetalning</a> · <a href="angra/">Ångra avtalet här</a></p></div>
             </div>
           </div>
         </section>
@@ -231,9 +227,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <div class="cols">
       <div class="brand"><img class="logo-day" src="assets/brand/rumiq-grafit.webp" alt="RumIQ" width="480" height="120"><img class="logo-night" src="assets/brand/rumiq-vit.webp" alt="" aria-hidden="true" width="480" height="120"><p>Färre, bättre saker för hemmet. Utvalda i Sverige.</p>
         <form class="news" id="newsForm" novalidate><label for="newsEmail">Nyhetsbrev</label><div class="field"><input type="email" id="newsEmail" name="email" placeholder="Din e-post"><button class="btn sm" type="submit">Prenumerera</button></div></form></div>
-      <div><h4>Butik</h4><ul><li><a href="butik/">Alla produkter</a></li><li><a href="nyheter/">Nyheter</a></li><li><a href="kollektioner/">Kollektioner</a></li><li><a href="favoriter/">Utvalda favoriter</a></li><li><a href="erbjudanden/">Erbjudanden</a></li></ul></div>
-      <div><h4>Inspiration</h4><ul><li><a href="upptack/">Upptäck</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="rum/">Efter rum</a></li><li><a href="magasin/">Magasin</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><a href="om/">Om RumIQ</a></li></ul></div>
-      <div><h4>Kundservice</h4><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Var är mitt paket?</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li><li><a href="ideer/">Dela en idé</a></li></ul></div>
+      <div><h4>Butik</h4><ul><li><a href="butik/">Alla produkter</a></li><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li></ul></div>
+      <div><h4>Inspiration</h4><ul><li><a href="upptack/">Upptäck</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="rum/">Efter rum</a></li><li><a href="magasin/">Magasin</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><a href="onska/">Önska</a></li><li><a href="om/">Om RumIQ</a></li></ul></div>
+      <div><h4>Kundservice</h4><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Var är mitt paket?</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li></ul></div>
       <div><h4>Juridisk information</h4><ul><li><a href="juridik-villkor/">Köpvillkor</a></li><li><a href="juridik-integritet/">Integritetspolicy</a></li><li><a href="juridik-cookies/">Cookiepolicy</a></li><li><a href="juridik-angerratt/">Ångerrätt</a></li><li><a href="juridik-garanti/">Reklamation & garanti</a></li><li><a href="juridik-produktsakerhet/">Produktsäkerhet</a></li><li><a href="juridik-sakerhet/">Säkerhet</a></li><li><a href="juridik-foretag/">Företagsinformation</a></li></ul></div>
     </div>
     <p class="co" id="coInfo"></p>
@@ -252,7 +248,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="search" id="search" role="dialog" aria-modal="true" aria-label="Sök">
   <button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <div class="wrap"><label class="sr" for="searchInput">Sök</label><div class="sfield"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" enterkeyhint="search"></div>
-    <p class="hint">Sök på produkt, material, rum eller färg. Vill du hellre beskriva med egna ord? Prova <a href="studio-sok/" data-close>Smart sökning</a> eller fråga <a href="studio-stylist/" data-close>stylisten</a>.</p>
+    <p class="hint">Sök på produkt, material, rum eller färg. Vill du hellre beskriva med egna ord? Prova <a href="hitta-ratt-ord/" data-close>Hitta rätt med egna ord</a> eller fråga <a href="studio-stylist/" data-close>stylisten</a>.</p>
     <div class="res" id="searchRes"></div></div>
 </div>
 
@@ -266,6 +262,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=c00f15ba"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=e99701e1";</script>
+<script src="assets/js/site.min.js?v=e99701e1"></script>
 </body>
 </html>

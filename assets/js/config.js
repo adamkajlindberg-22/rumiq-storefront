@@ -50,6 +50,7 @@ window.RQ_CONFIG = {
   delivery: { fromCountry: "Lager i EU", minDays: 2, maxDays: 5, cutoffHour: 14, openPurchaseDays: 30, returnText: "Returen skickas till en adress i Sverige.", returnVia: ["hos ett ombud", "i ett paketskåp"] },
   company: { name: "", orgnr: "", address: "", phone: "", email: "support@rumiq.se" },
   waitlist: { table: "waitlist", offer: "10 % på första köpet när vi öppnar" },
+  showNews: false, // true once there are real new arrivals; until then Nyheter is hidden from the menus
   lookDiscount: 0.1,
   freeShippingFrom: 799,
   payments: [], // e.g. ["Kort", "Klarna", "Swish", "Apple Pay", "Google Pay"] once they are switched on in Shopify

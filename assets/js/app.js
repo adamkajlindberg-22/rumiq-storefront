@@ -79,7 +79,7 @@
             <aside class="filters" id="filters" aria-label="Filter">
               <div><h4>Kategorier</h4><ul><li><a class="${!cat && !room && !col ? "on" : ""}" href="#butik">Alla produkter<span class="count">${RQ.PRODUCTS.length}</span></a></li>${sideCats}</ul></div>
               <div><h4>Rum</h4><ul>${sideRooms}</ul></div>
-              <div><h4>Mer</h4><ul><li><a href="#nyheter">Nyheter</a></li><li><a href="#favoriter">Utvalda favoriter</a></li><li><a href="#erbjudanden">Erbjudanden</a></li><li><a href="#presentguiden">Presentguiden</a></li><li><a href="#jamfor">Jämför</a></li></ul></div>
+              <div><h4>Mer</h4><ul><li><a href="#favoriter">Populärt</a></li><li data-show="news"><a href="#nyheter">Nyheter</a></li><li data-show="offers"><a href="#erbjudanden">Erbjudanden</a></li><li><a href="#hitta-ratt-present">Presenttips</a></li><li><a href="#jamfor">Jämför</a></li></ul></div>
             </aside>
             <div>
               <div class="toolbar">
@@ -109,7 +109,7 @@
   V.butik = () => shopView({ title: "Alla produkter", kicker: "", lead: "Färre, bättre saker för hemmets alla rum.", trail: [["Hem", "hem"], ["Butik"]] });
   V.nyheter = () => shopView({ title: "Nyheter", lead: "Allt i sortimentet är nytt, eftersom butiken precis har börjat. Här visas det senast tillagda först.", sort: "new", trail: [["Hem", "hem"], ["Butik", "butik"], ["Nyheter"]] });
   V.favoriter = () => {
-    const v = shopView({ title: "Utvalda favoriter", lead: "Saker vi själva tycker extra mycket om. Utvalda av oss, inte baserat på försäljning.", trail: [["Hem", "hem"], ["Butik", "butik"], ["Utvalda favoriter"]] });
+    const v = shopView({ title: "Populärt", lead: "Det vi själva tycker extra mycket om och det kunderna sparar mest i Svep.", trail: [["Hem", "hem"], ["Butik", "butik"], ["Populärt"]] });
     const list = S.list({}).filter((p) => p.featured);
     v.html = v.html.replace(/<div id="results">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>\s*<\/section>$/, `<div id="results">${RQ.grid(list, "three")}</div></div></div></section>`);
     const m = v.mount; v.mount = (root) => { m(root); $("#sort", root).closest("div").style.display = "none"; $("#count", root).textContent = list.length + " produkter"; };
@@ -159,6 +159,7 @@
   /* ---------------- product page */
   const LAMPS = ["glob-bordslampa-opalglas", "lysa-keramiklampa", "svamp-uppladdningsbar-lampa"];
   RQ.LAMPS = LAMPS;
+  RQ.LAMPS = LAMPS;
   RQ.gallery = (p) => {
     const g = [{ k: "main", src: RQ.img(p, 1400), thumb: RQ.img(p, 600), alt: `${p.name}, miljöbild` }];
     g.push({ k: "detail", src: `assets/img/d/${p.handle}-1200.webp`, thumb: `assets/img/d/${p.handle}-600.webp`, alt: `${p.name}, detalj` });
@@ -204,7 +205,7 @@
       html: `<section class="wrap" style="padding-top:1.6rem">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
         <section class="wrap pdp" style="padding:1.4rem 0 clamp(3rem,7vw,6rem)">
           <div class="pg">
-            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${RQ.room && RQ.room.has() ? "" : ""}${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}" aria-label="Visa större: ${esc(g.alt)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="this.closest('.pg-item').remove()">${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
+            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${RQ.room && RQ.room.has() ? "" : ""}${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}" aria-label="Visa större: ${esc(g.alt)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
             ${isLamp ? `<button type="button" class="lightswitch" id="lightSw" aria-pressed="true" hidden><i></i><span>Lampan är tänd</span></button>` : ""}
             <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
             <p class="caption">Bilderna är skapade med AI och visar hur produkten kan se ut. Färg och detaljer kan skilja sig från den riktiga produkten.</p>
@@ -228,20 +229,11 @@
             ${RQ.delivery ? RQ.delivery.html(p) : ""}
             ${RQ.homeFit ? RQ.homeFit.html(p) : ""}
             ${RQ.notify ? RQ.notify.html(p) : ""}
-            ${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}
-            <div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div>
-            <ul class="pfacts">
-              <li>${ic.truck}<span>${(window.RQ_CONFIG || {}).freeShippingFrom ? `Fri frakt till ombud och paketskåp från ${kr(window.RQ_CONFIG.freeShippingFrom)}, annars från 49 kr.` : "Leveranssätt, pris och leveranstid visas i kassan innan du betalar."} <a href="#frakt">Om frakt</a></span></li>
-              <li>${ic.undo}<span>${((window.RQ_CONFIG || {}).delivery || {}).openPurchaseDays ? `${window.RQ_CONFIG.delivery.openPurchaseDays} dagars öppet köp. Du ångrar med en knapp och returen går till en adress i Sverige.` : "14 dagars ångerrätt. Du ångrar med en knapp."} <a href="#returer">Om returer</a></span></li>
-              <li>${ic.lock}<span>Säker betalning i Shopifys kassa. Vi ser aldrig ditt kort.</span></li>
-            </ul>
             <div class="example-note"><span>●</span><span><b>Exempelprodukt.</b> Den är inte verifierad för försäljning än. Du kan prova varukorgen och kassan, men exempelprodukter går inte att betala för.</span></div>
-            <div class="acc">
-              <details open><summary>Om produkten<span class="pm"></span></summary><div class="body"><p>${esc(p.story)}</p></div></details>
-              <details><summary>Passar den hemma?<span class="pm"></span></summary><div class="body"><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#studio-rum-${p.handle}">Se det i ditt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul></div></details>
-              <details><summary>Så använder du den<span class="pm"></span></summary><div class="body"><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul></div></details>
-              <details><summary>Material och skötsel<span class="pm"></span></summary><div class="body"><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p></div></details>
-              <details><summary>Mått och fakta<span class="pm"></span></summary><div class="body"><ul class="facts" style="margin-top:0;border-top:0">
+            <div class="ptabs" data-ptabs>
+              <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
+              <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h3>Så använder du den</h3><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
+              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h3>Passar den hemma?</h3><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#studio-rum-${p.handle}">Se det i ditt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h3>Material och skötsel</h3><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h3>Mått och fakta</h3><ul class="facts" style="margin-top:0;border-top:0">
                 <li><span>Artikel</span><span>${esc(p.handle.toUpperCase().slice(0, 14))}</span></li>
                 <li><span>Mått</span><span class="pending">Bekräftas när produkten är verifierad</span></li>
                 <li><span>Vikt</span><span class="pending">Bekräftas</span></li>
@@ -252,7 +244,12 @@
                 <li><span>Tillverkare</span><span class="pending">Anges innan försäljning</span></li>
                 <li><span>Skickas från</span><span class="pending">Anges innan försäljning</span></li>
                 <li><span>Leveranstid</span><span class="pending">Visas när leverantören bekräftat</span></li>
-              </ul></div></details>
+              </ul></div>
+              <div class="ptab" role="tabpanel" id="pt-frakt" aria-labelledby="ptb-frakt" hidden><ul class="pfacts">
+              <li>${ic.truck}<span>${(window.RQ_CONFIG || {}).freeShippingFrom ? `Fri frakt till ombud och paketskåp från ${kr(window.RQ_CONFIG.freeShippingFrom)}, annars från 49 kr.` : "Leveranssätt, pris och leveranstid visas i kassan innan du betalar."} <a href="#frakt">Om frakt</a></span></li>
+              <li>${ic.undo}<span>${((window.RQ_CONFIG || {}).delivery || {}).openPurchaseDays ? `${window.RQ_CONFIG.delivery.openPurchaseDays} dagars öppet köp. Du ångrar med en knapp och returen går till en adress i Sverige.` : "14 dagars ångerrätt. Du ångrar med en knapp."} <a href="#returer">Om returer</a></span></li>
+              <li>${ic.lock}<span>Säker betalning i Shopifys kassa. Vi ser aldrig ditt kort.</span></li>
+            </ul><p class="small"><a href="#frakt">Frakt och leverans</a> · <a href="#returer">Returer och återbetalning</a> · <a href="#angra">Ångra avtalet här</a></p></div>
             </div>
           </div>
         </section>
@@ -267,10 +264,10 @@
       mount(root) {
         let variant = vs[0].id;
         const grid = $("#pgGrid", root);
-        const items = () => $$(".pg-item:not(.inroomtile)", grid);
+        const items = () => $$(".pg-item:not(.inroomtile):not(.pg-film)", grid);
         const lbList = () => items().map((b) => { const g = gal[+b.dataset.gi]; const im = $("img", b); return { src: im.currentSrc || im.src, thumb: g.thumb, alt: im.alt, cut: !!g.cut }; });
         // open the lightbox on click, loupe on hover (fine pointers only)
-        grid.addEventListener("click", (e) => { const t = e.target.closest(".inroomtile"); if (t) { location.hash = "#mitt-rum-" + p.handle; return; } const b = e.target.closest(".pg-item"); if (!b) return; RQ.lightbox.open(lbList(), items().indexOf(b), p.name); });
+        grid.addEventListener("click", (e) => { const t = e.target.closest(".inroomtile"); if (t) { location.hash = "#mitt-rum-" + p.handle; return; } const b = e.target.closest(".pg-item:not(.pg-film)"); if (!b) return; RQ.lightbox.open(lbList(), items().indexOf(b), p.name); });
         const fine = matchMedia("(hover:hover) and (pointer:fine)").matches && innerWidth > 900;
         if (fine) {
           let zt = null;
@@ -394,7 +391,7 @@
   V.inspiration = () => ({ html: `${head(crumbs([["Hem", "hem"], ["Rumsinspiration"]]), "Rumsinspiration", "Rum att drömma sig bort i, och idéer att ta med hem. Bilderna är illustrationer.")}
       <section class="wrap"><div class="tiles stagger" data-watch>${RQ.ROOMS.map((r, i) => `<a class="tile ${i === 0 ? "big" : ""}" href="#rum-${r.id}"><img src="assets/img/rum/${r.id}-${i === 0 ? 1600 : 900}.webp" alt="" loading="lazy"><span>${esc(r.name)}<small>${esc(r.lead)}</small></span></a>`).join("")}</div></section>
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Magasin</span><h2 class="h2">Idéer för ditt hem</h2></div><a class="link arrow" href="#magasin">Alla artiklar</a></div><div class="mag-grid">${RQ.ARTICLES.slice(0, 3).map(RQ.magCard).join("")}</div></div></section>
-      <section class="sec kalk"><div class="wrap split"><div><span class="eyebrow">RumIQ Studio</span><h2 class="h2" style="margin-top:.9rem">Fri inredningsidé för ditt eget rum</h2><p class="lead" style="margin-top:1rem">Lägg till ett foto av ditt rum och prova produkterna där, eller låt Hitta min stil ge dig en riktning.</p><div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#studio-rum">Se det i ditt rum</a><a class="btn ghost" href="#studio-stil">Hitta min stil</a></div></div><div class="im"><img src="assets/img/rum/sovrum-900.webp" alt="" loading="lazy"></div></div></section>` });
+      <section class="sec kalk"><div class="wrap split"><div><span class="eyebrow">Mitt rum</span><h2 class="h2" style="margin-top:.9rem">Fri inredningsidé för ditt eget rum</h2><p class="lead" style="margin-top:1rem">Lägg till ett foto av ditt rum och prova produkterna där, eller svep fram en riktning.</p><div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-rum">Se det i ditt rum</a><a class="btn ghost" href="#svep">Svep fram din stil</a></div></div><div class="im"><img src="assets/img/rum/sovrum-900.webp" alt="" loading="lazy"></div></div></section>` });
 
   /* ---------------- info + legal */
   const infoNav = (active) => `<ul class="sidenav"><h4>Kundservice</h4>${[["kontakt", "Kontakt"], ["ideer", "Dela en idé"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}">${t}</a></li>`).join("")}
@@ -433,6 +430,22 @@
   /* ---------------- 404 */
   V.notfound = () => ({ html: `${head(`<span class="eyebrow">404</span>`, "Den här sidan finns inte", "Länken kan vara gammal eller felstavad.")}<section class="wrap" style="padding-bottom:6rem"><div class="ctrl-row"><a class="btn" href="#hem">Till startsidan</a><a class="btn ghost" href="#butik">Till butiken</a></div></section>` });
 
+  /* ---------------------------------------------------------------- tools on demand
+     studio.js (Snabbval, Hitta rätt, Mitt hem, Bygg din egen look, Färger ur ditt rum, the stylist) is its own
+     file on the live site. Until it has loaded, its views are stubs that ask the router to fetch it first.
+     In the unbundled shell the real views replace the stubs straight away. */
+  const TOOL_VIEWS = ["findRight", "giftFinder", "myHome", "studioAnalysis", "studioGuide", "studioMix", "studioRoom", "studioSearch", "studioStyle", "studioStylist"];
+  TOOL_VIEWS.forEach((n) => { if (!V[n]) V[n] = Object.assign(() => ({ lazy: true }), { stub: true }); });
+  let toolsP = null;
+  RQ.loadTools = () => {
+    if (toolsP) return toolsP;
+    if (!window.RQ_TOOLS_SRC || !V.myHome.stub) return (toolsP = Promise.resolve());
+    return (toolsP = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = window.RQ_TOOLS_SRC; s.onload = ok; s.onerror = () => { toolsP = null; bad(); }; document.head.appendChild(s); }));
+  };
+  // fetch them quietly once the page is idle, so the next tap is instant
+  window.addEventListener("load", () => setTimeout(() => (window.requestIdleCallback || setTimeout)(() => RQ.loadTools().catch(() => {})), 2500));
+  V.studio = () => V.myRoom(); // Studio is no longer its own place: the tools live in Mitt rum, Svep, Hitta rätt and Looks
+
   /* ---------------------------------------------------------------- router */
   const ROUTES = [
     [/^(hem)?$/, () => V.home()],
@@ -441,13 +454,13 @@
     [/^kollektioner$/, () => V.kollektioner()], [/^kollektion-(.+)$/, (m) => V.kollektion(m[1])],
     [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.jamfor()],
     [/^magasin$/, () => V.magasin()], [/^artikel-(.+)$/, (m) => V.artikel(m[1])], [/^inspiration$/, () => V.inspiration()],
-    [/^juridik-(.+)$/, (m) => V.juridik(m[1])], [/^ideer$/, () => V.ideer()],
+    [/^juridik-(.+)$/, (m) => V.juridik(m[1])], [/^ideer$/, () => V.onska()],
     [/^(kontakt|faq|frakt|returer|betalning|om|sa-fungerar-det)$/, (m) => V[m[1]]()],
     [/^studio$/, () => V.studio()], [/^(?:studio|mitt)-rum(?:-(.+))?$/, (m) => V.myRoom(m[1])], [/^studio-stil$/, () => V.studioStyle()], [/^studio-analys$/, () => V.studioAnalysis()],
-    [/^studio-stylist$/, () => V.studioStylist()], [/^studio-sok$/, () => V.studioSearch()], [/^studio-hemurval$/, () => V.studioGuide()], [/^studio-kombinera(?:-(.+))?$/, (m) => V.studioMix(m[1])],
-    [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^rosta$/, () => V.rosta()],
+    [/^studio-stylist$/, () => V.studioStylist()], [/^studio-sok$/, () => V.findRight("ord")], [/^studio-hemurval$/, () => V.findRight("")], [/^hitta-ratt(?:-(present|ord))?$/, (m) => V.findRight(m[1] || "")], [/^studio-kombinera(?:-(.+))?$/, (m) => V.studioMix(m[1])],
+    [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^(?:rosta|onska)$/, () => V.onska()],
     [/^studio-plus$/, () => V.studioPlus(false)], [/^studio-plus-tack$/, () => V.studioPlus(true)],
-    [/^presentguiden$/, () => V.giftFinder()], [/^mitt-hem$/, () => V.myHome()],
+    [/^presentguiden$/, () => V.findRight("present")], [/^mitt-hem$/, () => V.myHome()],
     [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
   ];
   let current = null, cleanup = null, firstRun = true;
@@ -458,6 +471,11 @@
     // in-page anchors such as #faq-2 fall back to their page
     if (!view && /^faq-\d+$/.test(raw)) view = V.faq();
     if (!view) view = V.notfound();
+    if (view.lazy) { // a tool that has not loaded yet: keep what is on screen (the prerendered page), load, then draw
+      document.documentElement.classList.add("loading-tools");
+      RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); }, () => { document.documentElement.classList.remove("loading-tools"); RQ.toast("Sidan kunde inte laddas. Kontrollera anslutningen och försök igen."); });
+      return;
+    }
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
     const root = $("#view");
     const isHome = /^(hem)?$/.test(raw);
@@ -476,8 +494,8 @@
     RQ.paintShell();
     RQ.markImages(root);
     $$(".menu a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + raw));
-    const sect = raw.split("-")[0];
-    $$("[data-dock]").forEach((a) => a.classList.toggle("on", a.dataset.dock === sect || (a.dataset.dock === "butik" && /^(butik|kategori|produkt|nyheter|kollektion|for-dig)/.test(raw)) || (a.dataset.dock === "upptack" && /^(upptack|svep|looks?|rosta|rum|magasin|artikel|inspiration)(-|$)/.test(raw))));
+    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden|jamfor)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista)$/ };
+    $$("[data-dock]").forEach((a) => a.classList.toggle("on", !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw))));
     const anchor = /^faq-\d+$/.test(raw) && document.getElementById(raw);
     if (anchor) anchor.scrollIntoView();
     RQ.navCheck && RQ.navCheck();
@@ -630,7 +648,7 @@
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-wish],[data-compare],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
-    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad i önskelistan" : "Spara i önskelistan"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; RQ.toast(on ? 'Sparad i önskelistan. <a href="#onskelista">Visa</a>' : "Borttagen ur önskelistan"); return; }
+    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad i önskelistan" : "Spara i önskelistan"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
     if (t.matches("[data-compare]")) { const on = S.toggleCompare(t.dataset.compare); if (t.classList.contains("chip")) { t.setAttribute("aria-pressed", on); t.textContent = on ? "I jämförelsen" : "Jämför"; } else if (t.closest(".pactions")) { t.setAttribute("aria-pressed", on); $("span", t).textContent = on ? "I jämförelsen" : "Jämför"; } else if (t.classList.contains("btn")) t.textContent = on ? "I jämförelsen" : "Jämför"; RQ.toast(on ? `Tillagd i jämförelsen (${S._cmp.length} av 4). <a href="#jamfor">Jämför</a>` : "Borttagen ur jämförelsen"); if (current === "jamfor") RQ.router(); return; }
     if (t.matches("[data-add]")) { S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
     if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
@@ -800,6 +818,15 @@
   // company details in the footer (RQ_CONFIG.company)
   (() => { const c = (window.RQ_CONFIG || {}).company || {}, el = $("#coInfo"); if (!el) return; const parts = [c.name, c.orgnr && "Org.nr " + c.orgnr, c.address, c.phone].filter(Boolean);
     el.textContent = parts.length ? parts.join(" · ") : "Företagsnamn, organisationsnummer, adress och telefon visas här när bolaget är registrerat."; })();
+
+  // product tabs: Om, Mått och skötsel, Frakt och retur (arrow keys move between them)
+  const tabTo = (bar, t) => { $$("[role=tab]", bar).forEach((x) => { const on = x === t; x.setAttribute("aria-selected", on); x.tabIndex = on ? 0 : -1; const pnl = document.getElementById(x.getAttribute("aria-controls")); if (pnl) pnl.hidden = !on; }); };
+  document.addEventListener("click", (e) => { const t = e.target.closest("[data-ptabs] [role=tab]"); if (t) tabTo(t.parentNode, t); });
+  document.addEventListener("keydown", (e) => { const t = e.target.closest && e.target.closest("[data-ptabs] [role=tab]"); if (!t || !/^Arrow(Left|Right)$/.test(e.key)) return; const all = $$("[role=tab]", t.parentNode), i = all.indexOf(t), n = all[(i + (e.key === "ArrowRight" ? 1 : all.length - 1)) % all.length]; tabTo(t.parentNode, n); n.focus(); e.preventDefault(); });
+
+  // pages with nothing to show yet stay out of the menus: Erbjudanden until a product is on sale, Nyheter until RQ_CONFIG.showNews
+  const showFlags = () => { const c = window.RQ_CONFIG || {}, h = document.documentElement; h.toggleAttribute("data-no-offers", !RQ.PRODUCTS.some((p) => p.was)); h.toggleAttribute("data-no-news", !c.showNews); };
+  showFlags();
 
   window.addEventListener("hashchange", RQ.router);
   document.addEventListener("DOMContentLoaded", () => { RQ.router(); navCheck(); setTimeout(() => RQ.showCookies(false), 1200); });

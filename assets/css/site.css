@@ -1550,7 +1550,7 @@ html.sheet-lock{overflow:hidden}
 .jr-dots button[aria-current=true]::before{background:var(--ink);transform:scale(1.35)}
 .jr-dots button span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:900px){
-  .journey{height:calc(var(--n) * 46svh + 100svh)}
+  .journey{height:calc(var(--n) * 34svh + 100svh)}
   .jr-room{padding-top:calc(var(--nav-h) + 3.4rem)}
   .jr-dots{display:flex;left:0;right:0;top:calc(var(--nav-h) + .55rem);bottom:auto;transform:none;gap:.4rem;overflow-x:auto;padding:0 1.25rem;scrollbar-width:none}
   .jr-dots::-webkit-scrollbar{display:none}
@@ -1813,3 +1813,76 @@ body.on-checkout footer.site,body.on-checkout .menu,body.on-checkout .roompill,b
 .tr-eta b{font-size:1.35rem;font-weight:560;letter-spacing:-.02em}
 .tr-eta small{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.svh-done{animation:none}}
+
+/* phones: the standing cut of the hero film (assets/video/hero-m.mp4) */
+.stage .mloop{display:none}
+@media (max-width:820px){.static .stage .mloop.on{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:1;z-index:1}}
+
+/* ---------------------------------------------------------------- v9: one clear way to each thing */
+html[data-no-offers] [data-show=offers],html[data-no-news] [data-show=news]{display:none!important}
+.fr-tabs{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin-top:1.4rem}
+.fr-tabs .chip[aria-current=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.fr-ai{display:inline-flex;gap:.5rem;align-items:center;margin-left:.6rem;color:var(--ink2);font-size:.92rem;text-decoration:none}
+.fr-ai svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.fr-ai b{font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.own-look{display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:center;margin-top:2rem;padding:1.2rem 1.4rem;border:1px dashed var(--line);border-radius:var(--r);text-decoration:none;color:inherit;max-width:36rem;transition:border-color .3s}
+.own-look:hover{border-color:var(--ink)}
+.ol-plus{display:grid;place-items:center;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--ink);color:var(--bg);font-size:1.4rem;font-weight:500}
+.own-look b{display:block;font-weight:600}
+.own-look small{color:var(--muted)}
+.onska .vote-grid{margin-top:0}
+.idea-list{display:grid;gap:.8rem}
+.idea{display:flex;gap:1rem;align-items:flex-start}
+.idea .chip{flex:none}
+
+/* Mitt rum: more ways to choose, and evening light */
+.rm-more{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:1rem}
+.rm-more .chip{padding:.38rem .75rem;font-size:.85rem}
+@media (max-width:900px){.rm-more{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:1rem calc(-1 * var(--gutter)) 0;padding:0 var(--gutter)}.rm-more .chip{flex:none}.rm-more::-webkit-scrollbar{display:none}}
+.rm-stage .rm-bg{transition:filter .9s var(--ease)}
+.rm-stage.night .rm-bg{filter:brightness(.4) saturate(.8) sepia(.22) hue-rotate(-6deg)}
+.rm-stage.night .rm-item img{transition:filter .9s var(--ease)}
+.rm-stage.night .rm-item:not(.lamp) img{filter:brightness(.52) saturate(.85) sepia(.15)!important}
+.rm-stage.night .rm-item.lamp img{filter:brightness(1.06) saturate(1.05)!important}
+.rm-item.lamp::before{content:"";position:absolute;left:50%;top:38%;width:420%;aspect-ratio:1;transform:translate(-50%,-50%) scale(.6);border-radius:50%;background:radial-gradient(circle,rgba(255,206,140,.6) 0%,rgba(255,182,105,.22) 32%,rgba(255,170,90,0) 66%);mix-blend-mode:screen;pointer-events:none;opacity:0;transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.rm-stage.night .rm-item.lamp::before{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#rmNight[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.rm-stage .rm-bg,.rm-item.lamp::before,.rm-stage.night .rm-item img{transition:none}}
+
+/* home: rooms as round doors right under the promise */
+.hrooms{padding:1.6rem 0 .4rem}
+.hrooms-in{display:flex;gap:1.1rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.4rem}
+.hrooms-in::-webkit-scrollbar{display:none}
+.hroom{flex:none;display:grid;justify-items:center;gap:.5rem;width:5.6rem;text-decoration:none;color:var(--ink2);font-size:.86rem;font-weight:500;text-align:center}
+.hroom-im{display:grid;place-items:center;width:5rem;height:5rem;border-radius:50%;overflow:hidden;background:var(--sunk);box-shadow:0 0 0 1px var(--line2);transition:transform .4s var(--spring),box-shadow .3s}
+.hroom-im img{width:100%;height:100%;object-fit:cover}
+.hroom-im svg{width:1.6rem;height:1.6rem;fill:none;stroke:currentColor;stroke-width:1.5}
+.hroom:hover .hroom-im{transform:translateY(-3px);box-shadow:0 0 0 2px var(--ink)}
+@media (min-width:1100px){.hrooms-in{justify-content:center;gap:2rem}.hroom{width:6.6rem}.hroom-im{width:6rem;height:6rem}}
+/* product page: three tabs under the buy area */
+.ptabs{margin-top:1.8rem}
+.ptab-bar{display:flex;gap:1.4rem;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.ptab-bar::-webkit-scrollbar{display:none}
+.ptab-bar [role=tab]{flex:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:.8rem 0;font:inherit;font-size:.98rem;font-weight:560;color:var(--muted);cursor:pointer}
+.ptab-bar [role=tab][aria-selected=true]{color:var(--ink);border-bottom-color:var(--ink)}
+.ptab{padding:1.2rem 0 .4rem;color:var(--ink2);font-size:.98rem;display:grid;gap:.6rem}
+.ptab h3{font-size:1rem;font-weight:600;color:var(--ink);margin-top:.8rem}
+.ptab ul:not(.facts):not(.pfacts){padding-left:1.1rem;display:grid;gap:.35rem}
+.ptab .facts{margin-top:.2rem}
+.ptab .p-looks,.ptab .p-reviews{margin-top:1rem}
+.ptab .pfacts{margin-top:0}
+/* a thin bar while a tool loads */
+html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2px;width:40%;z-index:9999;background:var(--accent);animation:rqLoad 1s var(--ease) infinite}
+@keyframes rqLoad{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+@media (prefers-reduced-motion:reduce){html.loading-tools body::before{animation:none;width:100%;opacity:.5}}
+
+/* motion on products: lamps switch on, and product films where they exist */
+.pg-item .pg-off,.sv-card .sv-off{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;animation:lampOn 1.6s var(--ease-soft) .7s both}
+.sv-card .sv-off{z-index:1}
+@keyframes lampOn{0%{opacity:1}35%{opacity:.85}48%{opacity:.35}56%{opacity:.6}100%{opacity:0}}
+.sv-card[data-img="1"] .sv-off,.sv-card[data-img="1"] .sv-film{opacity:0;transition:opacity .25s}
+.sv-film{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none}
+.pg-film{position:relative;overflow:hidden;background:var(--img-bg)}
+.pg-film video{width:100%;height:100%;object-fit:cover;display:block}
+@media (prefers-reduced-motion:reduce){.pg-item .pg-off,.sv-card .sv-off{animation:none;opacity:0}.sv-film,.pg-film video{display:none}}
+.hrooms + .sec{padding-top:clamp(1.6rem,3vw,2.6rem)}
