@@ -83,11 +83,16 @@
   /* the "whole shop in your room" demo: the customer's own room and scene if they have one, otherwise a sample */
   function demoFig() {
     const R = RQ.room, mine = R.has() && R.scene().length;
-    const bg = mine ? R.url() : "assets/img/rum/sovrum-1600.webp";
-    const ratio = mine ? `${R.get().w} / ${R.get().h}` : "16 / 9";
-    const items = mine ? R.scene().slice(0, 6) : [{ h: "lysa-keramiklampa", x: 77, y: 71, w: 11 }, { h: "plad-ullblandning-havre", x: 42, y: 80, w: 20 }, { h: "flatad-forvaringskorg", x: 14, y: 97, w: 15 }];
+    /* sample: a real photo pair (same room before and after), with small product tags in the "after" half */
+    const SAMPLE = [{ h: "lysa-keramiklampa", x: 14, y: 47 }, { h: "plad-ullblandning-havre", x: 56, y: 57 }, { h: "flatad-forvaringskorg", x: 25, y: 74 }];
+    const items = mine ? R.scene().slice(0, 6) : SAMPLE;
     const total = items.reduce((s, it) => s + RQ.byHandle(it.h).price, 0);
-    return `<figure class="rh-fig bav" style="--ba:58%"><div class="rh-stage" style="aspect-ratio:${ratio}"><img class="rh-bg" src="${bg}" alt="${mine ? "Ditt rum med produkterna du ställt in" : "Exempelrum med produkter från butiken inställda"}" loading="lazy"><div class="ba-after">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-item" style="left:${it.x}%;top:${it.y}%;width:${it.w}%"><img src="${RQ.cut(p)}" alt="" loading="lazy" style="${mine ? `filter:${R.lightFilter(it.light)}` : ""}"></span>`; }).join("")}</div>
+    const set = (k) => `assets/img/rum/sovrum-${k}-600.webp 600w, assets/img/rum/sovrum-${k}-900.webp 900w, assets/img/rum/sovrum-${k}-1344.webp 1344w`;
+    const sizes = "(max-width: 900px) 100vw, 60vw";
+    const stage = mine
+      ? `<div class="rh-stage" style="aspect-ratio:${R.get().w} / ${R.get().h}"><img class="rh-bg" src="${R.url()}" alt="Ditt rum med produkterna du ställt in" loading="lazy"><div class="ba-after">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-item" style="left:${it.x}%;top:${it.y}%;width:${it.w}%"><img src="${RQ.cut(p)}" alt="" loading="lazy" style="filter:${R.lightFilter(it.light)}"></span>`; }).join("")}</div>`
+      : `<div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg" src="assets/img/rum/sovrum-fore-900.webp" srcset="${set("fore")}" sizes="${sizes}" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async"><div class="ba-after"><img class="rh-bg" src="assets/img/rum/sovrum-efter-900.webp" srcset="${set("efter")}" sizes="${sizes}" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-tag" style="left:${it.x}%;top:${it.y}%"><i></i><span><b>${RQ.esc(p.name)}</b> ${S.kr(p.price)}</span></span>`; }).join("")}</div>`;
+    return `<figure class="rh-fig bav" style="--ba:58%">${stage}
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
       <input class="ba-range" type="range" min="0" max="100" value="58" aria-label="Jämför rummet före och efter. Dra åt höger för att visa fler produkter."></div>
       <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total)}</span></span><a class="btn sm" href="${mine ? "#mitt-rum" : "#butik"}">${mine ? "Fortsätt" : "Till butiken"}</a></figcaption></figure>`;

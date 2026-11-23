@@ -373,5 +373,7 @@ Object.assign(window.RQ_EN.dict, {
   "Hem / Hitta rätt": "Home / Find the right thing",
   "Färger ur ditt rum · Mitt rum · RumIQ": "Colours from your room · My room · RumIQ",
   "Hitta rätt med egna ord": "Find the right thing in your own words",
-  "I förhandsversionen sparas idéerna bara i din webbläsare och syns inte för andra.": "In the preview, ideas are only saved in your browser and are not visible to others."
+  "I förhandsversionen sparas idéerna bara i din webbläsare och syns inte för andra.": "In the preview, ideas are only saved in your browser and are not visible to others.",
+  "Ett ljust sovrum innan, med tomt nattduksbord och bar säng": "A light bedroom before, with a bare bedside table and a plain bed",
+  "Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg": "The same bedroom with the Lysa ceramic lamp, the oat wool blend throw and the woven storage basket"
 });

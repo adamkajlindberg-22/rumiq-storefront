@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=e99701e1">
+<link rel="stylesheet" href="assets/css/site.min.css?v=7b45f3ec">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -94,20 +94,20 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <section class="hero" id="hero" aria-label="Välkommen till RumIQ">
         <div class="stage">
           <img class="still wide" src="assets/img/rum-1600.webp" srcset="assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w" sizes="100vw" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="2400" height="1340">
-          <img class="still start" src="assets/img/hero-start-1600.webp" alt="" aria-hidden="true" width="1600" height="900" style="opacity: 0;">
-          <video id="heroVideo" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1" src="blob:http://localhost:8766/33531a65-e884-4db2-a4d7-ce773bd2760b" class="ready"></video>
+          <img class="still start" src="assets/img/hero-start-1600.webp" alt="" aria-hidden="true" width="1600" height="900">
+          <video id="heroVideo" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1"></video>
           <video class="mloop" id="heroLoop" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1" poster="assets/img/hero-m-start.webp"></video>
-          <canvas id="dust" aria-hidden="true" width="1440" height="900"></canvas>
+          <canvas id="dust" aria-hidden="true"></canvas>
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
-            <div class="band" data-in="0" data-out=".19" style="opacity: 1; visibility: visible; transform: translateY(calc(-50% + 6px));"><p class="big">Börja med en sak.</p></div>
-            <div class="band" data-in=".22" data-out=".44" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% + 20px));"><p class="big">Den rätta.</p></div>
-            <div class="band" data-in=".48" data-out=".70" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% + 35px));"><p class="big">Ett bättre hem kräver inte fler saker.</p></div>
-            <div class="band" data-in=".74" data-out=".89" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% + 49px));"><p class="big">Det kräver rätt saker.</p></div>
-            <div class="band settle" data-in=".92" data-out="9" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% + 196px));"><h1>Rätt saker.<br>Ett lugnare hem.</h1><p class="sub">Noga utvald belysning, textil och förvaring, och verktyg som låter dig se allt i ditt eget rum innan du köper.</p>
+            <div class="band" data-in="0" data-out=".19" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 54px));"><p class="big">Börja med en sak.</p></div>
+            <div class="band" data-in=".22" data-out=".44" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 40px));"><p class="big">Den rätta.</p></div>
+            <div class="band" data-in=".48" data-out=".70" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 25px));"><p class="big">Ett bättre hem kräver inte fler saker.</p></div>
+            <div class="band" data-in=".74" data-out=".89" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 11px));"><p class="big">Det kräver rätt saker.</p></div>
+            <div class="band settle" data-in=".92" data-out="9" style="opacity: 1; visibility: visible; transform: translateY(calc(-50% + 0px));"><h1>Rätt saker.<br>Ett lugnare hem.</h1><p class="sub">Noga utvald belysning, textil och förvaring, och verktyg som låter dig se allt i ditt eget rum innan du köper.</p>
               <div class="row"><button class="btn" type="button" data-room-setup="#butik">Se butiken i ditt rum</button><a class="btn ghost" href="butik/">Upptäck butiken</a></div></div>
           </div>
-          <div class="loader" id="loader" aria-hidden="true"><svg viewBox="0 0 32 32"><circle class="track" cx="16" cy="16" r="13"></circle><circle class="bar" id="loaderBar" cx="16" cy="16" r="13" pathLength="1" style="stroke-dashoffset: 0;"></circle></svg><span id="loaderText">Klart</span></div>
+          <div class="loader" id="loader" aria-hidden="true"><svg viewBox="0 0 32 32"><circle class="track" cx="16" cy="16" r="13"></circle><circle class="bar" id="loaderBar" cx="16" cy="16" r="13" pathLength="1"></circle></svg><span id="loaderText">Laddar rummet</span></div>
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>
         </div>
       </section>
@@ -123,7 +123,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Populärt just nu</h2><p>Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning.</p></div><a class="link" href="butik/">Alla produkter</a></div>
           <div class="grid three">
     <article class="card" style="--tone:#F1EDE622">
-      <a class="ph" href="produkt-glob-bordslampa-opalglas/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glob-bordslampa-opalglas-600.webp" srcset="assets/img/p/glob-bordslampa-opalglas-600.webp 600w, assets/img/p/glob-bordslampa-opalglas-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glob bordslampa opalglas" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" src="assets/img/d/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
+      <a class="ph" href="produkt-glob-bordslampa-opalglas/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glob-bordslampa-opalglas-600.webp" srcset="assets/img/p/glob-bordslampa-opalglas-600.webp 600w, assets/img/p/glob-bordslampa-opalglas-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glob bordslampa opalglas" loading="lazy" decoding="async" width="600" height="750"></a>
       <button class="iconbtn fav" type="button" data-wish="glob-bordslampa-opalglas" aria-pressed="false" aria-label="Spara Glob bordslampa opalglas i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
       <button class="iconbtn rbtn" type="button" data-room-btn="glob-bordslampa-opalglas" aria-pressed="false" aria-label="Ställ in Glob bordslampa opalglas i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qadd" type="button" data-add="glob-bordslampa-opalglas::0" aria-label="Lägg Glob bordslampa opalglas i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
@@ -132,7 +132,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#D9C7AE22">
-      <a class="ph" href="produkt-lysa-keramiklampa/" tabindex="-1" aria-hidden="true"><img class="fade" src="assets/img/p/lysa-keramiklampa-600.webp" srcset="assets/img/p/lysa-keramiklampa-600.webp 600w, assets/img/p/lysa-keramiklampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Lysa keramiklampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" src="assets/img/d/lysa-keramiklampa-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
+      <a class="ph" href="produkt-lysa-keramiklampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/lysa-keramiklampa-600.webp" srcset="assets/img/p/lysa-keramiklampa-600.webp 600w, assets/img/p/lysa-keramiklampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Lysa keramiklampa" loading="lazy" decoding="async" width="600" height="750"></a>
       <button class="iconbtn fav" type="button" data-wish="lysa-keramiklampa" aria-pressed="false" aria-label="Spara Lysa keramiklampa i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
       <button class="iconbtn rbtn" type="button" data-room-btn="lysa-keramiklampa" aria-pressed="false" aria-label="Ställ in Lysa keramiklampa i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qadd" type="button" data-add="lysa-keramiklampa::0" aria-label="Lägg Lysa keramiklampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
@@ -141,7 +141,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#F4EFE722">
-      <a class="ph" href="produkt-svamp-uppladdningsbar-lampa/" tabindex="-1" aria-hidden="true"><img class="fade" src="assets/img/p/svamp-uppladdningsbar-lampa-600.webp" srcset="assets/img/p/svamp-uppladdningsbar-lampa-600.webp 600w, assets/img/p/svamp-uppladdningsbar-lampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Svamp uppladdningsbar lampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" src="assets/img/d/svamp-uppladdningsbar-lampa-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
+      <a class="ph" href="produkt-svamp-uppladdningsbar-lampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/svamp-uppladdningsbar-lampa-600.webp" srcset="assets/img/p/svamp-uppladdningsbar-lampa-600.webp 600w, assets/img/p/svamp-uppladdningsbar-lampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Svamp uppladdningsbar lampa" loading="lazy" decoding="async" width="600" height="750"></a>
       <button class="iconbtn fav" type="button" data-wish="svamp-uppladdningsbar-lampa" aria-pressed="false" aria-label="Spara Svamp uppladdningsbar lampa i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
       <button class="iconbtn rbtn" type="button" data-room-btn="svamp-uppladdningsbar-lampa" aria-pressed="false" aria-label="Ställ in Svamp uppladdningsbar lampa i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qadd" type="button" data-add="svamp-uppladdningsbar-lampa::0" aria-label="Lägg Svamp uppladdningsbar lampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
@@ -150,7 +150,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#D8C6A822">
-      <a class="ph" href="produkt-plad-ullblandning-havre/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/plad-ullblandning-havre-600.webp" srcset="assets/img/p/plad-ullblandning-havre-600.webp 600w, assets/img/p/plad-ullblandning-havre-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Pläd ullblandning havre" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" src="assets/img/d/plad-ullblandning-havre-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
+      <a class="ph" href="produkt-plad-ullblandning-havre/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/plad-ullblandning-havre-600.webp" srcset="assets/img/p/plad-ullblandning-havre-600.webp 600w, assets/img/p/plad-ullblandning-havre-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Pläd ullblandning havre" loading="lazy" decoding="async" width="600" height="750"></a>
       <button class="iconbtn fav" type="button" data-wish="plad-ullblandning-havre" aria-pressed="false" aria-label="Spara Pläd ullblandning havre i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
       <button class="iconbtn rbtn" type="button" data-room-btn="plad-ullblandning-havre" aria-pressed="false" aria-label="Ställ in Pläd ullblandning havre i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qadd" type="button" data-add="plad-ullblandning-havre::0" aria-label="Lägg Pläd ullblandning havre i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
@@ -159,7 +159,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#F2EFE922">
-      <a class="ph" href="produkt-vaffelhandduk-bomull/" tabindex="-1" aria-hidden="true"><img class="fade" src="assets/img/p/vaffelhandduk-bomull-600.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Våffelhandduk bomull" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" src="assets/img/d/vaffelhandduk-bomull-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
+      <a class="ph" href="produkt-vaffelhandduk-bomull/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/vaffelhandduk-bomull-600.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Våffelhandduk bomull" loading="lazy" decoding="async" width="600" height="750"></a>
       <button class="iconbtn fav" type="button" data-wish="vaffelhandduk-bomull" aria-pressed="false" aria-label="Spara Våffelhandduk bomull i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
       <button class="iconbtn rbtn" type="button" data-room-btn="vaffelhandduk-bomull" aria-pressed="false" aria-label="Ställ in Våffelhandduk bomull i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qadd" type="button" data-add="vaffelhandduk-bomull::0" aria-label="Lägg Våffelhandduk bomull i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
@@ -168,7 +168,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <p class="sub"><span class="swatches" role="img" aria-label="2 färger"><i style="background:#F2EFE9"></i><i style="background:#D9C7AA"></i></span></p>
     </article>
     <article class="card" style="--tone:#D9C4A322">
-      <a class="ph" href="produkt-glod-doftljus-keramik/" tabindex="-1" aria-hidden="true"><img class="fade" src="assets/img/p/glod-doftljus-keramik-600.webp" srcset="assets/img/p/glod-doftljus-keramik-600.webp 600w, assets/img/p/glod-doftljus-keramik-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glöd doftljus i keramik" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" src="assets/img/d/glod-doftljus-keramik-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
+      <a class="ph" href="produkt-glod-doftljus-keramik/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glod-doftljus-keramik-600.webp" srcset="assets/img/p/glod-doftljus-keramik-600.webp 600w, assets/img/p/glod-doftljus-keramik-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glöd doftljus i keramik" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade ok" src="assets/img/d/glod-doftljus-keramik-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="glod-doftljus-keramik" aria-pressed="false" aria-label="Spara Glöd doftljus i keramik i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
       <button class="iconbtn rbtn" type="button" data-room-btn="glod-doftljus-keramik" aria-pressed="false" aria-label="Ställ in Glöd doftljus i keramik i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qadd" type="button" data-add="glod-doftljus-keramik::0" aria-label="Lägg Glöd doftljus i keramik i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
@@ -233,7 +233,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <div class="ctrl-row" style="margin-top:2rem"><button class="btn" type="button" data-room-setup="#butik">Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#butik">Prova med ett exempelrum</button></div>
             <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
           </div>
-          <figure class="rh-fig bav" style="--ba:58%"><div class="rh-stage" style="aspect-ratio:16 / 9"><img class="rh-bg" src="assets/img/rum/sovrum-1600.webp" alt="Exempelrum med produkter från butiken inställda" loading="lazy"><div class="ba-after"><span class="rh-item" style="left:77%;top:71%;width:11%"><img src="assets/img/cut/lysa-keramiklampa.webp" alt="" loading="lazy" style=""></span><span class="rh-item" style="left:42%;top:80%;width:20%"><img src="assets/img/cut/plad-ullblandning-havre.webp" alt="" loading="lazy" style=""></span><span class="rh-item" style="left:14%;top:97%;width:15%"><img src="assets/img/cut/flatad-forvaringskorg.webp" alt="" loading="lazy" style=""></span></div>
+          <figure class="rh-fig bav" style="--ba:58%"><div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg" src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w" sizes="(max-width: 900px) 100vw, 60vw" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async"><div class="ba-after"><img class="rh-bg" src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w" sizes="(max-width: 900px) 100vw, 60vw" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async"><span class="rh-tag" style="left:14%;top:47%"><i></i><span><b>Lysa keramiklampa</b> 1&nbsp;290 kr</span></span><span class="rh-tag" style="left:56%;top:57%"><i></i><span><b>Pläd ullblandning havre</b> 799 kr</span></span><span class="rh-tag" style="left:25%;top:74%"><i></i><span><b>Flätad förvaringskorg</b> 379 kr</span></span></div>
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
       <input class="ba-range" type="range" min="0" max="100" value="58" aria-label="Jämför rummet före och efter. Dra åt höger för att visa fler produkter."></div>
       <figcaption class="rh-card"><span><b>Hela rummet</b><span>3 produkter · 2&nbsp;468 kr</span></span><a class="btn sm" href="butik/">Till butiken</a></figcaption></figure>
@@ -313,7 +313,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=e99701e1";</script>
-<script src="assets/js/site.min.js?v=e99701e1"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=7b45f3ec";</script>
+<script src="assets/js/site.min.js?v=7b45f3ec"></script>
 </body>
 </html>
