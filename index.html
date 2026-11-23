@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=0649edc5">
+<link rel="stylesheet" href="assets/css/site.min.css?v=fc84ff4d">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -95,7 +95,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <div class="stage">
           <img class="still wide" src="assets/img/rum-1600.webp" srcset="assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w" sizes="100vw" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="2400" height="1340">
           <img class="still start" src="assets/img/hero-start-1600.webp" alt="" aria-hidden="true" width="1600" height="900" style="opacity: 0;">
-          <video id="heroVideo" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1" src="blob:http://localhost:8766/09683a70-d7be-4468-b8a3-547f610dedb4" class="ready"></video>
+          <video id="heroVideo" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1" src="blob:http://localhost:8766/7cafdc34-f2dc-4b47-b616-e771ffa2f46c" class="ready"></video>
           <canvas id="dust" aria-hidden="true" width="1440" height="900"></canvas>
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
@@ -294,6 +294,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=0649edc5"></script>
+<script src="assets/js/site.min.js?v=fc84ff4d"></script>
 </body>
 </html>
