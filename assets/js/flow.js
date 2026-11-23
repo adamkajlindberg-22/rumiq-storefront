@@ -245,11 +245,7 @@
         offs.push(() => { st.removeEventListener("pointermove", move); st.removeEventListener("pointerleave", leave); });
       }
     });
-    if (!fine) {
-      let raf = 0;
-      const scroll = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; stages.forEach((st) => { const r = st.getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return; const k = ((r.top + r.height / 2) / innerHeight) * 2 - 1; st.style.setProperty("--py", Math.max(-1, Math.min(1, k)).toFixed(3)); }); }); };
-      addEventListener("scroll", scroll, { passive: true }); scroll(); offs.push(() => removeEventListener("scroll", scroll));
-    }
+    // touch screens: no scroll-driven parallax. Repainting a blended light layer on every scroll frame made phones stutter.
     return () => offs.forEach((f) => f());
   }
   RQ.hotspots = {
@@ -312,24 +308,26 @@
       let cur = 0;
       const head = $(".jr-head", sec);
       // the sticky stage's own offsetTop moves while it is stuck, so measure from the section
-      const top0 = () => sec.getBoundingClientRect().top + scrollY + head.offsetHeight;
-      const per = () => (sec.offsetHeight - head.offsetHeight - stick.offsetHeight) / n;
+      // measured once and again on resize, never while scrolling (reading layout in a scroll handler forces a reflow)
+      let T0 = 0, PER = 1;
+      const measure = () => { T0 = sec.getBoundingClientRect().top + scrollY + head.offsetHeight; PER = Math.max(1, (sec.offsetHeight - head.offsetHeight - stick.offsetHeight) / n); };
+      const top0 = () => T0, per = () => PER;
       const set = (i) => {
         if (i === cur) return; cur = i;
         rooms.forEach((r, k) => { const on = k === i; r.classList.toggle("on", on); r.toggleAttribute("inert", !on); if (on) RQ.hotspots.layout($(".hs-stage", r)); });
         dots.forEach((d, k) => d.setAttribute("aria-current", k === i));
       };
-      const onScroll = () => {
-        const y = scrollY - top0(), p = per();
-        set(Math.max(0, Math.min(n - 1, Math.floor((y + p * 0.35) / p))));
-        const local = Math.max(0, Math.min(1, (y - cur * p) / p));
-        sec.style.setProperty("--t", local.toFixed(3));
-      };
+      let jrRaf = 0;
+      const update = () => { jrRaf = 0; const y = scrollY - T0; set(Math.max(0, Math.min(n - 1, Math.floor((y + PER * 0.35) / PER)))); };
+      const onScroll = () => { if (!jrRaf) jrRaf = requestAnimationFrame(update); };
+      const onResize = () => { measure(); onScroll(); };
       const go = (e) => { const d = e.target.closest("[data-jr]"); if (!d) return; scrollTo({ top: top0() + +d.dataset.jr * per() + 2, behavior: "smooth" }); };
       sec.addEventListener("click", go);
-      addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onScroll, { passive: true });
-      onScroll();
-      return () => { offHs(); removeEventListener("scroll", onScroll); removeEventListener("resize", onScroll); sec.removeEventListener("click", go); };
+      addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onResize, { passive: true });
+      measure(); update();
+      // content above can grow when pictures load: measure again whenever the page changes height
+      const ro = "ResizeObserver" in window ? new ResizeObserver(onResize) : null; if (ro) ro.observe(document.getElementById("view") || document.body);
+      return () => { offHs(); if (ro) ro.disconnect(); removeEventListener("scroll", onScroll); removeEventListener("resize", onResize); sec.removeEventListener("click", go); };
     },
   };
 

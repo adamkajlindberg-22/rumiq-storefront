@@ -482,5 +482,6 @@ Object.assign(window.RQ_EN.dict, {
   "Gardiner, kuddar och en pläd ändrar ett rum mer än man tror, och det är det första du packar när du flyttar.": "Curtains, cushions and a throw change a room more than you think, and they are the first things you pack when you move.",
   "Belysning i lager: så blir hemmet mysigt på kvällen · RumIQ": "Layered lighting: how to make your home cosy in the evening · RumIQ",
   "Inred ett litet sovrum: sex sätt att få det att kännas större · RumIQ": "Furnishing a small bedroom: six ways to make it feel bigger · RumIQ",
-  "Hyresvänlig inredning: gör om utan att borra · RumIQ": "Renter-friendly decorating: change things without drilling · RumIQ"
+  "Hyresvänlig inredning: gör om utan att borra · RumIQ": "Renter-friendly decorating: change things without drilling · RumIQ",
+  "Sajten är ljus. Vill du ha den dämpad på kvällen? Välj här.": "The site is light. Want it dimmed in the evening? Choose here."
 });

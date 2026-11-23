@@ -166,9 +166,9 @@
       const next = () => { busy = false; paint(); };
       if (reduced()) return next();
       flash(c, dir === 1 ? "yes" : dir === 2 ? "up" : "no");
-      c.style.transition = "transform .42s cubic-bezier(.3,.6,.2,1), opacity .42s";
+      c.style.transition = "transform .26s cubic-bezier(.3,.6,.2,1), opacity .26s";
       c.style.transform = dir === 2 ? "translate(0,-120%) scale(.9)" : `translate(${dir * 130}%, -4%) rotate(${dir * 18}deg)`; c.style.opacity = 0;
-      setTimeout(next, 360);
+      setTimeout(next, 210);
     };
     const undo = () => {
       if (busy || st.over || !st.history.length) return;

@@ -20,13 +20,13 @@
 <link rel="icon" type="image/png" href="assets/brand/favicon.png">
 <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/familjen-grotesk-latin-wght-normal.woff2" crossorigin>
-<script>/* Daylight: by day the site is fog-white, after sunset (Stockholm, never before 17:00) it dims. */
-(function(){var m="auto";try{m=localStorage.getItem("rumiq-light")||"auto"}catch(e){}
+<script>/* Light: the site is fog-white unless the visitor has chosen evening, or to follow the daylight (dims after sunset in Stockholm, never before 17:00). */
+(function(){var m="dag";try{m=localStorage.getItem("rumiq-ljus")||"dag"}catch(e){}
 var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17.7],[6.2,19.9],[4.8,21],[3.7,22],[4,21.9],[5.2,20.7],[6.6,19.1],[7.9,17.4],[7.4,15.4],[8.6,14.8]][d.getMonth()];
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=9707096b">
+<link rel="stylesheet" href="assets/css/site.min.css?v=841ca251">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -48,9 +48,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <button class="lang" type="button" translate="no" data-lang-short aria-label="In English" lang="en">EN</button>
       <div class="lampwrap"><button class="iconbtn lamp" type="button" id="lampBtn" aria-haspopup="true" aria-expanded="false" aria-controls="lightMenu" aria-label="Ljus på sajten"><svg viewBox="0 0 24 24"><path class="shade" d="M8 4h8l3 7H5z"/><path d="M12 11v8M8.5 20h7"/><path class="ray" d="M7 14l-1.5 2M17 14l1.5 2M12 14v2.5"/></svg></button>
         <div class="lightmenu" id="lightMenu" role="menu" aria-label="Ljus">
-          <p>Sajten följer dagsljuset. Välj själv om du vill.</p>
-          <button type="button" role="menuitemradio" data-light-set="auto" aria-checked="false"><span>Följ dagsljuset<small>Dämpas efter solnedgången</small></span></button>
+          <p>Sajten är ljus. Vill du ha den dämpad på kvällen? Välj här.</p>
           <button type="button" role="menuitemradio" data-light-set="dag" aria-checked="false"><span>Dag<small>Ljust hela tiden</small></span></button>
+          <button type="button" role="menuitemradio" data-light-set="auto" aria-checked="false"><span>Följ dagsljuset<small>Dämpas efter solnedgången</small></span></button>
           <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
         </div></div>
       <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
@@ -79,7 +79,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <h4>Butik</h4><a href="butik/">Alla produkter</a><a href="for-dig/">För dig</a><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="presentkort/">Presentkort</a>
   <h4>Mitt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat och mina rum</a><a href="hitta-ratt/">Hitta rätt</a><a href="studio-plus/">Studio Plus</a>
   <h4>Konto och hjälp</h4><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Var är mitt paket?</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a>
-  <div><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Följ dagsljuset</span></button></div>
+  <div><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Dag</span></button></div>
 </nav>
 
 <nav class="dock" id="dock" aria-label="Snabbmeny">
@@ -288,7 +288,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=9707096b";</script>
-<script src="assets/js/site.min.js?v=9707096b"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=841ca251";</script>
+<script src="assets/js/site.min.js?v=841ca251"></script>
 </body>
 </html>

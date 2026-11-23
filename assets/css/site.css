@@ -489,7 +489,7 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.2rem}
 .form-grid .full{grid-column:1/-1}
 label{display:grid;gap:.4rem;font-size:.88rem;font-weight:500;color:var(--muted)}
-input[type=text],input[type=email],input[type=password],input[type=search],input[type=number],input[type=tel],select,textarea{
+input:not([type]),input[type=text],input[type=email],input[type=password],input[type=search],input[type=number],input[type=tel],select,textarea{
   width:100%;border:1px solid var(--line);background:var(--paper);border-radius:var(--r-btn);padding:.85rem 1rem;color:var(--ink);font-size:1rem;transition:border-color .25s,box-shadow .25s}
 input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--muted) 75%,transparent)}
 input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
@@ -1946,3 +1946,71 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 .gc-soon{border:1px solid var(--line);border-radius:var(--r);padding:1.2rem;background:var(--paper);display:grid;gap:.8rem}
 .gc-soon p{margin:0;color:var(--ink2)}
 @media (max-width:820px){.gc{grid-template-columns:1fr}.gc-card{max-width:24rem;margin:0 auto 1rem}}
+
+/* ============ v12: snappier. Shorter motion, cheaper paint, light by default ============ */
+/* 1. Changing page: a quick cross-fade on desktop (phones skip the view transition in app.js) */
+::view-transition-old(root){animation:fadeOut5 .09s linear both}
+::view-transition-new(root){animation:vtQuick .16s ease-out both}
+@keyframes vtQuick{from{opacity:0}to{opacity:1}}
+::view-transition-group(pimg){animation-duration:.26s}
+::view-transition-old(pimg),::view-transition-new(pimg){animation-duration:.26s}
+/* 2. Pictures appear as soon as they are decoded instead of fading for 0.7 s */
+.fade{transition:opacity .18s linear}
+.card .ph img{transition:opacity .18s linear,transform .6s var(--ease)}
+/* 3. Panels open and close in about a third of a second */
+.mnav{transition:transform .3s var(--ease),visibility 0s .3s}
+.mnav.open{transition:transform .3s var(--ease)}
+.drawer{transition:transform .3s var(--ease),visibility 0s linear .3s}
+.drawer.open{transition:transform .3s var(--ease),visibility 0s}
+.scrim-all{transition:opacity .25s var(--ease),visibility 0s .25s}
+.scrim-all.open{transition:opacity .25s var(--ease)}
+.search{transition:opacity .18s var(--ease),visibility 0s .18s}
+.search.open{transition:opacity .18s var(--ease)}
+.sheet-scrim{transition:opacity .25s var(--ease)}
+.sheet-in{transition:transform .32s var(--ease)}
+.toast{transition:transform .3s var(--ease),visibility 0s .3s}
+.toast.show{transition:transform .3s var(--ease)}
+.buybar{transition:transform .28s var(--ease)}
+.btn{transition:background .16s var(--ease),color .16s var(--ease),border-color .16s,transform .12s var(--ease)}
+/* 4. Frosted glass is costly: every blurred element re-blurs what is behind it on each scroll frame.
+      Small repeated controls get a solid background instead, and on phones the fixed bars do too. */
+.card .qadd,.card .qv,.lightswitch,.rm-hold,.sheet-x,.rh-tag > span{backdrop-filter:none;-webkit-backdrop-filter:none}
+.card .qadd,.card .qv,.lightswitch,.rm-hold{background:rgba(247,247,244,.96)}
+.rh-tag > span{background:var(--paper)}
+.sheet-scrim{backdrop-filter:none;-webkit-backdrop-filter:none}
+@media (max-width:900px),(pointer:coarse){
+  .nav.solid,.nav.open{background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .dock{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .buybar{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .search{background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .rh-card{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .cookie{backdrop-filter:none;-webkit-backdrop-filter:none}
+  /* no light layer blended over the room pictures on touch screens */
+  .hs-stage.deep::after{display:none}
+  .hs-stage.deep .hs-img{transform:none;will-change:auto}
+}
+/* 5. Taps answer at once: no wait for a possible double-tap zoom */
+a,button,input,select,textarea,label,[role=button]{touch-action:manipulation}
+/* 6. Missing-details markers: readable in both lights */
+.pending{color:var(--ink);background:color-mix(in srgb,var(--glow) 34%,var(--paper))}
+/* 7. Därför RumIQ: two by two on phones, so the home page stays short */
+@media (max-width:560px){
+  .why-grid{grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.2rem}
+  .why-grid li{display:grid;grid-template-columns:1fr;gap:.3rem;padding:.9rem}
+  .why-grid svg{grid-row:auto;margin:0 0 .2rem;width:1.4rem;height:1.4rem}
+  .why-grid b{font-size:.95rem}
+  .why-grid span{font-size:.84rem;line-height:1.45}
+}
+/* 8. Gå genom hemmet: rooms swap quickly and the picture no longer zooms with the scroll.
+      Two full-screen pictures cross-fading for 0.8 s while scrolling was the heaviest thing on Upptäck. */
+.jr-room{transition:opacity .14s linear,visibility 0s .14s}
+.jr-room.on{transition:opacity .14s linear}
+.jr-copy{transform:none;transition:none}
+.jr-room .hs-drift{transform:none;transition:none}
+/* 9. Svep: the next card is ready in about 0.2 s instead of 0.36 s */
+.sv-card{transition:transform .28s var(--ease)}
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+  .sv-card,.fade,.card .ph img,.jr-room,.jr-room.on,.mnav,.mnav.open,.drawer,.drawer.open,.sheet-in,.toast,.toast.show,.buybar,.btn{transition:none}
+}
+@media (max-width:560px){.sec.why{padding-block:2.6rem}.why .sec-head p{margin-top:.4rem}.why-foot{margin-top:1rem;font-size:.88rem}}

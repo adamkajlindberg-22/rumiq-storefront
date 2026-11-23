@@ -532,10 +532,17 @@
     else location.hash = h;
   }, true);
   window.addEventListener("popstate", () => { if (currentRaw() !== current) RQ.router(); });
+  const COARSE = matchMedia("(pointer: coarse), (max-width: 900px)").matches;
   RQ.router = () => {
     const raw = currentRaw();
     if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
-    if (firstRun || !document.startViewTransition || reduced() || raw === current) { firstRun = false; render(raw); return; }
+    // phones and tablets: no view transition. Taking a picture of the whole page before every change costs more
+    // than the fade is worth there; the new view gets a short fade instead.
+    if (firstRun || !document.startViewTransition || reduced() || raw === current || COARSE) {
+      const swap = !firstRun && raw !== current && !reduced(); firstRun = false; render(raw);
+      if (swap) { const v = document.getElementById("view"); if (v.animate) v.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, easing: "ease-out" }); }
+      return;
+    }
     const t = document.startViewTransition(() => render(raw));
     t.ready.catch(() => {}); t.updateCallbackDone.catch(() => {});
     t.finished.catch(() => {}).finally(() => $$("[style*=view-transition-name]").forEach((el) => { if (!el.closest(".pg-grid")) el.style.viewTransitionName = ""; }));
@@ -709,10 +716,11 @@
   const lampBtn = $("#lampBtn"), lightMenu = $("#lightMenu");
   const LIGHT_LABEL = { auto: "Följ dagsljuset", dag: "Dag", kvall: "Kväll" };
   const sunNow = () => { const d = new Date(), h = d.getHours() + d.getMinutes() / 60, S2 = [[8.7, 15], [7.6, 16.3], [6.3, 17.7], [6.2, 19.9], [4.8, 21], [3.7, 22], [4, 21.9], [5.2, 20.7], [6.6, 19.1], [7.9, 17.4], [7.4, 15.4], [8.6, 14.8]][d.getMonth()]; return h < S2[0] || h >= Math.max(S2[1], 17) ? "kvall" : "dag"; };
-  const applyLight = (mode) => {
+  // the site is light by default; only a choice the visitor makes is remembered (key rumiq-ljus)
+  const applyLight = (mode, save) => {
     const r = document.documentElement, t = mode === "auto" ? sunNow() : mode;
     r.setAttribute("data-light", t); r.setAttribute("data-light-mode", mode);
-    try { localStorage.setItem("rumiq-light", mode); } catch (e) {}
+    if (save) { try { localStorage.setItem("rumiq-ljus", mode); } catch (e) {} }
     const tc = $("meta[name=theme-color]"); if (tc) tc.content = t === "kvall" ? "#191A18" : "#EDEDEA";
     $$("[data-light-set]").forEach((b) => b.setAttribute("aria-checked", b.dataset.lightSet === mode));
     $$("[data-light-label]").forEach((el) => (el.textContent = LIGHT_LABEL[mode]));
@@ -720,12 +728,12 @@
   RQ.applyLight = applyLight;
   function closeLight() { if (lightMenu) { lightMenu.classList.remove("open"); lampBtn.setAttribute("aria-expanded", "false"); } }
   if (lampBtn) {
-    applyLight(document.documentElement.getAttribute("data-light-mode") || "auto");
+    applyLight(document.documentElement.getAttribute("data-light-mode") || "dag");
     lampBtn.addEventListener("click", (e) => { e.stopPropagation(); const open = !lightMenu.classList.contains("open"); closeMega(); lightMenu.classList.toggle("open", open); lampBtn.setAttribute("aria-expanded", open); if (open) setTimeout(() => $("[aria-checked=true]", lightMenu)?.focus(), 30); });
-    lightMenu.addEventListener("click", (e) => { const b = e.target.closest("[data-light-set]"); if (!b) return; e.stopPropagation(); applyLight(b.dataset.lightSet); closeLight(); lampBtn.focus(); });
+    lightMenu.addEventListener("click", (e) => { const b = e.target.closest("[data-light-set]"); if (!b) return; e.stopPropagation(); applyLight(b.dataset.lightSet, true); closeLight(); lampBtn.focus(); });
     document.addEventListener("click", (e) => { if (!e.target.closest(".lampwrap")) closeLight(); });
-    $$("[data-light-cycle]").forEach((b) => b.addEventListener("click", () => { const order = ["auto", "dag", "kvall"]; const cur = document.documentElement.getAttribute("data-light-mode") || "auto"; applyLight(order[(order.indexOf(cur) + 1) % 3]); }));
-    setInterval(() => { if ((document.documentElement.getAttribute("data-light-mode") || "auto") === "auto") applyLight("auto"); }, 5 * 60 * 1000);
+    $$("[data-light-cycle]").forEach((b) => b.addEventListener("click", () => { const order = ["dag", "kvall", "auto"]; const cur = document.documentElement.getAttribute("data-light-mode") || "dag"; applyLight(order[(order.indexOf(cur) + 1) % 3], true); }));
+    setInterval(() => { if (document.documentElement.getAttribute("data-light-mode") === "auto") applyLight("auto"); }, 5 * 60 * 1000);
   }
 
   // dock steps aside while reading downwards, returns on the way up
