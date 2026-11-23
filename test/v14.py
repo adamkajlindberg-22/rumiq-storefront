@@ -166,6 +166,11 @@ with sync_playwright() as p:
         lab = pg.evaluate("(() => { const l = [...document.querySelectorAll('#hrForm .hr-grid label')]; if (!l.length) return null; const i = l.map((x) => x.querySelector('input,select').getBoundingClientRect().top - x.getBoundingClientRect().top); return [Math.max(...i.slice(0, 2)) - Math.min(...i.slice(0, 2)), l[1].textContent.includes('valfritt')]; })()")
         ok(lab is not None and lab[0] < 6 and lab[1], f"{tag} room form: fields line up beside each other: {lab}")
         ok("new URL(\"delad/\", document.baseURI)" in (ROOT / "assets/js/myhome.js").read_text(encoding="utf-8"), f"{tag} shared list link is built from the site root")
+        # 9. checkout: nothing outside the screen, the total is reachable
+        pg.goto(BASE + "produkt-lysa-keramiklampa/"); pg.wait_for_timeout(400)
+        pg.evaluate("RQ.shop.addToCart('lysa-keramiklampa::0', 1); location.hash = '#kassa'"); pg.wait_for_timeout(700)
+        co = pg.evaluate("(() => { const s = document.querySelector('#view .co-split'); return [document.documentElement.scrollWidth, innerWidth, ...[...s.children].map((c) => Math.round(c.getBoundingClientRect().right))]; })()")
+        ok(co[0] <= co[1] and all(r <= co[1] for r in co[2:]), f"{tag} checkout fits the screen, summary included: {co}")
         ok(not errs, f"{tag} no script errors in the feature walk: {errs[:2]}")
         ctx.close()
 

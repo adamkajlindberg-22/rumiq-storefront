@@ -2115,3 +2115,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .msg .follow{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.8rem}
 /* 8. "Gör bilden verklig": the small line is readable on the tinted card */
 .ai-card span{color:var(--ink2)}
+/* 9. Kassan: form and order summary side by side on wide screens, under each other on phones and tablets
+      (the summary used to end up outside the screen on a phone) */
+.split.co-split{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+@media (max-width:900px){.split.co-split{grid-template-columns:minmax(0,1fr)}}
