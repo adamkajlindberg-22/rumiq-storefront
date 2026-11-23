@@ -483,5 +483,14 @@ Object.assign(window.RQ_EN.dict, {
   "Belysning i lager: så blir hemmet mysigt på kvällen · RumIQ": "Layered lighting: how to make your home cosy in the evening · RumIQ",
   "Inred ett litet sovrum: sex sätt att få det att kännas större · RumIQ": "Furnishing a small bedroom: six ways to make it feel bigger · RumIQ",
   "Hyresvänlig inredning: gör om utan att borra · RumIQ": "Renter-friendly decorating: change things without drilling · RumIQ",
+  "Sajten är ljus. Vill du ha den dämpad på kvällen? Välj här.": "The site is light. Want it dimmed in the evening? Choose here.",
+  "Mitt rum och verktygen": "My room and the tools",
+  "Du hittar produkter i butiken eller med hjälp av Svep och Hitta rätt, ser dem i ditt rum om du vill och betalar i en säker kassa. Läs mer under": "You find products in the shop or with the help of Swipe and Find the right thing, see them in your room if you like and pay in a secure checkout. Read more under",
+  "Läs produktsidan, prova produkten i Mitt rum eller fråga AI-stylisten. Du kan också jämföra upp till fyra produkter sida vid sida.": "Read the product page, try the product in My room or ask the AI stylist. You can also compare up to four products side by side.",
+  "Vad kostar verktygen?": "What do the tools cost?",
+  "Ingenting. Mitt rum, Svep, Hitta rätt och stylisten är gratis. Studio Plus är ett tillval för dig som vill ha fler AI-bilder.": "Nothing. My room, Swipe, Find the right thing and the stylist are free. Studio Plus is an add-on if you want more AI images.",
+  "Vi säljer belysning, textil, förvaring, saker för kök och badrum och smarta saker för vardagen. Kvaliteten ska kännas premium, priset ska kännas rimligt. Till det kommer ett magasin med idéer och verktyg som hjälper dig att välja: Mitt rum, Svep och Hitta rätt.": "We sell lighting, textiles, storage, things for the kitchen and bathroom and smart things for everyday life. The quality should feel premium, the price reasonable. On top of that come a magazine with ideas and tools that help you choose: My room, Swipe and Find the right thing.",
+  "I Mitt rum ser du produkterna i ditt eget rum innan du köper. Det minskar felköp, och en retur är det sämsta för både plånboken och miljön.": "In My room you see the products in your own room before you buy. That reduces wrong purchases, and a return is the worst outcome for both your wallet and the environment.",
+  "Mitt rum:": "My room:",
   "Sajten är ljus. Vill du ha den dämpad på kvällen? Välj här.": "The site is light. Want it dimmed in the evening? Choose here."
 });

@@ -133,7 +133,7 @@
     const extra = `<section class="wrap" style="padding-bottom:3rem">
         <div class="split" style="align-items:start">
           <div><span class="eyebrow">Tre tips för ${esc(r.name.toLowerCase())}</span><ol class="prose numbered" style="margin-top:1.4rem">${r.tips.map((t) => `<li><p>${esc(t)}</p></li>`).join("")}</ol>
-            <div class="ctrl-row" style="margin-top:2rem">${r.cats.map((cid) => `<a class="chip" href="#kategori-${cid}">${esc(RQ.catById(cid).name)}</a>`).join("")}<a class="btn sm" href="#studio-rum">Designa mitt rum</a></div></div>
+            <div class="ctrl-row" style="margin-top:2rem">${r.cats.map((cid) => `<a class="chip" href="#kategori-${cid}">${esc(RQ.catById(cid).name)}</a>`).join("")}<a class="btn sm" href="#mitt-rum">Designa mitt rum</a></div></div>
           <div>${arts.length ? `<span class="eyebrow">Idéer för det här rummet</span><div style="display:grid;gap:1rem;margin-top:1.2rem">${arts.map((a) => `<a class="mag" href="#artikel-${a.slug}" style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;align-items:center"><div class="im" style="aspect-ratio:1"><img src="${a.img}" alt="" loading="lazy"></div><div><h3 style="margin:0;font-size:1.15rem">${esc(a.title)}</h3><span class="min">${a.minutes} min läsning</span></div></a>`).join("")}</div>` : ""}</div>
         </div>
         <p class="note">Rummen på bilderna är illustrationer. Föremålen i dem är inte identifierade produkter ur sortimentet.</p></section>
@@ -233,7 +233,7 @@
             <div class="ptabs" data-ptabs>
               <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
               <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h3>Så använder du den</h3><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
-              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h3>Passar den hemma?</h3><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#studio-rum-${p.handle}">Se det i ditt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h3>Material och skötsel</h3><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h3>Mått och fakta</h3><ul class="facts" style="margin-top:0;border-top:0">
+              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h3>Passar den hemma?</h3><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#mitt-rum-${p.handle}">Se det i ditt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h3>Material och skötsel</h3><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h3>Mått och fakta</h3><ul class="facts" style="margin-top:0;border-top:0">
                 <li><span>Artikel</span><span>${esc(p.handle.toUpperCase().slice(0, 14))}</span></li>
                 <li><span>Mått</span><span class="pending">Bekräftas när produkten är verifierad</span></li>
                 <li><span>Vikt</span><span class="pending">Bekräftas</span></li>
@@ -337,7 +337,7 @@
     return { title: "Önskelista · RumIQ",
       html: `${head(crumbs([["Hem", "hem"], ["Önskelista"]]), "Önskelista", "Dina favoriter och egna listor, till exempel en per rum. Listorna finns kvar i den här webbläsaren.")}
       <section class="wrap" style="padding-bottom:6rem">
-        <div class="listtabs" role="tablist"><button class="chip" type="button" role="tab" data-tab="fav" aria-pressed="${active === "fav"}">Favoriter (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" role="tab" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
+        <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Favoriter (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="padding:.5rem .9rem;border-radius:999px;width:10rem"><button class="chip" type="submit">Skapa</button></form></div>
         <div class="listhead"><div><h2 class="h3">${esc(cur.name)}</h2><p class="small">${items.length} produkter · ${kr(total)}</p></div>
           <div class="ctrl-row" style="margin:0">${items.length ? `<button class="btn sm" type="button" id="allCart">Lägg alla i varukorgen</button><a class="btn ghost sm" href="#studio-kombinera-${items[0].handle}">Se dem tillsammans</a><button class="btn ghost sm" type="button" id="share">Kopiera lista</button>` : ""}${active !== "fav" ? `<button class="chip" type="button" id="ren">Byt namn</button><button class="chip" type="button" id="del">Ta bort listan</button>` : ""}</div></div>
@@ -535,7 +535,7 @@
   const COARSE = matchMedia("(pointer: coarse), (max-width: 900px)").matches;
   RQ.router = () => {
     const raw = currentRaw();
-    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
+    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw) && !/^studio-kombinera-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
     // phones and tablets: no view transition. Taking a picture of the whole page before every change costs more
     // than the fade is worth there; the new view gets a short fade instead.
     if (firstRun || !document.startViewTransition || reduced() || raw === current || COARSE) {
@@ -571,9 +571,24 @@
     const c = S.customer(); const acc = $("#accLink"); if (acc) acc.setAttribute("aria-label", c ? "Mitt konto" : "Logga in");
   };
   const drawer = $("#cart"), scrimAll = $("#scrimAll");
-  const openCart = () => { renderCart(); closeLight(); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); setTimeout(() => $("#cart .close").focus(), 50); };
-  const closeAll = () => { drawer.classList.remove("open"); scrimAll.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); $("#search").classList.remove("open"); $("#mnav").classList.remove("open"); $("#burger").setAttribute("aria-expanded", "false"); closeMega(); closeLight(); document.documentElement.style.overflow = ""; };
+  // the control that opened a layer gets the focus back when the layer closes
+  let opener = null; const remember = () => { const a = document.activeElement; opener = a && a !== document.body && !a.closest("#cart,#mnav,#search") ? a : opener; };
+  const openCart = () => { remember(); renderCart(); closeLight(); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); setTimeout(() => $("#cart .close").focus(), 50); };
+  const closeAll = () => { const was = drawer.classList.contains("open") || $("#search").classList.contains("open") || $("#mnav").classList.contains("open"); if (was && opener && opener.isConnected && document.activeElement && document.activeElement.closest("#cart,#mnav,#search")) { try { opener.focus({ preventScroll: true }); } catch (e) {} } opener = null; drawer.classList.remove("open"); scrimAll.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); $("#search").classList.remove("open"); $("#mnav").classList.remove("open"); $("#burger").setAttribute("aria-expanded", "false"); closeMega(); closeLight(); document.documentElement.style.overflow = ""; };
   RQ.openCart = openCart; RQ.closeAll = closeAll;
+  // keep the keyboard inside whatever layer is open (quick view, search, menu or cart)
+  const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    const layer = [".sheet.open", "#search.open", "#mnav.open", "#cart.open"].map((q) => document.querySelector(q)).find(Boolean);
+    if (!layer) return;
+    const f = $$(FOCUSABLE, layer).filter((el) => el.getClientRects().length);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1], a = document.activeElement;
+    if (!layer.contains(a)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+  });
   function renderCart() {
     const lines = S.cartLines();
     const body = $("#cart .body"), foot = $("#cart footer");
@@ -645,7 +660,7 @@
   };
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
-  RQ.openSearch = () => { closeAll(); $("#search").classList.add("open"); document.documentElement.style.overflow = "hidden"; doSearch(); setTimeout(() => sInput.focus(), 60); };
+  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#search").classList.add("open"); document.documentElement.style.overflow = "hidden"; doSearch(); setTimeout(() => sInput.focus(), 60); };
 
   // mega menus
   const megaBtns = $$("[data-mega]");
@@ -671,7 +686,7 @@
     if (t.matches("[data-rm]")) { S.setQty(t.dataset.rm, 0); return; }
     if (t.matches("[data-line]")) { const l = S.cartLines().find((x) => x.id === t.dataset.line); if (l) S.setQty(l.id, l.quantity + +t.dataset.d); return; }
     if (t.matches("[data-action=cookies]")) { RQ.showCookies(true); return; }
-    if (t.id === "burger") { $("#mnav").classList.add("open"); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
+    if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
     if (t.id === "mnavClose") { closeAll(); return; }
     if (t.matches("a[data-after]")) RQ.ss.set("rumiq-after-login", "#" + t.dataset.after);
     if (t.matches("[data-close]") || t.matches("a[href^='#']")) { closeAll(); }

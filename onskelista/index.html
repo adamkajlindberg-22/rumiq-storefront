@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=841ca251">
+<link rel="stylesheet" href="assets/css/site.min.css?v=d061b1d0">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -92,7 +92,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <main id="view" class="view" tabindex="-1"><header class="page-head wrap"><ol class="crumbs"><li><a href="./">Hem</a></li><li>Önskelista</li></ol><h1 class="h1">Önskelista</h1><p class="lead">Dina favoriter och egna listor, till exempel en per rum. Listorna finns kvar i den här webbläsaren.</p></header>
       <section class="wrap" style="padding-bottom:6rem">
-        <div class="listtabs" role="tablist"><button class="chip" type="button" role="tab" data-tab="fav" aria-pressed="true">Favoriter (0)</button>
+        <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="true">Favoriter (0)</button>
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="padding:.5rem .9rem;border-radius:999px;width:10rem"><button class="chip" type="submit">Skapa</button></form></div>
         <div class="listhead"><div><h2 class="h3">Favoriter</h2><p class="small">0 produkter · 0 kr</p></div>
           <div class="ctrl-row" style="margin:0"></div></div>
@@ -141,7 +141,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=841ca251";</script>
-<script src="assets/js/site.min.js?v=841ca251"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=d061b1d0";</script>
+<script src="assets/js/site.min.js?v=d061b1d0"></script>
 </body>
 </html>

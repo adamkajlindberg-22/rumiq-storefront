@@ -95,7 +95,7 @@
           <label>Namn<input name="name" autocomplete="name" required></label>
           <label>E-post<input name="email" type="email" autocomplete="email" required></label>
           <label>Ordernummer, om du har ett<input name="order" placeholder="Till exempel TEST-1001"></label>
-          <label>Vad gäller det?<select name="topic"><option>En beställning</option><option>En produkt</option><option>Retur eller reklamation</option><option>RumIQ Studio</option><option>Något annat</option></select></label>
+          <label>Vad gäller det?<select name="topic"><option>En beställning</option><option>En produkt</option><option>Retur eller reklamation</option><option>Mitt rum och verktygen</option><option>Något annat</option></select></label>
           <label class="full">Meddelande<textarea name="msg" rows="6" required></textarea></label>
           <p class="note full">Skicka aldrig lösenord eller fullständiga kortuppgifter.</p>
           <button class="btn" type="submit">Skicka meddelandet</button>
@@ -113,7 +113,7 @@
       lead: "Svar på det folk oftast undrar. Hittar du inte ditt svar, skriv till oss.",
       groups: [
         ["Beställningar", [
-          ["Hur fungerar RumIQ?", "Du hittar produkter i butiken eller med hjälp av verktygen i Studio, ser dem i ditt rum om du vill och betalar i en säker kassa. Läs mer under <a href='#sa-fungerar-det'>Så fungerar RumIQ</a>."],
+          ["Hur fungerar RumIQ?", "Du hittar produkter i butiken eller med hjälp av Svep och Hitta rätt, ser dem i ditt rum om du vill och betalar i en säker kassa. Läs mer under <a href='#sa-fungerar-det'>Så fungerar RumIQ</a>."],
           ["Hur gör jag en beställning?", "Lägg produkterna i varukorgen, öppna varukorgen och gå till kassan. Där väljer du leveranssätt och ser totalsumman innan du betalar."],
           ["Kan jag ändra min beställning?", "Hör av dig så snart som möjligt med ditt ordernummer. Har beställningen inte skickats ändrar vi den om det går."],
           ["Kan jag avbryta min beställning?", "Ja. Skriv till oss innan den har skickats. Har den redan skickats kan du använda din ångerrätt i stället."],
@@ -136,12 +136,12 @@
         ]],
         ["Produkter", [
           ["Omfattas produkterna av garanti?", "Du har alltid rätt att reklamera fel i tre år enligt konsumentköplagen. Om en tillverkare ger en garanti utöver det står det på produktsidan."],
-          ["Hur väljer jag rätt produkt?", "Läs produktsidan, prova produkten i ditt rum i Studio eller fråga AI-stylisten. Du kan också jämföra upp till fyra produkter sida vid sida."],
+          ["Hur väljer jag rätt produkt?", "Läs produktsidan, prova produkten i Mitt rum eller fråga AI-stylisten. Du kan också jämföra upp till fyra produkter sida vid sida."],
           ["Vad gör jag om produkten är felaktig?", "Skriv till oss med ordernummer och gärna en bild, så löser vi det. Läs mer om <a href='#juridik-garanti'>reklamation</a>."],
           ["Varför kan jag inte köpa vissa produkter?", "RumIQ är i en tidig fas. Produkter märkta Exempel visar hur butiken kommer att se ut men går inte att köpa än."],
         ]],
-        ["RumIQ Studio", [
-          ["Vad kostar RumIQ Studio?", "Ingenting. Alla verktyg i Studio är gratis."],
+        ["Mitt rum och verktygen", [
+          ["Vad kostar verktygen?", "Ingenting. Mitt rum, Svep, Hitta rätt och stylisten är gratis. Studio Plus är ett tillval för dig som vill ha fler AI-bilder."],
           ["Hur många rumsbilder kan jag skapa?", "I den här versionen placerar du produkterna i ditt foto direkt i webbläsaren, så det finns ingen gräns. När AI-bilder kopplas in kommer det att finnas en veckogräns, och den står här."],
           ["Räknas det om en bild misslyckas?", "Nej. Försök som inte ger något resultat räknas aldrig."],
           ["Är AI-bilderna exakta?", "Nej. Bilderna är illustrationer och storlek, färg och detaljer kan skilja sig från den riktiga produkten. Kontrollera produktsidan innan du köper."],
@@ -160,12 +160,12 @@
       html: () => `
         <p class="big">RumIQ är en skandinavisk webbutik för hemmet. Ett noga utvalt sortiment, inspiration för varje rum och verktyg som låter dig se produkterna hemma hos dig innan du köper.</p>
         <h2>Vad RumIQ är</h2>
-        <p>Vi säljer belysning, textil, förvaring, saker för kök och badrum och smarta saker för vardagen. Kvaliteten ska kännas premium, priset ska kännas rimligt. Till det kommer ett magasin med idéer och RumIQ Studio, verktygen som hjälper dig att välja.</p>
+        <p>Vi säljer belysning, textil, förvaring, saker för kök och badrum och smarta saker för vardagen. Kvaliteten ska kännas premium, priset ska kännas rimligt. Till det kommer ett magasin med idéer och verktyg som hjälper dig att välja: Mitt rum, Svep och Hitta rätt.</p>
         <h2>Det här vill vi göra</h2>
         <h3>Välja rätt, inte mer</h3>
         <p>Vi vill hjälpa dig att välja färre och bättre saker. Varje produkt ska fylla en funktion i ett verkligt hem, hålla länge och fungera ihop med resten.</p>
         <h3>Mindre gissande före köpet</h3>
-        <p>I Studio ser du produkterna i ditt eget rum innan du köper. Det minskar felköp, och en retur är det sämsta för både plånboken och miljön.</p>
+        <p>I Mitt rum ser du produkterna i ditt eget rum innan du köper. Det minskar felköp, och en retur är det sämsta för både plånboken och miljön.</p>
         <h3>Ärligt hela vägen</h3>
         <p>AI-bilder märks som inspiration. Pris och frakt visas innan du betalar. Vi hittar inte på recensioner, lagersaldon eller leveranslöften.</p>
         <h2>Så vill vi förbättra hela upplevelsen</h2>
@@ -194,7 +194,7 @@
       <h2>Vad vi behandlar</h2><ul>
         <li><b>Beställningar:</b> namn, adress, e-post och telefon för att leverera och för bokföring. Sparas i sju år enligt bokföringslagen.</li>
         <li><b>Konto:</b> e-post, favoriter, sparade rum och stilprofil, så länge du har kvar kontot.</li>
-        <li><b>RumIQ Studio:</b> foton av ditt rum stannar i din webbläsare. Först när du själv väljer att skapa en AI-bild, och har godkänt det, skickas fotot för att skapa bilden. Se avsnittet om AI-bilder nedan.</li>
+        <li><b>Mitt rum:</b> foton av ditt rum stannar i din webbläsare. Först när du själv väljer att skapa en AI-bild, och har godkänt det, skickas fotot för att skapa bilden. Se avsnittet om AI-bilder nedan.</li>
         <li><b>Kundservice:</b> det du skriver till oss, så länge ärendet pågår och därefter högst två år.</li>
         <li><b>Väntelista och nyhetsbrev:</b> e-post, med ditt samtycke, tills du avregistrerar dig.</li></ul>
       <h2>Mottagare</h2><p>E-handelsplattform, betal- och fraktpartner samt leverantörer som skickar din beställning. ${miss("Fullständig lista över personuppgiftsbiträden")}</p>
