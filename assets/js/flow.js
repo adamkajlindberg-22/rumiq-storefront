@@ -82,10 +82,10 @@
   const PENDING = '<span class="pending">Bekräftas innan vi öppnar</span>';
   RQ.delivery = {
     cfg(p) { const c = (window.RQ_CONFIG && window.RQ_CONFIG.delivery) || {}; return Object.assign({}, c, (p && p.ship) || {}); },
-    range(c) {
+    range(c, from) {
       if (!c.minDays || !c.maxDays) return "";
       // business days: orders placed after the cut-off hour or at weekends start counting on the next weekday
-      const add = (n) => { const x = new Date(); if (x.getHours() >= (c.cutoffHour || 14)) x.setDate(x.getDate() + 1); while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() + 1);
+      const add = (n) => { const x = from ? new Date(from) : new Date(); if (x.getHours() >= (c.cutoffHour || 14)) x.setDate(x.getDate() + 1); while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() + 1);
         let left = n; while (left > 0) { x.setDate(x.getDate() + 1); if (x.getDay() !== 0 && x.getDay() !== 6) left--; } return x; };
       const f = (d) => add(d).toLocaleDateString(RQ_LANG === "en" ? "en-GB" : "sv-SE", { weekday: "short", day: "numeric", month: "short" });
       return `${f(c.minDays)} – ${f(c.maxDays)}`;
@@ -354,202 +354,6 @@
     reset() { ls.set("rumiq-taste", { styles: {}, cats: {}, tone: null, likes: 0, n: 0, seen: {} }); },
   };
 
-  /* ------------------------------------------------------------------ Svep
-     Right = save to Favourites, up = straight into the cart, left = no thanks. Rounds of 10 cards; the deck
-     learns while you swipe (mostly what fits your taste, every fourth card something different), cards you
-     have already decided never come back, and the last swipe can be undone. */
-  const hash = (s) => { let h = 7; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
-  const deck = () => [...RQ.PRODUCTS].sort((a, b) => hash(a.handle + "rq") - hash(b.handle + "rq"));
-  const ROUND = 10;
-  const SV = {
-    bag: '<svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>',
-    undo: '<svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"/></svg>',
-    share: '<svg viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></svg>',
-  };
-  // the next cards: a varied opener, then the best match with every fourth card from somewhere else
-  const upcoming = (t, skip, n, step) => {
-    const left = RQ.PRODUCTS.filter((p) => !(p.handle in t.seen) && !skip.has(p.handle));
-    const out = [];
-    while (out.length < n && left.length) {
-      const k = step + out.length; let pick;
-      if (t.likes < 2 || k % 4 === 3) { // explore: a category not seen lately, in a stable order
-        const recent = new Set(out.map((p) => p.cat));
-        const pool = left.filter((p) => !recent.has(p.cat)); const from = pool.length ? pool : left;
-        pick = from.sort((a, b) => hash(a.handle + k) - hash(b.handle + k))[0];
-      } else pick = left.sort((a, b) => RQ.taste.score(b, t) - RQ.taste.score(a, t))[0];
-      out.push(pick); left.splice(left.indexOf(pick), 1);
-    }
-    return out;
-  };
-  const svImgs = (p) => [{ src: RQ.img(p, 900), set: `${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w`, alt: p.name }, { src: `assets/img/d/${p.handle}-1200.webp`, set: `assets/img/d/${p.handle}-600.webp 600w, assets/img/d/${p.handle}-1200.webp 1200w`, alt: `${p.name}, detalj` }];
-  const svCard = (p, i, why) => `<article class="sv-card" data-h="${p.handle}" data-img="0" style="--i:${i}" aria-hidden="${i ? "true" : "false"}">
-      <div class="sv-ims">${svImgs(p).map((m, k) => `<img class="${k ? "" : "on"}" src="${m.src}" srcset="${m.set}" sizes="(min-width:900px) 26rem, 88vw" alt="${esc(m.alt)}" draggable="false" ${i > 1 || k ? 'loading="lazy"' : ""}>`).join("")}</div>
-      <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
-      ${why ? `<span class="sv-why">${esc(why)}</span>` : ""}
-      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
-      <div class="sv-info"><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><small>${p.rooms.slice(0, 3).map((r) => `<span>${esc(RQ.roomById(r).name)}</span>`).join(" · ")}</small></div>
-    </article>`;
-  const STYLE_KEYS = ["skandinavisk", "minimalistisk", "klassisk", "mjuk"];
-  const nearestTone = (hex) => { const c = hex2rgb(hex); return RQ.TONES.reduce((b, x) => (dist(hex2rgb(x.hex), c) < dist(hex2rgb(b.hex), c) ? x : b)); };
-  // the style profile: share of each style, a palette from what you liked, the look that fits best
-  RQ.styleProfile = (t = RQ.taste.get()) => {
-    const pos = STYLE_KEYS.map((k) => [k, Math.max(0, t.styles[k] || 0)]), sum = pos.reduce((s, e) => s + e[1], 0);
-    const mix = sum ? pos.map(([k, v]) => ({ id: k, name: RQ.STYLES[k].name, pct: Math.round((v / sum) * 100) })).sort((a, b) => b.pct - a.pct) : [];
-    const likedH = Object.keys(t.seen).filter((h) => t.seen[h] > 0 && RQ.byHandle(h));
-    const tones = []; likedH.forEach((h) => { const n = nearestTone(RQ.byHandle(h).tone[0]); if (!tones.some((x) => x.id === n.id)) tones.push(n); });
-    const look = RQ.LOOKS.map((l) => ({ l, s: l.items.reduce((a, h) => a + RQ.taste.score(RQ.byHandle(h), t), 0) / l.items.length })).sort((a, b) => b.s - a.s)[0];
-    return { mix, tones: tones.slice(0, 6), look: sum ? look.l : null, liked: likedH };
-  };
-  V.svep = () => ({
-    title: "Svep · RumIQ",
-    html: `<section class="wrap svep" aria-label="Svep">
-      <div class="sv-head">${RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Svep"]])}<h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över och uppåt lägger i varukorgen. Tryck på kanterna för fler bilder.</p>
-        <ul class="sv-legend">
-          <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar i dina favoriter och lär oss din stil.</span></div></li>
-          <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
-          <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet.</span></div></li>
-          <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
-        </ul>
-        <p class="small sv-after">Klicka på bildens kanter för fler bilder. Efter ${ROUND} kort får du din stilprofil.</p></div>
-      <div class="sv-wrap">
-        <div class="sv-prog" aria-hidden="true"><i id="svBar"></i></div>
-        <div class="sv-deck" id="svDeck" aria-live="polite"></div>
-        <div class="sv-ctrl" id="svCtrl">
-          <button class="sv-b undo" type="button" id="svUndo" aria-label="Ångra senaste" disabled>${SV.undo}</button>
-          <button class="sv-b no" type="button" id="svNo" aria-label="Nej tack">${ICO.x}</button>
-          <button class="sv-b room" type="button" id="svRoom" aria-label="Ställ in i mitt rum">${RQ.roomIco}</button>
-          <button class="sv-b bag" type="button" id="svBag" aria-label="Lägg i varukorgen">${SV.bag}</button>
-          <button class="sv-b yes" type="button" id="svYes" aria-label="Spara i favoriter">${ICO.heart}</button>
-        </div>
-        <p class="sv-meta"><span id="svCount"></span><span class="sv-chip" id="svChip" hidden></span></p>
-        <p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. Backsteg ångrar.</p>
-      </div></section>`,
-    mount(root) {
-      const deckEl = $("#svDeck", root);
-      let done = [], stack = [], busy = false, over = false, forced = [], history = [];
-      const session = { saved: [], bagged: [] };
-      const why = (p, t) => { const st = RQ.taste.top(t)[0]; return t.likes >= 2 && st && p.styles.includes(st) ? `Passar din stil: ${RQ.STYLES[st].name}` : ""; };
-      const paint = () => {
-        const t = RQ.taste.get(), skip = new Set(done);
-        const front = forced.map(RQ.byHandle).filter(Boolean); forced.forEach((h) => skip.add(h));
-        stack = [...front, ...upcoming(t, skip, 3 - front.length, done.length)].slice(0, 3);
-        if (!stack.length || done.length >= ROUND) return finish();
-        deckEl.innerHTML = stack.map((p, k) => svCard(p, k, k ? "" : why(p, t))).reverse().join("");
-        $("#svCount", root).textContent = `${done.length + 1} av ${ROUND}`;
-        $("#svBar", root).style.width = `${(done.length / ROUND) * 100}%`;
-        $("#svRoom", root).dataset.roomBtn = stack[0].handle;
-        $("#svRoom", root).setAttribute("aria-pressed", !!(RQ.room && RQ.room.inScene(stack[0].handle)));
-        $("#svUndo", root).disabled = !history.length;
-        const st = RQ.taste.top(t)[0], chip = $("#svChip", root);
-        if (t.n >= 5 && st) { chip.hidden = false; chip.textContent = `Din stil växer fram: ${RQ.STYLES[st].name}`; }
-        if (!t.n && !done.length && !reduced()) { const c = topCard(); c && c.classList.add("hint"); }
-      };
-      const cards = () => $$(".sv-card", deckEl);
-      const topCard = () => cards().pop();
-      const finish = () => {
-        if (over) return; over = true;
-        const t = RQ.taste.get(), prof = RQ.styleProfile(t), st = prof.mix.filter((m) => m.pct >= 25).slice(0, 2);
-        const more = RQ.PRODUCTS.some((p) => !(p.handle in t.seen));
-        const saved = session.saved.map(RQ.byHandle).filter(Boolean);
-        $("#svCtrl", root).hidden = true; $(".sv-keys", root).hidden = true; $("#svCount", root).textContent = ""; $(".sv-prog", root).hidden = true; $("#svChip", root).hidden = true;
-        deckEl.outerHTML = `<div class="svep-result" tabindex="-1">
-          <span class="eyebrow">Din stilprofil</span>
-          <h2 class="h2">${st.length ? st.map((s) => `<span>${esc(s.name)}</span>`).join(" <span>och</span> ") : "Vi lär oss fortfarande"}</h2>
-          <p class="lead">${st.length ? esc(RQ.STYLES[st[0].id].text) : "Spara några saker du gillar, så kan butiken sortera efter dig."}</p>
-          ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
-            ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
-          ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span><div class="sv-liked">${saved.map((p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(p.name)}</span><small>${kr(p.price)}</small></button>`).join("")}</div>
-            <div class="ctrl-row sp-acts"><button class="btn" type="button" id="svAll">Lägg alla i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="svRoomAll">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div></div>` : ""}
-          ${session.bagged.length ? `<p class="small">${session.bagged.length} ${session.bagged.length === 1 ? "vara ligger" : "varor ligger"} redan i varukorgen. <a href="#kassa">Till kassan</a></p>` : ""}
-          ${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
-          <div class="ctrl-row" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep ${ROUND} till</button>` : ""}<a class="btn ghost" href="#for-dig">Butiken för dig</a>${st.length ? `<button class="btn ghost" type="button" id="svShare">${SV.share}<span>Dela min stil</span></button>` : ""}</div>
-          <button class="tlink" type="button" id="svAgain">Börja om från början</button></div>`;
-        const res = $(".svep-result", root); res.focus({ preventScroll: true });
-        RQ.track && RQ.track("swipe_round", { saved: saved.length, bagged: session.bagged.length, style: st.length ? st[0].id : "" });
-        const again = () => { RQ.router && (location.hash = "#upptack", setTimeout(() => (location.hash = "#svep"), 0)); };
-        $("#svAgain", root).addEventListener("click", () => { RQ.taste.reset(); again(); });
-        const m = $("#svMore", root); m && m.addEventListener("click", again);
-        const all = $("#svAll", root); all && all.addEventListener("click", () => addMany(saved.map((p) => p.handle), all, "din runda"));
-        const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => { saved.forEach((p) => RQ.room && RQ.room.add(p.handle, true)); location.hash = "#mitt-rum"; });
-        const sh = $("#svShare", root); sh && sh.addEventListener("click", async () => {
-          const txt = `Min stil på RumIQ: ${st.map((s) => `${s.name} ${s.pct} %`).join(", ")}. Svep fram din egen:`, url = new URL("svep/", document.baseURI).href;
-          try { if (navigator.share) await navigator.share({ title: "Min stil på RumIQ", text: txt, url }); else { await navigator.clipboard.writeText(`${txt} ${url}`); RQ.toast("Länken är kopierad."); } } catch (e) {}
-        });
-      };
-      const flash = (c, cls) => { const s = $(`.sv-stamp.${cls}`, c); if (s) s.style.opacity = 1; };
-      const decide = (dir, el) => {
-        if (busy || over) return; const c = el || topCard(); if (!c) return;
-        busy = true; const h = c.dataset.h, before = JSON.stringify(RQ.taste.get());
-        const rec = { h, dir, before, wish: false, bag: false };
-        if (dir === 1) { if (!S.isWished(h)) { S.toggleWish(h); rec.wish = true; } RQ.taste.add(h, 1); session.saved.push(h); }
-        else if (dir === 2) { S.addToCart(h + "::0", 1); rec.bag = true; RQ.taste.add(h, 1.5); session.bagged.push(h); RQ.fly && RQ.fly($(".sv-ims img.on", c)); }
-        else RQ.taste.add(h, -0.5);
-        RQ.track && RQ.track("swipe", { item_id: h, choice: dir === 1 ? "save" : dir === 2 ? "cart" : "skip" });
-        if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) {}
-        history.push(rec); forced = forced.filter((x) => x !== h); done.push(h);
-        const next = () => { busy = false; paint(); };
-        if (reduced()) return next();
-        flash(c, dir === 1 ? "yes" : dir === 2 ? "up" : "no");
-        c.style.transition = "transform .42s cubic-bezier(.3,.6,.2,1), opacity .42s";
-        c.style.transform = dir === 2 ? "translate(0,-120%) scale(.9)" : `translate(${dir * 130}%, -4%) rotate(${dir * 18}deg)`; c.style.opacity = 0;
-        setTimeout(next, 360);
-      };
-      const undo = () => {
-        if (busy || over || !history.length) return;
-        const r = history.pop(); ls.set("rumiq-taste", JSON.parse(r.before));
-        if (r.wish && S.isWished(r.h)) S.toggleWish(r.h);
-        if (r.bag) { const line = S.cartLines().find((l) => l.id === r.h + "::0"); if (line) S.setQty(line.id, line.quantity - 1); }
-        session.saved = session.saved.filter((x) => x !== r.h); session.bagged = session.bagged.filter((x) => x !== r.h);
-        done = done.filter((x) => x !== r.h); forced = [r.h, ...forced]; paint();
-        const c = topCard(); if (c && !reduced()) c.animate([{ transform: "translate(0,-30px) scale(.96)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 320, easing: "ease-out" });
-      };
-      const flip = (c, d) => {
-        const ims = $$(".sv-ims img", c), dots = $$(".sv-dots i", c), cur = +c.dataset.img, nx = Math.max(0, Math.min(ims.length - 1, cur + d));
-        if (nx === cur) { c.animate([{ transform: `translateX(${d * 6}px)` }, { transform: "none" }], { duration: 180 }); return; }
-        ims.forEach((im, k) => im.classList.toggle("on", k === nx)); dots.forEach((x, k) => x.classList.toggle("on", k === nx)); c.dataset.img = nx;
-      };
-      // drag: sideways = save or skip, upwards = cart; a tap on the edges flips the picture, in the middle opens the product
-      let drag = null;
-      const down = (e) => { const c = e.target.closest(".sv-card"); if (!c || c !== topCard() || busy) return; c.classList.remove("hint"); drag = { c, x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0 }; c.setPointerCapture && c.setPointerCapture(e.pointerId); c.style.transition = "none"; };
-      const move = (e) => {
-        if (!drag) return; drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y; const { c, dx, dy } = drag;
-        const upish = dy < 0 && Math.abs(dy) > Math.abs(dx);
-        c.style.transform = `translate(${dx}px, ${upish ? dy : dy * 0.25}px) rotate(${upish ? 0 : dx / 18}deg)`;
-        const kx = Math.min(1, Math.abs(dx) / 110), ky = Math.min(1, -dy / 120);
-        $(".sv-stamp.yes", c).style.opacity = !upish && dx > 0 ? kx : 0; $(".sv-stamp.no", c).style.opacity = !upish && dx < 0 ? kx : 0; $(".sv-stamp.up", c).style.opacity = upish ? ky : 0;
-      };
-      const up = () => {
-        if (!drag) return; const { c, dx, dy, t } = drag; drag = null;
-        const ms = Math.max(1, performance.now() - t), vx = Math.abs(dx) / ms, vy = -dy / ms, w = c.offsetWidth, hgt = c.offsetHeight;
-        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
-          c.style.transform = ""; const r = c.getBoundingClientRect(), x = (lastX - r.left) / r.width;
-          if (x < 0.3) return flip(c, -1); if (x > 0.7) return flip(c, 1);
-          RQ.sheet.open(c.dataset.h, { from: c }); return;
-        }
-        const upish = dy < 0 && Math.abs(dy) > Math.abs(dx);
-        if (upish && (-dy > hgt * 0.22 || vy > 0.6)) return decide(2, c);
-        if (!upish && (Math.abs(dx) > w * 0.3 || vx > 0.6)) return decide(dx > 0 ? 1 : -1, c);
-        c.style.transition = "transform .45s var(--spring)"; c.style.transform = ""; $$(".sv-stamp", c).forEach((s) => (s.style.opacity = 0));
-      };
-      let lastX = 0;
-      const pdown = (e) => { lastX = e.clientX; down(e); }, pup = (e) => { lastX = e.clientX; up(); };
-      deckEl.addEventListener("pointerdown", pdown); addEventListener("pointermove", move); addEventListener("pointerup", pup); addEventListener("pointercancel", up);
-      $("#svNo", root).addEventListener("click", () => decide(-1));
-      $("#svYes", root).addEventListener("click", () => decide(1));
-      $("#svBag", root).addEventListener("click", () => decide(2));
-      $("#svUndo", root).addEventListener("click", undo);
-      const key = (e) => {
-        if (over || e.target.closest("input,textarea,select") || RQ.sheet.isOpen()) return;
-        if (e.key === "ArrowRight") { e.preventDefault(); decide(1); }
-        if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); }
-        if (e.key === "ArrowUp") { e.preventDefault(); decide(2); }
-        if (e.key === "Backspace" || (e.key === "z" && (e.metaKey || e.ctrlKey))) { e.preventDefault(); undo(); }
-      };
-      addEventListener("keydown", key);
-      paint();
-      return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", pup); removeEventListener("pointercancel", up); removeEventListener("keydown", key); };
-    },
-  });
   V.forDig = () => RQ.shopView({ title: "För dig", lead: RQ.taste.has() ? "Hela butiken, sorterad efter det du sparat i Svep." : "Svep några produkter först, så sorteras butiken efter dig.", sort: RQ.taste.has() ? "dig" : "rel", trail: [["Hem", "hem"], ["Butik", "butik"], ["För dig"]], extraTop: RQ.taste.has() ? "" : `<div class="wrap" style="margin-bottom:2rem"><a class="btn" href="#svep">Börja svepa</a></div>` });
 
   /* ------------------------------------------------------------------ Looks */
@@ -697,11 +501,6 @@
       }
     });
     return () => offs.forEach((f) => f());
-  };
-  RQ.svepTeaser = () => {
-    const t = RQ.taste.get(), st = RQ.taste.top(t)[0], picks = deck().slice(0, 3);
-    return `<a class="svt" href="#svep"><div class="svt-cards" aria-hidden="true">${picks.map((p, k) => `<img src="${RQ.img(p, 600)}" alt="" loading="lazy" style="--k:${k}">`).join("")}</div>
-      <div class="svt-tx"><span class="eyebrow">${st ? `Din stil: ${esc(RQ.STYLES[st].name)}` : "Hitta din stil"}</span><h3>${t.n ? "Fortsätt där du var." : "Vilken stil är din?"}</h3><p>Svep höger på det du gillar och vänster på det du inte gillar. Efter tio bilder sorteras hela butiken efter dig.</p><span class="btn sm">${t.n ? "Fortsätt" : "Hitta din stil"}</span></div></a>`;
   };
   RQ.voteTeaser = () => `<a class="vtz" href="#rosta"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.map((c) => `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>

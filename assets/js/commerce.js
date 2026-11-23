@@ -85,7 +85,7 @@
     /* Shipping options are examples until suppliers are confirmed. */
     SHIPPING: [
       { id: "ombud", title: "Hämta hos ombud", eta: "2–5 arbetsdagar", price: 49, free: true },
-      { id: "skap", title: "Paketskåp", eta: "2–5 arbetsdagar", price: 49, free: true },
+      { id: "skap", title: "Paketskåp", eta: "2–5 arbetsdagar", price: 49, free: true, note: "Hämta när det passar dig" },
       { id: "hem", title: "Hemleverans", eta: "2–5 arbetsdagar", price: 89 },
     ],
     // free to pickup point and parcel locker from RQ_CONFIG.freeShippingFrom (order value after look discounts)
@@ -180,7 +180,7 @@
     setConsent(c) { store.set("rumiq-consent", { ...c, at: new Date().toISOString() }); emit("consent"); },
     lang: () => store.get("rumiq-lang", "sv"),
     setLang(l) { store.set("rumiq-lang", l); emit("lang"); },
-    clearAll() { ["rumiq-cart", "rumiq-wish", "rumiq-compare", "rumiq-seen", "rumiq-customer", "rumiq-style", "rumiq-projects", "rumiq-articles", "rumiq-looks", "rumiq-orders", "rumiq-ideas", "rumiq-lists", "rumiq-taste", "rumiq-votes", "rumiq-notify"].forEach((k) => { try { localStorage.removeItem(k); } catch (e) {} });
+    clearAll() { ["rumiq-cart", "rumiq-wish", "rumiq-compare", "rumiq-seen", "rumiq-customer", "rumiq-style", "rumiq-projects", "rumiq-articles", "rumiq-looks", "rumiq-orders", "rumiq-ideas", "rumiq-lists", "rumiq-taste", "rumiq-votes", "rumiq-notify", "rumiq-home", "rumiq-watch", "rumiq-soon"].forEach((k) => { try { localStorage.removeItem(k); } catch (e) {} });
       S._cart = []; S._wish = []; S._cmp = []; S._seen = []; emit("all"); },
   });
   RQ.track = (ev, data) => S.track(ev, data);

@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=fc84ff4d">
+<link rel="stylesheet" href="assets/css/site.min.css?v=c00f15ba">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -95,7 +95,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <div class="stage">
           <img class="still wide" src="assets/img/rum-1600.webp" srcset="assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w" sizes="100vw" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="2400" height="1340">
           <img class="still start" src="assets/img/hero-start-1600.webp" alt="" aria-hidden="true" width="1600" height="900" style="opacity: 0;">
-          <video id="heroVideo" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1" src="blob:http://localhost:8766/7cafdc34-f2dc-4b47-b616-e771ffa2f46c" class="ready"></video>
+          <video id="heroVideo" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1" src="blob:http://localhost:8766/4ad29ba3-33bc-4558-b8b2-2317a85465be" class="ready"></video>
           <canvas id="dust" aria-hidden="true" width="1440" height="900"></canvas>
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
@@ -112,6 +112,46 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       </section>
 
       <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li><b>14 dagars ångerrätt</b>, ångra med en knapp</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
+
+      <section class="sec svh" id="svep-hem" aria-label="Svep fram din stil">
+        <div class="wrap svh-in">
+          <div class="svh-tx"><span class="eyebrow">Ny här? Börja här</span>
+            <h2 class="display">Hitta din stil på en minut.</h2>
+            <p class="lead">Svep höger på det du gillar och vänster på resten. Efter tio kort får du din stilprofil, och hela butiken sorterar sig efter dig.</p>
+            <ul class="svh-how"><li><i aria-hidden="true">→</i>Spara</li><li><i aria-hidden="true">←</i>Hoppa över</li><li><i aria-hidden="true">↑</i>I varukorgen</li></ul>
+            <div class="ctrl-row"><a class="btn" href="svep/">Börja svepa</a><a class="btn ghost" href="svep-ihop/"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="16.5" cy="9.5" r="2.4"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14.5 19a4.3 4.3 0 0 1 6.5-3.6"></path></svg><span>Svep tillsammans</span></a></div></div>
+          <div class="svh-deck"><div class="sv-wrap compact">
+      <div class="sv-prog" aria-hidden="true"><i id="svhBar" style="width: 0%;"></i></div>
+      <div class="sv-deck" id="svhDeck" aria-live="polite"><article class="sv-card" data-h="vaffelhandduk-bomull" data-img="0" style="--i:2" aria-hidden="true">
+      <div class="sv-ims"><img class="on" src="assets/img/p/vaffelhandduk-bomull-900.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Våffelhandduk bomull" draggable="false" loading="lazy"><img class="" src="assets/img/d/vaffelhandduk-bomull-1200.webp" srcset="assets/img/d/vaffelhandduk-bomull-600.webp 600w, assets/img/d/vaffelhandduk-bomull-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Våffelhandduk bomull, detalj" draggable="false" loading="lazy"></div>
+      <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
+      
+      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
+      <div class="sv-info"><div><b>Våffelhandduk bomull</b><span>299 kr</span></div><small><span>Badrum</span> · <span>Kök</span></small></div>
+    </article><article class="sv-card" data-h="stilla-ljusstake-massing-2-pack" data-img="0" style="--i:1" aria-hidden="true">
+      <div class="sv-ims"><img class="on" src="assets/img/p/stilla-ljusstake-massing-2-pack-900.webp" srcset="assets/img/p/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/p/stilla-ljusstake-massing-2-pack-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2-pack" draggable="false"><img class="" src="assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp" srcset="assets/img/d/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2-pack, detalj" draggable="false" loading="lazy"></div>
+      <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
+      
+      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
+      <div class="sv-info"><div><b>Stilla ljusstake mässing, 2-pack</b><span>449 kr</span></div><small><span>Kök</span> · <span>Vardagsrum</span> · <span>Hall</span></small></div>
+    </article><article class="sv-card hint" data-h="dagsljus-linnegardin-2-pack" data-img="0" style="--i:0" aria-hidden="false">
+      <div class="sv-ims"><img class="on" src="assets/img/p/dagsljus-linnegardin-2-pack-900.webp" srcset="assets/img/p/dagsljus-linnegardin-2-pack-600.webp 600w, assets/img/p/dagsljus-linnegardin-2-pack-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Dagsljus linnegardin, 2-pack" draggable="false"><img class="" src="assets/img/d/dagsljus-linnegardin-2-pack-1200.webp" srcset="assets/img/d/dagsljus-linnegardin-2-pack-600.webp 600w, assets/img/d/dagsljus-linnegardin-2-pack-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Dagsljus linnegardin, 2-pack, detalj" draggable="false" loading="lazy"></div>
+      <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
+      
+      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
+      <div class="sv-info"><div><b>Dagsljus linnegardin, 2-pack</b><span>899 kr</span></div><small><span>Vardagsrum</span> · <span>Sovrum</span></small></div>
+    </article></div>
+      <div class="sv-ctrl" id="svhCtrl">
+        
+        <button class="sv-b no" type="button" id="svhNo" aria-label="Nej tack"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        
+        <button class="sv-b bag" type="button" id="svhBag" aria-label="Lägg i varukorgen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></button>
+        <button class="sv-b yes" type="button" id="svhYes" aria-label="Spara i favoriter"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      </div>
+      <p class="sv-meta"><span id="svhCount">1 av 3</span><span class="sv-chip" id="svhChip" hidden=""></span></p>
+      
+    </div></div>
+        </div></section>
 
       <section class="sec roomhero" id="ditt-rum">
         <div class="wrap rh">
@@ -238,11 +278,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     </article></div></div>
       </section>
 
-      <section class="sec" id="lek">
-        <div class="wrap"><a class="svt" href="svep/"><div class="svt-cards" aria-hidden="true"><img src="assets/img/p/skarbrada-ek-med-handtag-600.webp" alt="" loading="lazy" style="--k:0"><img src="assets/img/p/terrakottakruka-rafflad-600.webp" alt="" loading="lazy" style="--k:1"><img src="assets/img/p/lysa-keramiklampa-600.webp" alt="" loading="lazy" style="--k:2"></div>
-      <div class="svt-tx"><span class="eyebrow">Hitta din stil</span><h3>Vilken stil är din?</h3><p>Svep höger på det du gillar och vänster på det du inte gillar. Efter tio bilder sorteras hela butiken efter dig.</p><span class="btn sm">Hitta din stil</span></div></a></div>
-      </section>
-
       <section class="sec">
         <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Magasin</h2><p>Korta texter om ljus, material, färg och vardag.</p></div><a class="link" href="magasin/">Alla artiklar</a></div>
           <div class="mag-grid compact"><a class="mag" href="artikel-vardagsdukning/"><div class="im"><img src="assets/img/mag/vardagsdukning-1200.webp" alt="" loading="lazy"></div><h3>En välkomnande dukning, även en vanlig tisdag</h3><p>Ge plats åt vardagens måltider med en dukning som är lätt att använda och lika lätt att plocka undan.</p><span class="min">3 min läsning</span></a><a class="mag" href="artikel-farger-att-trivas-med/"><div class="im"><img src="assets/img/mag/farger-1200.webp" alt="" loading="lazy"></div><h3>Skapa en färgpalett att trivas med</h3><p>Kombinera välbekanta färger, lite kontrast och det ljus du faktiskt har.</p><span class="min">4 min läsning</span></a><a class="mag" href="artikel-texturer-och-material/"><div class="im"><img src="assets/img/mag/texturer-1200.webp" alt="" loading="lazy"></div><h3>Texturer och material: ge ett enkelt rum personlighet</h3><p>Släta, vävda och mjuka ytor gör ett rum varmare utan att du behöver byta ut allt du har.</p><span class="min">3 min läsning</span></a></div></div>
@@ -294,6 +329,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=fc84ff4d"></script>
+<script src="assets/js/site.min.js?v=c00f15ba"></script>
 </body>
 </html>

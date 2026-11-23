@@ -18,7 +18,7 @@
   const fromUser = (u) => u && { email: u.email, name: (u.user_metadata && (u.user_metadata.full_name || u.user_metadata.name)) || "", provider: (u.app_metadata && u.app_metadata.provider) || "email", since: u.created_at };
 
   /* Which customer data follows the account between devices. */
-  const SAVED_KEYS = { wish: "rumiq-wish", lists: "rumiq-lists", style: "rumiq-style", articles: "rumiq-articles", looks: "rumiq-looks", orders: "rumiq-orders", taste: "rumiq-taste" };
+  const SAVED_KEYS = { wish: "rumiq-wish", lists: "rumiq-lists", style: "rumiq-style", articles: "rumiq-articles", looks: "rumiq-looks", orders: "rumiq-orders", taste: "rumiq-taste", home: "rumiq-home" };
   const readLocal = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
   const writeLocal = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const mergeArr = (a, b, key) => { const out = [...(a || [])]; (b || []).forEach((x) => { const id = key ? x && x[key] : x; if (!out.some((y) => (key ? y && y[key] : y) === id)) out.push(x); }); return out; };
@@ -39,6 +39,7 @@
         const remote = saved[k], local = readLocal(lk);
         if (remote == null) return;
         if (k === "style") { if (!local) writeLocal(lk, remote); return; }
+        if (k === "home") { if (!local || String(remote.at || "") > String(local.at || "")) writeLocal(lk, remote); return; }
         if (k === "taste") { if (!local || (remote.n || 0) > (local.n || 0)) writeLocal(lk, remote); return; }
         writeLocal(lk, mergeArr(local, remote, k === "wish" || k === "articles" ? null : "id"));
       });

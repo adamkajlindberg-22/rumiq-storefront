@@ -16,6 +16,7 @@ sa-fungerar-det
 upptack
 looks
 svep
+svep-ihop
 for-dig
 rosta
 studio-plus
@@ -119,3 +120,10 @@ mitt-rum-vila-paslakanset-linne
 mitt-rum-strand-jutematta
 mitt-rum-affisch-linje-ekram
 mitt-rum-affisch-horisont-ekram
+svep-rum-vardagsrum
+svep-rum-sovrum
+svep-rum-kok
+svep-rum-badrum
+svep-rum-hall
+svep-rum-hemmakontor
+svep-rum-uteliv

@@ -226,6 +226,7 @@
             </div>
             <div class="panel" id="listPanel" hidden style="margin-top:1rem">${listPanel(p)}</div>
             ${RQ.delivery ? RQ.delivery.html(p) : ""}
+            ${RQ.homeFit ? RQ.homeFit.html(p) : ""}
             ${RQ.notify ? RQ.notify.html(p) : ""}
             ${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}
             <div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div>
@@ -343,7 +344,8 @@
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="padding:.5rem .9rem;border-radius:999px;width:10rem"><button class="chip" type="submit">Skapa</button></form></div>
         <div class="listhead"><div><h2 class="h3">${esc(cur.name)}</h2><p class="small">${items.length} produkter · ${kr(total)}</p></div>
           <div class="ctrl-row" style="margin:0">${items.length ? `<button class="btn sm" type="button" id="allCart">Lägg alla i varukorgen</button><a class="btn ghost sm" href="#studio-kombinera-${items[0].handle}">Se dem tillsammans</a><button class="btn ghost sm" type="button" id="share">Kopiera lista</button>` : ""}${active !== "fav" ? `<button class="chip" type="button" id="ren">Byt namn</button><button class="chip" type="button" id="del">Ta bort listan</button>` : ""}</div></div>
-        ${items.length ? RQ.grid(items) : `<div class="empty"><h3>Listan är tom</h3><p>${active === "fav" ? "Tryck på hjärtat på en produkt för att spara den här." : "Öppna en produkt och välj Spara i ett rum."}</p><a class="btn ghost" href="#butik">Utforska butiken</a></div>`}
+        ${active === "fav" && items.length && RQ.priceWatch ? RQ.priceWatch.html(items.map((x) => x.handle)) : ""}
+        ${items.length ? RQ.grid(items) : `<div class="empty"><h3>Listan är tom</h3><p>${active === "fav" ? "Tryck på hjärtat på en produkt för att spara den här." : "Öppna en produkt och välj Spara i ett rum."}</p><a class="btn ghost" href="#butik">Utforska butiken</a></div>${active === "fav" && RQ.svepNudge ? RQ.svepNudge() : ""}`}
       </section>`,
       mount(root) {
         root.addEventListener("click", (e) => { const t = e.target.closest("[data-tab]"); if (t) { RQ.ss.set("rumiq-list", t.dataset.tab); RQ.router(); } });
@@ -443,7 +445,7 @@
     [/^(kontakt|faq|frakt|returer|betalning|om|sa-fungerar-det)$/, (m) => V[m[1]]()],
     [/^studio$/, () => V.studio()], [/^(?:studio|mitt)-rum(?:-(.+))?$/, (m) => V.myRoom(m[1])], [/^studio-stil$/, () => V.studioStyle()], [/^studio-analys$/, () => V.studioAnalysis()],
     [/^studio-stylist$/, () => V.studioStylist()], [/^studio-sok$/, () => V.studioSearch()], [/^studio-hemurval$/, () => V.studioGuide()], [/^studio-kombinera(?:-(.+))?$/, (m) => V.studioMix(m[1])],
-    [/^upptack$/, () => V.upptack()], [/^svep$/, () => V.svep()], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^rosta$/, () => V.rosta()],
+    [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^rosta$/, () => V.rosta()],
     [/^studio-plus$/, () => V.studioPlus(false)], [/^studio-plus-tack$/, () => V.studioPlus(true)],
     [/^presentguiden$/, () => V.giftFinder()], [/^mitt-hem$/, () => V.myHome()],
     [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
@@ -514,7 +516,7 @@
   window.addEventListener("popstate", () => { if (currentRaw() !== current) RQ.router(); });
   RQ.router = () => {
     const raw = currentRaw();
-    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
+    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
     if (firstRun || !document.startViewTransition || reduced() || raw === current) { firstRun = false; render(raw); return; }
     const t = document.startViewTransition(() => render(raw));
     t.ready.catch(() => {}); t.updateCallbackDone.catch(() => {});
@@ -591,6 +593,7 @@
     return `<div class="empty-cart${wide ? " wide" : ""}"><h3>Varukorgen är tom</h3><p>Börja med en färdig look. Hela looken ger ${Math.round(((window.RQ_CONFIG || {}).lookDiscount || 0) * 100)} % rabatt.</p>
       <div class="ec-looks">${RQ.LOOKS.slice(0, 2).map((l) => `<a class="ec-look" href="#look-${l.id}" data-close><span class="ec-imgs">${l.items.slice(0, 3).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="" loading="lazy">`).join("")}</span><span><b>${esc(l.name)}</b><small>${l.items.length} saker</small></span></a>`).join("")}</div>
       ${seen.length ? `<p class="eyebrow" style="margin-top:1.6rem">Senast visade</p><div class="ec-seen">${seen.map((p) => `<a href="#produkt-${p.handle}" data-close><img src="${RQ.img(p, 600)}" alt=""><span>${esc(p.name)}</span></a>`).join("")}</div>` : ""}
+      ${RQ.svepNudge ? RQ.svepNudge("Vet du inte var du ska börja?", "Svep tio kort, så hittar vi det som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}
       <a class="btn ghost" href="#butik" data-close style="margin-top:1.6rem">Till butiken</a></div>`;
   };
 
@@ -604,7 +607,7 @@
     const arts = RQ.ARTICLES.filter((a) => S.norm(a.title + " " + a.lead).includes(S.norm(q)));
     const cats = RQ.CATEGORIES.filter((c) => S.norm(c.name).includes(S.norm(q)));
     sRes.innerHTML = `${cats.length ? `<div class="chips" style="margin-bottom:1.6rem">${cats.map((c) => `<a class="chip" href="#kategori-${c.id}" data-close>${esc(c.name)}</a>`).join("")}</div>` : ""}
-      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${list.length} produkter</p>${RQ.grid(list)}` : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv vad du behöver i den smarta sökningen.</p><a class="btn ghost" href="#studio-sok" data-close>Smart sökning</a></div>`}
+      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${list.length} produkter</p>${RQ.grid(list)}` : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv vad du behöver i den smarta sökningen.</p><a class="btn ghost" href="#studio-sok" data-close>Smart sökning</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
       ${arts.length ? `<p class="eyebrow" style="margin:2.4rem 0 1rem">Från magasinet</p><div class="mag-grid">${arts.slice(0, 3).map(RQ.magCard).join("")}</div>` : ""}`;
     RQ.watch(sRes);
   };

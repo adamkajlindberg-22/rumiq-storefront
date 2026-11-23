@@ -72,6 +72,7 @@
         <p>Vi betalar tillbaka utan onödigt dröjsmål och senast 14 dagar från ditt meddelande om att du ångrar köpet, inklusive den ursprungliga fraktkostnaden för standardleverans. Vi får vänta tills vi fått tillbaka varan eller bevis på att den skickats. Pengarna kommer tillbaka på samma sätt som du betalade, om vi inte kommer överens om något annat utan kostnad för dig.</p>
         <h2>Returfrakt</h2>
         <p>Returen skickas till en adress i Sverige, inte till leverantören utomlands. ${miss("Vem som betalar returfrakten")}</p>
+        ${(() => { const v = (((window.RQ_CONFIG || {}).delivery || {}).returnVia || []); return v.length ? `<p>Du lämnar returen ${v.length > 1 ? v.slice(0, -1).join(", ") + " eller " + v[v.length - 1] : v[0]}. Du får en returetikett i bekräftelsen när du har ångrat köpet.</p>` : ""; })()}
         <h2>Varans skick</h2>
         <p>Du får undersöka varan på samma sätt som i en butik. Om varan har hanterats mer än så kan vi göra avdrag för värdeminskningen.</p>
         <h2>Fel på varan</h2>

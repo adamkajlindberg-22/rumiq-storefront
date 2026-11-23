@@ -19,6 +19,8 @@
    purchase shown instead of the legal 14-day withdrawal line. The values below are RumIQ's TARGET from the
    business plan; confirm them with the chosen supplier before launch.
    returnText: one sentence on how returns work. Empty = the page says "Bekräftas innan vi öppnar".
+   returnVia: where a return can be handed in, shown on the returns page (target: pickup point and parcel locker;
+              confirm with the carrier). Empty = not shown.
    A product can override these later with its own "ship" field.
 
    OFFERS
@@ -45,7 +47,7 @@ window.RQ_CONFIG = {
     redirect: "",
   },
   formEndpoint: "",
-  delivery: { fromCountry: "Lager i EU", minDays: 2, maxDays: 5, cutoffHour: 14, openPurchaseDays: 30, returnText: "Returen skickas till en adress i Sverige." },
+  delivery: { fromCountry: "Lager i EU", minDays: 2, maxDays: 5, cutoffHour: 14, openPurchaseDays: 30, returnText: "Returen skickas till en adress i Sverige.", returnVia: ["hos ett ombud", "i ett paketskåp"] },
   company: { name: "", orgnr: "", address: "", phone: "", email: "support@rumiq.se" },
   waitlist: { table: "waitlist", offer: "10 % på första köpet när vi öppnar" },
   lookDiscount: 0.1,

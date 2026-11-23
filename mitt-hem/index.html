@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=fc84ff4d">
+<link rel="stylesheet" href="assets/css/site.min.css?v=c00f15ba">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -91,11 +91,28 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 </nav>
 
 <main id="view" class="view" tabindex="-1"><header class="page-head wrap"><ol class="crumbs"><li><a href="./">Hem</a></li><li>Mitt hem</li></ol><span class="eyebrow" style="display:block;margin-top:1rem">Ditt privata bibliotek</span><h1 class="h1">Mitt hem</h1><p class="lead">Rumsprojekt, Studio-bilder, favoriter och din stil, samlat på ett ställe så att du kan fortsätta där du slutade.</p>
-          <div class="chips" style="margin-top:1.6rem"><a class="chip" href="#mh-rum">Rumsprojekt (0)</a><a class="chip" href="#mh-fav">Favoriter (0)</a><a class="chip" href="#mh-stil">Min stil</a><a class="chip" href="#mh-looks">Looks (0)</a><a class="chip" href="#mh-art">Artiklar (0)</a></div></header>
+          <div class="chips" style="margin-top:1.6rem"><a class="chip" href="#mh-matt">Mina rum och mått (0)</a><a class="chip" href="#mh-rum">Rumsprojekt (0)</a><a class="chip" href="#mh-fav">Favoriter (0)</a><a class="chip" href="#mh-stil">Min stil</a><a class="chip" href="#mh-looks">Looks (0)</a><a class="chip" href="#mh-art">Artiklar (0)</a></div></header>
         <section class="wrap" style="padding-bottom:5rem;display:grid;gap:4rem">
+          <div id="mh-matt"><div class="sec-head"><span class="eyebrow">Mina rum och mått</span></div>
+        <p class="lead" style="max-width:40rem">Lägg in dina rum och några mått en gång. Sedan säger varje produktsida om den passar och ryms hos dig.</p>
+        <div class="hr-list" id="hrList"></div>
+        <form class="hr-form panel" id="hrForm" novalidate=""><input type="hidden" name="id">
+          <h3 class="h3" style="font-size:1.15rem" id="hrTitle">Lägg till ditt första rum</h3>
+          <div class="hr-grid">
+            <label>Rum<select name="type"><option value="vardagsrum">Vardagsrum</option><option value="sovrum">Sovrum</option><option value="kok">Kök</option><option value="badrum">Badrum</option><option value="hall">Hall</option><option value="hemmakontor">Hemmakontor</option><option value="uteliv">Uteliv</option></select></label>
+            <label>Eget namn <span class="opt">valfritt</span><input name="label" maxlength="30" placeholder="Till exempel Sovrum uppe"></label>
+            <label>Golvets bredd, cm<input name="floorW" inputmode="numeric" placeholder="350"></label>
+            <label>Golvets djup, cm<input name="floorD" inputmode="numeric" placeholder="420"></label>
+            <label>Fri väggbredd, cm<input name="wallW" inputmode="numeric" placeholder="240"></label>
+            <label>Fönstrets bredd, cm<input name="windowW" inputmode="numeric" placeholder="120"></label>
+          </div>
+          <p class="small">Mät det fria golvet där en matta kan ligga, väggen där en tavla kan hänga och fönstret utan karm. Inga mått är obligatoriska.</p>
+          <div class="ctrl-row"><button class="btn" type="submit">Spara rummet</button><button class="btn ghost" type="button" id="hrCancel" hidden="">Avbryt</button></div>
+          <p class="status" id="hrStatus" role="status"></p></form></div>
           <div id="mh-rum"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Rumsprojekt</span></div></div>
             <div class="empty"><h3>Inga rumsprojekt än</h3><p>Placera produkter i ett foto av ditt rum och spara resultatet här.</p><a class="btn ghost" href="#studio-rum">Se det i ditt rum</a></div></div>
-          <div id="mh-fav"><div class="sec-head"><span class="eyebrow">Favoriter</span></div><div class="empty"><h3>Inga favoriter än</h3><p>Tryck på hjärtat på en produkt.</p></div></div>
+          <div id="mh-fav"><div class="sec-head"><span class="eyebrow">Favoriter</span></div><div class="empty"><h3>Inga favoriter än</h3><p>Tryck på hjärtat på en produkt.</p></div><a class="sv-nudge" href="svep/"><span class="sv-nudge-cards" aria-hidden="true"><img src="assets/img/p/affisch-horisont-ekram-600.webp" alt="" loading="lazy" style="--k:0"><img src="assets/img/p/vila-paslakanset-linne-600.webp" alt="" loading="lazy" style="--k:1"><img src="assets/img/p/strand-jutematta-600.webp" alt="" loading="lazy" style="--k:2"></span>
+      <span class="sv-nudge-tx"><b>Osäker på vad du gillar?</b><small>Svep tio kort, så sparas det du gillar här och butiken sorterar sig efter dig.</small><span class="tlink">Svep fram din stil</span></span></a></div>
           <div id="mh-stil"><div class="sec-head"><span class="eyebrow">Min stil</span></div><div class="empty"><h3>Ingen stil sparad än</h3><p>Fyra snabba val ger dig en stil och en palett.</p><a class="btn ghost" href="svep/">Hitta min stil</a></div></div>
           <div id="mh-looks"><div class="sec-head"><span class="eyebrow">Sparade looks</span></div><div class="empty"><h3>Inga looks än</h3><p>Bygg en look i Kombinera och matcha.</p><a class="btn ghost" href="studio-kombinera/">Kombinera och matcha</a></div></div>
           <div id="mh-art"><div class="sec-head"><span class="eyebrow">Sparade artiklar</span></div><div class="empty"><h3>Inga sparade artiklar</h3><p>Spara en artikel i magasinet så hamnar den här.</p><a class="btn ghost" href="magasin/">Till magasinet</a></div></div>
@@ -142,6 +159,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=fc84ff4d"></script>
+<script src="assets/js/site.min.js?v=c00f15ba"></script>
 </body>
 </html>

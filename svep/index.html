@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=fc84ff4d">
+<link rel="stylesheet" href="assets/css/site.min.css?v=c00f15ba">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -91,17 +91,19 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 </nav>
 
 <main id="view" class="view" tabindex="-1"><section class="wrap svep" aria-label="Svep">
-      <div class="sv-head"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="upptack/">Upptäck</a></li><li>Svep</li></ol><h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över och uppåt lägger i varukorgen. Tryck på kanterna för fler bilder.</p>
-        <ul class="sv-legend">
-          <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar i dina favoriter och lär oss din stil.</span></div></li>
-          <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
-          <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet.</span></div></li>
-          <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
-        </ul>
-        <p class="small sv-after">Klicka på bildens kanter för fler bilder. Efter 10 kort får du din stilprofil.</p></div>
-      <div class="sv-wrap">
-        <div class="sv-prog" aria-hidden="true"><i id="svBar" style="width: 0%;"></i></div>
-        <div class="sv-deck" id="svDeck" aria-live="polite"><article class="sv-card" data-h="vaffelhandduk-bomull" data-img="0" style="--i:2" aria-hidden="true">
+        <div class="sv-head"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="upptack/">Upptäck</a></li><li>Svep</li></ol><h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över och uppåt lägger i varukorgen. Tryck på kanterna för fler bilder.</p>
+          <nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="svep/" aria-current="true">Hela butiken</a><a class="chip" href="svep-rum-vardagsrum/">Vardagsrum</a><a class="chip" href="svep-rum-sovrum/">Sovrum</a><a class="chip" href="svep-rum-kok/">Kök</a><a class="chip" href="svep-rum-badrum/">Badrum</a><a class="chip" href="svep-rum-hall/">Hall</a><a class="chip" href="svep-rum-hemmakontor/">Hemmakontor</a><a class="chip" href="svep-rum-uteliv/">Uteliv</a></nav>
+          <ul class="sv-legend">
+      <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar i dina favoriter och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
+      <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet.</span></div></li>
+      <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
+    </ul>
+          <p class="small sv-after">Klicka på bildens kanter för fler bilder. Efter 10 kort får du din stilprofil.</p>
+          <a class="sv-two-link" href="svep-ihop/"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="16.5" cy="9.5" r="2.4"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14.5 19a4.3 4.3 0 0 1 6.5-3.6"></path></svg><span>Inreder ni tillsammans? <b>Svep tillsammans</b></span></a></div>
+        <div class="sv-wrap">
+      <div class="sv-prog" aria-hidden="true"><i id="svBar" style="width: 0%;"></i></div>
+      <div class="sv-deck" id="svDeck" aria-live="polite"><article class="sv-card" data-h="vaffelhandduk-bomull" data-img="0" style="--i:2" aria-hidden="true">
       <div class="sv-ims"><img class="on" src="assets/img/p/vaffelhandduk-bomull-900.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Våffelhandduk bomull" draggable="false" loading="lazy"><img class="" src="assets/img/d/vaffelhandduk-bomull-1200.webp" srcset="assets/img/d/vaffelhandduk-bomull-600.webp 600w, assets/img/d/vaffelhandduk-bomull-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Våffelhandduk bomull, detalj" draggable="false" loading="lazy"></div>
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
@@ -120,16 +122,16 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
       <div class="sv-info"><div><b>Dagsljus linnegardin, 2-pack</b><span>899 kr</span></div><small><span>Vardagsrum</span> · <span>Sovrum</span></small></div>
     </article></div>
-        <div class="sv-ctrl" id="svCtrl">
-          <button class="sv-b undo" type="button" id="svUndo" aria-label="Ångra senaste" disabled=""><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg></button>
-          <button class="sv-b no" type="button" id="svNo" aria-label="Nej tack"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-          <button class="sv-b room" type="button" id="svRoom" aria-label="Ställ in i mitt rum" data-room-btn="dagsljus-linnegardin-2-pack" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-          <button class="sv-b bag" type="button" id="svBag" aria-label="Lägg i varukorgen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></button>
-          <button class="sv-b yes" type="button" id="svYes" aria-label="Spara i favoriter"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-        </div>
-        <p class="sv-meta"><span id="svCount">1 av 10</span><span class="sv-chip" id="svChip" hidden=""></span></p>
-        <p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. Backsteg ångrar.</p>
-      </div></section></main>
+      <div class="sv-ctrl" id="svCtrl">
+        <button class="sv-b undo" type="button" id="svUndo" aria-label="Ångra senaste" disabled=""><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg></button>
+        <button class="sv-b no" type="button" id="svNo" aria-label="Nej tack"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        <button class="sv-b room" type="button" id="svRoom" aria-label="Ställ in i mitt rum" data-room-btn="dagsljus-linnegardin-2-pack" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
+        <button class="sv-b bag" type="button" id="svBag" aria-label="Lägg i varukorgen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></button>
+        <button class="sv-b yes" type="button" id="svYes" aria-label="Spara i favoriter"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      </div>
+      <p class="sv-meta"><span id="svCount">1 av 10</span><span class="sv-chip" id="svChip" hidden=""></span></p>
+      <p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. Backsteg ångrar.</p>
+    </div></section></main>
 
 <footer class="site">
   <div class="wrap">
@@ -171,6 +173,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=fc84ff4d"></script>
+<script src="assets/js/site.min.js?v=c00f15ba"></script>
 </body>
 </html>

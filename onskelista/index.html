@@ -26,7 +26,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=fc84ff4d">
+<link rel="stylesheet" href="assets/css/site.min.css?v=c00f15ba">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
 </head>
 <body>
@@ -96,7 +96,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="padding:.5rem .9rem;border-radius:999px;width:10rem"><button class="chip" type="submit">Skapa</button></form></div>
         <div class="listhead"><div><h2 class="h3">Favoriter</h2><p class="small">0 produkter · 0 kr</p></div>
           <div class="ctrl-row" style="margin:0"></div></div>
-        <div class="empty"><h3>Listan är tom</h3><p>Tryck på hjärtat på en produkt för att spara den här.</p><a class="btn ghost" href="butik/">Utforska butiken</a></div>
+        
+        <div class="empty"><h3>Listan är tom</h3><p>Tryck på hjärtat på en produkt för att spara den här.</p><a class="btn ghost" href="butik/">Utforska butiken</a></div><a class="sv-nudge" href="svep/"><span class="sv-nudge-cards" aria-hidden="true"><img src="assets/img/p/affisch-horisont-ekram-600.webp" alt="" loading="lazy" style="--k:0"><img src="assets/img/p/vila-paslakanset-linne-600.webp" alt="" loading="lazy" style="--k:1"><img src="assets/img/p/strand-jutematta-600.webp" alt="" loading="lazy" style="--k:2"></span>
+      <span class="sv-nudge-tx"><b>Osäker på vad du gillar?</b><small>Svep tio kort, så sparas det du gillar här och butiken sorterar sig efter dig.</small><span class="tlink">Svep fram din stil</span></span></a>
       </section></main>
 
 <footer class="site">
@@ -139,6 +141,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <script src="assets/js/config.js"></script>
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/site.min.js?v=fc84ff4d"></script>
+<script src="assets/js/site.min.js?v=c00f15ba"></script>
 </body>
 </html>

@@ -39,6 +39,8 @@
 
       <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li><b>14 dagars ångerrätt</b>, ångra med en knapp</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
 
+      ${RQ.svepHome ? RQ.svepHome.html() : ""}
+
       <section class="sec roomhero" id="ditt-rum">
         <div class="wrap rh">
           <div class="rh-copy">
@@ -62,10 +64,6 @@
       <section class="sec" id="utvalt">
         <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">${forYou ? "Utvalt för dig" : "Utvalt just nu"}</h2><p>${forYou ? "Sorterat efter det du sparat i Svep." : "Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning."}</p></div><a class="link" href="${forYou ? "#for-dig" : "#butik"}">${forYou ? "Hela butiken för dig" : "Alla produkter"}</a></div>
           ${RQ.grid(featured, "three")}</div>
-      </section>
-
-      <section class="sec" id="lek">
-        <div class="wrap">${RQ.svepTeaser()}</div>
       </section>
 
       <section class="sec">
@@ -166,6 +164,7 @@
 
 
     off.push(RQ.journey.mount(root));
+    if (RQ.svepHome) off.push(RQ.svepHome.mount(root));
 
     // waiting list
     const form = $("#signup", root), err = $("#formErr", root), btn = form.querySelector("button");
