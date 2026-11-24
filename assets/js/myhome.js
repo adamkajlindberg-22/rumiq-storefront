@@ -64,7 +64,7 @@
         const r = { id: f.id.value || Math.random().toString(36).slice(2, 9), type: f.type.value, label: f.label.value.trim().slice(0, 30), floorW: num(f.floorW.value), floorD: num(f.floorD.value), wallW: num(f.wallW.value), windowW: num(f.windowW.value) };
         const rooms = this.list(), i = rooms.findIndex((x) => x.id === r.id);
         if (i > -1) rooms[i] = r; else rooms.push(r);
-        this.save(rooms); RQ.toast(`${this.label(r)} är sparat.`); RQ.router();
+        this.save(rooms); RQ.toast(`${esc(this.label(r))} är sparat.`); RQ.router();
       });
       $("#hrCancel", root).addEventListener("click", reset);
       root.addEventListener("click", (e) => {
@@ -149,21 +149,29 @@
     const v = $("input", f).value.trim(), err = $(".nt-err", f), ok = $(".nt-ok", f);
     if (!emailOk(v)) { err.textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
     err.textContent = ""; const hs = f.dataset.pwatch.split(",").filter(Boolean);
-    send(v, hs, "Prisbevakning").then((res) => {
+    RQ.once(f, () => send(v, hs, "Prisbevakning").then((res) => {
       if (res === "error") { err.textContent = "Det gick inte att skicka just nu. Försök igen om en stund."; return; }
-      ls.set("rumiq-watch", { email: v, handles: hs, at: new Date().toISOString() });
+      // only a watch that really reached us is remembered: otherwise the page would say "Du bevakar…" about nothing
+      if (res === "sent") ls.set("rumiq-watch", { email: v, handles: hs, at: new Date().toISOString() });
       ok.textContent = res === "preview" ? PREVIEW_NOTE : `Klart. Du bevakar ${hs.length} ${hs.length === 1 ? "sak" : "saker"}.`; f.classList.add("sent");
-      RQ.track && RQ.track("price_watch", { items: hs.length });
-    });
+      if (res === "sent") RQ.track && RQ.track("price_watch", { items: hs.length });
+    }));
   });
   document.addEventListener("click", (e) => {
     const add = e.target.closest("[data-pwatch-add]"), stop = e.target.closest("[data-pwatch-stop]");
     const w = RQ.priceWatch.get(); if (!w || (!add && !stop)) return;
     if (add) {
+      if (add.disabled) return; add.disabled = true;
       const hs = [...new Set([...w.handles, ...add.dataset.pwatchAdd.split(",")])];
-      send(w.email, hs, "Prisbevakning").then((res) => { if (res === "error") { RQ.toast("Det gick inte att skicka just nu. Försök igen om en stund."); return; } ls.set("rumiq-watch", { ...w, handles: hs }); RQ.toast(`Du bevakar ${hs.length} saker.`); RQ.router(); });
+      send(w.email, hs, "Prisbevakning").then((res) => { add.disabled = false; if (res === "error") { RQ.toast("Det gick inte att skicka just nu. Försök igen om en stund."); return; } ls.set("rumiq-watch", { ...w, handles: hs }); RQ.toast(`Du bevakar ${hs.length} saker.`); RQ.router(); });
     }
-    if (stop) { send(w.email, [], "Prisbevakning avslutad"); ls.del("rumiq-watch"); RQ.toast("Bevakningen är avslutad."); RQ.router(); }
+    if (stop) {
+      if (stop.disabled) return; stop.disabled = true;
+      send(w.email, [], "Prisbevakning avslutad").then((res) => {
+        if (res === "error") { stop.disabled = false; RQ.toast("Det gick inte att avsluta just nu. Försök igen om en stund."); return; }
+        ls.del("rumiq-watch"); RQ.toast("Bevakningen är avslutad."); RQ.router();
+      });
+    }
   });
 
   /* ---------------- Delad önskelista: favourites shared as a link. The list lives only in the link
@@ -234,9 +242,12 @@
       f.addEventListener("submit", async (e) => {
         e.preventDefault(); const v = $("#gcEmail", root).value.trim();
         if (!emailOk(v)) { st.textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
-        const amt = ($("[data-gc][aria-checked=true]", root) || {}).dataset;
+        const amt = ($("[data-gc][aria-checked=true]", root) || {}).dataset, btn = f.querySelector("button[type=submit]");
+        if (btn.disabled) return; btn.disabled = true; st.textContent = "";
         const res = await (RQ.subscribe ? RQ.subscribe({ email: v, lista: "Presentkort", roster: amt ? amt.gc + " kr" : "" }) : Promise.resolve("preview"));
+        btn.disabled = false; st.classList.toggle("err", res === "error");
         st.textContent = res === "error" ? "Det gick inte att skicka just nu. Försök igen om en stund." : res === "preview" ? "Förhandsversion: adressen sparas inte här. På den riktiga sajten hamnar du på listan." : "Tack. Vi mejlar när presentkorten går att köpa. Inget annat.";
+        if (res === "sent") $("#gcEmail", root).value = "";
       });
     },
   });

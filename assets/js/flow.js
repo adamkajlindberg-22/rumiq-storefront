@@ -29,8 +29,10 @@
     if (!a.supabaseUrl || !a.supabaseAnonKey || !t) return Promise.resolve("preview");
     const row = { email: String(body.email || "").toLowerCase().slice(0, 254), list: String(body.lista || "väntelista").slice(0, 120), note: body.roster ? String(body.roster).slice(0, 500) : null, lang: window.RQ_LANG === "en" ? "en" : "sv", consent: true };
     return fetch(`${a.supabaseUrl}/rest/v1/${t}`, { method: "POST", headers: { apikey: a.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(row) })
-      .then((r) => (r.ok || r.status === 409 ? "sent" : "error"), () => "preview");
+      .then((r) => (r.ok || r.status === 409 ? "sent" : "error"), () => "error");
   };
+  // one request at a time per form: the button rests while it runs, so two taps are one sign-up
+  RQ.once = (f, run) => { const b = f.querySelector("button[type=submit]"); if (!b || b.disabled) return Promise.resolve(); b.disabled = true; f.setAttribute("aria-busy", "true"); const end = () => { b.disabled = false; f.removeAttribute("aria-busy"); }; return Promise.resolve().then(run).then(end, end); };
   const post = (body) => { const u = formEndpoint(); if (!u) return toSupabase(body); return fetch(u, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => (r.ok ? "sent" : "error"), () => "error"); };
   RQ.subscribe = (body) => post(body).then((res) => { if (res === "sent" && RQ.track) RQ.track("sign_up", { list: body.lista || "" }); return res; });
   const PREVIEW_NOTE = "Förhandsversion: adressen sparas inte än. När butiken öppnar fungerar det här på riktigt.";
@@ -124,10 +126,10 @@
     if (!emailOk(v)) { err.textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
     err.textContent = "";
     const h = f.dataset.notify;
-    post({ email: v, lista: "Produkt: " + h }).then((res) => {
+    RQ.once(f, () => post({ email: v, lista: "Produkt: " + h }).then((res) => {
       if (!afterPost(f, res, "Klart. Vi mejlar när den går att köpa. Inget annat.")) return;
       const list = ls.get("rumiq-notify", []); if (res === "sent" && !list.includes(h)) ls.set("rumiq-notify", [...list, h]);
-    });
+    }));
   });
 
   /* ------------------------------------------------------------------ product sheet */
@@ -428,7 +430,7 @@
       $("#voteMail", root).addEventListener("submit", (e) => {
         e.preventDefault(); const f = e.currentTarget, val = $("input", f).value.trim();
         if (!emailOk(val)) { $(".nt-err", f).textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
-        $(".nt-err", f).textContent = ""; post({ email: val, lista: "Rösta", roster: ls.get("rumiq-votes", []).join(", ") }).then((res) => afterPost(f, res, "Tack. Ett mejl när resultatet är klart. Inget annat."));
+        $(".nt-err", f).textContent = ""; RQ.once(f, () => post({ email: val, lista: "Rösta", roster: ls.get("rumiq-votes", []).join(", ") }).then((res) => afterPost(f, res, "Tack. Ett mejl när resultatet är klart. Inget annat.")));
       });
       paint();
       root.addEventListener("click", (e) => { const b = e.target.closest("[data-idea-vote]"); if (b) { S.voteIdea(b.dataset.ideaVote); $("#ideer", root).innerHTML = ideasHtml(); } });

@@ -18,13 +18,16 @@
 
   function authView(tab) {
     const signup = tab === "skapa";
+    // the auth server did not answer: say so, and do not offer a form that cannot work
+    const down = RQ.auth.mode === "down";
     return {
       title: (signup ? "Skapa konto" : "Logga in") + " · RumIQ",
-      html: `<header class="page-head wrap" style="padding-bottom:1.5rem">${RQ.crumbs([["Hem", "hem"], [signup ? "Skapa konto" : "Logga in"]])}<h1 class="h1">${signup ? "Skapa ditt konto" : "Välkommen tillbaka"}</h1></header>
+      html: `<header class="page-head wrap" style="padding-bottom:1.5rem">${RQ.crumbs([["Hem", "hem"], [signup ? "Skapa konto" : "Logga in"]])}<h1 class="h1">${signup ? "Skapa ditt konto" : "Logga in"}</h1></header>
         <section class="wrap auth-grid" style="padding-bottom:5rem">
           <div class="auth-card">
             <div class="seg" role="tablist"><a role="tab" href="#konto" aria-selected="${!signup}">Logga in</a><a role="tab" href="#skapa-konto" aria-selected="${signup}">Skapa konto</a></div>
-            <div id="authMain">
+            ${down ? `<div class="auth-down" role="status"><h2 class="h3">Inloggningen går inte att nå just nu</h2><p>Det beror inte på dig. Försök igen om en stund. Du kan handla som gäst under tiden, och det du har sparat i den här webbläsaren ligger kvar.</p><div class="ctrl-row"><button class="btn" type="button" id="authRetry">Försök igen</button><a class="btn ghost" href="#butik">Till butiken</a></div></div>` : ""}
+            <div id="authMain"${down ? " hidden" : ""}>
               <div class="sso-list">${RQ.socialButtons(signup ? "Skapa konto" : "Fortsätt")}</div>
               <div class="or"><span>eller med e-post</span></div>
               <form id="codeForm" novalidate>
@@ -35,8 +38,6 @@
                 <p class="small" style="text-align:center">Vi skickar en kod på sex siffror. Inget lösenord behövs.</p>
                 <p class="status" id="codeStatus" role="alert"></p>
               </form>
-              ${signup ? "" : `<details class="pw"><summary>Logga in med lösenord i stället</summary>
-                <form id="pwForm" novalidate style="margin-top:1rem"><label>E-post<input type="email" name="email" autocomplete="email" required></label><label>Lösenord<input type="password" name="password" autocomplete="current-password" required></label><button class="btn ghost block" type="submit">Logga in</button><button class="link" type="button" id="forgot" style="border:0;background:none;justify-self:start;font-size:.9rem">Glömt lösenordet?</button><p class="status" id="pwStatus" role="alert"></p></form></details>`}
             </div>
             <div id="authStep" hidden></div>
             ${demoNote()}
@@ -47,10 +48,15 @@
         const step = $("#authStep", root), main = $("#authMain", root);
         const done = (msg) => { RQ.toast(msg || "Välkommen! Du är inloggad."); const back = RQ.ss.get("rumiq-after-login"); RQ.ss.set("rumiq-after-login", ""); location.hash = back || "#konto"; RQ.router(); };
         const fail = (el, e) => { el.textContent = (e && e.message) || "Något gick fel. Försök igen."; el.classList.add("err"); };
+        RQ.auth.start(); // the auth server is asked now, not on every page of the shop; the page redraws itself when it has answered
+        const rt = $("#authRetry", root); if (rt) rt.addEventListener("click", async () => { rt.disabled = true; rt.textContent = "Försöker…"; await RQ.auth.retry(); if (document.contains(rt)) RQ.router(); });
+        const busy = (f, on) => { const b = f.querySelector("button[type=submit]"); if (b) b.disabled = on; };
         // Social
         $$("[data-sso]", root).forEach((b) => b.addEventListener("click", async () => {
           const p = b.dataset.sso, name = RQ.auth.providerName(p);
           if (signup) { const st = $("#codeStatus", root); const f = $("#codeForm", root); if (!f.terms.checked) { st.textContent = "Bekräfta integritetspolicyn och villkoren först."; st.classList.add("err"); f.terms.focus(); return; } }
+          b.disabled = true; try { await RQ.auth.start(); } catch (e) {} b.disabled = false;
+          if (RQ.auth.mode === "down") { RQ.router(); return; }
           if (RQ.auth.mode === "demo") {
             main.hidden = true; step.hidden = false;
             step.innerHTML = `<div class="sso-demo">${RQ.providerLogo(p)}<h2 class="h3">Fortsätt med ${name}</h2><p>På den riktiga sajten öppnas ${name}s egen inloggning, och du kommer tillbaka hit inloggad. I förhandsversionen skapar vi ett testkonto i stället.</p>
@@ -68,8 +74,11 @@
           const email = f.email.value.trim();
           if (!emailOk(email)) return fail(st, { message: "Skriv en giltig e-postadress." });
           if (signup && !f.terms.checked) return fail(st, { message: "Bekräfta integritetspolicyn och villkoren först." });
+          if (f.querySelector("button[type=submit]").disabled) return; // one code per press
+          busy(f, true); st.textContent = "";
           try {
             const r = await RQ.auth.sendCode(email, signup ? f.name.value.trim() : "", signup && f.news.checked);
+            busy(f, false);
             main.hidden = true; step.hidden = false;
             step.innerHTML = `<h2 class="h3">Skriv in koden</h2><p style="margin:.5rem 0 1.2rem;color:#4a4741">Vi har skickat en kod på sex siffror till <b>${esc(email)}</b>.</p>
               ${r.demoCode ? `<p class="example-note"><span>●</span><span><b>Förhandsversion.</b> Inget mejl skickas. Din testkod är <b style="font-family:var(--mono);letter-spacing:.1em">${r.demoCode}</b>.</span></p>` : ""}
@@ -85,14 +94,8 @@
             $("#verify", step).addEventListener("submit", async (ev) => { ev.preventDefault(); const code = boxes.map((x) => x.value).join(""); if (code.length < 6) return fail($("#vStatus", step), { message: "Skriv alla sex siffror." }); try { await RQ.auth.verifyCode(email, code); done(signup ? "Ditt konto är skapat. Välkommen!" : null); } catch (er) { fail($("#vStatus", step), er); boxes.forEach((x) => (x.value = "")); boxes[0].focus(); } });
             $("#resend", step).addEventListener("click", () => { f.requestSubmit(); });
             $("#back", step).addEventListener("click", () => { step.hidden = true; main.hidden = false; });
-          } catch (er) { fail(st, er); }
+          } catch (er) { busy(f, false); fail(st, er); }
         });
-        // Password
-        const pw = $("#pwForm", root);
-        if (pw) {
-          pw.addEventListener("submit", async (e) => { e.preventDefault(); const st = $("#pwStatus", root); if (!emailOk(pw.email.value)) return fail(st, { message: "Skriv en giltig e-postadress." }); if (!pw.password.value) return fail(st, { message: "Skriv ditt lösenord." }); try { await RQ.auth.signInPassword(pw.email.value.trim(), pw.password.value); pw.password.value = ""; done(); } catch (er) { fail(st, er); } });
-          $("#forgot", root).addEventListener("click", async () => { const st = $("#pwStatus", root); if (!emailOk(pw.email.value)) return fail(st, { message: "Skriv din e-post först, så skickar vi en länk." }); await RQ.auth.resetPassword(pw.email.value.trim()); st.classList.remove("err"); st.textContent = RQ.auth.mode === "demo" ? "Förhandsversion: inget mejl skickas. På den riktiga sajten får du en länk för att välja nytt lösenord." : "Om adressen finns hos oss har vi skickat en länk för att välja nytt lösenord."; });
-        }
       },
     };
   }
@@ -109,14 +112,14 @@
       html: `<header class="page-head wrap" style="padding-bottom:1.5rem">${RQ.crumbs([["Hem", "hem"], ["Mitt konto"]])}<h1 class="h1">Hej${c.name ? " " + esc(c.name) : ""}</h1>
           <p class="lead">${prov ? `<span class="provider">${RQ.providerLogo(c.provider)} Inloggad med ${prov}</span> · ` : ""}${esc(c.email)}</p></header>
         <section class="wrap acct" style="padding-bottom:5rem">
-          <nav class="acct-nav" aria-label="Konto"><a href="#acc-oversikt" class="on">Översikt</a><a href="#acc-studio">Studio</a><a href="#acc-order">Beställningar</a><a href="#acc-listor">Mina listor</a><a href="#acc-profil">Profil och adress</a><a href="#acc-installningar">Inställningar</a><a href="#mitt-hem">Mitt hem</a></nav>
+          <nav class="acct-nav" aria-label="Konto"><a href="#acc-oversikt" class="on">Översikt</a><a href="#acc-studio">Mitt rum</a><a href="#acc-order">Beställningar</a><a href="#acc-listor">Mina listor</a><a href="#acc-profil">Profil och adress</a><a href="#acc-installningar">Inställningar</a><a href="#mitt-hem">Mitt hem</a></nav>
           <div style="display:grid;gap:3.2rem;min-width:0">
             <section id="acc-oversikt"><div class="stat-grid">
               <a class="stat" href="#acc-order"><b>${orders.length}</b><span>Beställningar</span></a>
               <a class="stat" href="#onskelista"><b>${S._wish.length}</b><span>Favoriter</span></a>
               <a class="stat" href="#acc-listor"><b>${lists.length}</b><span>Listor</span></a>
               <a class="stat" href="#mitt-hem"><b>${S.projects().length}</b><span>Rumsprojekt</span></a></div></section>
-            <section id="acc-studio"><div class="sec-row" style="margin-bottom:1.2rem"><h2 class="h3">Studio och AI-bilder</h2><a class="link arrow" href="#studio-plus">Om Studio Plus</a></div><div data-ai-account><p class="small">Laddar…</p></div></section>
+            <section id="acc-studio"><div class="sec-row" style="margin-bottom:1.2rem"><h2 class="h3">Mitt rum och AI-bilder</h2><a class="link arrow" href="#studio-plus">Om Studio Plus</a></div><div data-ai-account><p class="small">Laddar…</p></div></section>
             <section id="acc-order"><h2 class="h3" style="margin-bottom:1.2rem">Beställningar</h2>${orders.length ? orders.map(orderCard).join("") : `<div class="empty"><h3>Inga beställningar än</h3><p>När du beställer hamnar ordern här.</p><a class="btn ghost" href="#butik">Till butiken</a></div>`}</section>
             <section id="acc-listor"><div class="sec-row" style="margin-bottom:1.2rem"><h2 class="h3">Mina listor</h2><a class="link arrow" href="#onskelista">Öppna listorna</a></div>${lists.length ? `<div class="chips">${lists.map((l) => `<a class="chip" href="#onskelista">${esc(l.name)} (${l.handles.length})</a>`).join("")}</div>` : `<p class="small">Inga egna listor än. Spara produkter i ett rum från produktsidan.</p>`}</section>
             <section id="acc-profil"><h2 class="h3" style="margin-bottom:1.2rem">Profil och adress</h2>
@@ -140,7 +143,9 @@
         });
         $("#mkt", root).addEventListener("change", (e) => { S.setProfile({ marketing: e.target.checked }); RQ.toast(e.target.checked ? "Du får nyheter via e-post." : "Du får inga nyhetsmejl."); });
         $("#profForm", root).addEventListener("submit", (e) => { e.preventDefault(); const f = e.currentTarget; const zip = f.zip.value.trim();
-          if (zip && !/^\d{3}\s?\d{2}$/.test(zip)) { $("#profStatus", root).textContent = "Postnumret ska ha fem siffror."; return; }
+          if (zip && !/^\d{3}\s?\d{2}$/.test(zip)) { $("#profStatus", root).textContent = "Postnumret ska ha fem siffror."; f.zip.focus(); return; }
+          const tel = f.phone.value.trim();
+          if (tel && !/^\+?[\d\s()-]{6,20}$/.test(tel)) { $("#profStatus", root).textContent = "Skriv telefonnumret med siffror, eller lämna fältet tomt."; f.phone.focus(); return; }
           S.setProfile({ name: f.name.value.trim(), phone: f.phone.value.trim(), address: { street: f.street.value.trim(), zip, city: f.city.value.trim() } }); $("#profStatus", root).textContent = "Sparat. Kassan fylls i automatiskt nästa gång."; });
         root.addEventListener("click", (e) => {
           const t = e.target.closest("[data-track],[data-wd]"); if (t) RQ.ss.set("rumiq-prefill", t.dataset.track || t.dataset.wd);

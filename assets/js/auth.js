@@ -1,7 +1,12 @@
 /* Sign-in layer. Pages call RQ.auth only.
-   "demo": everything stays in this browser, no email is sent, no provider is contacted.
-   "supabase": real accounts through Supabase Auth (Google, Apple, Microsoft, Facebook, email code,
-   email + password). Switch in config.js. */
+   "demo": everything stays in this browser, no email is sent, no provider is contacted. Only when
+           config.js says provider "demo", or on a developer's own machine (localhost) when the auth
+           server cannot be reached.
+   "supabase": real accounts through Supabase Auth (Google, Apple, Microsoft, Facebook, email code).
+   "pending": configured for Supabase, not asked yet (the server is only contacted when it is needed).
+   "down": configured for Supabase but the auth server did not answer. Nobody is signed in with a
+           made-up account then: the account pages say that sign-in cannot be reached right now.
+   Switch in config.js. */
 (function () {
   const RQ = window.RQ, S = RQ.shop;
   const CFG = (window.RQ_CONFIG && window.RQ_CONFIG.auth) || { provider: "demo", social: ["google", "apple", "azure"] };
@@ -65,10 +70,16 @@
   }
 
   const withTimeout = (p, ms) => Promise.race([p, new Promise((_, bad) => setTimeout(() => bad(new Error("timeout")), ms))]);
+  const CONFIGURED = CFG.provider === "supabase" && !!CFG.supabaseUrl && !!CFG.supabaseAnonKey;
+  const LOCAL = location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  const DOWN = "Inloggningen går inte att nå just nu. Försök igen om en stund.";
+  // every sign-in call waits for the auth server's answer first, and refuses when there is none
+  const need = async () => { await A.start(); if (A.mode !== "supabase" && A.mode !== "demo") throw new Error(DOWN); return A.mode; };
 
   const A = (RQ.auth = {
-    configured: CFG.provider === "supabase" && !!CFG.supabaseUrl && !!CFG.supabaseAnonKey,
-    mode: "demo",            // becomes "supabase" once the auth server answers
+    configured: CONFIGURED,
+    mode: CONFIGURED ? "pending" : "demo", // "supabase" once the auth server answers, "down" when it does not
+    downText: DOWN,
     live: {},                // social providers switched on in Supabase
     socials: (CFG.social || ["google", "apple", "azure"]).filter((p) => NAMES[p]),
     providerName: (p) => NAMES[p] || "e-post",
@@ -79,8 +90,11 @@
 
     // anything that needs the real account state (AI pictures, checkout) calls start() and waits
     start() { return A._started || (A._started = A.init()); },
+    // ask again after a failed start (the "Försök igen" button on the account page)
+    retry() { A._started = null; A.blocked = false; A.mode = CONFIGURED ? "pending" : "demo"; return A.start(); },
     async init() {
       if (!A.configured) return;
+      const onAccount = () => typeof RQ.router === "function" && /^(konto|logga-in|skapa-konto)/.test(RQ.currentRoute ? RQ.currentRoute() || "" : location.hash.slice(1));
       try {
         /* The preview (claude.ai) blocks calls to other sites. Then we stay in demo mode. */
         const r = await withTimeout(fetch(CFG.supabaseUrl.replace(/\/$/, "") + "/auth/v1/settings", { headers: { apikey: CFG.supabaseAnonKey } }), 5000);
@@ -101,10 +115,12 @@
           if (ev === "SIGNED_OUT") { userId = null; if (S.customer()) S.signOut(); }
         });
         S.onChange((what) => { if (["customer", "wish", "lists", "style", "articles", "looks", "orders"].includes(what) && S.customer()) pushProfile(); });
-        if (typeof RQ.router === "function" && /^(konto|logga-in|skapa-konto)/.test(RQ.currentRoute ? RQ.currentRoute() || "" : location.hash.slice(1))) RQ.router();
+        if (onAccount()) RQ.router();
       } catch (e) {
-        A.mode = "demo"; A.blocked = true;
-        console.info("RumIQ: inloggningsservern svarar inte här, kör förhandsläget.", e && e.message);
+        // A real shop never signs anyone in with a made-up account. Only a developer's own machine falls back to the demo.
+        A.blocked = true; A.mode = LOCAL && !CFG.strict ? "demo" : "down";
+        console.info("RumIQ: inloggningsservern svarar inte här.", e && e.message);
+        if (onAccount()) RQ.router();
       }
     },
     async deleteAccount() {
@@ -113,7 +129,7 @@
 
     /* Social sign-in. Supabase opens the provider's own sign-in page and returns here. */
     async social(provider, demoEmail) {
-      if (A.mode === "supabase") {
+      if ((await need()) === "supabase") {
         if (!A.live[provider]) throw new Error(`Inloggning med ${NAMES[provider]} är inte påslagen än. Använd e-post så länge.`);
         const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: A.redirect() } });
         if (error) throw error; return { redirected: true };
@@ -123,7 +139,7 @@
 
     /* Passwordless: a six-digit code by email. */
     async sendCode(email, name, marketing) {
-      if (A.mode === "supabase") {
+      if ((await need()) === "supabase") {
         const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true, data: { ...(name ? { full_name: name } : {}), marketing: !!marketing, locale: (readLocal("rumiq-lang") || "sv") }, emailRedirectTo: A.redirect() } });
         if (error) throw new Error(/rate|seconds/i.test(error.message) ? "Vänta en liten stund innan du ber om en ny kod." : "Vi kunde inte skicka mejlet just nu. Försök igen om en stund.");
         return { sent: true };
@@ -132,7 +148,7 @@
       return { sent: true, demoCode: pendingCode.code };
     },
     async verifyCode(email, code) {
-      if (A.mode === "supabase") {
+      if ((await need()) === "supabase") {
         const { error } = await sb.auth.verifyOtp({ email, token: code, type: "email" });
         if (error) throw new Error("Koden stämmer inte eller har gått ut. Be om en ny kod.");
         return { ok: true };
@@ -141,22 +157,6 @@
       S.signIn(email, pendingCode.name, "email"); if (pendingCode.marketing) S.setProfile({ marketing: true }); pendingCode = null; return { ok: true };
     },
 
-    /* Email and password. In demo mode the password is never stored. */
-    async signInPassword(email, password) {
-      if (A.mode === "supabase") { const { error } = await sb.auth.signInWithPassword({ email, password }); if (error) throw new Error("Fel e-post eller lösenord."); return { ok: true }; }
-      S.signIn(email, "", "password"); return { ok: true };
-    },
-    async signUp(email, password, name, marketing) {
-      if (A.mode === "supabase") {
-        const { error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name, marketing: !!marketing }, emailRedirectTo: A.redirect() } });
-        if (error) throw error; return { confirm: true };
-      }
-      S.signIn(email, name, "password"); if (marketing) S.setProfile({ marketing: true }); return { ok: true };
-    },
-    async resetPassword(email) {
-      if (A.mode === "supabase") { const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: A.redirect() }); if (error) throw error; }
-      return { sent: true };
-    },
     async signOut() { if (A.mode === "supabase" && sb) { await pushProfile(true); await sb.auth.signOut(); } userId = null; S.signOut(); },
   });
 
@@ -174,8 +174,12 @@
      picture. It starts at once when someone is coming back from a sign-in or opens a page that needs it. */
   document.addEventListener("DOMContentLoaded", () => {
     const route = (RQ.currentRoute && RQ.currentRoute()) || location.hash.slice(1);
-    const now = /[?&](code|error)=|access_token=/.test(location.search + location.hash) || /^(konto|skapa-konto|logga-in|kassa|studio-plus|mitt-hem)/.test(route || "");
-    A.ready = now ? A.start() : new Promise((ok) => {
+    const now = /[?&](code|error)=|access_token=/.test(location.search + location.hash) || /^(konto|skapa-konto|logga-in|studio-plus)/.test(route || "");
+    let known = !!S.customer();
+    try { known = known || Object.keys(localStorage).some((k) => /^sb-.*-auth-token/.test(k)); } catch (e) {}
+    // Someone who has never signed in costs no call to the auth server and no 220 kB library:
+    // the account pages, Studio Plus and the AI pictures call RQ.auth.start() themselves when they open.
+    A.ready = now ? A.start() : !known ? Promise.resolve() : new Promise((ok) => {
       const go = () => A.start().then(ok, ok);
       const idle = () => (window.requestIdleCallback ? requestIdleCallback(go, { timeout: 2500 }) : setTimeout(go, 300));
       if (document.readyState === "complete") idle(); else addEventListener("load", idle, { once: true });
