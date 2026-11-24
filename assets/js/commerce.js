@@ -118,6 +118,8 @@
     freeShipping() { const from = (window.RQ_CONFIG || {}).freeShippingFrom; return !!from && S.cartTotalBeforeShipping() >= from; },
     shippingCost(id) { const o = S.SHIPPING.find((s) => s.id === id) || S.SHIPPING[0]; return o.free && S.freeShipping() ? 0 : o.price; },
     vatIncluded: (total) => total - total / 1.25,
+    /* The one sentence about returns, with its numbers from RQ_CONFIG.delivery: use it wherever the return window is told. */
+    returnsLine() { const d = (window.RQ_CONFIG && window.RQ_CONFIG.delivery) || {}; return `${d.openPurchaseDays || 30} dagars öppet köp från att du tog emot varan. Lagen ger alltid ${d.withdrawalDays || 14} dagars ångerrätt.`; },
 
     /* ---------------- orders (test orders, kept in this browser) */
     orders: () => rows("rumiq-orders", (o) => isObj(o) && typeof o.number === "string" && isObj(o.contact) && Array.isArray(o.lines)),

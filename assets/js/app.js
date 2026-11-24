@@ -445,6 +445,8 @@
     step();
   };
 
+  window.addEventListener("pagehide", () => { if (current != null) RQ.ss.set("rumiq-scroll", JSON.stringify([current, Math.round(window.scrollY)])); });
+
   /* One polite voice for route changes: screen readers hear the new page's name, and the keyboard starts at its top. */
   const live = document.createElement("p");
   live.className = "sr"; live.id = "routeLive"; live.setAttribute("role", "status"); live.setAttribute("aria-live", "polite");
@@ -532,7 +534,10 @@
     root.innerHTML = view.html;
     toPathLinks(root);
     const title = paintHead(raw, view, root, found && !view.crashed);
-    const backTo = moved && popNav ? scrolls.get(raw) || 0 : 0;
+    let backTo = moved && popNav ? scrolls.get(raw) || 0 : 0;
+    if (first) { // a reload, or Back from another site, lands where the customer was
+      try { const nav = performance.getEntriesByType("navigation")[0], was = JSON.parse(RQ.ss.get("rumiq-scroll") || "null"); if (nav && /reload|back_forward/.test(nav.type) && Array.isArray(was) && was[0] === raw && was[1] > 0) backTo = was[1]; } catch (e) {}
+    }
     if (moved) { settle++; if (!backTo) window.scrollTo(0, 0); }
     popNav = false;
     current = raw; routing = null;
@@ -722,7 +727,7 @@
   let fullAt = 0;
   S.onChange((w) => {
     if (w !== "full" || Date.now() - fullAt < 6000) return; fullAt = Date.now();
-    setTimeout(() => { if (!S.store.lost) { fullAt = 0; return; } S.store.lost = null; const t = $("#toast"); if (t.classList.contains("show") && /lagring|storage/i.test(t.textContent)) return; RQ.toast('Webbläsarens lagring är full, så det här sparas inte. Ta bort något sparat. <a href="#mitt-hem">Mitt hem</a>'); }, 0);
+    setTimeout(() => { if (!S.store.lost) { fullAt = 0; return; } S.store.lost = null; const t = $("#toast"); if (t.classList.contains("show") && /lagring|storage/i.test(t.textContent)) return; RQ.toast('Webbläsarens lagring är full, så det här sparas inte. Ta bort något du har sparat. <a href="#mitt-hem">Visa</a>'); }, 0);
   });
   // day/evening on a room picture: the same room after sunset, so you see how the lamps change it
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-dn]"); if (!b) return; const sec = b.closest(".rm-shop"); const st = sec && $(".hs-stage", sec); if (!st) return; st.classList.toggle("eve", b.dataset.dn === "kvall"); $$("[data-dn]", sec).forEach((x) => x.setAttribute("aria-pressed", x === b)); });

@@ -16,7 +16,8 @@
    DELIVERY (Leveranskoll on every product)
    fromCountry: where orders ship from, e.g. "Lager i EU". minDays/maxDays: delivery time in business days
    (weekends skipped; orders after cutoffHour count from the next weekday). openPurchaseDays: days of open
-   purchase shown instead of the legal 14-day withdrawal line. The values below are RumIQ's TARGET from the
+   purchase shown instead of the legal 14-day withdrawal line. withdrawalDays: the right of withdrawal the law gives
+   (14). Pages read both numbers from here (RQ.shop.returnsLine()), nobody types them by hand. The values below are RumIQ's TARGET from the
    business plan; confirm them with the chosen supplier before launch.
    returnText: one sentence on how returns work. Empty = the page says "Bekräftas innan vi öppnar".
    returnVia: where a return can be handed in, shown on the returns page (target: pickup point and parcel locker;
@@ -47,7 +48,7 @@ window.RQ_CONFIG = {
     redirect: "",
   },
   formEndpoint: "",
-  delivery: { fromCountry: "Lager i EU", minDays: 2, maxDays: 5, cutoffHour: 14, openPurchaseDays: 30, returnText: "Returen skickas till en adress i Sverige.", returnVia: ["hos ett ombud", "i ett paketskåp"] },
+  delivery: { fromCountry: "Lager i EU", minDays: 2, maxDays: 5, cutoffHour: 14, openPurchaseDays: 30, withdrawalDays: 14, returnText: "Returen skickas till en adress i Sverige.", returnVia: ["hos ett ombud", "i ett paketskåp"] },
   company: { name: "", orgnr: "", address: "", phone: "", email: "support@rumiq.se" },
   waitlist: { table: "waitlist", offer: "10 % på första köpet när vi öppnar" },
   showNews: false, // true once there are real new arrivals; until then Nyheter is hidden from the menus

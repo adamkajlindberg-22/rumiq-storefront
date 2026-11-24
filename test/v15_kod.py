@@ -223,6 +223,9 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.querySelector('link[rel=canonical]').href").endswith("/butik/"), f"{tag} canonical follows Back")
         pg.go_forward(); pg.wait_for_timeout(700)
         ok(pg.evaluate("RQ.currentRoute()").startswith("produkt-") and pg.evaluate("scrollY") == 0, f"{tag} Forward opens the product at the top")
+        pg.go_back(); pg.wait_for_timeout(1400); pg.evaluate("window.scrollTo(0, 900)"); pg.wait_for_timeout(200); pg.reload(); pg.wait_for_timeout(1500)
+        ok(pg.evaluate("RQ.currentRoute()") == "butik" and abs(pg.evaluate("scrollY") - 900) < 6, f"{tag} a reload lands where you were (scrollY {pg.evaluate('scrollY')})")
+        ok(pg.evaluate("RQ.shop.returnsLine()") == "30 dagars öppet köp från att du tog emot varan. Lagen ger alltid 14 dagars ångerrätt.", f"{tag} the one sentence about returns reads its numbers from the settings")
         # aliases and odd addresses
         for u, want in (("#butik", "butik"), ("#Butik", "butik"), ("#butik/", "butik"), ("?utm_source=x#butik", "butik"), ("#hem", ""), ("butik/#faq-2", "faq-2")):
             pg.goto(BASE + u); pg.wait_for_timeout(450)
