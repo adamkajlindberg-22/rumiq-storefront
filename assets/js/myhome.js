@@ -40,7 +40,7 @@
           <button class="tlink" type="button" data-hr-edit="${r.id}">Ändra</button><button class="tlink" type="button" data-hr-del="${r.id}">Ta bort</button></div>`).join("")}</div>
         <button class="btn ghost" type="button" id="hrOpen" aria-expanded="false" aria-controls="hrForm">${rooms.length ? "Lägg till ett rum" : "Lägg till ditt första rum"}</button>
         <form class="hr-form panel" id="hrForm" novalidate hidden><input type="hidden" name="id">
-          <h3 class="h3" style="font-size:1.15rem" id="hrTitle">${rooms.length ? "Lägg till ett rum" : "Lägg till ditt första rum"}</h3>
+          <h3 class="h3" id="hrTitle">${rooms.length ? "Lägg till ett rum" : "Lägg till ditt första rum"}</h3>
           <div class="hr-grid">
             <label>Rum<select name="type">${RQ.ROOMS.map((r) => `<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></label>
             <label><span>Eget namn <small class="hr-opt">valfritt</small></span><input name="label" maxlength="30" placeholder="Till exempel Sovrum uppe"></label>

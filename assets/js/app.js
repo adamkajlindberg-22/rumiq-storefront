@@ -221,7 +221,7 @@
         <div class="split" style="align-items:start">
           <div><span class="eyebrow">Tre tips för ${esc(r.name.toLowerCase())}</span><div class="prose" style="margin-top:1.4rem"><ol class="numbered">${r.tips.map((t) => `<li><p>${esc(t)}</p></li>`).join("")}</ol></div>
             <div class="ctrl-row" style="margin-top:2rem">${r.cats.map((cid) => `<a class="chip" href="#kategori-${cid}">${esc(RQ.catById(cid).name)}</a>`).join("")}<a class="btn sm" href="#mitt-rum">Designa mitt rum</a></div></div>
-          <div>${arts.length ? `<span class="eyebrow">Idéer för det här rummet</span><div style="display:grid;gap:1rem;margin-top:1.2rem">${arts.map((a) => `<a class="mag" href="#artikel-${a.slug}" style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;align-items:center"><div class="im" style="aspect-ratio:1"><img src="${a.img}" alt="" loading="lazy" decoding="async" width="900" height="900"></div><div><h3 style="margin:0;font-size:1.15rem">${esc(a.title)}</h3><span class="min">${a.minutes} min läsning</span></div></a>`).join("")}</div>` : ""}</div>
+          <div>${arts.length ? `<span class="eyebrow">Idéer för det här rummet</span><div style="display:grid;gap:1rem;margin-top:1.2rem">${arts.map((a) => `<a class="mag" href="#artikel-${a.slug}" style="display:grid;grid-template-columns:7rem 1fr;gap:1rem;align-items:center"><div class="im" style="aspect-ratio:1"><img src="${a.img}" alt="" loading="lazy" decoding="async" width="900" height="900"></div><div><h3 class="h3" style="margin:0">${esc(a.title)}</h3><span class="min">${a.minutes} min läsning</span></div></a>`).join("")}</div>` : ""}</div>
         </div></section>`;
     const stage = RQ.hotspots ? `<section class="wrap rm-shop">${RQ.hotspots.render(id, { eager: true, cls: "room-stage" })}<div class="rm-shop-bar"><span><b>Allt i bilden</b> <span>${RQ.hotspots.handles(id).length} saker · ${S.kr(RQ.hotspots.total(id))}</span></span><span class="daynight" role="group" aria-label="Ljus i rummet"><button type="button" data-dn="dag" aria-pressed="true">Dag</button><button type="button" data-dn="kvall" aria-pressed="false">Kväll</button></span><button class="btn sm" type="button" data-shop-room="${id}">Handla rummet · ${S.kr(RQ.hotspots.total(id))}</button></div><p class="small rm-shop-note">Bilden är en illustration. Produkterna nedan är utvalda för rummet, inte exakta kopior av det du ser.</p></section>` : "";
     const v = shopView({ title: r.name, lead: r.lead, room: id, banner: stage ? null : `assets/img/rum/${id}-1600.webp`, extraTop: stage, extraBottom: extra, trail: [["Hem", "hem"], ["Efter rum", "rum"], [r.name]] });
@@ -442,7 +442,7 @@
       html: `${head(crumbs([["Hem", "hem"], ["Mitt hem", "mitt-hem"], ["Sparat"]]), "Sparat", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
       <section class="wrap" style="padding-bottom:6rem">
         <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Allt sparat (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
-          <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="padding:.5rem .9rem;border-radius:999px;width:10rem"><button class="chip" type="submit">Skapa</button></form></div>
+          <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="min-height:var(--field-h-s);padding-block:0;width:11rem"><button class="chip" type="submit">Skapa</button></form></div>
         <div class="listhead"><div><h2 class="h3">${esc(cur.name)}</h2>${items.length ? `<p class="small">${items.length} ${items.length === 1 ? "produkt" : "produkter"} · ${kr(total)}</p>` : ""}</div>
           <div class="ctrl-row" style="margin:0">${items.length ? `<button class="btn sm" type="button" id="allCart">Lägg alla i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${items.slice(0, 8).map((p) => p.handle).join(",")}">Se dem i ditt rum</button><button class="btn ghost sm" type="button" id="share">Kopiera lista</button>` : ""}${active !== "fav" ? `<button class="chip" type="button" id="ren">Byt namn</button><button class="chip" type="button" id="del">Ta bort listan</button>` : ""}</div></div>
         ${items.length ? RQ.grid(items) + (active === "fav" && RQ.priceWatch ? `<div style="margin-top:2rem">${RQ.priceWatch.html(items.map((x) => x.handle))}</div>` : "") : `<div class="empty"><h3>Listan är tom</h3><p>${active === "fav" ? "Tryck på hjärtat på en produkt för att spara den här." : "Öppna en produkt och välj Spara i ett rum."}</p><a class="btn ghost" href="#butik">Utforska butiken</a></div>${active === "fav" && RQ.svepNudge ? RQ.svepNudge() : ""}`}
@@ -483,7 +483,7 @@
   /* ---------------- info + legal */
   const infoNav = (active) => `<ul class="sidenav"><li><h4>Kundservice</h4></li>${[["kontakt", "Kontakt"], ["onska", "Önska en produkt"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}"${h === active ? ' aria-current="page"' : ""}>${t}</a></li>`).join("")}
     <li><h4 style="margin-top:1rem">Juridisk information</h4></li>${Object.entries(RQ.LEGAL).map(([k, v]) => `<li><a class="${"juridik-" + k === active ? "on" : ""}" href="#juridik-${k}"${"juridik-" + k === active ? ' aria-current="page"' : ""}>${v.title}</a></li>`).join("")}</ul>`;
-  RQ.infoPage = (route, kicker, title, lead, body, mount) => ({ title: `${title} · RumIQ`, html: `${head(`<span class="eyebrow">${esc(kicker)}</span>`, esc(title), lead)}<section class="wrap layout-side" style="padding-bottom:6rem">${infoNav(route)}<div class="prose">${body}</div></section>`, mount });
+  RQ.infoPage = (route, kicker, title, lead, body, mount) => ({ title: `${title} · RumIQ`, html: `${head(crumbs([["Hem", "hem"], [title]]), esc(title), lead)}<section class="wrap layout-side" style="padding-bottom:6rem">${infoNav(route)}<div class="prose">${body}</div></section>`, mount });
   Object.entries(RQ.INFO).forEach(([k, v]) => {
     V[k] = () => RQ.infoPage(k, v.kicker, v.title, v.lead, v.html(), k === "kontakt" ? mountContact : null);
   });
@@ -512,7 +512,22 @@
   }
 
   /* ---------------- 404 */
-  V.notfound = () => ({ html: `${head(`<span class="eyebrow">404</span>`, "Den här sidan finns inte", "Länken kan vara gammal eller felstavad.")}<section class="wrap" style="padding-bottom:6rem"><div class="ctrl-row"><a class="btn" href="#hem">Till startsidan</a><a class="btn ghost" href="#butik">Till butiken</a></div></section>` });
+  // a way forward from a dead link: search (with the words of the broken address filled in), a few places to go and what is popular
+  V.notfound = (raw = "") => {
+    let guess = "";
+    try { guess = decodeURIComponent(String(raw)).replace(/^(produkt|kategori|rum|look|kollektion|artikel|mitt-rum|svep-rum)-/, "").replace(/[-_+]+/g, " ").replace(/[^a-zåäöéü ]/gi, "").trim().slice(0, 40); } catch (e) {}
+    if (guess.length < 3) guess = "";
+    const go = [["Alla produkter", "butik"], ["Mitt rum", "mitt-rum"], ["Looks", "looks"], ["Hitta rätt", "hitta-ratt"], ["Vanliga frågor", "faq"]];
+    return {
+      html: `${head(crumbs([["Hem", "hem"], ["Sidan finns inte"]]), "Den här sidan finns inte", "Länken kan vara gammal eller felstavad.")}
+        <section class="wrap nf"><form class="nf-search" role="search" id="nfForm"><label class="sr" for="nfQ">Sök i butiken</label><div class="field"><input type="search" id="nfQ" placeholder="Vad letar du efter?" value="${esc(guess)}" autocomplete="off" enterkeyhint="search"><button class="btn" type="submit">Sök</button></div></form>
+        <ul class="chips nf-go">${go.map(([t, h]) => `<li><a class="chip" href="#${h}">${t}</a></li>`).join("")}</ul></section>
+        <section class="wrap nf-pop"><h2 class="h3">Populärt just nu</h2>${RQ.grid(RQ.PRODUCTS.filter((p) => p.featured).slice(0, 4))}</section>`,
+      mount(root) {
+        $("#nfForm", root).addEventListener("submit", (e) => { e.preventDefault(); $("#searchInput").value = $("#nfQ", root).value.trim(); RQ.openSearch(); });
+      },
+    };
+  };
 
   /* ---------------------------------------------------------------- tools on demand
      studio.js (Snabbval, Hitta rätt, Mitt hem, Bygg din egen look, Färger ur ditt rum, the stylist) is its own
@@ -640,7 +655,7 @@
   function render(raw) {
     let view = null, found = true;
     try { view = lookup(raw); } catch (e) { console.error(e); view = V.crashed(); }
-    if (!view) { view = V.notfound(); found = false; }
+    if (!view) { view = V.notfound(raw); found = false; }
     if (view.lazy) { // a tool that has not loaded yet: keep what is on screen (the prerendered page), load, then draw
       document.documentElement.classList.add("loading-tools");
       RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); else if (routing === raw) routing = null; }, () => {

@@ -249,7 +249,7 @@ with sync_playwright() as p:
             ok(resp.status == 404 and styled and not [u for u in bad if u != BASE + path], f"{tag} /{path} is a whole 404 page")
             ok("finns inte" in pg.evaluate("document.querySelector('#view h1').textContent"), f"{tag} /{path} says the page does not exist")
         pg.goto(BASE + "finns-inte/"); pg.wait_for_timeout(500)
-        pg.click("#view a.btn.ghost"); pg.wait_for_timeout(900)
+        pg.click("#view .nf-go a.chip"); pg.wait_for_timeout(900)  # v15 r2 design: the 404 page leads on with places to go; the first is Alla produkter
         ok(pg.evaluate("location.pathname") == PFX + "/butik/" and pg.evaluate("document.querySelector('#view h1').textContent.trim()") == "Alla produkter", f"{tag} the way out of the 404 page works")
 
         # one story about returns and delivery
