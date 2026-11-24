@@ -10,5 +10,6 @@
  "Nästa: Kommer snart?": "Next: Coming soon?",
  "{PA}, inramad": "{PA}, framed",
  "Produkter": "Products",
- "{PA}, släckt": "{PA}, lamp off"
+ "{PA}, släckt": "{PA}, lamp off",
+ "{PA}: {0} st. Totalt {1} kr.": "{PA}: {0} pcs. Total {1} kr."
 }
