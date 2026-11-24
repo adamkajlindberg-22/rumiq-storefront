@@ -758,6 +758,9 @@ footer.site .co + .ai{margin-top:.4rem}
 .sso svg{width:1.15rem;height:1.15rem;flex:none}
 .sso-apple{background:#000;color:#fff;border-color:#000}
 .sso-apple:hover{border-color:#000;background:#1b1b1b}
+/* evening: the providers' own dark button style (dark fill, light outline), so no white slab glows and Apple's black does not vanish */
+:root[data-light=kvall] :is(.sso,.sso-apple){background:#131314;color:#E3E3E3;border-color:#8E918F}
+:root[data-light=kvall] :is(.sso,.sso-apple):hover{border-color:var(--ink);background:#1b1b1b}
 .or{display:flex;align-items:center;gap:1rem;margin:1.3rem 0;color:var(--muted);font-size:.86rem}
 .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
 details.pw{margin-top:1.2rem;border-top:1px solid var(--line);padding-top:1rem}
@@ -1190,6 +1193,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-li span span{color:var(--muted);font-size:.88rem}
 .rm-list .iconbtn svg{width:1.1rem;height:1.1rem}
 .rm-none{color:var(--muted);font-size:.94rem;padding:.6rem .2rem}
+.rm-list li.rm-none{display:block} /* a sentence, not a row of flex items: the bold words stay inside the line */
 .rm-buy{display:grid;gap:.7rem;padding-bottom:1.2rem;border-bottom:1px solid var(--line)}
 .rm-foot{display:grid;gap:.7rem;border-top:1px solid var(--line);padding-top:1rem}
 .rm-bar{display:none}
