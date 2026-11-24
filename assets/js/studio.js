@@ -225,6 +225,7 @@
       const ask = (text, opt = {}) => {
         if (busy) return; // one question at a time
         if (!text.trim()) { inp.focus(); return; } if (st.isConnected) st.remove();
+        if (!document.activeElement || document.activeElement === document.body) inp.focus({ preventScroll: true }); // the starter that had the focus is gone: the focus goes to the field, the answer is read from the log
         busy = true; armed = false; if (clr) clr.textContent = "Rensa samtalet";
         const q = opt.q || text;
         const me = add("me", esc(text)); const typing = add("ai", '<span class="typing"><i></i><i></i><i></i></span>');
