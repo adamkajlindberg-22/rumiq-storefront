@@ -585,12 +585,19 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-sh
 .sum.total{font-size:1.1rem;font-weight:600;padding-top:.5rem;border-top:1px solid var(--line)}
 .search{position:fixed;inset:0;z-index:110;background:color-mix(in srgb,var(--bg) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:var(--ink);opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility 0s .35s;overflow:auto;overscroll-behavior:contain}
 .search.open{opacity:1;visibility:visible;transition:opacity .35s var(--ease)}
-.search .wrap{padding:5.5rem 0 5rem}
-.search .sfield{display:flex;align-items:center;gap:.9rem;border-bottom:1px solid var(--ink);padding-bottom:.4rem}
+.search .wrap{padding:0 0 5rem}
+/* the field and the close button stay at the top while the hits scroll under them */
+.search .sbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:1rem;padding:clamp(1rem,4vh,3.4rem) 0 0;background:var(--bg)}
+.search .sbar::after{content:"";position:absolute;left:0;right:0;top:100%;height:1.2rem;background:linear-gradient(var(--bg),transparent);pointer-events:none}
+.search .sfield{flex:1;min-width:0;display:flex;align-items:center;gap:.9rem;border-bottom:1px solid var(--ink);padding-bottom:.4rem}
+.search.has-q .hint{display:none}
+.s-fix{margin:0 0 1.2rem;color:var(--ink2)}
+.s-fix b{color:var(--ink);font-weight:600}
 .search .sfield svg{width:1.7rem;height:1.7rem;fill:none;stroke:var(--muted);stroke-width:1.5;flex:none}
 .search input{font-size:clamp(1.7rem,4.2vw,3.2rem);font-weight:500;letter-spacing:-.035em;border:0!important;border-radius:0;background:transparent!important;padding:.4rem 0;box-shadow:none!important}
 input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
-.search .close{position:absolute;top:1.2rem;right:1.2rem;background:var(--sunk)}
+.search .close{flex:none;background:var(--sunk)}
+.search input::-webkit-search-cancel-button{display:none}
 .search .hint{margin-top:1rem;color:var(--muted);font-size:.94rem}
 .search .res{margin-top:2.2rem}
 .search .res > .eyebrow{display:block;margin-bottom:1rem}

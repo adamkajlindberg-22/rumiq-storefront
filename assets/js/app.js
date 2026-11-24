@@ -680,21 +680,51 @@
 
   // search overlay
   const sInput = $("#searchInput"), sRes = $("#searchRes");
+  // help pages people look for in the search box (words are matched without å ä ö)
+  const HELP = [
+    ["frakt", "Frakt & leverans", /^(frakt|leverans|leverera|skicka|hemleverans|ombud|paketskap|shipping|delivery)/],
+    ["returer", "Returer & återbetalning", /^(retur|aterbetal|oppet kop|bytesratt|byta|refund)/],
+    ["angra", "Ångra avtalet här", /^(angra|anger|avbestall|cancel|withdraw)/],
+    ["betalning", "Betalning", /^(betal|klarna|swish|faktura|pay)/],
+    ["spara-order", "Spåra min beställning", /^(sparning|paket|order|bestallning|track)/, /^spår/],
+    ["kontakt", "Kontakt", /^(kontakt|kundservice|kundtjanst|support|mejl|telefon|contact)/],
+    ["faq", "Vanliga frågor", /^(fraga|fragor|faq|hjalp|help)/],
+    ["hitta-ratt-present", "Hitta rätt present", /^(present|gava|julklapp|gift)/],
+    ["presentkort", "Presentkort", /^(present|gava|julklapp|gift)/],
+    ["juridik-garanti", "Reklamation & garanti", /^(reklam|garanti|trasig|skad|warranty)/],
+  ];
+  const nProd = (n) => `${n} ${n === 1 ? "produkt" : "produkter"}`;
+  RQ.nProd = nProd;
+  const POPULAR = () => `<p class="eyebrow" style="margin-bottom:1rem">Populärt</p><div class="chips">${["Lampa", "Ek", "Lin", "Förvaring", "Badrum", "Present", "Hall", "Lugnt och varmt", "Mjukt i sovrummet"].map((t) => `<button class="chip" type="button" data-q="${t}">${t}</button>`).join("")}</div>`;
   const doSearch = () => {
     const q = sInput.value.trim(), tones = RQ.toneChips ? RQ.toneChips() : "", ext = RQ.flowSearch ? RQ.flowSearch(q) : null;
-    if (!q && !ext) { sRes.innerHTML = `<p class="eyebrow" style="margin-bottom:1rem">Populärt</p><div class="chips">${["Lampa", "Ek", "Lin", "Förvaring", "Badrum", "Present", "Hall", "Lugnt och varmt", "Mjukt i sovrummet"].map((t) => `<button class="chip" type="button" data-q="${t}">${t}</button>`).join("")}</div>${tones}`; return; }
-    if (ext) { sRes.innerHTML = `${tones}${ext.note ? `<p class="small s-note">${ext.note}</p>` : ""}${ext.list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${ext.list.length} produkter</p>${RQ.grid(ext.list)}` : `<div class="empty"><h3>Inga träffar</h3><p>Prova en annan färg eller ett annat ord.</p></div>`}`; RQ.watch(sRes); return; }
-    const list = S.list({ query: q });
+    $("#search").classList.toggle("has-q", !!q);
+    if (!q && !ext) { sRes.innerHTML = `${POPULAR()}${tones}`; return; }
+    if (ext) { sRes.innerHTML = `${tones}${ext.note ? `<p class="small s-note">${ext.note}</p>` : ""}${ext.list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(ext.list.length)}</p>${RQ.grid(ext.list)}` : `<div class="empty"><h3>Inga träffar</h3><p>Prova en annan färg eller ett annat ord.</p></div>`}`; RQ.watch(sRes); return; }
+    const found = S.search(q), list = found.list, words = S._words(q), raw = S.norm(q).split(/\s+/);
+    if (found.short) { sRes.innerHTML = `<p class="small s-note" role="status">Skriv minst två bokstäver.</p>${POPULAR()}`; return; }
     const arts = RQ.ARTICLES.filter((a) => S.norm(a.title + " " + a.lead).includes(S.norm(q)));
-    const cats = RQ.CATEGORIES.filter((c) => S.norm(c.name).includes(S.norm(q)));
-    sRes.innerHTML = `${cats.length ? `<div class="chips" style="margin-bottom:1.6rem">${cats.map((c) => `<a class="chip" href="#kategori-${c.id}" data-close>${esc(c.name)}</a>`).join("")}</div>` : ""}
-      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${list.length} produkter</p>${RQ.grid(list)}` : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv vad du behöver i den smarta sökningen.</p><a class="btn ghost" href="#studio-sok" data-close>Smart sökning</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
+    const cats = RQ.CATEGORIES.filter((c) => S.fold(c.name).includes(S.fold(q)));
+    const help = HELP.filter((h) => words.some((w) => h[2].test(w)) || (h[3] && raw.some((w) => h[3].test(w))) || h[2].test(S.fold(q)));
+    const links = `${cats.map((c) => `<a class="chip" href="#kategori-${c.id}" data-close>${esc(c.name)}</a>`).join("")}${help.map((h) => `<a class="chip s-help" href="#${h[0]}" data-close>${h[1]}</a>`).join("")}`;
+    sRes.innerHTML = `${found.fixed ? `<p class="s-fix" role="status">Menade du <b>${esc(found.fixed)}</b>? Här är träffarna för det.</p>` : ""}${links ? `<div class="chips" style="margin-bottom:1.6rem">${links}</div>` : ""}
+      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem" role="status">${nProd(list.length)}</p>${RQ.grid(list)}` : help.length || cats.length ? "" : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv vad du behöver i den smarta sökningen.</p><a class="btn ghost" href="#studio-sok" data-close>Smart sökning</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
       ${arts.length ? `<p class="eyebrow" style="margin:2.4rem 0 1rem">Från magasinet</p><div class="mag-grid">${arts.slice(0, 3).map(RQ.magCard).join("")}</div>` : ""}`;
     RQ.watch(sRes);
   };
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
-  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#search").classList.add("open"); document.documentElement.style.overflow = "hidden"; doSearch(); setTimeout(() => sInput.focus(), 60); };
+  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); setTimeout(() => { sInput.focus(); sInput.select(); }, 60); };
+  // keys in the search: Enter puts the keyboard away on a phone and steps into the hits, the arrows walk through them
+  const sItems = () => $$("a.chip, button.chip, .card .ct a, .empty a, .mag-grid a", sRes).filter((el) => el.offsetParent);
+  $("#search").addEventListener("keydown", (e) => {
+    const items = sItems(), i = items.indexOf(document.activeElement), inField = e.target === sInput;
+    if (e.key === "Enter" && inField) { e.preventDefault(); clearTimeout(sT); doSearch(); const first = $(".card .ct a", sRes) || sItems()[0]; if (matchMedia("(pointer:coarse)").matches || !first) sInput.blur(); else first.focus(); return; }
+    if (e.key === "ArrowDown" && inField && items.length) { e.preventDefault(); ($(".card .ct a", sRes) || items[0]).focus(); return; }
+    if (i < 0 || !/^Arrow(Down|Up|Left|Right)$/.test(e.key)) return;
+    e.preventDefault(); const n = i + (/Down|Right/.test(e.key) ? 1 : -1);
+    if (n < 0) sInput.focus(); else if (items[n]) items[n].focus();
+  });
 
   // mega menus
   const megaBtns = $$("[data-mega]");
@@ -735,6 +765,59 @@
   });
   let undoRm = null;
   scrimAll.addEventListener("click", closeAll);
+
+  /* ---------------------------------------------------------------- layers and the Back button
+     Menu, search, cart, the picture viewer, the 3D view and the room sheets put ONE entry in the history while any
+     of them is open. Back (the button, or the edge swipe on a phone) then closes the layer and the page stays
+     where it was. Closing a layer by its own button takes that entry away again. Layers are found by their
+     "open" class, so a new layer only needs to be a dialog directly in <body> (or be added to LAYERS). */
+  const LAYERS = "#cart, #search, #mnav, .lb, body > [role=dialog]:not(#sheet):not(#cookie)";
+  RQ.layers = (() => {
+    let watched = [], hold = false, navFrom = null;
+    const dlg = () => $("dialog.m3d[open]");
+    const anyOpen = () => watched.some((el) => el.classList.contains("open")) || !!dlg();
+    const onTop = () => !!(history.state && history.state.rqLayer);
+    // called after any layer opened or closed (class changes arrive here one microtask later)
+    const sync = () => {
+      if (hold) { hold = false; return; }
+      if (anyOpen()) { if (!onTop()) { try { history.pushState({ rqLayer: 1 }, "", location.href); } catch (e) {} } }
+      else if (onTop()) history.back();
+    };
+    const shut = () => { // Back was pressed: close whatever is open, without touching the history again
+      closeAll();
+      watched.forEach((el) => { if (!el.classList.contains("open")) return;
+        if (el.classList.contains("lb")) RQ.lightbox.close();
+        else { const x = el.querySelector("[data-sheet-close], .sheet-x, [data-close], .close"); if (x) x.click(); else el.classList.remove("open"); } });
+      const d = dlg(); if (d) d.close();
+    };
+    if (window.navigation && navigation.addEventListener) navigation.addEventListener("currententrychange", (e) => { navFrom = e.from ? e.from.index : null; });
+    window.addEventListener("popstate", (e) => {
+      if (anyOpen()) { shut(); return; }
+      // an entry a layer left behind (the layer was closed by going somewhere else): step over it, the way we were going
+      if (e.state && e.state.rqLayer) { const fwd = navFrom != null && navigation.currentEntry && navigation.currentEntry.index > navFrom; hold = false; if (fwd) history.forward(); else history.back(); }
+    });
+    // a link inside a layer: the new page takes the layer's place in the history (no dead step on the way back)
+    window.addEventListener("click", (e) => {
+      if (!onTop() || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target.closest && e.target.closest("a[href]"); if (!a || !a.closest("#cart,#search,#mnav") || (a.target && a.target !== "_self")) return;
+      const h = a.getAttribute("href"); let raw = null;
+      if (h[0] === "#") raw = h.length > 1 ? decodeURIComponent(h.slice(1)) : null;
+      else { try { const u = new URL(a.href), base = new URL(".", document.baseURI); if (u.origin === location.origin && u.pathname.startsWith(base.pathname) && !u.hash) raw = decodeURIComponent(u.pathname.slice(base.pathname.length).replace(/index\.html$/, "").replace(/\/+$/, "")) || "hem"; } catch (x) {} }
+      if (raw == null || !RQ.isRoute(raw)) return;
+      e.preventDefault(); closeAll();
+      const home = (r) => /^(hem)?$/.test(r || "");
+      if (raw === RQ.currentRoute() || (home(raw) && home(RQ.currentRoute()))) return; // same page: the layer just closes (sync steps back)
+      hold = true; try { history.replaceState(null, "", RQ.pathFor(raw)); } catch (x) {} RQ.router(); Promise.resolve().then(() => { hold = false; });
+    }, true);
+    document.addEventListener("DOMContentLoaded", () => {
+      if (onTop()) { try { history.replaceState(null, "", location.href); } catch (e) {} } // reloaded with a layer open: the layer is gone
+      watched = $$(LAYERS);
+      const mo = new MutationObserver(sync);
+      watched.forEach((el) => mo.observe(el, { attributes: true, attributeFilter: ["class"] }));
+      if (RQ.p3d && RQ.p3d.open) { const open3d = RQ.p3d.open; RQ.p3d.open = function (...a) { const r = open3d.apply(this, a), d = dlg(); if (d) { sync(); d.addEventListener("close", () => setTimeout(sync, 0)); } return r; }; }
+    });
+    return { sync, anyOpen };
+  })();
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !e.target.closest("input,textarea,select"))) { e.preventDefault(); RQ.openSearch(); } });
 
   // nav state on scroll
