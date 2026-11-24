@@ -223,7 +223,7 @@ main{min-height:60vh}
 .banner-img img{width:100%;height:100%;object-fit:cover}
 .reveal,.stagger > *{opacity:1}
 .empty{border:1px dashed var(--line);border-radius:var(--r);padding:3rem 2rem;text-align:center;color:var(--muted)}
-.empty h3{font-weight:560;font-size:1.4rem;letter-spacing:-.02em;color:var(--ink);margin-bottom:.5rem}
+.empty h3{font-weight:560;font-size:var(--t-h3);letter-spacing:-.02em;color:var(--ink);margin-bottom:.5rem}
 .empty .btn{margin-top:1.4rem}
 
 /* images fade in on their own tone */
@@ -254,7 +254,7 @@ main{min-height:60vh}
 .card:hover .qadd,.card .qadd:focus-visible{opacity:1;transform:none}
 .card .qadd.done{background:#2C4A3E;color:#F7F7F4}
 .card .ct{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-top:.85rem}
-.card h3{font-size:1rem;font-weight:560;line-height:1.3;letter-spacing:-.015em}
+.card h3{font-size:var(--t-card);font-weight:560;line-height:1.3;letter-spacing:-.015em}
 .card h3 a{text-decoration:none}
 .card h3 a::after{content:"";position:absolute;inset:0;z-index:1}
 .card .price{font-size:.98rem;font-weight:500;white-space:nowrap}
@@ -463,7 +463,7 @@ details[open] > summary .pm::after{transform:translate(-50%,-50%) rotate(0)}
 .colcard:hover img{transform:scale(1.03)}
 .colcard .tx{padding:1rem 0 0}
 .colcard .tx .eyebrow{font-size:.85rem}
-.colcard h3{font-weight:560;font-size:1.3rem;letter-spacing:-.02em}
+.colcard h3{font-weight:560;font-size:var(--t-h3);letter-spacing:-.02em}
 .colcard p{color:var(--muted);margin-top:.25rem}
 .promises{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(1.2rem,3vw,2.4rem);border-top:1px solid var(--line);padding-top:1.6rem}
 .promise .num,.promise .glow{display:none}
@@ -489,13 +489,13 @@ details[open] > summary .pm::after{transform:translate(-50%,-50%) rotate(0)}
 .tool .ic{width:2.4rem;height:2.4rem;border-radius:50%;background:var(--sunk);display:grid;place-items:center;color:var(--accent);transition:background .3s,color .3s}
 .tool:hover .ic{background:var(--accent);color:var(--accent-ink)}
 .tool .ic svg{width:1.2rem;height:1.2rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-.tool h3{font-weight:560;font-size:1.25rem;letter-spacing:-.02em;margin-top:.5rem}
+.tool h3{font-weight:560;font-size:var(--t-h3);letter-spacing:-.02em;margin-top:.5rem}
 .tool p{color:var(--muted);font-size:.95rem}
 .tool .need{margin-top:auto;padding-top:.6rem;font-size:.82rem;font-weight:500;color:var(--muted)}
 .studio-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1.2rem;counter-reset:s;list-style:none}
 .studio-steps li{border-top:1px solid var(--ink);padding-top:1rem}
 .studio-steps li::before{counter-increment:s;content:counter(s);font-size:.88rem;font-weight:600;color:var(--accent)}
-.studio-steps h3{font-weight:560;font-size:1.15rem;letter-spacing:-.015em;margin:.4rem 0 .25rem}
+.studio-steps h3{font-weight:560;font-size:var(--t-h3);letter-spacing:-.015em;margin:.4rem 0 .25rem}
 .studio-steps p{color:var(--muted);font-size:.95rem}
 .rules{list-style:none;display:grid;gap:.6rem}
 .rules li{display:flex;gap:.8rem;color:var(--ink2)}
@@ -523,7 +523,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:1.3rem;hei
 input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%;background:var(--ink);border:3px solid var(--bg)}
 .quiz .q,.quiz > label{max-width:56rem}
 .quiz .q{margin-bottom:2.6rem}
-.quiz .q h3{font-weight:560;font-size:1.45rem;letter-spacing:-.025em;margin-bottom:1rem}
+.quiz .q h3{font-weight:560;font-size:var(--t-h3);letter-spacing:-.025em;margin-bottom:1rem}
 .imgopts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem}
 .imgopts button{border:0;padding:0;background:none;text-align:left;border-radius:var(--r-img);position:relative}
 .imgopts button img{aspect-ratio:4/5;object-fit:cover;width:100%;border-radius:var(--r-img);transition:filter .4s,box-shadow .3s;background:var(--img-bg)}
@@ -577,14 +577,14 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-sh
 .panel{background:var(--paper);border:1px solid var(--line2);border-radius:var(--r);padding:clamp(1.3rem,3vw,2.2rem)}
 .panel+.panel{margin-top:1.2rem}
 .contact{display:grid;grid-template-columns:1.6fr 1fr;gap:3rem}
-.contact-side h3{font-weight:560;font-size:1.1rem;margin:1.2rem 0 .3rem}
+.contact-side h3{font-weight:560;font-size:var(--t-h3);margin:1.2rem 0 .3rem}
 .contact-side a{color:var(--ink)}
 
 /* ---------------------------------------------------------------- prose */
 .prose{max-width:37rem}
 .prose > * + *{margin-top:1rem}
 .prose h2{font-weight:540;font-size:1.65rem;letter-spacing:-.03em;line-height:1.15;margin-top:2.6rem}
-.prose h3{font-weight:560;font-size:1.2rem;letter-spacing:-.015em;margin-top:1.8rem}
+.prose h3{font-weight:560;font-size:var(--t-h3);letter-spacing:-.015em;margin-top:1.8rem}
 .prose p,.prose li{color:var(--ink2)}
 .prose ul,.prose ol{padding-left:1.2rem;display:grid;gap:.45rem}
 .prose a{color:var(--ink);text-decoration-color:color-mix(in srgb,var(--ink) 40%,transparent)}
@@ -627,7 +627,7 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-sh
 .mag .im{border-radius:var(--r-img);overflow:hidden;aspect-ratio:4/3;background:var(--img-bg)}
 .mag img{width:100%;height:100%;object-fit:cover;transition:transform 1.4s var(--ease)}
 .mag:hover img{transform:scale(1.03)}
-.mag h3{font-weight:560;font-size:1.2rem;line-height:1.25;letter-spacing:-.02em;margin-top:1rem}
+.mag h3{font-weight:560;font-size:var(--t-h3);line-height:1.25;letter-spacing:-.02em;margin-top:1rem}
 .mag p{color:var(--muted);font-size:.95rem;margin-top:.3rem}
 .mag .min{font-size:.84rem;color:var(--muted);margin-top:.5rem;display:block}
 
@@ -1428,7 +1428,7 @@ html.sheet-lock{overflow:hidden}
 .lc-line button:hover{transform:translateY(-4px)}
 .lc-line img{width:100%;height:100%;object-fit:contain;display:block}
 .lc-tx{padding:1rem 1.1rem 1.2rem;display:grid;gap:.45rem;flex:1;align-content:start}
-.lc-tx h3{font-size:1.3rem;letter-spacing:-.03em;font-weight:560}
+.lc-tx h3{font-size:var(--t-h3);letter-spacing:-.03em;font-weight:560}
 .lc-tx h3 a{text-decoration:none}
 .lc-tx p{font-size:.92rem;color:var(--muted)}
 .lc-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.4rem}
@@ -1825,7 +1825,7 @@ footer.site .bottom .bottom-link{color:var(--muted);text-decoration:underline;te
 .fsm-bar{height:5px;border-radius:99px;background:var(--line);overflow:hidden}
 .fsm-bar i{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width .5s var(--ease)}
 .empty-cart{display:grid;gap:.6rem;margin-top:.6rem}
-.empty-cart h3{font-size:1.25rem;font-weight:560}
+.empty-cart h3{font-size:var(--t-h3);font-weight:560}
 .empty-cart > p{color:var(--ink2)}
 .ec-looks{display:grid;gap:.6rem;margin-top:.6rem}
 .ec-look{display:flex;align-items:center;gap:1rem;padding:.7rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper)}
@@ -2098,7 +2098,7 @@ html[data-no-offers] [data-show=offers],html[data-no-news] [data-show=news]{disp
 .ptab-bar [role=tab]{flex:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:.8rem 0;font:inherit;font-size:.98rem;font-weight:560;color:var(--muted);cursor:pointer}
 .ptab-bar [role=tab][aria-selected=true]{color:var(--ink);border-bottom-color:var(--ink)}
 .ptab{padding:1.2rem 0 .4rem;color:var(--ink2);font-size:.98rem;display:grid;gap:.6rem}
-.ptab h3{font-size:1rem;font-weight:600;color:var(--ink);margin-top:.8rem}
+.ptab h3{font-size:var(--t-card);font-weight:600;color:var(--ink);margin-top:.8rem}
 .ptab ul:not(.facts):not(.pfacts){padding-left:1.1rem;display:grid;gap:.35rem}
 .ptab .facts{margin-top:.2rem}
 .ptab .p-looks,.ptab .p-reviews{margin-top:1rem}
@@ -2403,7 +2403,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-harm .small{margin-top:.5rem}
 .rm-colors{display:grid;grid-template-columns:minmax(9rem,15rem) minmax(0,1fr);gap:1.2rem;align-items:center;margin:0 0 1.8rem;padding:1rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper)}
 .rm-colors .palette{margin:0;height:3.6rem}
-.rm-colors h3{font-size:1rem;font-weight:600}
+.rm-colors h3{font-size:var(--t-card);font-weight:600}
 .rm-colors p{margin-top:.25rem;color:var(--ink2);font-size:.95rem}
 @media (max-width:640px){.rm-colors{grid-template-columns:minmax(0,1fr);gap:.8rem}}
 /* 5. Shop cards with "Visa i mitt rum" on: the product photo first, the room second.

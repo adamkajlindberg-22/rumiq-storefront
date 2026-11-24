@@ -283,7 +283,7 @@
         if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna. Kontrollera ordernumret, eller skriv till support@rumiq.se."; return; }
         if (o.withdrawn) { st.textContent = `Köpet ångrades redan ${date(o.withdrawnAt)}.`; return; }
         st.textContent = "";
-        $("#wdStep2", root).innerHTML = `<div class="panel" style="margin-top:1.6rem"><h3 class="h3" style="font-size:1.25rem">Vilka varor vill du ångra?</h3><form id="wd2" style="display:grid;gap:.6rem;margin-top:1rem">${o.lines.map((l) => `<label class="check"><input type="checkbox" name="l" value="${l.handle}" checked> ${l.quantity} × ${esc(l.title)}</label>`).join("")}<button class="btn" type="submit" style="justify-self:start;margin-top:.8rem">Ångra valda varor</button></form></div>`;
+        $("#wdStep2", root).innerHTML = `<div class="panel" style="margin-top:1.6rem"><h3 class="h3">Vilka varor vill du ångra?</h3><form id="wd2" style="display:grid;gap:.6rem;margin-top:1rem">${o.lines.map((l) => `<label class="check"><input type="checkbox" name="l" value="${l.handle}" checked> ${l.quantity} × ${esc(l.title)}</label>`).join("")}<button class="btn" type="submit" style="justify-self:start;margin-top:.8rem">Ångra valda varor</button></form></div>`;
         $("#wd2", root).addEventListener("submit", (ev) => {
           ev.preventDefault(); const hs = $$("[name=l]:checked", ev.currentTarget).map((x) => x.value);
           if (!hs.length) { RQ.toast("Välj minst en vara."); return; }
