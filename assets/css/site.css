@@ -41,6 +41,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1.0
   transition:background-color .8s var(--ease-soft),color .8s var(--ease-soft)}
 img,svg,video,canvas{display:block;max-width:100%}
 a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
+i{font-style:normal} /* <i> only holds icons and small marks here; without this the browser fetches the italic font for them */
 button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
@@ -155,6 +156,7 @@ a.eyebrow:hover{color:var(--ink)}
 .mega ul a:hover{color:var(--accent);padding-left:.25rem}
 .mega .feature{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .mega .feature a{display:block;text-decoration:none}
+.mega:not(.open) .feature img{display:none} /* the two photos are fetched when the menu opens, not on every page */
 .mega .feature img{border-radius:var(--r-img);aspect-ratio:4/5;object-fit:cover;width:100%;margin-bottom:.6rem;background:var(--img-bg)}
 .mega .feature span{font-size:.95rem;font-weight:500}
 .mega .small{margin-top:1.4rem}

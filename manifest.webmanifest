@@ -1,0 +1,23 @@
+{
+ "name": "RumIQ",
+ "short_name": "RumIQ",
+ "description": "Skandinavisk inredning du ser i ditt eget rum innan du köper.",
+ "lang": "sv",
+ "start_url": "./",
+ "scope": "./",
+ "display": "browser",
+ "background_color": "#EDEDEA",
+ "theme_color": "#EDEDEA",
+ "icons": [
+  {
+   "src": "assets/brand/favicon.png",
+   "sizes": "64x64",
+   "type": "image/png"
+  },
+  {
+   "src": "assets/brand/apple-touch-icon.png",
+   "sizes": "180x180",
+   "type": "image/png"
+  }
+ ]
+}

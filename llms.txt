@@ -1,0 +1,137 @@
+# RumIQ
+
+> RumIQ är en svensk webbutik med skandinavisk inredning: belysning, textil, förvaring och tavlor. Du kan se produkterna i ett foto av ditt eget rum innan du köper.
+
+Butiken är en förhandsversion. Produkterna är exempel som visar hur butiken kommer att se ut och går inte att köpa än.
+
+## Fakta
+- Priser i svenska kronor (SEK), inklusive moms. Leverans till adresser i Sverige.
+- Frakt: 49 kr till ombud och paketskåp, 89 kr för hemleverans. Fri frakt till ombud och paketskåp från 799 kr.
+- Leveranstid: målet är 2–5 arbetsdagar. Datumet visas på produktsidan och i kassan före köp.
+- Returer: 30 dagars öppet köp från att du tog emot varan. Lagen ger alltid 14 dagars ångerrätt.
+- Reklamation: tre år enligt konsumentköplagen.
+- Kundservice: support@rumiq.se
+
+## Viktiga sidor
+- [Alla produkter](https://adamkajlindberg-22.github.io/rumiq-storefront/butik/)
+- [Färdiga looks: saker som hör ihop, rum för rum](https://adamkajlindberg-22.github.io/rumiq-storefront/looks/)
+- [Mitt rum: prova produkterna i ett foto av ditt rum](https://adamkajlindberg-22.github.io/rumiq-storefront/mitt-rum/)
+- [Svep: hitta din inredningsstil](https://adamkajlindberg-22.github.io/rumiq-storefront/svep/)
+- [Hitta rätt: guide efter rum och behov](https://adamkajlindberg-22.github.io/rumiq-storefront/hitta-ratt/)
+- [Magasin: inredningstips](https://adamkajlindberg-22.github.io/rumiq-storefront/magasin/)
+- [Frakt och leverans](https://adamkajlindberg-22.github.io/rumiq-storefront/frakt/)
+- [Returer och återbetalning](https://adamkajlindberg-22.github.io/rumiq-storefront/returer/)
+- [Betalning](https://adamkajlindberg-22.github.io/rumiq-storefront/betalning/)
+- [Vanliga frågor](https://adamkajlindberg-22.github.io/rumiq-storefront/faq/)
+- [Om RumIQ](https://adamkajlindberg-22.github.io/rumiq-storefront/om/)
+- [Så fungerar RumIQ](https://adamkajlindberg-22.github.io/rumiq-storefront/sa-fungerar-det/)
+- [Kontakt](https://adamkajlindberg-22.github.io/rumiq-storefront/kontakt/)
+
+## Kategorier
+- [Hem & inredning](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-hem-inredning/): Gardiner, mattor, vaser och detaljer som gör rummet färdigt.
+- [Kök & matplats](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-kok-matplats/): Saker du använder varje dag, gjorda för att stå framme.
+- [Badrum & välmående](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-badrum-valmaende/): Mjuka handdukar och lugna material för morgon och kväll.
+- [Förvaring & organisering](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-forvaring-organisering/): En plats för allt som annars blir liggande.
+- [Belysning & atmosfär](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-belysning-atmosfar/): Lampor, levande ljus och ljusstakar för dag, kväll och allt däremellan.
+- [Tavlor & väggar](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-tavlor-vaggar/): Affischer i ekram som gör väggen till en del av rummet.
+- [Sovrum & komfort](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-sovrum-komfort/): Textil och ljus som hjälper dig att varva ner.
+- [Uteliv](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-uteliv/): För balkongen, trappan och de ljusa kvällarna.
+
+## Produkter
+- [Glob bordslampa opalglas](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-glob-bordslampa-opalglas/): Bordslampa med klotformad skärm i opalglas på en fot i ljust trä. Sprider ett mjukt, jämnt ljus. 899 kr. Kategori: Belysning & atmosfär.
+- [Lysa keramiklampa](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-lysa-keramiklampa/): Bordslampa med fot i keramik och skärm i textil för ett varmt, dämpat ljus. 1 290 kr. Kategori: Belysning & atmosfär.
+- [Svamp uppladdningsbar lampa](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-svamp-uppladdningsbar-lampa/): Liten sladdlös lampa med svampformad skärm, att flytta dit ljuset behövs. 699 kr. Kategori: Belysning & atmosfär.
+- [Skärbräda ek med handtag](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-skarbrada-ek-med-handtag/): Skär- och serveringsbräda i ek med handtag. 449 kr. Kategori: Kök & matplats.
+- [Förrådsburkar glas & ek, 3-pack](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-forradsburkar-glas-ek-3-pack/): Tre förvaringsburkar i glas med lock i ek, i tre höjder. 349 kr. Kategori: Kök & matplats.
+- [Pläd ullblandning havre](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-plad-ullblandning-havre/): Mjuk pläd i ullblandning i varm havreton med fransar. Lika fin över sängens fotände som i soffan. 799 kr. Kategori: Sovrum & komfort.
+- [Lin kuddfodral](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-lin-kuddfodral/): Kuddfodral i lin. 249 kr. Kategori: Hem & inredning.
+- [Sand keramikvas](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-sand-keramikvas/): Keramikvas i sandton med smal hals. 399 kr. Kategori: Hem & inredning.
+- [Förvaringslåda filt](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-forvaringslada-filt/): Förvaringslåda i filt för textilier och småsaker. 199 kr. Kategori: Förvaring & organisering.
+- [Flätad förvaringskorg](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-flatad-forvaringskorg/): Flätad korg för filtar, tidningar eller handdukar. 379 kr. Kategori: Förvaring & organisering.
+- [Våffelhandduk bomull](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-vaffelhandduk-bomull/): Handduk i våffelvävd bomull. 299 kr. Kategori: Badrum & välmående.
+- [Tvålpump stengods](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-tvalpump-stengods/): Tvålpump i stengods för handtvål eller diskmedel. 229 kr. Kategori: Badrum & välmående.
+- [Skrivbordsorganisatör ek](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-skrivbordsorganisator-ek/): Organisatör i ek med fack för pennor, telefon och papper. 349 kr. Kategori: Förvaring & organisering.
+- [Terrakottakruka räfflad](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-terrakottakruka-rafflad/): Räfflad kruka i terrakotta. Växten på bilden ingår inte. 329 kr. Kategori: Uteliv.
+- [Glöd doftljus i keramik](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-glod-doftljus-keramik/): Doftljus i sandfärgad keramik med lock i ek. En mild doft av ved och vanilj. 349 kr. Kategori: Belysning & atmosfär.
+- [Stilla ljusstake mässing, 2-pack](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-stilla-ljusstake-massing-2-pack/): Två smala ljusstakar i borstad mässing, en hög och en låg. Ljusen ingår inte. 449 kr. Kategori: Belysning & atmosfär.
+- [Dagsljus linnegardin, 2-pack](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-dagsljus-linnegardin-2-pack/): Två halvtransparenta gardinlängder i tvättat lin, 140 × 250 cm. Släpper in ljuset men tar bort skärpan. 899 kr. Kategori: Hem & inredning.
+- [Vila påslakanset linne](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-vila-paslakanset-linne/): Påslakan 150 × 210 cm och örngott 50 × 60 cm i tvättat lin. Andas, värmer lagom och blir mjukare för varje tvätt. 1 290 kr. Kategori: Sovrum & komfort.
+- [Strand jutematta 160 × 230](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-strand-jutematta/): Handvävd matta i naturlig jute, 160 × 230 cm. Ger golvet värme och struktur. 1 490 kr. Kategori: Hem & inredning.
+- [Affisch Linje med ekram, 50 × 70](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-affisch-linje-ekram/): Grafiskt motiv med en sol i terrakotta och en fri linje, i ram av ek. Tryckt i Sverige. 549 kr. Kategori: Tavlor & väggar.
+- [Affisch Horisont med ekram, 50 × 70](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-affisch-horisont-ekram/): Bågar i havre, sand, salvia och terrakotta över en horisont, i ram av ek. Tryckt i Sverige. 549 kr. Kategori: Tavlor & väggar.
+
+## Vanliga frågor
+### Hur fungerar RumIQ?
+Du hittar produkter i butiken eller med hjälp av Svep och Hitta rätt, ser dem i ditt rum om du vill och betalar i en säker kassa. Läs mer under Så fungerar RumIQ.
+
+### Hur gör jag en beställning?
+Lägg produkterna i varukorgen, öppna varukorgen och gå till kassan. Där väljer du leveranssätt och ser totalsumman innan du betalar.
+
+### Kan jag ändra min beställning?
+Hör av dig så snart som möjligt med ditt ordernummer. Har beställningen inte skickats ändrar vi den om det går.
+
+### Kan jag avbryta min beställning?
+Ja. Skriv till oss innan den har skickats. Har den redan skickats kan du använda din ångerrätt i stället.
+
+### Hur lång tid tar leveransen?
+Målet är 2–5 arbetsdagar. De datum paketet beräknas komma visas på varje produktsida och i kassan innan du betalar.
+
+### Vad kostar frakten?
+Hämta hos ombud eller i paketskåp kostar 49 kr och hemleverans 89 kr. Handlar du för 799 kr eller mer är frakten till ombud och paketskåp fri. Du ser fraktkostnaden i kassan innan du betalar.
+
+### Hur spårar jag mitt paket?
+Använd länken i orderbekräftelsen eller Spåra min beställning.
+
+### Vad gör jag om leveransen är försenad?
+Hör av dig med ditt ordernummer. Om ingen leveranstid avtalades ska varan normalt komma inom 30 dagar, och du har rättigheter enligt lag om den dröjer.
+
+### Vilka betalningsmetoder accepterar ni?
+De som visas i kassan. Vilka det är beror på butikens inställningar och var du handlar ifrån.
+
+### Är min betalning säker?
+Betalningen sker i Shopifys kassa. Vi ser eller sparar aldrig dina fullständiga kortuppgifter.
+
+### Var hittar jag mitt kvitto?
+Kvittot kommer i orderbekräftelsen via e-post. Är du inloggad ser du dina beställningar under Mitt konto.
+
+### Hur ångrar jag ett köp?
+Använd Ångra avtalet här. Du behöver inte logga in och inte ange något skäl.
+
+### Hur returnerar jag en produkt?
+Ångra köpet först. Packa sedan varan väl och skicka den till returadressen i bekräftelsen inom 14 dagar.
+
+### Hur lång är ångerfristen?
+30 dagars öppet köp från att du tog emot varan. Lagen ger alltid 14 dagars ångerrätt.
+
+### Hur fungerar återbetalningar?
+Vi betalar tillbaka senast 14 dagar från att du ångrade köpet, med samma betalsätt. Vi får vänta tills varan har kommit tillbaka eller du visat att den skickats.
+
+### Omfattas produkterna av garanti?
+Du har alltid rätt att reklamera fel i tre år enligt konsumentköplagen. Om en tillverkare ger en garanti utöver det står det på produktsidan.
+
+### Hur väljer jag rätt produkt?
+Läs produktsidan, prova produkten i Mitt rum eller fråga AI-stylisten.
+
+### Vad gör jag om produkten är felaktig?
+Skriv till oss med ordernummer och gärna en bild, så löser vi det. Läs mer om reklamation.
+
+### Varför kan jag inte köpa vissa produkter?
+RumIQ är i en tidig fas. Produkter märkta Exempel visar hur butiken kommer att se ut men går inte att köpa än.
+
+### Vad kostar verktygen?
+Ingenting. Mitt rum, Svep, Hitta rätt och stylisten är gratis. Studio Plus är ett tillval för dig som vill ha fler AI-bilder.
+
+### Hur många rumsbilder kan jag skapa?
+Hur många du vill när du själv ställer in produkterna i ditt foto. Det sker direkt i webbläsaren. AI-bilder är något annat: med ett konto får du 5 i månaden utan kostnad, och fler med Studio Plus.
+
+### Räknas det om en bild misslyckas?
+Nej. Försök som inte ger något resultat räknas aldrig.
+
+### Är AI-bilderna exakta?
+Nej. Bilderna är illustrationer och storlek, färg och detaljer kan skilja sig från den riktiga produkten. Kontrollera produktsidan innan du köper.
+
+### Vad händer med mitt foto?
+Fotot stannar i din webbläsare så länge du själv ställer in produkterna. Väljer du att skapa en AI-bild skickas fotot till en server för att bilden ska kunna skapas, först efter att du har godkänt det, och rumsfotot raderas där efter 30 dagar.
+
+### Är bilderna på sajten riktiga foton?
+Nej. Bilderna på produkter och rum är skapade med AI medan vi väntar på de första produkterna. När produkterna finns byter vi till riktiga foton.
