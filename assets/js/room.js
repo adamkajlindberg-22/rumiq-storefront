@@ -497,7 +497,7 @@
           view.on = phone(); stage.classList.toggle("view", view.on);
           if (!view.on) { view.z = 1; view.tx = view.ty = 0; paintView(); return; }
           const ar = room.w / room.h, W = box.clientWidth, top = (document.querySelector("header") || {}).offsetHeight || 58;
-          const drawer = document.body.classList.contains("picking-room") ? Math.min(innerHeight * 0.46, 400) + 12 : 0; // the picker is open under the room
+          const drawer = document.body.classList.contains("picking-room") ? R.pickerHeight() + 10 : 0; // the picker is open under the room
           const room4 = Math.max(200, innerHeight - top - (drawer || 150)), h62 = Math.min(Math.round(innerHeight * 0.62), room4);
           view.can = h62 * ar >= W * 1.2;                       // a wide photo: there is more to see when it is shown tall
           const near = view.can && !view.whole;
@@ -730,7 +730,7 @@
     const q = $("#pickQ", picker).value.trim(), t = room && room.type;
     const inG = RQ.PRODUCTS.filter((p) => !pickG || groupOf(p) === pickG); let found = inG.filter((p) => !q || hit(p, q)); if (!found.length) found = inG.filter((p) => hit(p, q, true)); // exact words first; only when nothing is found do stems and one wrong letter count
     const list = found.map((p) => ({ p, m: match(p) })).sort((a, b) => (t ? p2(b.p, t) - p2(a.p, t) : 0) || (b.m || 0) - (a.m || 0));
-    $("#pickGrid", picker).innerHTML = list.length ? list.map(({ p, m }) => `<button type="button" data-room-btn="${p.handle}" aria-pressed="${R.inScene(p.handle)}"><span class="pg-cut"><img src="${RQ.cut(p)}" alt="" loading="lazy"></span><b>${esc(p.name)}</b><span>${kr(p.price)}${m ? ` · ${m} % färgmatch` : ""}</span><i aria-hidden="true"></i></button>`).join("")
+    $("#pickGrid", picker).innerHTML = list.length ? list.map(({ p, m }) => `<button type="button" data-room-btn="${p.handle}" aria-pressed="${R.inScene(p.handle)}"><span class="pg-cut"><img src="${RQ.cut(p)}" alt="" loading="lazy"></span><b>${esc(p.name)}</b><span>${kr(p.price)}${m ? `<em> · ${m} % färgmatch</em>` : ""}</span><i aria-hidden="true"></i></button>`).join("")
       : `<p class="pick-none">Inget i sortimentet heter så. Prova ett annat ord eller välj en grupp här ovanför.</p>`;
   };
   const p2 = (p, t) => (p.rooms.includes(t) ? 1 : 0);
@@ -740,6 +740,7 @@
   $("#pickQ", picker).addEventListener("input", renderPicker);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && picker.classList.contains("open")) { e.stopImmediatePropagation(); closePicker(); } }, true);
   R.closePicker = () => { if (picker.classList.contains("open")) closePicker(); };
+  R.pickerHeight = () => $(".sheet-card", picker).offsetHeight;
 
   /* ---------------------------------------------------------------- colours, before the whole room goes into the cart */
   const vsheet = document.createElement("div");
