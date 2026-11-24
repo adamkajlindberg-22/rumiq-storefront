@@ -483,7 +483,7 @@
   /* ---------------- info + legal */
   const infoNav = (active) => `<ul class="sidenav"><li><h4>Kundservice</h4></li>${[["kontakt", "Kontakt"], ["onska", "Önska en produkt"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}"${h === active ? ' aria-current="page"' : ""}>${t}</a></li>`).join("")}
     <li><h4 style="margin-top:1rem">Juridisk information</h4></li>${Object.entries(RQ.LEGAL).map(([k, v]) => `<li><a class="${"juridik-" + k === active ? "on" : ""}" href="#juridik-${k}"${"juridik-" + k === active ? ' aria-current="page"' : ""}>${v.title}</a></li>`).join("")}</ul>`;
-  RQ.infoPage = (route, kicker, title, lead, body, mount) => ({ title: `${title} · RumIQ`, html: `${head(`<span class="eyebrow">${esc(kicker)}</span>`, esc(title), lead)}<section class="wrap layout-side" style="padding-bottom:6rem">${infoNav(route)}<div class="prose">${body}</div></section>`, mount });
+  RQ.infoPage = (route, kicker, title, lead, body, mount) => ({ title: `${title} · RumIQ`, html: `${head(crumbs([["Hem", "hem"], [title]]), esc(title), lead)}<section class="wrap layout-side" style="padding-bottom:6rem">${infoNav(route)}<div class="prose">${body}</div></section>`, mount });
   Object.entries(RQ.INFO).forEach(([k, v]) => {
     V[k] = () => RQ.infoPage(k, v.kicker, v.title, v.lead, v.html(), k === "kontakt" ? mountContact : null);
   });
