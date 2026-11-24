@@ -139,6 +139,12 @@ with sync_playwright() as p:
           const r = t.getBoundingClientRect(); const under = [...document.querySelectorAll('#view button, #view a, #view input, .buybar button, #view .rm-hint, #view .small')].filter((e) => e.offsetParent).filter((e) => { const q = e.getBoundingClientRect(); return q.width && q.left < r.right && q.right > r.left && q.top < r.bottom && q.bottom > r.top; });
           return under.map((e) => e.textContent.trim().slice(0, 30)); }""")
         ok(hit == [], f"{tag} the Mitt rum toast covers no button or hint: {hit}")
+        if not mobile:
+            none = pg.evaluate("() => { const e = document.querySelector('#view .rm-none'); return e && e.offsetParent ? [getComputedStyle(e).display, Math.round(e.getBoundingClientRect().height)] : null; }")
+            ok(none and none[0] == "block" and none[1] < 60, f"{tag} the empty I rummet sentence is one block of text: {none}")
+            pg.goto(BASE + "look-mjuk-kvall/", wait_until="load"); pg.wait_for_timeout(200)
+            row = pg.evaluate("() => { const r = document.querySelector('#view .looks-row'), v = [...r.children].filter((e) => e.offsetParent); return [r.scrollWidth <= r.clientWidth + 1, v.every((e) => e.getBoundingClientRect().right <= innerWidth)]; }")
+            ok(row == [True, True], f"{tag} Fler looks shows whole cards without sideways scrolling: {row}")
         ok(not errs, f"{tag} no script errors: {errs[:1]}")
         ctx.close()
 
@@ -156,6 +162,9 @@ with sync_playwright() as p:
         ok(ink in ("rgb(25, 26, 24)",), f"{tag} the evening buy button keeps dark text: {ink}")
         dim = pg.evaluate("() => { const i = [...document.querySelectorAll('#view img')].find((e) => e.offsetParent && e.getBoundingClientRect().width > 150); return i ? getComputedStyle(i).filter : ''; }")
         ok("brightness" in dim, f"{tag} evening photos are dimmed a little: {dim}")
+        pg.goto(BASE + "konto/", wait_until="load"); pg.wait_for_timeout(300)
+        sso = pg.evaluate("() => [...document.querySelectorAll('#view .sso')].filter((e) => e.offsetParent).map((e) => getComputedStyle(e).backgroundColor)")
+        ok(sso and all(c == "rgb(19, 19, 20)" for c in sso), f"{tag} the sign-in buttons use the providers' dark style at night: {sso}")
         ctx.close()
 
     # ---------------------------------------------------------------- 404, tablets
