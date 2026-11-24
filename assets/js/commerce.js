@@ -37,10 +37,99 @@
       const tr = window.RQ_t || (() => ""); // English words too, when the site is in English
       return S.norm(`${p.name} ${p.en || ""} ${cat ? cat.name : ""} ${p.short} ${p.story} ${p.material} ${rooms} ${(p.variants || []).join(" ")} ${p.styles.join(" ")} ${tr(p.short) || ""} ${cat ? tr(cat.name) || "" : ""} ${tr(p.material) || ""}`);
     },
+    /* ---------------- search (v15)
+       Swedish as people type it: with or without å ä ö, plural or definite ("lampor", "kuddarna"), the last part of a
+       compound ("matta" finds "jutematta"), everyday words for the same thing ("poster", "filt") and one typing
+       slip ("lmpa"). A hit in the name weighs most, then category and room, then material, then the texts. */
+    fold: (s) => S.norm(s).normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
+    _syn: { kudde: ["kuddfodral"], prydnadskudde: ["kuddfodral"], soffkudde: ["kuddfodral"], poster: ["affisch"], tavla: ["affisch"], bild: ["affisch"], konst: ["affisch"], print: ["affisch"], vaggdekor: ["affisch"],
+      filt: ["plad"], sangklader: ["paslakanset"], lakan: ["paslakanset"], paslakan: ["paslakanset"], orngott: ["paslakanset"], tacke: ["paslakanset"], baddset: ["paslakanset"],
+      stearinljus: ["ljusstake"], kandelaber: ["ljusstake"], blomkruka: ["kruka"], badlakan: ["handduk"], frotte: ["handduk"], box: ["forvaringslada"], lada: ["forvaringslada"],
+      belysning: ["lampa"], nattlampa: ["lampa"], sanglampa: ["lampa"], fonsterlampa: ["lampa"], lykta: ["lampa", "doftljus"], tval: ["tvalpump"], skrivbord: ["skrivbordsorganisator"],
+      gava: ["present"], julklapp: ["present"], gift: ["present"], rug: ["matta"], lamp: ["lampa"], candle: ["doftljus", "ljusstake"], cushion: ["kuddfodral"], pillow: ["kuddfodral"], blanket: ["plad"], throw: ["plad"], curtain: ["gardin"], towel: ["handduk"], basket: ["korg"], vase: ["vas"], pot: ["kruka"] },
+    _sing(w) { // the dictionary forms a plural or definite word can come from
+      const o = [w], add = (x) => { if (x.length >= 3 && !o.includes(x)) o.push(x); };
+      if (w.length > 4) {
+        if (/(arna|erna|orna)$/.test(w)) { const b = w.slice(0, -4); add(b); add(b + "a"); add(b + "e"); }
+        if (/or$/.test(w)) add(w.slice(0, -2) + "a");
+        if (/ar$/.test(w)) { add(w.slice(0, -2)); add(w.slice(0, -2) + "e"); }
+        if (/er$/.test(w)) add(w.slice(0, -2));
+        if (/(en|et)$/.test(w)) add(w.slice(0, -2));
+        if (/[aeiouy]n$/.test(w)) add(w.slice(0, -1));
+        if (/[^s]s$/.test(w)) add(w.slice(0, -1));
+      }
+      return o;
+    },
+    _words: (s) => S.fold(s).split(/[^a-z0-9]+/).filter(Boolean),
+    _index() {
+      if (S._ix) return S._ix;
+      const tr = window.RQ_t || (() => ""), tok = (s) => { const o = new Set(); S._words(s).forEach((w) => S._sing(w).forEach((x) => o.add(x))); return [...o]; };
+      // words a slip of the finger is corrected to: the things we sell, by their everyday names
+      const vocab = new Set(["lampa", "bordslampa", "matta", "handduk", "gardin", "korg", "burk", "kruka", "doftljus", "ljusstake", "kuddfodral", "kudde", "plad", "affisch", "tavla", "poster", "paslakan", "lakan", "skarbrada", "forvaring", "belysning", "keramik", "massing", "linne"]);
+      const rows = RQ.PRODUCTS.map((p) => {
+        const cat = RQ.catById(p.cat), rooms = p.rooms.map((r) => (RQ.roomById(r) || {}).name || "").join(" ");
+        const f = [[10, tok(p.name)], [6, tok(`${p.en || ""}`)], [5, tok(`${cat ? cat.name + " " + (cat.en || "") + " " + (tr(cat.name) || "") : ""} ${rooms}`)],
+          [4, tok(`${p.material} ${(p.variants || []).join(" ")} ${p.styles.map((s) => (RQ.STYLES && RQ.STYLES[s] ? RQ.STYLES[s].name : s)).join(" ")} ${tr(p.material) || ""}`)],
+          [3, tok(`${p.short} ${tr(p.short) || ""}`)], [1.2, tok(`${p.story} ${(p.use || []).join(" ")}`)]];
+        f[0][1].concat(f[2][1]).forEach((w) => { if (w.length >= 4) vocab.add(w); });
+        return { p, f };
+      });
+      return (S._ix = { rows, vocab: [...vocab] });
+    },
+    // how well one typed word fits one product: 0 = not at all
+    _fit(row, forms) {
+      let best = 0;
+      for (const [weight, toks] of row.f) { if (weight <= best) break;
+        for (const [form, q, stemOnly] of forms) for (const t of toks) {
+          const m = stemOnly ? (t.length > form.length && t.startsWith(form) ? 0.7 : 0) : t === form ? 1 : t.startsWith(form) ? 0.85 : form.length >= 4 && t.endsWith(form) ? 0.8 : 0;
+          if (m && weight * m * q > best) best = weight * m * q;
+        } }
+      return best;
+    },
+    _forms(w) { // [form, quality, onlyAsFirstPartOfALongerWord]
+      const out = [], seen = new Set(), add = (f, q, stem) => { if (f && !seen.has(f + (stem ? "*" : ""))) { seen.add(f + (stem ? "*" : "")); out.push([f, q, !!stem]); } };
+      const base = S._sing(w); base.forEach((f, i) => add(f, i ? 0.95 : 1));
+      base.forEach((f) => (S._syn[f] || []).forEach((x) => add(x, 0.9)));
+      base.forEach((f) => { if (f.length >= 5 && /[ae]$/.test(f)) add(f.slice(0, -1), 1, true); }); // "kudde" is "kudd" in "kuddfodral"
+      return out;
+    },
+    _near(w, vocab) { // the closest known word, one slip away (two for long words)
+      const max = w.length >= 8 ? 2 : 1; let best = null, bd = max + 1;
+      for (const v of vocab) { if (Math.abs(v.length - w.length) > max) continue;
+        const a = w, b = v, m = a.length, n = b.length; let prev = Array.from({ length: n + 1 }, (_, j) => j), pp = null;
+        for (let i = 1; i <= m; i++) { const cur = [i];
+          for (let j = 1; j <= n; j++) { let d = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); if (pp && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d = Math.min(d, pp[j - 2] + 1); cur.push(d); }
+          pp = prev; prev = cur; }
+        const d = prev[n]; if (d < bd || (d === bd && best && v.length < best.length)) { bd = d; best = v; } }
+      return bd <= max ? best : null;
+    },
+    /* -> { list, fixed, short }: products best first; fixed = the query we searched for instead when the typed one
+       had a slip in it ("lampa" for "lmpa"); short = fewer than two letters, nothing searched */
+    search(query) {
+      const words = S._words(query);
+      if (words.join("").length < 2) return { list: [], fixed: "", short: true };
+      const ix = S._index();
+      const run = (ws) => { const forms = ws.map((w) => S._forms(w));
+        const hits = ix.rows.map((row, k) => { const fit = forms.map((f) => S._fit(row, f)); return fit.every(Boolean) ? [row.p, fit, k] : null; }).filter(Boolean);
+        // every word must fit about as well as it does in the best product: a word that is in a name does not also
+        // bring in every product whose long text happens to mention it
+        const floor = forms.map((_, i) => { const top = Math.max(0, ...hits.map((h) => h[1][i])); return top >= 8 ? top * 0.3 : top >= 3 ? top * 0.45 : top * 0.3; });
+        const sum = (a) => a.reduce((s, x) => s + x, 0);
+        return hits.filter((h) => h[1].every((s, i) => s >= floor[i])).sort((a, b) => sum(b[1]) - sum(a[1]) || a[2] - b[2]).map((h) => h[0]); };
+      let list = run(words);
+      if (list.length) return { list, fixed: "", short: false };
+      // nothing: was one of the words mistyped?
+      let changed = false;
+      const fixed = words.map((w) => { if (w.length < 4 || ix.rows.some((row) => S._fit(row, S._forms(w)))) return w; const n = S._near(w, ix.vocab); if (n) { changed = true; return n; } return w; });
+      if (changed) { list = run(fixed); if (list.length) { // show the word as it is written in the shop (with å ä ö)
+        const nice = fixed.map((w, i) => { if (w === words[i]) return query.trim().split(/\s+/)[i] || w; for (const row of ix.rows) for (const x of `${row.p.name} ${(RQ.catById(row.p.cat) || {}).name || ""}`.split(/[^\p{L}\d]+/u)) if (S._sing(S.fold(x)).includes(w)) return S._sing(S.fold(x))[0] === w ? x.toLocaleLowerCase("sv") : w; return w; }).join(" ");
+        return { list, fixed: nice, short: false }; } }
+      return { list: [], fixed: "", short: false };
+    },
     list({ cat = null, room = null, col = null, sort = "rel", query = "", max = Infinity, maxPrice = null, handles = null } = {}) {
       let list = RQ.PRODUCTS.filter((p) => (!cat || p.cat === cat) && (!room || p.rooms.includes(room)) && (!col || p.collections.includes(col)) && (!maxPrice || p.price <= maxPrice) && (!handles || handles.includes(p.handle)));
-      const q = S.norm(query.trim());
-      if (q) list = list.filter((p) => q.split(/\s+/).every((w) => S.searchText(p).includes(w)));
+      // free text goes through S.search: word forms, compounds, synonyms, one slip of the finger, best hits first
+      if (query.trim()) { const hit = S.search(query).list, keep = new Set(list); list = hit.filter((p) => keep.has(p)); }
       if (sort === "asc") list = [...list].sort((a, b) => a.price - b.price);
       if (sort === "desc") list = [...list].sort((a, b) => b.price - a.price);
       if (sort === "new") list = [...list].sort((a, b) => b.added - a.added);
