@@ -1410,7 +1410,7 @@ html.sheet-lock{overflow:hidden}
 /* ---------------------------------------------------------------- Looks */
 .looks-row{display:grid;grid-auto-flow:column;grid-auto-columns:min(22rem,82vw);gap:1.2rem;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:1rem;margin:0 calc(-1*var(--gutter));padding-left:var(--gutter);padding-right:var(--gutter);scrollbar-width:thin;scroll-padding-left:var(--gutter)}
 .looks-row > *{scroll-snap-align:start}
-.looks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1.6rem}
+.looks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(19rem,100%),1fr));gap:1.6rem}
 .lc{display:flex;flex-direction:column;background:var(--paper);border-radius:var(--r);overflow:hidden;border:1px solid var(--line2);transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
 .lc:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
 .lc-im{position:relative;display:block;aspect-ratio:16/10;overflow:hidden;background:var(--img-bg)}
@@ -1573,7 +1573,7 @@ html.sheet-lock{overflow:hidden}
   .sv-head .lead{font-size:.98rem}
   .sv-wrap{margin-top:1rem;gap:.7rem}
   .sv-meta{margin:-.2rem 0}
-  .sv-deck{width:min(26rem,86vw,calc((100svh - var(--nav-h) - var(--dock-h) - 17rem) * .77))}
+  .sv-deck{width:min(26rem,86vw,max(13rem,calc((100svh - var(--nav-h) - var(--dock-h) - 17rem) * .77)))}
   .sv-info{padding:.6rem .75rem;left:.5rem;right:.5rem;bottom:.5rem}
   .sv-head{gap:.6rem}
   .sv-keys{display:none}
@@ -1926,7 +1926,16 @@ body.on-checkout .tools{grid-column:3}
   .sv-scope::-webkit-scrollbar{display:none}
   .sv-scope .chip{flex:none}
   .svep .sv-two-link{display:none}
-  .svep:has(.sv-scope) .sv-deck,.svep:has(.sv-scope) .sv-prog{width:min(26rem,86vw,calc((100svh - var(--nav-h) - var(--dock-h) - 19.8rem) * .77))}
+  .svep:has(.sv-scope) .sv-deck,.svep:has(.sv-scope) .sv-prog{width:min(26rem,86vw,max(13rem,calc((100svh - var(--nav-h) - var(--dock-h) - 19.8rem) * .77)))}
+}
+/* Svep never collapses: 320 px wide, a phone on its side and 200 % zoom (1.4.10). On its side the buttons sit beside the card. */
+@media (max-width:350px){.sv-ctrl{gap:.45rem}.sv-b{width:3.2rem;height:3.2rem}.sv-b.yes{width:3.7rem;height:3.7rem}.sv-b.room{width:2.75rem;height:2.75rem}.sv-b.bag{width:3rem;height:3rem}.sv-b.undo{width:2.5rem;height:2.5rem}}
+@media (max-width:900px) and (orientation:landscape) and (max-height:500px){
+  .svep .sv-wrap:not(:has(.svep-result)){grid-template-columns:auto auto;grid-template-areas:"deck prog" "deck meta" "deck ctrl";justify-content:center;align-items:center;column-gap:clamp(1.2rem,4vw,3rem);row-gap:.7rem}
+  .svep .sv-wrap:not(:has(.svep-result)) .sv-deck{grid-area:deck;width:max(10rem,calc((100svh - var(--nav-h) - var(--dock-h) - 2rem) * .77))}
+  .svep .sv-wrap:not(:has(.svep-result)) .sv-prog{grid-area:prog;width:100%;align-self:end}
+  .svep .sv-wrap:not(:has(.svep-result)) .sv-meta{grid-area:meta;margin:0}
+  .svep .sv-wrap:not(:has(.svep-result)) .sv-ctrl{grid-area:ctrl;align-self:start}
 }
 /* "Kommer snart" card */
 .sv-card.soon{background:linear-gradient(160deg,color-mix(in srgb,var(--tone) 70%,#fff) 0%,var(--tone) 100%);cursor:grab}
