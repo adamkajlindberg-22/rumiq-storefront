@@ -1156,7 +1156,7 @@
   function closeLight() { if (lightMenu) { lightMenu.classList.remove("open"); lampBtn.setAttribute("aria-expanded", "false"); } }
   if (lampBtn) {
     applyLight(document.documentElement.getAttribute("data-light-mode") || "dag");
-    lampBtn.addEventListener("click", (e) => { e.stopPropagation(); const open = !lightMenu.classList.contains("open"); closeMega(); lightMenu.classList.toggle("open", open); lampBtn.setAttribute("aria-expanded", open); if (open) setTimeout(() => $("[aria-checked=true]", lightMenu)?.focus(), 30); });
+    lampBtn.addEventListener("click", (e) => { e.stopPropagation(); const open = !lightMenu.classList.contains("open"); closeMega(); lightMenu.classList.toggle("open", open); lampBtn.setAttribute("aria-expanded", open); if (open) { const into = (n) => { const b = $("[aria-checked=true]", lightMenu); if (!b || !lightMenu.classList.contains("open")) return; b.focus(); if (document.activeElement !== b && n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 30); } });
     lightMenu.addEventListener("click", (e) => { const b = e.target.closest("[data-light-set]"); if (!b) return; e.stopPropagation(); applyLight(b.dataset.lightSet, true); closeLight(); lampBtn.focus(); });
     document.addEventListener("click", (e) => { if (!e.target.closest(".lampwrap")) closeLight(); });
     // a menu: the arrows walk through the three choices, Escape closes it and the focus goes back to the lamp
