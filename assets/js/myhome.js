@@ -235,7 +235,7 @@
     title: "Presentkort · RumIQ",
     html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Presentkort"]])}</header>
       <section class="wrap gc" style="padding-bottom:5rem">
-        <div class="gc-card" aria-hidden="true"><img src="assets/brand/rumiq-vit.webp" alt="" width="480" height="120"><span class="gc-amt" id="gcAmt">${kr(500)}</span><span class="gc-sub">Presentkort · gäller i två år</span></div>
+        <div class="gc-card" aria-hidden="true"><img src="assets/brand/rumiq-vit.webp" alt="" width="480" height="120"><span class="gc-amt" id="gcAmt">${kr(500)}</span><span class="gc-sub">Presentkort · gäller i ett år</span></div>
         <div class="gc-info"><span class="eyebrow">Present</span><h1 class="h1">Ge bort ett lugnare hem.</h1>
           <p class="lead">Mottagaren väljer själv och kan se allt i sitt eget rum först.</p>
           <div class="gc-amts" role="radiogroup" aria-label="Belopp">${AMOUNTS.map((a, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === 1}" data-gc="${a}">${kr(a)}</button>`).join("")}</div>
