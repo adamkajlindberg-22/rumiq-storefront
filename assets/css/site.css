@@ -1265,6 +1265,17 @@ html.sheet-lock{overflow:hidden}
 .lc-tx p{font-size:.92rem;color:var(--muted)}
 .lc-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.4rem}
 .lc-row .price{font-size:.9rem;font-weight:560}
+.lc-row .price s{color:var(--muted);font-weight:400}
+.look-off{font-weight:600;color:var(--ink);white-space:nowrap}
+.looks-grid .own-look{margin-top:0;max-width:none;grid-template-columns:1fr;justify-items:center;align-content:center;text-align:center;gap:.8rem;min-height:14rem}
+.mylooks{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1.2rem}
+.mylook{margin:0;display:grid;gap:.8rem;align-content:start;background:var(--paper)}
+.mylook header{margin:0}
+.mylook header s{color:var(--muted);font-weight:400}
+.mylook-line{display:flex;flex-wrap:wrap;gap:.4rem}
+.mylook-line button{width:4.2rem;height:4.2rem;border:0;border-radius:12px;background:var(--img-bg);padding:.35rem;overflow:hidden}
+.mylook-line img{display:block;width:100%;height:100%;object-fit:contain}
+.mylook .ctrl-row{margin:0}
 .look-page{padding:1.4rem 0 3rem}
 .lp-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(1.5rem,4vw,4rem);align-items:start;margin-top:1.4rem}
 .lp-stage{aspect-ratio:16/10}
@@ -1279,7 +1290,14 @@ html.sheet-lock{overflow:hidden}
 .lp-item span{font-size:.86rem;color:var(--muted)}
 .lp-item .iconbtn svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.8}
 .lp-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.8rem;font-size:1.05rem}
-@media (max-width:900px){.lp-grid{grid-template-columns:1fr}.lp-tx{position:static}.lp-stage{aspect-ratio:4/5}}
+.lp-in{font-size:.95rem;color:var(--ink2);margin-bottom:.7rem}
+.lp-buy .ctrl-row{margin:0}
+.lp-item .iconbtn.done{background:#2C4A3E;border-color:#2C4A3E;color:#F7F7F4}
+.lp-item .iconbtn.done span{display:none}
+.lp-item .iconbtn.done svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:2}
+/* one column on phones only; from a small tablet the picture and the list stand side by side */
+@media (max-width:700px){.lp-grid{grid-template-columns:1fr}.lp-tx{position:static}.lp-stage{aspect-ratio:4/3}.lp-tx .h1{font-size:2.2rem}.lp-tx .lp-list{order:5}.lp-tx > .small{order:6;margin-top:0!important}.lp-sum{border-top:0;padding-top:0}}
+@media (min-width:701px) and (max-width:1000px){.lp-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.6rem}.lp-stage{aspect-ratio:4/5}.lp-tx .h1{font-size:2.4rem}}
 
 /* ---------------------------------------------------------------- Svep */
 .svep{padding:1.4rem 0 5rem}

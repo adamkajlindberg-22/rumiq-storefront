@@ -254,7 +254,7 @@
   RQ.hotspots = {
     render(id, opts = {}) {
       const r = RQ.HOTSPOTS[id], room = RQ.roomById(id); if (!r) return "";
-      const spots = r.spots.map(([h, x, y]) => { const p = RQ.byHandle(h); return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}. Liknande i butiken."><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)} · Liknande i butiken</em></span></button>`; }).join("");
+      const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).map(([h, x, y]) => { const p = RQ.byHandle(h); return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}. Liknande i butiken."><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)} · Liknande i butiken</em></span></button>`; }).join("");
       return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}" style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 100vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async"><div class="hs-layer">${spots}</div></div></div>`;
     },
     caption: () => `<p class="hs-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p>`,
@@ -366,42 +366,90 @@
   const lookById = (id) => RQ.LOOKS.find((l) => l.id === id);
   const lookTotal = (l) => l.items.reduce((s, h) => s + RQ.byHandle(h).price, 0);
   // price with the whole-look discount, and the saving shown next to it
-  const lookNet = (l) => { const t = lookTotal(l), r = +((window.RQ_CONFIG || {}).lookDiscount || 0); return Math.round(t - Math.round(t * r)); };
+  const lookRate = () => +((window.RQ_CONFIG || {}).lookDiscount || 0);
+  const lookNet = (l) => { const t = lookTotal(l), r = lookRate(); return Math.round(t - Math.round(t * r)); };
   RQ.lookNet = lookNet;
+  const inCart = (h) => S.cartLines().some((l) => l.product.handle === h);
+  // what is already in the cart is not added again: a look is one of each
+  const addMissing = (handles, btn, label) => {
+    const miss = handles.filter((h) => !inCart(h));
+    if (!miss.length) { RQ.toast(`${esc(label)} <span>ligger redan i varukorgen.</span> <a href="#" data-open-cart>Visa</a>`); return []; }
+    return addMany(miss, btn, label) ? miss : [];
+  };
+  // a ready-made look whose things these are (a saved look keeps its discount and its name)
+  const lookOf = (handles) => RQ.LOOKS.find((l) => l.items.length === handles.length && l.items.every((h) => handles.includes(h)));
+  const lookImg = (l, eager) => `<img src="assets/img/rum/${l.room}-900.webp" srcset="assets/img/rum/${l.room}-900.webp 900w, assets/img/rum/${l.room}-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" width="1600" height="893">`;
   RQ.lookCard = (l) => {
-    const room = RQ.roomById(l.room);
-    return `<article class="lc"><a class="lc-im" href="#look-${l.id}"><img src="assets/img/rum/${l.room}-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">${esc(room.name)}</span></a>
+    const room = RQ.roomById(l.room), cut = lookNet(l) < lookTotal(l);
+    return `<article class="lc"><a class="lc-im" href="#look-${l.id}">${lookImg(l)}<span class="lc-tag">${esc(room.name)}</span></a>
       <div class="lc-line">${l.items.map((h) => { const p = RQ.byHandle(h); return `<button type="button" data-sheet="${h}" aria-label="${esc(p.name)}"><img src="${RQ.cut(p)}" alt="" loading="lazy"></button>`; }).join("")}</div>
       <div class="lc-tx"><h3><a href="#look-${l.id}">${esc(l.name)}</a></h3><p>${esc(l.lead)}</p>
-        <div class="lc-row"><span class="price">${l.items.length} saker</span><button class="btn sm" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button></div></div></article>`;
+        <div class="lc-row"><span class="price">${l.items.length} saker${cut ? ` · <s>${kr(lookTotal(l))}</s>` : ""}</span><button class="btn sm" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button></div></div></article>`;
   };
+  // the looks you have saved yourself (from Mitt rum or a ready-made one): the same block in Mitt hem and on Looks
+  RQ.savedLooksHtml = () => S.looks().map((l) => {
+    const ps = (l.handles || []).map(RQ.byHandle).filter(Boolean), ready = lookOf(ps.map((p) => p.handle));
+    const sum = ps.reduce((s, p) => s + p.price, 0), net = ready ? lookNet(ready) : sum;
+    return `<div class="order mylook"><header><b>${esc(l.name)}</b><span class="price" style="font-family:var(--mono)">${net < sum ? `<s>${kr(sum)}</s> ` : ""}${kr(net)}</span></header>
+      <div class="mylook-line">${ps.map((p) => `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt="" loading="lazy"></button>`).join("")}</div>
+      <div class="ctrl-row"><button class="btn sm" type="button" data-look-buy="${ps.map((p) => p.handle).join(",")}" data-look-name="${esc(l.name)}">Lägg i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${ps.map((p) => p.handle).join(",")}">Se i mitt rum</button><button class="chip" type="button" data-dellook="${l.id}">Ta bort</button></div></div>`;
+  }).join("");
   document.addEventListener("click", (e) => {
-    const b = e.target.closest("[data-look-add]"); if (b) { const l = lookById(b.dataset.lookAdd); addMany(l.items, b, l.name); const host = b.closest(".lc, .look-page"); if (host) $$(".lc-line img, .lp-item img", host).forEach((im, k) => setTimeout(() => RQ.fly(im), k * 110)); return; }
-    const s = e.target.closest("[data-look-save]"); if (s) { const l = lookById(s.dataset.lookSave); S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad i Mitt hem"; RQ.toast(`Looken sparades. <a href="#mitt-hem">Visa i Mitt hem</a>`); }
+    const b = e.target.closest("[data-look-add]");
+    if (b) { const l = lookById(b.dataset.lookAdd); const added = addMissing(l.items, b, l.name); const host = b.closest(".lc, .look-page"); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
+    const mb = e.target.closest("[data-look-buy]"); if (mb) { addMissing(mb.dataset.lookBuy.split(",").filter(Boolean), mb, mb.dataset.lookName || "Looken"); return; }
+    const s = e.target.closest("[data-look-save]");
+    if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad i Mitt hem"; RQ.toast(`Looken sparades. <a href="#mitt-hem">Visa i Mitt hem</a>`); }
   });
-  V.looks = () => ({
+  V.looks = () => {
+    const mine = S.looks(), pct = Math.round(lookRate() * 100);
+    return {
     title: "Looks · RumIQ",
-    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", "Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.")}
-      <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}</div>
-        <a class="own-look" href="#mitt-rum"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look i ditt rum</b><small>Ställ in det du gillar, se totalpriset och hur väl sakerna går ihop.</small></span></a>
+    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", `Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.${pct ? ` <b class="look-off"><span>Hela looken ger</span> ${pct} % <span>rabatt.</span></b>` : ""}`)}
+      <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}
+        <a class="own-look" href="#mitt-rum"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look i ditt rum</b><small>Ställ in det du gillar, se totalpriset och hur väl sakerna går ihop.</small></span></a></div>
+        ${mine.length ? `<div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Dina sparade looks</h2></div><div class="mylooks">${RQ.savedLooksHtml()}</div>` : ""}
         <div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Samlat kring en idé</h2><p>Större urval för den som vill bläddra vidare.</p></div>${RQ.colCards()}</section>`,
-  });
+    mount(root) {
+      const del = (e) => { const d = e.target.closest("[data-dellook]"); if (d && root.contains(d)) { S.deleteLook(d.dataset.dellook); RQ.router(); } };
+      root.addEventListener("click", del); return () => root.removeEventListener("click", del);
+    },
+  }; };
   V.look = (id) => {
     const l = lookById(id); if (!l) return null; const room = RQ.roomById(l.room);
+    const inPic = RQ.hotspots.handles(l.room).filter((h) => l.items.includes(h)).length;
+    const CAP_DOTS = "Bilden är en illustration. Prickarna visar saker ur looken.", CAP_NONE = "Bilden är en illustration av rummet. Sakerna i looken ser du i listan.";
+    const total = lookTotal(l), net = lookNet(l), off = total - net;
+    // the buy block follows the cart: nothing in it, some of the look in it, all of it in it
+    const buy = () => {
+      const miss = l.items.filter((h) => !inCart(h)), have = l.items.length - miss.length, saved = S.looks().some((x) => x.name === l.name);
+      const save = `<button class="btn ghost" type="button" data-look-save="${l.id}"${saved ? " disabled" : ""}>${saved ? "Sparad i Mitt hem" : "Spara looken"}</button>`;
+      if (!miss.length) return `<p class="lp-in" role="status"><span>Hela looken ligger i varukorgen.</span>${off ? ` <span>Rabatten är avdragen:</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-open-cart>Visa varukorgen</button>${save}</div>`;
+      if (have) { const rest = miss.reduce((s, h) => s + RQ.byHandle(h).price, 0) - off;
+        return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>ligger i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}"><span>Lägg till resten</span> · ${kr(Math.max(0, rest))}</button>${save}</div>`; }
+      return `<div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(net)}</button>${save}</div>`;
+    };
     return {
       title: `${l.name} · RumIQ`,
       html: `<section class="wrap look-page">
         ${RQ.crumbs([["Hem", "hem"], ["Looks", "looks"], [l.name]])}
         <div class="lp-grid">
-          <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage" })}${RQ.hotspots.caption()}</div>
+          <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage", only: l.items })}<p class="hs-cap" id="lpCap">${inPic ? CAP_DOTS : CAP_NONE}</p></div>
           <div class="lp-tx"><span class="eyebrow">Look · <span>${esc(room.name)}</span></span><h1 class="h1">${esc(l.name)}</h1><p class="lead">${esc(l.lead)}</p>
-            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
-            <div class="lp-sum"><span>Hela looken${lookNet(l) < lookTotal(l) ? ` <small>du sparar ${kr(lookTotal(l) - lookNet(l))}</small>` : ""}</span><b>${lookNet(l) < lookTotal(l) ? `<s>${kr(lookTotal(l))}</s> ` : ""}${kr(lookNet(l))}</b></div>
-            <div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button><button class="btn ghost" type="button" data-look-save="${l.id}">Spara looken</button></div>
+            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item" data-h="${h}"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn qadd" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
+            <div class="lp-sum"><span>Hela looken${off ? ` <small><span>Du sparar</span> ${kr(off)}</small>` : ""}</span><b>${off ? `<s>${kr(total)}</s> ` : ""}${kr(net)}</b></div>
+            <div class="lp-buy" id="lpBuy">${buy()}</div>
             <p class="small" style="margin-top:1rem">Produkterna är exempel tills butiken öppnar.</p></div>
         </div></section>
         <section class="sec"><div class="wrap"><div class="sec-head"><h2 class="h2">Fler looks</h2></div><div class="looks-row">${RQ.LOOKS.filter((x) => x.id !== id).map(RQ.lookCard).join("")}</div></div></section>`,
-      mount: (root) => RQ.hotspots.mount(root),
+      mount: (root) => {
+        const offHs = RQ.hotspots.mount(root);
+        // the caption only speaks of dots when one is actually in the cropped picture
+        const cap = () => { const c = $("#lpCap", root); if (c) c.textContent = $$(".lp-stage .hs", root).some((h) => !h.hidden) ? CAP_DOTS : CAP_NONE; };
+        cap(); setTimeout(cap, 400); addEventListener("resize", cap);
+        const offCart = S.onChange((w) => { const el = $("#lpBuy", root); if (el && (w === "cart" || w === "all" || w === "looks")) { const had = el.contains(document.activeElement); el.innerHTML = buy(); if (had) { const b = $(".btn", el); b && b.focus({ preventScroll: true }); } } });
+        return () => { offHs && offHs(); offCart && offCart(); removeEventListener("resize", cap); };
+      },
     };
   };
 
