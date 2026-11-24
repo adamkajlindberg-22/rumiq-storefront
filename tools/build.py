@@ -212,7 +212,7 @@ DATA = """() => {
     products: RQ.PRODUCTS.map((p) => ({ handle: p.handle, name: p.name, short: p.short, story: p.story || '', price: p.price, cat: p.cat,
       material: p.material || '', variants: p.variants || null, rooms: p.rooms || [] })),
     categories: RQ.CATEGORIES.map((c) => ({ id: c.id, name: c.name, lead: c.lead, items: handles({ cat: c.id }) })),
-    rooms: RQ.ROOMS.map((r) => ({ id: r.id, name: r.name, lead: r.lead, items: handles({ room: r.id }) })),
+    rooms: RQ.ROOMS.map((r) => ({ id: r.id, name: r.name, lead: r.lead, tips: r.tips || [], items: handles({ room: r.id }) })),
     collections: (RQ.COLLECTIONS || []).map((c) => ({ id: c.id, name: c.name, lead: c.lead, text: c.text || '', items: handles({ col: c.id }) })),
     looks: (RQ.LOOKS || []).map((l) => ({ id: l.id, name: l.name, room: l.room, lead: l.lead, items: l.items })),
     articles: (RQ.ARTICLES || []).map((a) => ({ slug: a.slug, title: a.title, lead: a.lead, img: a.img, date: a.date || null, updated: a.updated || null })),
@@ -242,13 +242,20 @@ def ship_price(price, f):
 
 
 def product_description(p, f):
+    """The product's own words first: its short text, then the opening of its story while there is room,
+    so that no two descriptions read alike. Then the price and the promises, as far as they fit."""
     s = p["short"].rstrip(". ") + "."
+    for sent in re.split(r"(?<=[.!?])\s+", (p.get("story") or "").strip()):
+        if len(sent) < 25:  # "Mjuk men stadig." says little on its own
+            continue
+        if len(s) + 1 + len(sent) > 112:
+            break
+        s += " " + sent
     tail = [f" {kr(p['price'])}."]
     if f["openDays"]:
         tail.append(f" {f['openDays']} dagars öppet köp.")
     if f["freeFrom"]:
         tail.append(" Fri frakt till ombud." if p["price"] >= f["freeFrom"] else f" Fri frakt från {kr(f['freeFrom'])}.")
-    tail.append(" Se den i ditt eget rum först.")
     for t in tail:
         if len(s + t) <= 155:
             s += t
@@ -345,7 +352,8 @@ def list_description(name, lead, handles, products, tail):
     first = re.split(r"(?<=[.!?])\s", lead.strip())[0]
     prices = [products[h]["price"] for h in handles if h in products]
     count = f" {len(prices)} {'produkt' if len(prices) == 1 else 'produkter'} från {kr(min(prices))}." if prices else ""
-    for s in (f"{name}: {first}{count} {tail}", f"{name}: {first}{count}", f"{name}: {first}"):
+    tails = tail if isinstance(tail, list) else [tail]  # several candidates: the first that fits is used
+    for s in [f"{name}: {first}{count} {t}" for t in tails] + [f"{name}: {first}{count}", f"{name}: {first}"]:
         if len(s) <= 155:
             return s
     return clip(f"{name}: {first}")
@@ -382,7 +390,7 @@ def build_meta(route, got, data, seo):
     elif kind == "rum" and key:
         r = next((x for x in data["rooms"] if x["id"] == key), None)
         if r:
-            m["description"] = entry.get("description") or list_description(r["name"], r["lead"], r["items"], products, "Tryck på prickarna i bilden och handla rummet.")
+            m["description"] = entry.get("description") or list_description(r["name"], r["lead"], r["items"], products, (r.get("tips") or []) + ["Tryck på prickarna i bilden och handla rummet."])
             m["image"] = f"assets/img/rum/{key}-1600.webp"
             m["ld"].append(ld_itemlist(route, r["name"], r["lead"], r["items"], names, m["image"]))
     elif kind == "kollektion":
