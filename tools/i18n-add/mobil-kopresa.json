@@ -8,7 +8,6 @@
   "Skriv ditt förnamn.": "Enter your first name.",
   "Skriv ditt efternamn.": "Enter your last name.",
   "Skriv gatuadressen, till exempel Storgatan {0}.": "Enter the street address, for example Storgatan {0}.",
-  "Postnumret ska ha fem siffror, till exempel {0} {1}.": "The postcode has five digits, for example {0} {1}.",
   "Skriv orten.": "Enter the town or city.",
   "Kryssa i rutan för att godkänna köpvillkoren.": "Tick the box to accept the terms of purchase.",
   "En sak behöver rättas innan du kan beställa.": "One thing needs fixing before you can order.",
@@ -58,5 +57,6 @@
   "Frakt & leverans": "Shipping & delivery",
   "Tavlor & väggar": "Art & walls",
   "Badrum & välmående": "Bath & wellbeing",
-  "Uteliv": "Outdoor living"
+  "Uteliv": "Outdoor living",
+  "Fem siffror, till exempel {0} {1}.": "Five digits, for example {0} {1}."
 }

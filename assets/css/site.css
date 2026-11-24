@@ -2161,6 +2161,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
    on wide screens (it scrolls inside itself so the total never leaves the screen) and as one line above the form on phones */
 .ferr{display:block;font-size:.86rem;font-weight:500;line-height:1.35;color:var(--danger)}
 .ferr[hidden]{display:none}
+#co .form-grid label{align-content:start}
 input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--danger)}
 input[aria-invalid=true]:focus{border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 22%,transparent)}
 input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-offset:2px}

@@ -164,7 +164,7 @@
     first: (v) => (/\p{L}/u.test(v) ? "" : "Skriv ditt förnamn."),
     last: (v) => (/\p{L}/u.test(v) ? "" : "Skriv ditt efternamn."),
     street: (v) => (/\p{L}{2}/u.test(v) ? "" : "Skriv gatuadressen, till exempel Storgatan 1."),
-    zip: (v) => (digits(v).length === 5 && /^[\d\s]+$/.test(v) ? "" : "Postnumret ska ha fem siffror, till exempel 123 45."),
+    zip: (v) => (digits(v).length === 5 && /^[\d\s]+$/.test(v) ? "" : "Fem siffror, till exempel 123 45."),
     city: (v) => (/\p{L}{2}/u.test(v) ? "" : "Skriv orten."),
   };
   V.checkout = () => {
