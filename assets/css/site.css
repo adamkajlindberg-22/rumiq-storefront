@@ -1468,6 +1468,7 @@ html.sheet-lock{overflow:hidden}
 .sv-head{display:grid;gap:.8rem;max-width:40rem}
 .sv-wrap{display:grid;justify-items:center;gap:1.1rem;margin-top:2rem}
 .sv-deck{position:relative;width:min(26rem,88vw);aspect-ratio:4/5.2;touch-action:pan-y}
+.sv-deck:focus-visible{outline-offset:6px;border-radius:calc(var(--r) + 4px)}
 .sv-card{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:var(--img-bg);box-shadow:0 30px 60px -36px rgba(0,0,0,.55);transform:translateY(calc(var(--i) * 12px)) scale(calc(1 - var(--i) * .045));transition:transform .45s var(--ease);user-select:none;-webkit-user-select:none;cursor:grab;touch-action:pan-y}
 .sv-card:active{cursor:grabbing}
 .sv-card img{width:100%;height:100%;object-fit:cover;pointer-events:none}
@@ -1903,6 +1904,7 @@ body.on-checkout .tools{grid-column:3}
   .sv-legend kbd{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:10px;border:1px solid var(--line);background:var(--paper);font:600 1rem/1 inherit;font-family:inherit;color:var(--ink)}
   .sv-legend div{display:grid;gap:.1rem}
   .sv-legend b{font-weight:600}
+  .sv-legend li.sv-tip{display:block;padding:.6rem 0 0;border-bottom:0;font-size:.88rem;color:var(--muted)}
   .sv-legend span{color:var(--muted);font-size:.92rem}
   .svep:not(:has(.svep-result)) .sv-after{display:block;color:var(--muted);margin-top:.9rem}
 }

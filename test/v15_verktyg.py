@@ -138,6 +138,7 @@ with sync_playwright() as p:
     # ------------------------------------------------------------ Svep on desktop
     ctx, pg, errs = new(b, False)
     go(pg, "svep", 900)
+    pg.focus("#svDeck")  # v15 r2 a11y: the arrows steer the deck only while the focus is in it (elsewhere they scroll)
     for i in range(4): pg.keyboard.press("ArrowRight")
     pg.wait_for_timeout(1600)
     ok(pg.evaluate(COUNT) == "5 av 10", f"[svep desktop] four quick arrow keys swipe four cards: {pg.evaluate(COUNT)}")
