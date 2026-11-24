@@ -177,7 +177,7 @@
         <h3>Välja rätt, inte mer</h3>
         <p>Vi vill hjälpa dig att välja färre och bättre saker. Varje produkt ska fylla en funktion i ett verkligt hem, hålla länge och fungera ihop med resten.</p>
         <h3>Mindre gissande före köpet</h3>
-        <p>I Mitt rum ser du produkterna i ditt eget rum innan du köper. Det minskar felköp, och en retur är det sämsta för både plånboken och miljön.</p>
+        <p>I Mitt rum ser du produkterna i ditt eget rum innan du köper. Målet är färre felköp, för en retur är det sämsta för både plånboken och miljön.</p>
         <h3>Ärligt hela vägen</h3>
         <p>AI-bilder märks som inspiration. Pris och frakt visas innan du betalar. Vi hittar inte på recensioner, lagersaldon eller leveranslöften.</p>
         <h2>Så vill vi förbättra hela upplevelsen</h2>
