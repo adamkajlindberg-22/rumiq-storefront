@@ -51,7 +51,6 @@ ALIAS_PREFIX = {"mitt-rum-": "mitt-rum", "svep-rum-": "svep"}  # one near-identi
 # pages that stay hidden from search engines for good: personal, part of a purchase, or empty for now
 NOINDEX = {"kassa", "konto", "skapa-konto", "mitt-hem", "onskelista", "delad", "spara-order", "angra", "for-dig",
            "nyheter", "erbjudanden", "favoriter"}
-ROBOTS_DISALLOW = ["kassa", "konto", "skapa-konto", "mitt-hem", "onskelista", "delad"]
 # folders in the site root that are never route folders
 KEEP_DIRS = {"assets", "feed", "tools", "test", "node_modules"}
 
@@ -477,8 +476,8 @@ def write_robots():
     if not LAUNCH:
         text = "User-agent: *\nDisallow: /\n"
     else:
-        base = urlparse(SITE).path
-        text = "User-agent: *\nAllow: /\n" + "".join(f"Disallow: {base}{r}/\n" for r in ROBOTS_DISALLOW) + f"\nSitemap: {SITE}sitemap.xml\n"
+        # nothing is shut out here: a page that must stay hidden says noindex itself, and a search engine has to be let in to read that
+        text = f"User-agent: *\nAllow: /\n\nSitemap: {SITE}sitemap.xml\n"
     (ROOT / "robots.txt").write_text(text, encoding="utf-8")
 
 
