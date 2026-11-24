@@ -201,7 +201,7 @@ with sync_playwright() as p:
         ok(o["total"] == 2427 and o["address"]["zip"] == "123 45", f"{tag} checkout: the order is what the page showed (2 427 kr, postcode 123 45)")
         tack = ev("document.getElementById('view').innerText.replace(/\\s+/g, ' ')").replace(" ", " ")
         ok(all(x in tack for x in ("Levereras till", "Storgatan 1", "Leveranssätt", "Hemleverans", "Delsumma 2 338 kr", "Frakt 89 kr", "Totalt 2 427 kr", "Fortsätt handla")), f"{tag} thank-you: address, delivery and the sums are on the receipt")
-        ok("30 dagars öppet köp" in tack and "14 dagars ångerrätt" in tack and tack.count("Följ beställningen") == 1, f"{tag} thank-you: one sentence about returns, one set of buttons")
+        ok("30 dagars öppet köp" in tack and "14 dagars ångerrätt" in tack and tack.count("Spåra min beställning") == 1, f"{tag} thank-you: one sentence about returns, one set of buttons")
         pg.goto(BASE + "angra/"); pg.wait_for_timeout(500)
         ok("30 dagars öppet köp från att du tog emot varan. Lagen ger alltid 14 dagars ångerrätt." in ev("document.getElementById('view').innerText"), f"{tag} angra: the same sentence about the return window")
 

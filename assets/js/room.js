@@ -420,7 +420,7 @@
               <button type="button" class="rm-tool" id="rmSave">${ICO.save}<span>Spara</span></button>
               <div class="rm-morewrap"><button type="button" class="rm-tool" id="rmMore" aria-haspopup="true" aria-expanded="false" aria-controls="rmMenu">${ICO.more}<span>Mer</span></button>
                 <div class="rm-menu" id="rmMenu" role="menu" aria-label="Mer" hidden>
-                  <button type="button" role="menuitem" class="rm-ai" data-ai-create>${ICO.spark}<span>Visa på riktigt<small>En AI-bild av rummet med sakerna</small></span></button>
+                  <button type="button" role="menuitem" class="rm-ai" data-ai-create>${ICO.spark}<span>Skapa en AI-bild<small>Rummet med sakerna, i rätt ljus och med skuggor</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmNight" aria-checked="false">${ICO.moon}<span>Kvällsljus<small>Se lamporna lysa i rummet</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmBefore" aria-checked="false">${ICO.eye}<span>Visa före<small>Rummet utan sakerna</small></span></button>
                   <button type="button" role="menuitem" data-room-setup>${ICO.swap}<span>Byt rum<small>Ny bild eller ett exempelrum</small></span></button>

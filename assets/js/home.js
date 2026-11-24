@@ -47,7 +47,7 @@
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
             <div class="band settle"><h1>Rätt saker.<br>Ett lugnare hem.</h1><p class="sub">Noga utvald belysning, textil och förvaring, och verktyg som låter dig se allt i ditt eget rum innan du köper.</p>
-              <div class="row">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna mitt rum</a>` : `<button class="btn" type="button" data-room-setup="#butik">Se butiken i ditt rum</button>`}<a class="btn ghost" href="#butik">Upptäck butiken</a></div></div>
+              <div class="row">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a>` : `<button class="btn" type="button" data-room-setup="#butik">Se butiken i ditt rum</button>`}<a class="btn ghost" href="#butik">Upptäck butiken</a></div></div>
           </div>
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>
         </div>
@@ -73,7 +73,7 @@
             <h2 class="display">Hela butiken i ditt rum.</h2>
             <p class="lead">Ta en bild av ditt rum en gång. Sedan står varje produkt du tittar på i just ditt rum, i ditt eget ljus. Ställ in det du gillar, se vad hela rummet kostar och handla allt med en knapp.</p>
             <ol class="rh-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Bläddra i ditt rum</b><span>Butiken visar varje produkt hemma hos dig.</span></li><li><b>Handla looken</b><span>Allt du ställt in hamnar i varukorgen på en gång.</span></li></ol>
-            <div class="ctrl-row" style="margin-top:2rem">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna mitt rum</a><a class="btn ghost" href="#butik">Butiken i ditt rum</a>` : `<button class="btn" type="button" data-room-setup="#butik">Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#butik">Prova med ett exempelrum</button>`}</div>
+            <div class="ctrl-row" style="margin-top:2rem">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a><a class="btn ghost" href="#butik">Butiken i ditt rum</a>` : `<button class="btn" type="button" data-room-setup="#butik">Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#butik">Prova med ett exempelrum</button>`}</div>
             <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
           </div>
           ${demoFig()}
@@ -89,7 +89,7 @@
       ${RQ.whyHtml()}
 
       <section class="sec cta-band" id="bli-forst">
-                <div class="wrap"><div><h2>Bli först när vi öppnar.</h2><p class="lead">Skriv upp dig så får du 10 % på första köpet när vi öppnar. Till dess kan du prova Mitt rum gratis och se produkterna i ditt eget rum.</p></div>
+                <div class="wrap"><div><h2>Bli först när vi öppnar.</h2><p class="lead">${((window.RQ_CONFIG || {}).waitlist || {}).offer ? `Skriv upp dig så får du ${esc(RQ_CONFIG.waitlist.offer)}.` : "Skriv upp dig så mejlar vi när vi öppnar."} Till dess kan du prova Mitt rum gratis och se produkterna i ditt eget rum.</p></div>
           <div class="signup" id="formBox"><form id="signup" novalidate><label for="email">Din e-post</label><div class="field"><input id="email" name="email" type="email" autocomplete="email" placeholder="namn@exempel.se" required><button class="btn" type="submit">Skriv upp mig</button></div><p class="status" id="formErr" role="alert"></p><p class="fine">Vi mejlar när vi öppnar och ibland med stylingtips. Vi delar aldrig din adress, och du kan avregistrera dig när du vill.</p></form>
             <div class="ok" role="status" aria-live="polite"><h3>Tack. Du står på listan.</h3><p id="okText">Vi hör av oss med din rabattkod när RumIQ öppnar.</p><a class="btn ghost sm" href="#mitt-rum">Prova Mitt rum under tiden</a></div></div></div>
       </section>`,

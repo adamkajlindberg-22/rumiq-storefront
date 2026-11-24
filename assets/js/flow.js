@@ -569,9 +569,9 @@
     });
     return () => offs.forEach((f) => f());
   };
-  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
+  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Önska</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>
-      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Looks</a></nav>`;
+      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Looks</a></nav>`;
 
   /* ------------------------------------------------------------------ Upptäck */
   V.upptack = () => ({
