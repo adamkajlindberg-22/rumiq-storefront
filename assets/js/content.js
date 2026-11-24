@@ -11,6 +11,16 @@
   const draft = `<p class="draft">Utkast. Texten kontrolleras och kompletteras med bolags- och leverantörsuppgifter innan butiken öppnar.</p>`;
   const mail = `<a href="mailto:${C.email}">${C.email}</a>`;
 
+  /* The figures a customer is promised, read from config.js in ONE place, so that no page can say something else.
+     The build (tools/build.py) reads the same object for the sitemap, the product feed and the structured data. */
+  const CFG = window.RQ_CONFIG || {}, DEL = CFG.delivery || {}, SHIP = CFG.shipping || {};
+  const F = (RQ.facts = { openDays: DEL.openPurchaseDays || 0, minDays: DEL.minDays || 0, maxDays: DEL.maxDays || 0,
+    freeFrom: CFG.freeShippingFrom || 0, pickup: SHIP.pickup || 49, home: SHIP.home || 89 });
+  // the one sentence about returns, and the one about delivery time (a goal until the supplier has confirmed it)
+  const openBuy = F.openDays ? `${F.openDays} dagars öppet köp från att du tog emot varan. Lagen ger alltid 14 dagars ångerrätt.` : "Du har 14 dagars ångerrätt från att du tog emot varan.";
+  const goal = F.minDays ? `Målet är ${F.minDays}–${F.maxDays} arbetsdagar.` : "Leveranstiden visas innan du betalar.";
+  const shipCost = `Hämta hos ombud eller i paketskåp kostar ${F.pickup} kr och hemleverans ${F.home} kr.${F.freeFrom ? ` Handlar du för ${F.freeFrom} kr eller mer är frakten till ombud och paketskåp fri.` : ""}`;
+
   /* ---------------------------------------------------------------- Customer service */
   RQ.INFO = {
     "sa-fungerar-det": {
@@ -19,12 +29,13 @@
       html: () => `
         <ol class="steps-list">
           <li><h3>Upptäck</h3><p>Bläddra i butiken efter kategori eller rum, läs magasinet eller beskriv med egna ord vad du behöver. AI-stylisten och den smarta sökningen föreslår produkter, och stiltestet behöver ingen bild.</p></li>
-          <li><h3>Se det i ditt rum</h3><p>Lägg till ett foto av ditt rum eller välj ett exempelrum. Välj upp till tre produkter och placera dem där du vill ha dem. Resultatet är en bild att inspireras av, så storlek och färg kan skilja sig från verkligheten. Kontrollera alltid produktsidan.</p></li>
-          <li><h3>Spara och jämför</h3><p>I Mitt hem samlar du rumsprojekt, sparade bilder, favoriter och din stil. Du kan jämföra två versioner sida vid sida och skriva anteckningar.</p></li>
+          <li><h3>Se det i ditt rum</h3><p>Lägg till ett foto av ditt rum eller välj ett exempelrum. Välj produkter och placera dem där du vill ha dem. Resultatet är en bild att inspireras av, så storlek och färg kan skilja sig från verkligheten. Kontrollera alltid produktsidan.</p></li>
+          <li><h3>Spara det du gillar</h3><p>I Mitt hem samlar du rumsprojekt, sparade bilder, favoriter och din stil, så att du kan fortsätta där du slutade.</p></li>
           <li><h3>Beställ tryggt</h3><p>Lägg enskilda produkter eller en hel look i varukorgen och betala i Shopifys säkra kassa. Leveranssätt, kostnad och beräknad leveranstid visas innan du betalar. Vi ser aldrig dina kortuppgifter.</p></li>
-          <li><h3>Leverans och hjälp</h3><p>Följ din beställning, tänk på att varor kan komma i olika paket och hör av dig om något inte stämmer. Vid köp på nätet inom EU har du 14 dagars ångerrätt.</p></li>
+          <li><h3>Leverans och hjälp</h3><p>Följ din beställning, tänk på att varor kan komma i olika paket och hör av dig om något inte stämmer. ${openBuy}</p></li>
         </ol>
-        <h2>Verktygen, alla gratis</h2>
+        <h2>Verktygen</h2>
+        <p>Alla verktyg är gratis. Studio Plus är ett tillval för dig som vill ha fler AI-bilder.</p>
         <table class="tbl"><thead><tr><th>Verktyg</th><th>Vad det gör</th><th>Konto</th></tr></thead><tbody>
           <tr><td><a href="#svep">Svep fram din stil</a></td><td>Svep tio kort eller svara på fyra snabba frågor och få din stilprofil.</td><td>Behövs inte</td></tr>
           <tr><td><a href="#mitt-rum">Mitt rum</a></td><td>Se produkterna i ett foto av ditt rum, dag som kväll. Här finns också Färger ur ditt rum.</td><td>Behövs inte</td></tr>
@@ -39,9 +50,9 @@
       lead: "Så kommer dina saker hem till dig, och vad som gäller om något dröjer.",
       html: () => `${draft}
         <h2>Leveranssätt och pris</h2>
-        <p>Vi skickar från lager inom EU till adresser i Sverige. Hämta hos ombud eller i paketskåp kostar 49 kr och hemleverans 89 kr. Handlar du för 799 kr eller mer är frakten till ombud och paketskåp fri. Du ser alltid leveranssätt, fraktkostnad och totalsumma i kassan innan du betalar.</p>
+        <p>Vi levererar till adresser i Sverige. ${shipCost} Du ser alltid leveranssätt, fraktkostnad och totalsumma i kassan innan du betalar.</p>
         <h2>Leveranstid</h2>
-        <p>Målet är 2–5 arbetsdagar. Varje produktsida visar vilka datum paketet beräknas komma, och beställningar före klockan 14 på vardagar räknas från samma dag.</p>
+        <p>${goal} Varje produktsida visar vilka datum paketet beräknas komma${DEL.cutoffHour ? `, och beställningar före klockan ${DEL.cutoffHour} på vardagar räknas från samma dag` : ""}.</p>
         <h2>Flera paket</h2>
         <p>Varor från olika leverantörer kan komma i separata paket. Om det innebär en extra kostnad ser du det innan du betalar.</p>
         <h2>Om leveransen dröjer eller inte kommer</h2>
@@ -50,7 +61,7 @@
         <h2>Spårning</h2>
         <p>Använd länken till orderstatus i orderbekräftelsen. Spårning från fraktbolaget visas när leverantören eller fraktbolaget skickar den. Du kan också använda <a href="#spara-order">Spåra min beställning</a>.</p>
         <h2>Tull och avgifter</h2>
-        <p>Varorna skickas från lager inom EU, så det tillkommer ingen tull eller importavgift. Priset du ser är inklusive moms.</p>
+        <p>Målet är att allt skickas från lager inom EU, och då tillkommer ingen tull eller importavgift. Priset du ser är inklusive moms.</p>
         <h2>Vårt ansvar</h2>
         <p>RumIQ är din kontakt för leverans, ånger och reklamation, även när en leverantör skickar varan. Leverantörens villkor kan aldrig begränsa dina rättigheter som konsument.</p>
         <h2>Att bekräfta före försäljning</h2>
@@ -60,8 +71,8 @@
       title: "Returer & återbetalning", kicker: "Kundservice",
       lead: "Ångrat dig eller blivit något fel? Så här gör du.",
       html: () => `${draft}
-        <h2>30 dagars öppet köp</h2>
-        <p>Lagen ger dig 14 dagars ångerrätt. Hos oss har du 30 dagars öppet köp från den dag du tog emot varan. Du behöver inte ange något skäl. Det enklaste sättet att ångra är <a href="#angra">Ångra avtalet här</a>, som finns i sidfoten och under varje beställning i ditt konto.</p>
+        <h2>${F.openDays ? `${F.openDays} dagars öppet köp` : "Ångerrätt"}</h2>
+        <p>${openBuy} Du behöver inte ange något skäl. Det enklaste sättet att ångra är <a href="#angra">Ångra avtalet här</a>, som finns i sidfoten och under varje beställning i ditt konto.</p>
         <h2>Så skickar du tillbaka</h2>
         <ol><li>Ångra köpet via knappen. Du får en bekräftelse direkt.</li><li>Packa varan väl, gärna i originalförpackningen.</li><li>Skicka varan inom 14 dagar från att du ångrade köpet. Returadressen står i bekräftelsen.</li></ol>
         <h2>Återbetalning</h2>
@@ -119,7 +130,8 @@
           ["Kan jag avbryta min beställning?", "Ja. Skriv till oss innan den har skickats. Har den redan skickats kan du använda din ångerrätt i stället."],
         ]],
         ["Leverans", [
-          ["Hur lång tid tar leveransen?", "Den beräknade leveranstiden visas på varje produktsida och i kassan innan du betalar. En generell leveranstid är inte bekräftad än."],
+          ["Hur lång tid tar leveransen?", `${goal} De datum paketet beräknas komma visas på varje produktsida och i kassan innan du betalar.`],
+          ["Vad kostar frakten?", `${shipCost} Du ser fraktkostnaden i kassan innan du betalar.`],
           ["Hur spårar jag mitt paket?", "Använd länken i orderbekräftelsen eller <a href='#spara-order'>Spåra min beställning</a>."],
           ["Vad gör jag om leveransen är försenad?", "Hör av dig med ditt ordernummer. Om ingen leveranstid avtalades ska varan normalt komma inom 30 dagar, och du har rättigheter enligt lag om den dröjer."],
         ]],
@@ -131,21 +143,21 @@
         ["Returer", [
           ["Hur ångrar jag ett köp?", "Använd <a href='#angra'>Ångra avtalet här</a>. Du behöver inte logga in och inte ange något skäl."],
           ["Hur returnerar jag en produkt?", "Ångra köpet först. Packa sedan varan väl och skicka den till returadressen i bekräftelsen inom 14 dagar."],
-          ["Hur lång är ångerfristen?", "14 dagar från den dag du tog emot varan."],
+          ["Hur lång är ångerfristen?", openBuy],
           ["Hur fungerar återbetalningar?", "Vi betalar tillbaka senast 14 dagar från att du ångrade köpet, med samma betalsätt. Vi får vänta tills varan har kommit tillbaka eller du visat att den skickats."],
         ]],
         ["Produkter", [
           ["Omfattas produkterna av garanti?", "Du har alltid rätt att reklamera fel i tre år enligt konsumentköplagen. Om en tillverkare ger en garanti utöver det står det på produktsidan."],
-          ["Hur väljer jag rätt produkt?", "Läs produktsidan, prova produkten i Mitt rum eller fråga AI-stylisten. Du kan också jämföra upp till fyra produkter sida vid sida."],
+          ["Hur väljer jag rätt produkt?", "Läs produktsidan, prova produkten i Mitt rum eller fråga AI-stylisten."],
           ["Vad gör jag om produkten är felaktig?", "Skriv till oss med ordernummer och gärna en bild, så löser vi det. Läs mer om <a href='#juridik-garanti'>reklamation</a>."],
           ["Varför kan jag inte köpa vissa produkter?", "RumIQ är i en tidig fas. Produkter märkta Exempel visar hur butiken kommer att se ut men går inte att köpa än."],
         ]],
         ["Mitt rum och verktygen", [
           ["Vad kostar verktygen?", "Ingenting. Mitt rum, Svep, Hitta rätt och stylisten är gratis. Studio Plus är ett tillval för dig som vill ha fler AI-bilder."],
-          ["Hur många rumsbilder kan jag skapa?", "I den här versionen placerar du produkterna i ditt foto direkt i webbläsaren, så det finns ingen gräns. När AI-bilder kopplas in kommer det att finnas en veckogräns, och den står här."],
+          ["Hur många rumsbilder kan jag skapa?", "Hur många du vill när du själv ställer in produkterna i ditt foto. Det sker direkt i webbläsaren. AI-bilder är något annat: med ett konto får du 5 i månaden utan kostnad, och fler med Studio Plus."],
           ["Räknas det om en bild misslyckas?", "Nej. Försök som inte ger något resultat räknas aldrig."],
           ["Är AI-bilderna exakta?", "Nej. Bilderna är illustrationer och storlek, färg och detaljer kan skilja sig från den riktiga produkten. Kontrollera produktsidan innan du köper."],
-          ["Vad händer med mitt foto?", "I den här versionen stannar fotot i din webbläsare och laddas inte upp någonstans. Om det ändras berättar vi det tydligt innan du lägger till en bild."],
+          ["Vad händer med mitt foto?", "Fotot stannar i din webbläsare så länge du själv ställer in produkterna. Väljer du att skapa en AI-bild skickas fotot till en server för att bilden ska kunna skapas, först efter att du har godkänt det, och rumsfotot raderas där efter 30 dagar."],
           ["Är bilderna på sajten riktiga foton?", "Nej. Bilderna på produkter och rum är skapade med AI medan vi väntar på de första produkterna. När produkterna finns byter vi till riktiga foton."],
         ]],
       ],
@@ -171,7 +183,7 @@
         <h2>Så vill vi förbättra hela upplevelsen</h2>
         <p>Från att du upptäcker något, till att du ser det i ditt rum, sparar och jämför, och beställer i några få steg. Utan att du behöver gissa.</p>
         <h2>Där vi är i dag</h2>
-        <p>RumIQ är i en tidig fas. Sortimentet växer och vissa produkter är tydligt märkta exempel som inte går att köpa än. Tanken är att leverantörerna skickar direkt till dig, men inga leverantörer eller leveransregler är bekräftade ännu.</p>
+        <p>RumIQ är i en tidig fas. Sortimentet växer och vissa produkter är tydligt märkta exempel som inte går att köpa än. Vi har inget eget lager. Tanken är att leverantörerna skickar direkt till dig från lager inom EU, och leverantörerna bekräftas innan butiken öppnar.</p>
         <h2>Frågor eller idéer?</h2>
         <p>Skriv till ${mail} eller <a href="#onska">önska något</a>. Vi läser allt.</p>`,
     },
@@ -185,7 +197,7 @@
       <h2>3. Beställning och avtal</h2><p>Avtalet ingås när du får en orderbekräftelse via e-post. Vid uppenbart felaktiga priser eller om en vara inte kan levereras har vi rätt att häva köpet, och betalar då tillbaka hela beloppet.</p>
       <h2>4. Betalning</h2><p>Betalningen hanteras i Shopifys kassa. Se <a href="#betalning">Betalning</a>.</p>
       <h2>5. Leverans</h2><p>Se <a href="#frakt">Frakt & leverans</a>. Blir en leverans väsentligt försenad har du rätt att häva köpet.</p>
-      <h2>6. Ångerrätt</h2><p>Du har 14 dagars ångerrätt enligt lagen om distansavtal. Se <a href="#juridik-angerratt">Ångerrätt</a> och <a href="#angra">Ångra avtalet här</a>.</p>
+      <h2>6. Ångerrätt</h2><p>Du har 14 dagars ångerrätt enligt lagen om distansavtal.${F.openDays ? ` Hos oss har du dessutom ${F.openDays} dagars öppet köp från att du tog emot varan.` : ""} Se <a href="#juridik-angerratt">Ångerrätt</a> och <a href="#angra">Ångra avtalet här</a>.</p>
       <h2>7. Reklamation</h2><p>Du har rätt att reklamera fel i tre år enligt konsumentköplagen. Se <a href="#juridik-garanti">Reklamation & garanti</a>.</p>
       <h2>8. Personuppgifter</h2><p>Se <a href="#juridik-integritet">Integritetspolicy</a>.</p>
       <h2>9. Tvister</h2><p>Vi följer Allmänna reklamationsnämndens (ARN) rekommendationer. Du kan också använda EU:s plattform för tvistlösning online.</p>` },
@@ -206,7 +218,8 @@
       <h2>Lagring i webbläsaren</h2><p>Varukorg, favoriter, Mitt hem och din stilprofil sparas i din webbläsares lokala lagring i den här versionen. Du kan rensa allt under Mitt konto.</p>
       <p><button class="btn ghost" type="button" data-action="cookies">Ändra mina cookieval</button></p>` },
     angerratt: { title: "Ångerrätt", lead: "Din rätt att ångra ett köp på nätet.", html: () => `${draft}
-      <p>Enligt lagen om distansavtal har du rätt att ångra köpet inom 14 dagar från den dag du, eller någon du utsett, tog emot varan. Vid flera varor i samma beställning räknas fristen från dagen du fick den sista.</p>
+      <p>Enligt lagen om distansavtal har du rätt att ångra köpet inom 14 dagar från den dag du, eller någon du utsett, tog emot varan. Vid flera varor i samma beställning räknas fristen från dagen du fick den sista.</p>${F.openDays ? `
+      <p>Hos oss har du dessutom ${F.openDays} dagars öppet köp från att du tog emot varan.</p>` : ""}
       <h2>Så ångrar du</h2><p>Använd <a href="#angra">Ångra avtalet här</a> eller skicka ett tydligt meddelande till ${mail}. Du kan också använda Konsumentverkets standardformulär för ånger.</p>
       <h2>Undantag</h2><p>Ångerrätten gäller inte bland annat varor som tillverkats efter dina specifikationer, förseglade hygienvaror som brutits efter leverans och varor som snabbt kan försämras.</p>
       <h2>Återbetalning</h2><p>Se <a href="#returer">Returer & återbetalning</a>.</p>` },
