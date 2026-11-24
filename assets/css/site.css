@@ -896,6 +896,10 @@ details.pw[open] summary::after{content:" −"}
   .tool:nth-child(even){padding-left:1.2rem;border-left:1px solid var(--line)}
   .studio-steps{grid-template-columns:1fr 1fr}
   .imgopts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* tablets up to 1100 px: the filters are a sheet from the bottom and the products get the whole width (a sidebar left 220 px cards at 1024) */
+@media (max-width:1100px){
+  .shop{grid-template-columns:minmax(0,1fr)}
   /* filter sheet */
   .tb-filter{display:inline-flex;align-items:center;gap:.45rem;height:2.75rem;padding:0 .95rem;font-weight:600}
   .tb-filter svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
@@ -919,6 +923,9 @@ details.pw[open] summary::after{content:" −"}
   .toolbar .select{flex:1;min-width:0;height:2.75rem}
   .toolbar .roomtoggle{order:0;flex:none;height:2.75rem;padding:0 .55rem 0 .3rem;gap:.45rem}
   .toolbar .roomtoggle .rt-t{display:none}
+}
+@media (min-width:641px) and (max-width:1100px){.filters{max-width:34rem;margin-inline:auto}} /* on a tablet the sheet keeps a phone's width, centred */
+@media (max-width:900px){
   .shop-head .lead{font-size:1rem}
   .shop-head .banner-img{aspect-ratio:2/1;margin-top:1.2rem}
   .acct .sidenav{order:2;border-top:1px solid var(--line);padding-top:1.5rem}
