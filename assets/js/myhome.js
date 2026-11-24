@@ -6,11 +6,7 @@
      goes to the same waiting-list table as the other lists (list "Prisbevakning"). */
 (function () {
   const RQ = window.RQ, S = RQ.shop, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc;
-  const ls = {
-    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
-    del(k) { try { localStorage.removeItem(k); } catch (e) {} },
-  };
+  const ls = S.store; // the shop's one typed reader (commerce.js)
   const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
   const PREVIEW_NOTE = "Förhandsversion: adressen sparas inte än. När butiken öppnar fungerar det här på riktigt.";
 

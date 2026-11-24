@@ -5,19 +5,42 @@
    the pages do not change. Demo orders are test orders: nothing is paid and nothing is sent. */
 (function () {
   const RQ = (window.RQ = window.RQ || {});
-  const store = {
-    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
-  };
+  /* The one reader for everything kept in this browser. What comes back always has the shape of the default:
+     a list stays a list (empty rows dropped), a record stays a record, text stays text. Anything else, a
+     half-written value or an old format, gives the default, so a bad value can never stop a page.
+     any = true takes whatever is stored (for values that may be text or a record). */
+  const isObj = (v) => !!v && typeof v === "object" && !Array.isArray(v);
   const listeners = new Set();
   const emit = (what) => listeners.forEach((f) => { try { f(what); } catch (e) { console.error(e); } });
+  const store = {
+    get(k, d, any) {
+      let v; try { v = JSON.parse(localStorage.getItem(k)); } catch (e) { return d; }
+      if (v == null) return d;
+      if (any) return v;
+      if (Array.isArray(d)) return Array.isArray(v) ? v.filter((x) => x != null) : d;
+      if (d == null || isObj(d)) return isObj(v) ? v : d;
+      return typeof v === typeof d ? v : d;
+    },
+    // false = it did not fit (the browser's storage is full or closed); the page is told through "full".
+    // lost = the key that did not fit, until a later try with the same key does (Mitt rum saves a smaller photo)
+    lost: null,
+    set(k, v) {
+      try { localStorage.setItem(k, JSON.stringify(v)); if (store.lost === k) store.lost = null; return true; }
+      catch (e) { if (e && (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22)) { store.lost = k; emit("full"); } return false; }
+    },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+  };
+  const rows = (k, test) => store.get(k, []).filter(test);
+  const words = (k) => rows(k, (x) => typeof x === "string");
+  const qn = (q) => Math.max(1, Math.min(99, Math.floor(+q) || 1)); // a quantity is a whole number from 1 to 99
+  const NF = new Intl.NumberFormat("sv-SE");
 
   RQ.ss = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} } };
   const S = (RQ.shop = {
     PROVIDER: "demo",
     store,
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); },
-    kr: (n) => new Intl.NumberFormat("sv-SE").format(Math.round(n)) + " kr",
+    kr: (n) => NF.format(Math.round(n)) + " kr",
 
     /* ---------------- catalogue */
     variantsOf(p) {
@@ -50,11 +73,12 @@
     },
 
     /* ---------------- cart */
-    _cart: store.get("rumiq-cart", []).filter((x) => x && x.v),
+    _cart: rows("rumiq-cart", (x) => isObj(x) && typeof x.v === "string" && +x.q > 0).map((x) => ({ v: x.v, q: qn(x.q) })),
+    // rows whose product or colour is no longer in the range are skipped, here and in the count
     cartLines() {
-      return S._cart.map((x) => { const r = S.variantById(x.v); return r ? { id: x.v, quantity: x.q, product: r.product, variant: r.variant, lineTotal: r.variant.price * x.q } : null; }).filter(Boolean);
+      return S._cart.map((x) => { const r = S.variantById(x.v); return r && r.variant ? { id: x.v, quantity: x.q, product: r.product, variant: r.variant, lineTotal: r.variant.price * x.q } : null; }).filter(Boolean);
     },
-    cartCount: () => S._cart.reduce((s, x) => s + x.q, 0),
+    cartCount: () => S.cartLines().reduce((s, l) => s + l.quantity, 0),
     cartSubtotal: () => S.cartLines().reduce((s, l) => s + l.lineTotal, 0),
     /* A complete look in the cart is 10 % cheaper (RQ_CONFIG.lookDiscount). One unit of each product
        counts towards one look at most; the largest discounts are taken first. */
@@ -70,13 +94,15 @@
     cartDiscount: () => S.lookDiscounts().reduce((s, d) => s + d.amount, 0),
     cartTotalBeforeShipping: () => S.cartSubtotal() - S.cartDiscount(),
     addToCart(variantId, qty = 1) {
-      if (!S.variantById(variantId)) return;
+      const hit = S.variantById(variantId); if (!hit || !hit.variant) return false;
+      qty = qn(qty);
       { const v = S.variantById(variantId); RQ.track && RQ.track("add_to_cart", { item_id: v && v.product ? v.product.handle : variantId, quantity: qty }); }
       const it = S._cart.find((x) => x.v === variantId);
       if (it) it.q = Math.min(99, it.q + qty); else S._cart.push({ v: variantId, q: qty });
-      store.set("rumiq-cart", S._cart); emit("cart");
+      const kept = store.set("rumiq-cart", S._cart); emit("cart"); return kept;
     },
     setQty(variantId, qty) {
+      qty = Math.floor(+qty) || 0;
       S._cart = qty <= 0 ? S._cart.filter((x) => x.v !== variantId) : S._cart.map((x) => (x.v === variantId ? { ...x, q: Math.min(99, qty) } : x));
       store.set("rumiq-cart", S._cart); emit("cart");
     },
@@ -94,7 +120,7 @@
     vatIncluded: (total) => total - total / 1.25,
 
     /* ---------------- orders (test orders, kept in this browser) */
-    orders: () => store.get("rumiq-orders", []),
+    orders: () => rows("rumiq-orders", (o) => isObj(o) && typeof o.number === "string" && isObj(o.contact) && Array.isArray(o.lines)),
     placeTestOrder({ contact, address, shippingId, gift }) {
       const lines = S.cartLines();
       if (!lines.length) return null;
@@ -121,39 +147,31 @@
     },
 
     /* ---------------- wishlist and compare */
-    _wish: store.get("rumiq-wish", []),
+    _wish: words("rumiq-wish"),
     wishlist: () => S._wish.map(RQ.byHandle).filter(Boolean),
     isWished: (h) => S._wish.includes(h),
     toggleWish(h) { S._wish = S._wish.includes(h) ? S._wish.filter((x) => x !== h) : [h, ...S._wish]; store.set("rumiq-wish", S._wish); emit("wish"); return S._wish.includes(h); },
     /* Named lists, for example one per room ("Spara i ett rum"). The favourites above are the default list. */
-    lists: () => store.get("rumiq-lists", []),
+    lists: () => rows("rumiq-lists", (l) => isObj(l) && l.id && Array.isArray(l.handles)),
     createList(name) { const l = { id: "l" + Date.now(), name: String(name).slice(0, 40), handles: [], at: new Date().toISOString() }; store.set("rumiq-lists", [...S.lists(), l]); emit("lists"); return l; },
     renameList(id, name) { store.set("rumiq-lists", S.lists().map((l) => (l.id === id ? { ...l, name: String(name).slice(0, 40) } : l))); emit("lists"); },
     deleteList(id) { store.set("rumiq-lists", S.lists().filter((l) => l.id !== id)); emit("lists"); },
     toggleInList(id, h) { let on = false; store.set("rumiq-lists", S.lists().map((l) => { if (l.id !== id) return l; on = !l.handles.includes(h); return { ...l, handles: on ? [h, ...l.handles] : l.handles.filter((x) => x !== h) }; })); emit("lists"); return on; },
     listsWith: (h) => S.lists().filter((l) => l.handles.includes(h)),
-    _cmp: store.get("rumiq-compare", []),
-    compareList: () => S._cmp.map(RQ.byHandle).filter(Boolean),
-    inCompare: (h) => S._cmp.includes(h),
-    toggleCompare(h) {
-      if (S._cmp.includes(h)) S._cmp = S._cmp.filter((x) => x !== h);
-      else { if (S._cmp.length >= 4) S._cmp.pop(); S._cmp = [h, ...S._cmp]; }
-      store.set("rumiq-compare", S._cmp); emit("compare"); return S._cmp.includes(h);
-    },
-    _seen: store.get("rumiq-seen", []),
+    _seen: words("rumiq-seen"),
     markSeen(h) { RQ.track && RQ.track("view_item", { item_id: h }); S._seen = [h, ...S._seen.filter((x) => x !== h)].slice(0, 8); store.set("rumiq-seen", S._seen); },
     recentlySeen: (except) => S._seen.filter((h) => h !== except).map(RQ.byHandle).filter(Boolean),
 
     /* ---------------- customer (demo sign-in: nothing leaves this browser) */
-    customer: () => store.get("rumiq-customer", null),
+    customer: () => { const c = store.get("rumiq-customer", null); return c && typeof c.email === "string" ? c : null; },
     signIn(email, name, provider) { const prev = S.customer(); store.set("rumiq-customer", { ...(prev && prev.email === email ? prev : {}), email, name: name || (prev && prev.email === email ? prev.name : "") || "", provider: provider || "email", since: (prev && prev.email === email && prev.since) || new Date().toISOString() }); emit("customer"); },
     setProfile(patch) { const c = S.customer(); if (!c) return; store.set("rumiq-customer", { ...c, ...patch }); emit("customer"); },
     signOut() { store.set("rumiq-customer", null); emit("customer"); },
 
     /* ---------------- Mitt hem: style, room projects, saved articles */
-    style: () => store.get("rumiq-style", null),
+    style: () => { const s = store.get("rumiq-style", null); return s && RQ.STYLES[s.style] ? s : null; },
     saveStyle(s) { store.set("rumiq-style", { ...s, at: new Date().toISOString() }); emit("style"); },
-    projects: () => store.get("rumiq-projects", []),
+    projects: () => rows("rumiq-projects", (p) => isObj(p) && p.id),
     saveProject(p) {
       const list = [{ id: "p" + Date.now(), at: new Date().toISOString(), note: "", ...p }, ...S.projects()].slice(0, 12);
       if (!store.set("rumiq-projects", list)) return false;
@@ -161,14 +179,14 @@
     },
     updateProject(id, patch) { store.set("rumiq-projects", S.projects().map((p) => (p.id === id ? { ...p, ...patch } : p))); emit("projects"); },
     deleteProject(id) { store.set("rumiq-projects", S.projects().filter((p) => p.id !== id)); emit("projects"); },
-    savedArticles: () => store.get("rumiq-articles", []),
+    savedArticles: () => words("rumiq-articles"),
     toggleArticle(slug) { const a = S.savedArticles(); const n = a.includes(slug) ? a.filter((x) => x !== slug) : [slug, ...a]; store.set("rumiq-articles", n); emit("articles"); return n.includes(slug); },
-    looks: () => store.get("rumiq-looks", []),
+    looks: () => rows("rumiq-looks", (l) => isObj(l) && l.id && Array.isArray(l.handles)),
     saveLook(handles, name) { const l = [{ id: "l" + Date.now(), name, handles, at: new Date().toISOString() }, ...S.looks()].slice(0, 20); store.set("rumiq-looks", l); emit("looks"); },
     deleteLook(id) { store.set("rumiq-looks", S.looks().filter((l) => l.id !== id)); emit("looks"); },
 
     /* ---------------- ideas (Dela en idé) */
-    ideas: () => store.get("rumiq-ideas", []),
+    ideas: () => rows("rumiq-ideas", (i) => isObj(i) && i.id),
     addIdea(title, text) { const i = [{ id: "i" + Date.now(), title, text, votes: 1, mine: true, at: new Date().toISOString() }, ...S.ideas()]; store.set("rumiq-ideas", i); emit("ideas"); },
     voteIdea(id) { store.set("rumiq-ideas", S.ideas().map((i) => (i.id === id ? { ...i, votes: i.voted ? i.votes - 1 : i.votes + 1, voted: !i.voted } : i))); emit("ideas"); },
 
@@ -180,8 +198,15 @@
     setConsent(c) { store.set("rumiq-consent", { ...c, at: new Date().toISOString() }); emit("consent"); },
     lang: () => store.get("rumiq-lang", "sv"),
     setLang(l) { store.set("rumiq-lang", l); emit("lang"); },
-    clearAll() { ["rumiq-cart", "rumiq-wish", "rumiq-compare", "rumiq-seen", "rumiq-customer", "rumiq-style", "rumiq-projects", "rumiq-articles", "rumiq-looks", "rumiq-orders", "rumiq-ideas", "rumiq-lists", "rumiq-taste", "rumiq-votes", "rumiq-notify", "rumiq-home", "rumiq-watch", "rumiq-soon"].forEach((k) => { try { localStorage.removeItem(k); } catch (e) {} });
-      S._cart = []; S._wish = []; S._cmp = []; S._seen = []; emit("all"); },
+    /* "Rensa allt": everything the shop has kept in this browser goes, also the room photo and the things in it.
+       Only the cookie choice, the language and the light stay, they are settings and not customer data. */
+    clearAll() {
+      const keep = /^rumiq-(consent|lang|ljus)$/;
+      [() => localStorage, () => sessionStorage].forEach((get) => { try { const st = get(); Object.keys(st).filter((k) => /^rumiq-/.test(k) && !keep.test(k)).forEach((k) => st.removeItem(k)); } catch (e) {} });
+      S._cart = []; S._wish = []; S._seen = [];
+      if (RQ.room && RQ.room.clear) { try { RQ.room.clear(); } catch (e) {} }
+      emit("all");
+    },
   });
   RQ.track = (ev, data) => S.track(ev, data);
 })();
