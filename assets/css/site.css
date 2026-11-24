@@ -802,7 +802,7 @@ details.pw[open] summary::after{content:" −"}
 .band.settle .btn.ghost{border-color:currentColor;color:inherit}
 :root[data-light=kvall] .band.settle .btn:not(.ghost){background:#F2F0EA;color:#191A18;border-color:#F2F0EA}
 .cue{position:absolute;left:50%;bottom:1.6rem;z-index:6;transform:translateX(-50%);display:flex;align-items:center;gap:.55rem;padding:.45rem .9rem .45rem 1rem;border-radius:99px;background:rgba(247,247,244,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:.82rem;font-weight:560;color:#22252A;transition:opacity .6s;pointer-events:none}
-.cue i{width:1.5px;height:.95rem;background:#22252A;transform-origin:top;animation:cue 2.6s var(--ease-soft) infinite}
+.cue i{width:1.5px;height:.95rem;background:#22252A;transform-origin:top;animation:cue 2.4s var(--ease-soft) 2 forwards}
 @keyframes cue{0%{transform:scaleY(0);opacity:1}60%{transform:scaleY(1);opacity:1}100%{transform:scaleY(1);opacity:0}}
 .static .hero{height:auto}
 .static .stage{height:100svh;min-height:38rem}
@@ -1346,7 +1346,7 @@ html.sheet-lock{overflow:hidden}
 .hs{position:absolute;width:2.75rem;height:2.75rem;margin:-1.375rem 0 0 -1.375rem;border:0;background:none;padding:0;z-index:2;-webkit-tap-highlight-color:transparent}
 .hs i{position:absolute;inset:.7rem;border-radius:50%;background:rgba(247,247,244,.95);box-shadow:0 0 0 1px rgba(34,37,42,.12),0 6px 16px -6px rgba(0,0,0,.45);transition:transform .35s var(--spring)}
 .hs i::after{content:"";position:absolute;inset:.42rem;border-radius:50%;background:#2C4A3E}
-.hs::before{content:"";position:absolute;inset:.7rem;border-radius:50%;border:1.5px solid rgba(247,247,244,.9);animation:hsPulse 2.6s var(--ease-soft) infinite}
+.hs::before{content:"";position:absolute;inset:.7rem;border-radius:50%;border:1.5px solid rgba(247,247,244,.9);animation:hsPulse 2.4s var(--ease-soft) 2 forwards}
 @keyframes hsPulse{0%{transform:scale(1);opacity:.9}70%,100%{transform:scale(2.1);opacity:0}}
 .hs:hover i,.hs:focus-visible i{transform:scale(1.18)}
 .hs-l{position:absolute;left:calc(100% - .2rem);top:50%;transform:translate(-4px,-50%);display:grid;gap:.05rem;white-space:nowrap;background:rgba(247,247,244,.96);color:#22252A;border-radius:10px;padding:.5rem .75rem;box-shadow:0 14px 30px -16px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease);text-align:left}

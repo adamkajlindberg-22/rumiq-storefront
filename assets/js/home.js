@@ -191,11 +191,13 @@
       const cx = canvas.getContext("2d"); let w, h, motes = [], vis = true, raf = 0;
       const size = () => { const d = Math.min(2, devicePixelRatio || 1); w = canvas.clientWidth; h = canvas.clientHeight; canvas.width = w * d; canvas.height = h * d; cx.setTransform(d, 0, 0, d, 0, 0);
         motes = Array.from({ length: opts.count }, () => ({ x: Math.random() * w, y: Math.random() * h, r: 0.4 + Math.random() * 1.3, vx: (Math.random() - 0.3) * 0.12, vy: -0.03 - Math.random() * 0.1, t: Math.random() * 6.28 })); };
-      const draw = () => { if (!alive) return; cx.clearRect(0, 0, w, h); for (const m of motes) { m.x += m.vx; m.y += m.vy; m.t += 0.01; if (m.y < -4) m.y = h + 4; if (m.x > w + 4) m.x = -4; if (m.x < -4) m.x = w + 4;
+      // the motes drift for the first five seconds on screen and then rest where they are (moving things stop by themselves, WCAG 2.2.2)
+      let moved = 0, last = 0;
+      const draw = (now) => { if (!alive) return; if (last && now) moved += Math.min(100, now - last); last = now || 0; if (moved > 5000) { raf = 0; return; } cx.clearRect(0, 0, w, h); for (const m of motes) { m.x += m.vx; m.y += m.vy; m.t += 0.01; if (m.y < -4) m.y = h + 4; if (m.x > w + 4) m.x = -4; if (m.x < -4) m.x = w + 4;
           const a = opts.alpha(m.x / w, m.y / h) * (0.55 + 0.45 * Math.sin(m.t)); if (a <= 0.01) continue; cx.beginPath(); cx.arc(m.x, m.y, m.r, 0, 6.283); cx.fillStyle = `rgba(${opts.rgb},${a})`; cx.fill(); }
-        raf = vis ? requestAnimationFrame(draw) : 0; };
+        raf = vis ? requestAnimationFrame(draw) : 0; if (!vis) last = 0; };
       size(); on(window, "resize", size, { passive: true });
-      const ob = new IntersectionObserver(([e]) => { vis = e.isIntersecting; if (vis && !raf) raf = requestAnimationFrame(draw); }); ob.observe(canvas); off.push(() => ob.disconnect());
+      const ob = new IntersectionObserver(([e]) => { vis = e.isIntersecting; if (vis && !raf && moved <= 5000) raf = requestAnimationFrame(draw); }); ob.observe(canvas); off.push(() => ob.disconnect());
     };
 
 
@@ -226,7 +228,7 @@
     if (isStatic) {
       if (loop && mq("(max-width: 820px)") && !mq("(prefers-reduced-motion: reduce)") && conn.saveData !== true && !/(^|-)2g$/.test(conn.effectiveType || "")) {
         const noLoop = () => { loop.classList.remove("on"); showWide(true); };
-        loop.src = "assets/video/hero-m.mp4"; loop.classList.add("on");
+        loop.src = "assets/video/hero-m.mp4"; loop.classList.add("on"); loop.defaultPlaybackRate = loop.playbackRate = 1.25; // once, in under five seconds (2.2.2)
         const pl = loop.play(); if (pl && pl.catch) pl.catch(noLoop);
         on(loop, "error", noLoop);
       } else if (!mq(WIDE_FIRST)) showWide(true);
