@@ -16,5 +16,7 @@
  "Flytta åt vänster": "Move left",
  "Flytta uppåt": "Move up",
  "Flytta nedåt": "Move down",
- "Flytta åt höger": "Move right"
+ "Flytta åt höger": "Move right",
+ "{0} länk": "{0} link",
+ "{0} länkar": "{0} links"
 }

@@ -940,25 +940,29 @@
   ];
   RQ.nProd = nProd;
   const POPULAR = () => `<p class="eyebrow" style="margin-bottom:1rem">Populärt</p><div class="chips">${["Lampa", "Ek", "Lin", "Förvaring", "Badrum", "Present", "Hall", "Lugnt och varmt", "Mjukt i sovrummet"].map((t) => `<button class="chip" type="button" data-q="${t}">${t}</button>`).join("")}</div>`;
+  // the number of hits is read out from one status line that stays (a status drawn anew with the hits is often not read)
+  const said = (t) => { const el = $("#searchSaid"); if (el && el.textContent !== t) el.textContent = t; };
   const doSearch = () => {
     const q = sInput.value.trim(), tones = RQ.toneChips ? RQ.toneChips() : "", ext = RQ.flowSearch ? RQ.flowSearch(q) : null;
+    said(!q && !ext ? "" : ext ? (ext.list.length ? nProd(ext.list.length) : "Inga träffar") : "");
     $("#search").classList.toggle("has-q", !!q);
     if (!q && !ext) { sRes.innerHTML = `${POPULAR()}${tones}`; return; }
     if (ext) { sRes.innerHTML = `${tones}${ext.note ? `<p class="small s-note">${ext.note}</p>` : ""}${ext.list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(ext.list.length)}</p>${RQ.grid(ext.list)}` : `<div class="empty"><h3>Inga träffar</h3><p>Prova en annan färg eller ett annat ord.</p></div>`}`; RQ.watch(sRes); return; }
     const found = S.search(q), list = found.list, words = S._words(q), raw = S.norm(q).split(/\s+/);
-    if (found.short) { sRes.innerHTML = `<p class="small s-note" role="status">Skriv minst två bokstäver.</p>${POPULAR()}`; return; }
+    if (found.short) { sRes.innerHTML = `<p class="small s-note">Skriv minst två bokstäver.</p>${POPULAR()}`; said("Skriv minst två bokstäver."); return; }
     const arts = RQ.ARTICLES.filter((a) => S.norm(a.title + " " + a.lead).includes(S.norm(q)));
     const cats = RQ.CATEGORIES.filter((c) => S.fold(c.name).includes(S.fold(q)));
     const help = HELP.filter((h) => words.some((w) => h[2].test(w)) || (h[3] && raw.some((w) => h[3].test(w))) || h[2].test(S.fold(q)));
     const links = `${cats.map((c) => `<a class="chip" href="#kategori-${c.id}" data-close>${esc(c.name)}</a>`).join("")}${help.map((h) => `<a class="chip s-help" href="#${h[0]}" data-close>${h[1]}</a>`).join("")}`;
-    sRes.innerHTML = `${found.fixed ? `<p class="s-fix" role="status">Menade du <b>${esc(found.fixed)}</b>? Här är träffarna för det.</p>` : ""}${links ? `<div class="chips" style="margin-bottom:1.6rem">${links}</div>` : ""}
-      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem" role="status">${nProd(list.length)}</p>${RQ.grid(list)}` : help.length || cats.length ? "" : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv vad du behöver i den smarta sökningen.</p><a class="btn ghost" href="#studio-sok" data-close>Smart sökning</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
+    said(list.length ? nProd(list.length) : help.length || cats.length ? `${help.length + cats.length} ${help.length + cats.length === 1 ? "länk" : "länkar"}` : "Inga träffar");
+    sRes.innerHTML = `${found.fixed ? `<p class="s-fix">Menade du <b>${esc(found.fixed)}</b>? Här är träffarna för det.</p>` : ""}${links ? `<div class="chips" style="margin-bottom:1.6rem">${links}</div>` : ""}
+      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(list.length)}</p>${RQ.grid(list)}` : help.length || cats.length ? "" : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv vad du behöver i den smarta sökningen.</p><a class="btn ghost" href="#studio-sok" data-close>Smart sökning</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
       ${arts.length ? `<p class="eyebrow" style="margin:2.4rem 0 1rem">Från magasinet</p><div class="mag-grid">${arts.slice(0, 3).map(RQ.magCard).join("")}</div>` : ""}`;
     RQ.watch(sRes);
   };
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
-  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); setTimeout(() => { sInput.focus(); sInput.select(); }, 60); };
+  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); const into = (n) => { sInput.focus(); if (document.activeElement === sInput) sInput.select(); else if (n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 60); }; // the field may still be turning visible (reduced motion): try again on the next frames
   // keys in the search: Enter puts the keyboard away on a phone and steps into the hits, the arrows walk through them
   const sItems = () => $$("a.chip, button.chip, .card .ct a, .empty a, .mag-grid a", sRes).filter((el) => el.offsetParent);
   $("#search").addEventListener("keydown", (e) => {
@@ -1139,6 +1143,14 @@
     lampBtn.addEventListener("click", (e) => { e.stopPropagation(); const open = !lightMenu.classList.contains("open"); closeMega(); lightMenu.classList.toggle("open", open); lampBtn.setAttribute("aria-expanded", open); if (open) setTimeout(() => $("[aria-checked=true]", lightMenu)?.focus(), 30); });
     lightMenu.addEventListener("click", (e) => { const b = e.target.closest("[data-light-set]"); if (!b) return; e.stopPropagation(); applyLight(b.dataset.lightSet, true); closeLight(); lampBtn.focus(); });
     document.addEventListener("click", (e) => { if (!e.target.closest(".lampwrap")) closeLight(); });
+    // a menu: the arrows walk through the three choices, Escape closes it and the focus goes back to the lamp
+    lightMenu.addEventListener("keydown", (e) => {
+      const items = $$("[data-light-set]", lightMenu), k = items.indexOf(document.activeElement);
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeLight(); lampBtn.focus(); }
+      else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); items[(k + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus(); }
+      else if (e.key === "Home" || e.key === "End") { e.preventDefault(); items[e.key === "Home" ? 0 : items.length - 1].focus(); }
+      else if (e.key === "Tab") closeLight();
+    });
     $$("[data-light-cycle]").forEach((b) => b.addEventListener("click", () => { const order = ["dag", "kvall", "auto"]; const cur = document.documentElement.getAttribute("data-light-mode") || "dag"; applyLight(order[(order.indexOf(cur) + 1) % 3], true); }));
     setInterval(() => { if (document.documentElement.getAttribute("data-light-mode") === "auto") applyLight("auto"); }, 5 * 60 * 1000);
   }
