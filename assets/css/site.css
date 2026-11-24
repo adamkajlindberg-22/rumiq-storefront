@@ -607,7 +607,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .sidenav a{text-decoration:none;color:var(--muted);font-size:.97rem;display:block;padding:.3rem 0;transition:color .25s}
 .sidenav a:hover{color:var(--ink)}
 .sidenav a.on{color:var(--ink);font-weight:600}
-.sidenav h4{font-size:.88rem;font-weight:500;color:var(--muted);margin:0 0 .5rem}
+.sidenav :is(h2,h4){font-size:.88rem;font-weight:500;color:var(--muted);margin:0 0 .5rem}
 .faq-group{margin-bottom:2.6rem}
 .faq-group h2{margin-top:0;margin-bottom:.9rem}
 .faq-group details{border-top:1px solid var(--line)}
@@ -697,7 +697,7 @@ footer.site .assure{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));g
 footer.site .assure b{display:block;color:var(--ink);font-weight:560;font-size:1.02rem;letter-spacing:-.01em}
 footer.site .assure span{color:var(--muted);font-size:.92rem}
 footer.site .cols{display:grid;grid-template-columns:1.6fr repeat(4,minmax(0,1fr));gap:2rem}
-footer.site h4{font-size:.88rem;font-weight:500;color:var(--muted);margin-bottom:.9rem}
+footer.site :is(h2,h4){font-size:.88rem;font-weight:500;color:var(--muted);margin-bottom:.9rem}
 footer.site ul{list-style:none;display:grid;gap:.4rem}
 footer.site a{text-decoration:none;color:var(--ink2);transition:color .25s}
 footer.site a:hover{color:var(--ink)}
@@ -897,7 +897,7 @@ details.pw[open] summary::after{content:" −"}
   .toolbar .tb-r{flex:1;min-width:0;flex-wrap:nowrap;gap:.5rem}
   .toolbar .select{flex:1;min-width:0;height:2.75rem}
   .toolbar .roomtoggle{order:0;flex:none;height:2.75rem;padding:0 .55rem 0 .3rem;gap:.45rem}
-  .toolbar .roomtoggle .rt-t{display:none}
+  .toolbar .roomtoggle .rt-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .shop-head .lead{font-size:1rem}
   .shop-head .banner-img{aspect-ratio:2/1;margin-top:1.2rem}
   .acct .sidenav{order:2;border-top:1px solid var(--line);padding-top:1.5rem}
@@ -2094,7 +2094,7 @@ html[data-no-offers] [data-show=offers],html[data-no-news] [data-show=news]{disp
 .ptab-bar [role=tab]{flex:none;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:.8rem 0;font:inherit;font-size:.98rem;font-weight:560;color:var(--muted);cursor:pointer}
 .ptab-bar [role=tab][aria-selected=true]{color:var(--ink);border-bottom-color:var(--ink)}
 .ptab{padding:1.2rem 0 .4rem;color:var(--ink2);font-size:.98rem;display:grid;gap:.6rem}
-.ptab h3{font-size:1rem;font-weight:600;color:var(--ink);margin-top:.8rem}
+.ptab :is(h2,h3){font-size:1rem;font-weight:600;color:var(--ink);margin-top:.8rem}
 .ptab ul:not(.facts):not(.pfacts){padding-left:1.1rem;display:grid;gap:.35rem}
 .ptab .facts{margin-top:.2rem}
 .ptab .p-looks,.ptab .p-reviews{margin-top:1rem}
