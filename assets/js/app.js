@@ -886,7 +886,7 @@
 
   // dock steps aside while reading downwards, returns on the way up
   const dock = $("#dock"); let lastY = scrollY, dockTick = false;
-  window.addEventListener("scroll", () => { if (dockTick || !dock) return; dockTick = true; requestAnimationFrame(() => { const y = scrollY; if (Math.abs(y - lastY) > 8) { dock.classList.toggle("away", y > lastY && y > 240); lastY = y; } dockTick = false; }); }, { passive: true });
+  window.addEventListener("scroll", () => { if (dockTick || !dock) return; dockTick = true; requestAnimationFrame(() => { const y = scrollY; const end = y + innerHeight >= document.documentElement.scrollHeight - 90; if (Math.abs(y - lastY) > 8 || end) { dock.classList.toggle("away", y > lastY && y > 240 && !end); lastY = y; } dockTick = false; }); }, { passive: true });
 
   /* ---------------------------------------------------------------- lightbox: pinch, double tap, wheel, drag, swipe, keys */
   RQ.lightbox = (() => {
@@ -994,11 +994,12 @@
   window.addEventListener("hashchange", RQ.router);
   document.addEventListener("DOMContentLoaded", () => {
     RQ.router(); navCheck();
-    /* the first screen of the home page belongs to the offer: on the home page the cookie bar waits
-       for the first scroll or tap (or 8 s); everywhere else it shows after a moment */
+    /* the first screen of the home page belongs to the offer: on the home page the cookie bar waits until the
+       visitor has scrolled past it or gone to another page; everywhere else it shows after a moment */
     if (!document.body.classList.contains("on-home")) { setTimeout(() => RQ.showCookies(false), 1200); return; }
-    let done = false; const go = () => { if (done) return; done = true; window.removeEventListener("scroll", onScroll); document.removeEventListener("pointerdown", go); RQ.showCookies(false); };
-    const onScroll = () => { if (window.scrollY > 120) go(); };
-    window.addEventListener("scroll", onScroll, { passive: true }); document.addEventListener("pointerdown", go); setTimeout(go, 8000);
+    let done = false; const go = () => { if (done) return; done = true; window.removeEventListener("scroll", onScroll); left.disconnect(); RQ.showCookies(false); };
+    const onScroll = () => { if (window.scrollY > window.innerHeight * 0.6) go(); };
+    const left = new MutationObserver(() => { if (!document.body.classList.contains("on-home")) go(); });
+    window.addEventListener("scroll", onScroll, { passive: true }); left.observe(document.body, { attributes: true, attributeFilter: ["class"] });
   });
 })();
