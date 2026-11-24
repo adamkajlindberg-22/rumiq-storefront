@@ -228,6 +228,15 @@ main{min-height:60vh}
 .empty{border:1px dashed var(--line);border-radius:var(--r);padding:3rem 2rem;text-align:center;color:var(--muted)}
 .empty h3{font-weight:560;font-size:var(--t-h3);letter-spacing:-.02em;color:var(--ink);margin-bottom:.5rem}
 .empty .btn{margin-top:1.4rem}
+/* 404: search first, a few places to go, then what is popular */
+.nf{padding-bottom:clamp(2.5rem,5vw,4rem)}
+.nf-search{max-width:36rem}
+.nf-search .field{display:flex;gap:.5rem}
+.nf-search input{flex:1;min-width:0}
+.nf-search .btn{flex:none}
+.nf-go{list-style:none;margin-top:1.2rem}
+.nf-pop{padding-bottom:clamp(4rem,7.5vw,6.5rem)}
+.nf-pop .h3{margin-bottom:1.2rem}
 
 /* images fade in on their own tone */
 .fade{opacity:0;transition:opacity .7s var(--ease)}

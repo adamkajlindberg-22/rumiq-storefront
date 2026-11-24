@@ -512,7 +512,22 @@
   }
 
   /* ---------------- 404 */
-  V.notfound = () => ({ html: `${head(`<span class="eyebrow">404</span>`, "Den här sidan finns inte", "Länken kan vara gammal eller felstavad.")}<section class="wrap" style="padding-bottom:6rem"><div class="ctrl-row"><a class="btn" href="#hem">Till startsidan</a><a class="btn ghost" href="#butik">Till butiken</a></div></section>` });
+  // a way forward from a dead link: search (with the words of the broken address filled in), a few places to go and what is popular
+  V.notfound = (raw = "") => {
+    let guess = "";
+    try { guess = decodeURIComponent(String(raw)).replace(/^(produkt|kategori|rum|look|kollektion|artikel|mitt-rum|svep-rum)-/, "").replace(/[-_+]+/g, " ").replace(/[^a-zåäöéü ]/gi, "").trim().slice(0, 40); } catch (e) {}
+    if (guess.length < 3) guess = "";
+    const go = [["Alla produkter", "butik"], ["Mitt rum", "mitt-rum"], ["Looks", "looks"], ["Hitta rätt", "hitta-ratt"], ["Vanliga frågor", "faq"]];
+    return {
+      html: `${head(crumbs([["Hem", "hem"], ["Sidan finns inte"]]), "Den här sidan finns inte", "Länken kan vara gammal eller felstavad.")}
+        <section class="wrap nf"><form class="nf-search" role="search" id="nfForm"><label class="sr" for="nfQ">Sök i butiken</label><div class="field"><input type="search" id="nfQ" placeholder="Vad letar du efter?" value="${esc(guess)}" autocomplete="off" enterkeyhint="search"><button class="btn" type="submit">Sök</button></div></form>
+        <ul class="chips nf-go">${go.map(([t, h]) => `<li><a class="chip" href="#${h}">${t}</a></li>`).join("")}</ul></section>
+        <section class="wrap nf-pop"><h2 class="h3">Populärt just nu</h2>${RQ.grid(RQ.PRODUCTS.filter((p) => p.featured).slice(0, 4))}</section>`,
+      mount(root) {
+        $("#nfForm", root).addEventListener("submit", (e) => { e.preventDefault(); $("#searchInput").value = $("#nfQ", root).value.trim(); RQ.openSearch(); });
+      },
+    };
+  };
 
   /* ---------------------------------------------------------------- tools on demand
      studio.js (Snabbval, Hitta rätt, Mitt hem, Bygg din egen look, Färger ur ditt rum, the stylist) is its own
@@ -640,7 +655,7 @@
   function render(raw) {
     let view = null, found = true;
     try { view = lookup(raw); } catch (e) { console.error(e); view = V.crashed(); }
-    if (!view) { view = V.notfound(); found = false; }
+    if (!view) { view = V.notfound(raw); found = false; }
     if (view.lazy) { // a tool that has not loaded yet: keep what is on screen (the prerendered page), load, then draw
       document.documentElement.classList.add("loading-tools");
       RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); else if (routing === raw) routing = null; }, () => {
