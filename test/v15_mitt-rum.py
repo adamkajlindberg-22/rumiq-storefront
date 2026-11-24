@@ -301,7 +301,8 @@ with sync_playwright() as p:
     # ------------------------------------------------------------ own photo: the first thing teaches the room; from a product page
     ctx = ctx_for(b, 390, 844, True); pg = new_page(ctx); cdp = ctx.new_cdp_session(pg)
     pg.goto(BASE + "mitt-rum-lysa-keramiklampa/"); pg.wait_for_timeout(800); quiet(pg)
-    ok("Lysa keramiklampa" in pg.title() and "Lysa keramiklampa" in pg.evaluate("document.querySelector('.rm-want').innerText"), "[own] the page names the product you came with")
+    # the title is the built one of Mitt rum (a near-copy page carries its target's head, see test/v15_seo-fart.py); the page itself names the product
+    ok("Lysa keramiklampa" in pg.evaluate("document.querySelector('.rm-want').innerText"), "[own] the page names the product you came with")
     pg.click("#view [data-room-setup]"); pg.wait_for_timeout(400)
     upload(pg, "rum.jpg", picture(1400, 788)); pg.wait_for_timeout(2200)
     ok(pg.evaluate("RQ.room.scene().map((i) => i.h)") == ["lysa-keramiklampa"] and pg.evaluate("document.querySelector('.rm-item.sel').dataset.h") == "lysa-keramiklampa", "[own] the product stands in the new room and is selected")

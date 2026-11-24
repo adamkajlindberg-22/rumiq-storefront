@@ -575,8 +575,11 @@
   document.body.appendChild(live);
 
   /* The page head follows the view: title, description, canonical address and the sharing tags.
-     RQ.META[route] = { title, description, image } wins when the build provides it; otherwise the view's own
-     title and lead are used. Routes that show another page point their canonical address at that page. */
+     One owner while browsing: when the build has written a head for every page (assets/heads.json, read by
+     seo.js as RQ.headBook), that head is used and the values below are only its stand-in, for views the build has
+     no head for. Without it (English, an older build) the router writes the head itself: RQ.META[route] =
+     { title, description, image } wins when provided; otherwise the view's own title and lead are used.
+     Routes that show another page point their canonical address at that page. */
   const CANON = { studio: "mitt-rum", "studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", kollektioner: "looks", ideer: "onska", rosta: "onska", jamfor: "mitt-hem", presentguiden: "hitta-ratt-present", "studio-sok": "hitta-ratt-ord", "studio-hemurval": "hitta-ratt" };
   const HOME_TITLE = "RumIQ · Skandinavisk inredning och smarta verktyg för hemmet";
   const metaEl = (sel) => document.head.querySelector(sel);
@@ -593,6 +596,10 @@
   };
   const setMeta = (sel, attr, val) => { const el = metaEl(sel); if (el && val != null && el.getAttribute(attr) !== val) el.setAttribute(attr, val); };
   function paintHead(raw, view, root, found) {
+    const own = () => ownHead(raw, view, root, found);
+    if (RQ.headBook && !view.crashed) RQ.headBook.follow(raw, own); else own();
+  }
+  function ownHead(raw, view, root, found) {
     const M = (RQ.META && RQ.META[raw]) || {};
     const isHome = isHomeRaw(raw), h1 = !view.title && !isHome && root.querySelector("h1");
     const title = M.title || view.title || (isHome ? HOME_TITLE : h1 ? `${h1.textContent.trim().replace(/\s+/g, " ")} · RumIQ` : "RumIQ");
@@ -610,7 +617,6 @@
     setMeta('meta[property="og:description"]', "content", desc);
     setMeta('meta[property="og:url"]', "content", url);
     setMeta('meta[property="og:image"]', "content", image);
-    return title;
   }
 
   /* When a page cannot be drawn (a value kept in the browser that no longer fits, or a fault of ours), the
@@ -655,7 +661,7 @@
     document.body.classList.toggle("on-checkout", /^kassa$/.test(raw));
     root.innerHTML = view.html;
     toPathLinks(root);
-    const title = paintHead(raw, view, root, found && !view.crashed);
+    paintHead(raw, view, root, found && !view.crashed);
     let backTo = moved && popNav ? scrolls.get(raw) || 0 : 0;
     if (first) { // a reload, or Back from another site, lands where the customer was
       try { const nav = performance.getEntriesByType("navigation")[0], was = JSON.parse(RQ.ss.get("rumiq-scroll") || "null"); if (nav && /reload|back_forward/.test(nav.type) && Array.isArray(was) && was[0] === raw && was[1] > 0) backTo = was[1]; } catch (e) {}
@@ -686,7 +692,8 @@
     RQ.navCheck && RQ.navCheck();
     if (moved && !first) { // a new page: the keyboard and the screen reader start at its top (unless the page chose a field itself)
       if (!root.contains(document.activeElement)) { try { root.focus({ preventScroll: true }); } catch (e) {} }
-      live.textContent = ""; setTimeout(() => { live.textContent = (document.title || title).replace(/\s*·\s*RumIQ.*$/, ""); }, 60);
+      // the name the customer sees on the page (its heading), not the longer title written for search engines
+      live.textContent = ""; setTimeout(() => { const h1 = root.querySelector("h1"); live.textContent = (h1 ? h1.textContent : document.title.replace(/\s*·\s*RumIQ.*$/, "")).trim().replace(/\s+/g, " "); }, 60);
     }
     if (first) setTimeout(() => root.classList.remove("first"), 1200);
   }

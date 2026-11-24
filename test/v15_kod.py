@@ -217,7 +217,9 @@ with sync_playwright() as p:
         pg.wait_for_timeout(150)
         ok(pg.evaluate("document.getElementById('routeLive').textContent") == pg.evaluate("document.querySelector('#view h1').textContent.trim()"), f"{tag} the new page is announced by name")
         ok(pg.evaluate("document.querySelector('link[rel=canonical]').href").endswith(pg.evaluate("location.pathname")) and pg.evaluate("document.querySelector('meta[property=\"og:url\"]').content").endswith(pg.evaluate("location.pathname")), f"{tag} canonical and og:url follow the view")
-        ok(pg.evaluate("document.querySelector('meta[name=description]').content") == pg.evaluate("document.querySelector('#view .short').textContent.trim()")[:158] and pg.evaluate("document.querySelector('meta[property=\"og:title\"]').content") == pg.title() and "/img/p/" in pg.evaluate("document.querySelector('meta[property=\"og:image\"]').content"), f"{tag} description, og:title and og:image follow the product")
+        # one owner of the head while browsing: the head the build wrote for this product (assets/heads.json), not the text on screen
+        built = json.loads((ROOT / "assets/heads.json").read_text(encoding="utf-8"))["pages"][pg.evaluate("RQ.currentRoute()")]
+        ok(pg.title() == built[0] and pg.evaluate("document.querySelector('meta[name=description]').content") == built[1] and pg.evaluate("document.querySelector('meta[property=\"og:title\"]').content") == pg.title() and "/img/p/" in pg.evaluate("document.querySelector('meta[property=\"og:image\"]').content"), f"{tag} title, description, og:title and og:image follow the product (the built head)")
         pg.go_back(); pg.wait_for_timeout(1100)
         ok(pg.evaluate("RQ.currentRoute()") == "butik" and abs(pg.evaluate("scrollY") - 1200) < 6, f"{tag} Back returns to where you were on Butik (scrollY {pg.evaluate('scrollY')})")
         ok(pg.evaluate("document.querySelector('link[rel=canonical]').href").endswith("/butik/"), f"{tag} canonical follows Back")
