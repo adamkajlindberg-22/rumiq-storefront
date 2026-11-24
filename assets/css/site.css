@@ -574,9 +574,9 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-sh
 .line h4{font-weight:560;font-size:.98rem;line-height:1.3;letter-spacing:-.01em}
 .line h4 a{text-decoration:none}
 .line .v{font-size:.85rem;color:var(--muted)}
-.line .qty{margin-top:.55rem;height:2.75rem}
-.line .qty button{width:2.75rem}
-.line .qty input{pointer-events:none}
+.line .qty{margin-top:.55rem;height:calc(2.75rem + 2px)}
+.line .qty button{width:2.75rem;flex:none}
+.line .qty input{width:2.4rem;flex:none;pointer-events:none}
 .qty button:disabled{color:var(--muted);opacity:.4}
 .line .lp{font-size:.95rem;font-weight:500;white-space:nowrap;text-align:right}
 .line .lp small{display:block;font-weight:400;font-size:.8rem;color:var(--muted)}
