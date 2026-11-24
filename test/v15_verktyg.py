@@ -249,9 +249,11 @@ with sync_playwright() as p:
         ok(re.search(r"#delad-[0-9a-z]{4}(\.[0-9a-z]{4}){4}$", link) is not None and pg.evaluate("(l) => RQ.sharedList.dec(l.split('#delad-')[1]).hs.join() === RQ.shop.wishlist().map(p => p.handle).join()", link), f"{tag} shared list: products travel by their own number and come back the same")
         ok(pg.evaluate("RQ.sharedList.dec('4.3.2.1.0').hs.length") == 5, f"{tag} shared list: an older link still opens")
         go(pg, "onskelista", 800)
-        ok(pg.evaluate("document.querySelector('h1').textContent.trim()") == "Sparat" and "Sparat" in pg.evaluate("document.querySelector('#mh-fav .eyebrow') ? '' : document.querySelector('[data-tab=fav]').textContent"), f"{tag} one word for saved things: the page is called Sparat")
+        tab = pg.evaluate("document.querySelector('[data-tab=fav]').textContent")
+        ok(pg.evaluate("document.querySelector('h1').textContent.trim()") == "Sparat" and pg.title() == "Sparat · RumIQ" and "sparat" in tab.lower() and "Favorit" not in tab, f"{tag} one word for saved things: the page is called Sparat ({pg.title()}, tab '{tab}')")
+        q0 = pg.evaluate(QTY)  # the look bought above is still in the cart
         pg.dblclick("#allCart"); pg.wait_for_timeout(400)
-        ok(pg.evaluate(QTY) == 5, f"{tag} Sparat: a double click on 'Lägg alla' adds five, not ten")
+        ok(pg.evaluate(QTY) - q0 == 5, f"{tag} Sparat: a double click on 'Lägg alla' adds five, not ten ({q0} -> {pg.evaluate(QTY)})")
         go(pg, "onska", 800)
         for t in ("Större krukor", "Fler mattor"):
             pg.fill("#ideaForm [name=title]", t); pg.click("#ideaForm button[type=submit]"); pg.wait_for_timeout(400)
