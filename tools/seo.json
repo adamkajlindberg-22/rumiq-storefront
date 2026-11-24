@@ -53,10 +53,10 @@
  },
  "delad": {
   "description": "Länken saknar produkter, eller så har den klippts av. Be om en ny länk, eller titta runt i butiken.",
-  "title": "Delad önskelista · RumIQ"
+  "title": "Delad lista · RumIQ"
  },
  "erbjudanden": {
-  "description": "Erbjudanden: Här samlar vi kampanjer och erbjudanden när de finns. RumIQ: skandinavisk inredning du ser i ditt eget rum innan du köper.",
+  "description": "Kampanjer och erbjudanden hos RumIQ samlas här när de finns. Se allt i ditt eget rum innan du köper.",
   "title": "Erbjudanden · RumIQ"
  },
  "faq": {
@@ -68,7 +68,7 @@
   "title": "Populärt · RumIQ"
  },
  "for-dig": {
-  "description": "För dig: Svep några produkter först, så sorteras butiken efter dig. RumIQ: skandinavisk inredning du ser i ditt eget rum innan du köper.",
+  "description": "Butiken sorterad efter din smak. Svep några kort först, så vet vi vad du gillar och visar det som passar dig överst.",
   "title": "För dig · RumIQ"
  },
  "frakt": {
@@ -90,10 +90,6 @@
  "inspiration": {
   "description": "Inredningsinspiration rum för rum: vardagsrum, sovrum, kök, badrum, hall och hemmakontor, med idéer och produkter du kan handla direkt.",
   "title": "Rumsinspiration – idéer för varje rum i hemmet · RumIQ"
- },
- "jamfor": {
-  "description": "Jämför produkter: Lägg till upp till fyra produkter och se dem sida vid sida.",
-  "title": "Jämför produkter · RumIQ"
  },
  "juridik-angerratt": {
   "description": "Ångerrätt hos RumIQ: du har 14 dagars ångerrätt enligt lag och {openDays} dagars öppet köp hos oss. Så ångrar du ett köp.",
@@ -128,7 +124,7 @@
   "title": "Köpvillkor · RumIQ"
  },
  "kassa": {
-  "description": "Kassa: Börja med en färdig look. Hela looken ger 10 % rabatt. RumIQ: skandinavisk inredning du ser i ditt eget rum innan du köper.",
+  "description": "Kassan hos RumIQ: se varukorgen, välj leveranssätt och se totalsumman innan du betalar. Du kan alltid handla som gäst.",
   "title": "Kassa · RumIQ"
  },
  "kategori-badrum-valmaende": {
@@ -172,7 +168,7 @@
   "title": "Kontakta RumIQ – kundservice och support"
  },
  "konto": {
-  "description": "Logga in: Vi skickar en kod på sex siffror. Inget lösenord behövs. RumIQ: skandinavisk inredning du ser i ditt eget rum innan du köper.",
+  "description": "Logga in på RumIQ med en kod som vi mejlar dig. Inget lösenord behövs, och du kan alltid handla som gäst.",
   "title": "Logga in · RumIQ"
  },
  "look-fokus": {
@@ -197,8 +193,8 @@
   "title": "Vardagsmiddag – dukning och ljus för köksbordet · RumIQ"
  },
  "looks": {
-  "description": "Färdiga looks: tre eller fyra saker som hör ihop, för hall, vardagsrum, kök, sovrum och badrum. Lägg hela looken i varukorgen med ett tryck.",
-  "title": "Färdiga looks – inredning som hör ihop, rum för rum · RumIQ"
+  "description": "Looks: tre eller fyra saker som hör ihop, för hall, vardagsrum, kök, sovrum och badrum. Lägg hela looken i varukorgen med ett tryck.",
+  "title": "Looks – inredning som hör ihop, rum för rum · RumIQ"
  },
  "magasin": {
   "description": "Idéer för ditt hem: korta artiklar om ljus, material, färg och små förändringar som gör stor skillnad. Med produkter som passar.",
@@ -229,7 +225,7 @@
   "title": "Sparat · RumIQ"
  },
  "presentkort": {
-  "description": "Presentkort på skandinavisk inredning: 250, 500, 1 000 eller 1 500 kr. Skickas med e-post med en egen hälsning och gäller i två år.",
+  "description": "Presentkort på skandinavisk inredning: 250, 500, 1 000 eller 1 500 kr, med en egen hälsning. Presentkorten kommer när butiken öppnar.",
   "title": "Presentkort på inredning, 250–1 500 kr · RumIQ"
  },
  "produkt-affisch-horisont-ekram": {
@@ -329,7 +325,7 @@
   "title": "Så fungerar RumIQ – se inredningen i ditt eget rum"
  },
  "skapa-konto": {
-  "description": "Skapa konto: Vi skickar en kod på sex siffror. Inget lösenord behövs. RumIQ: skandinavisk inredning du ser i ditt eget rum innan du köper.",
+  "description": "Skapa ett gratis konto på RumIQ och spara dina rum, listor, looks och din stil. Vi mejlar en kod, inget lösenord behövs.",
   "title": "Skapa konto · RumIQ"
  },
  "spara-order": {
@@ -337,16 +333,16 @@
   "title": "Spåra min beställning · RumIQ"
  },
  "studio-plus": {
-  "description": "Studio Plus: se produkterna i ditt eget rum med rätt ljus och skuggor, och prova väggfärg, golv och stil. Från 0 kr.",
+  "description": "Studio Plus: AI-bilder av ditt eget rum med produkterna på plats, i rätt ljus och med skuggor. Prova väggfärg, golv och stil. Börja gratis med ett konto.",
   "title": "Studio Plus – AI-bilder av ditt rum med inredningen · RumIQ"
  },
  "studio-stylist": {
-  "description": "Fråga RumIQ:s AI-stylist: beskriv ditt rum och vad du vill förändra, så får du praktiska inredningsråd och förslag ur sortimentet. Gratis.",
-  "title": "AI-stylist – inredningsråd för ditt rum · RumIQ"
+  "description": "Fråga RumIQ:s stylist: beskriv ditt rum och vad du vill förändra, så får du praktiska inredningsråd och förslag ur sortimentet. Gratis.",
+  "title": "Stylisten – inredningsråd för ditt rum · RumIQ"
  },
  "svep": {
   "description": "Svep fram din inredningsstil: höger sparar, vänster hoppar över. Efter tio kort får du en stilprofil och butiken sorterad efter din smak.",
-  "title": "Hitta din inredningsstil – svep tio kort · RumIQ"
+  "title": "Svep – hitta din inredningsstil på tio kort · RumIQ"
  },
  "svep-ihop": {
   "description": "Inreder ni tillsammans? Svep samma kort var för sig och se vilka lampor, textilier och tavlor ni båda gillar.",

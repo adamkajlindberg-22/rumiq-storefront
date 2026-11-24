@@ -123,7 +123,7 @@ with sync_playwright() as p:
 
         # 6. merged tools
         ok(pg.evaluate("!document.querySelector('#view a[href*=kombinera], #view a[href*=studio-analys]')"), f"{tag} Mitt rum no longer links to the merged tools")
-        for old, h1 in (("studio-kombinera", "Mitt rum"), ("studio-analys", "Mitt rum"), ("kollektioner", "Färdiga looks")):
+        for old, h1 in (("studio-kombinera", "Mitt rum"), ("studio-analys", "Mitt rum"), ("kollektioner", "Looks")):
             pg.goto(BASE + old + "/"); pg.wait_for_timeout(400)
             ok(pg.evaluate("document.querySelector('#view h1').textContent.trim()") == h1, f"{tag} {old} opens {h1}")
             head = (ROOT / old / "index.html").read_text(encoding="utf-8")

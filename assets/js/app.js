@@ -65,8 +65,8 @@
     return `
     <article class="card${on ? " in-room" : ""}" style="--tone:${p.tone[0]}22">
       <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
-      <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)} i önskelistan">${I.heart}</button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${roomIco}</button>
+      <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}</button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i Mitt rum">${roomIco}</button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <button class="qv" type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
@@ -134,7 +134,7 @@
       const seen = new Set(list.map((p) => p.handle)), rooms = new Set(list.flatMap((p) => p.rooms));
       const more = list.length < 4 && !nActive() ? RQ.PRODUCTS.filter((p) => !seen.has(p.handle) && p.rooms.some((r) => rooms.has(r))).slice(0, 4) : [];
       return `${more.length ? `<div class="list-more"><h2 class="h3">Mer som passar</h2>${RQ.grid(more, "three")}</div>` : ""}
-        <div class="list-end"><p>${list.length === all.length ? `Du har sett alla ${nProd(list.length)}.` : `Du har sett ${list.length} av ${nProd(all.length)}.`}</p><span class="chips"><a class="chip" href="#looks">Färdiga looks</a><a class="chip" href="#hitta-ratt">Hitta rätt</a></span></div>`;
+        <div class="list-end"><p>${list.length === all.length ? `Du har sett alla ${nProd(list.length)}.` : `Du har sett ${list.length} av ${nProd(all.length)}.`}</p><span class="chips"><a class="chip" href="#looks">Looks</a><a class="chip" href="#hitta-ratt">Hitta rätt</a></span></div>`;
     };
     const results = (list) => (list.length ? RQ.grid(list, "three", true) : "") + tail(list);
     const first = listFor(st.sort);
@@ -153,7 +153,7 @@
                 <span class="tb-l"><span class="count" id="count" role="status">${nProd(first.length)}</span>${RQ.room && RQ.room.mode() ? '<span class="rm-hint">Peka på en bild så ser du den i ditt rum.</span>' : ""}</span>
                 <div class="tb-r">
                   ${groups ? `<button class="chip tb-filter" type="button" id="toggleFilters" aria-expanded="false" aria-controls="filters">${fIco}<span>Filter</span><b id="fN"${nActive() ? "" : " hidden"}>${nActive()}</b></button>` : ""}
-                  <button class="roomtoggle" type="button" data-room-mode aria-pressed="${!!(RQ.room && RQ.room.mode())}"><span class="rt-img" data-room-thumb data-empty='${roomIco}'>${RQ.room && RQ.room.has() ? RQ.room.thumb() : roomIco}</span><span class="rt-t">${RQ.room && RQ.room.has() ? "Visa i mitt rum" : "Se allt i ditt rum"}</span><i class="sw" aria-hidden="true"></i></button>
+                  <button class="roomtoggle" type="button" data-room-mode aria-pressed="${!!(RQ.room && RQ.room.mode())}"><span class="rt-img" data-room-thumb data-empty='${roomIco}'>${RQ.room && RQ.room.has() ? RQ.room.thumb() : roomIco}</span><span class="rt-t">${RQ.room && RQ.room.has() ? "Visa i Mitt rum" : "Se allt i ditt rum"}</span><i class="sw" aria-hidden="true"></i></button>
                   ${noSort ? "" : `<label class="sr" for="sort">Sortera</label>
                   <select class="select" id="sort"><option value="rel">Relevans</option><option value="pop">Popularitet</option><option value="asc">Pris: lågt till högt</option><option value="desc">Pris: högt till lågt</option><option value="new">Senaste</option>${RQ.room && RQ.room.has() ? '<option value="match">Passar mitt rum</option>' : ""}${RQ.taste && RQ.taste.has() ? '<option value="dig">För dig</option>' : ""}</select>`}
                 </div>
@@ -269,7 +269,7 @@
   const listPanel = (p) => {
     const lists = S.lists();
     const suggest = p.rooms.map((r) => RQ.roomById(r).name).filter((n) => !lists.some((l) => l.name === n));
-    return `<p class="small" style="margin-bottom:.7rem">Samla produkter per rum eller projekt. Listorna finns under Önskelista och Mitt konto.</p>
+    return `<p class="small" style="margin-bottom:.7rem">Samla produkter per rum eller projekt. Listorna finns under Sparat och i ditt konto.</p>
       <div style="display:grid;gap:.45rem">${lists.map((l) => `<label class="check"><input type="checkbox" data-list="${l.id}" ${l.handles.includes(p.handle) ? "checked" : ""}> ${esc(l.name)} <span class="small">(${l.handles.length})</span></label>`).join("")}</div>
       ${suggest.length ? `<div class="chips" style="margin-top:.8rem">${suggest.map((n) => `<button type="button" class="chip" data-newlist="${esc(n)}">+ ${esc(n)}</button>`).join("")}</div>` : ""}
       <form id="newList" style="display:flex;gap:.5rem;margin-top:.8rem"><label class="sr" for="nl">Ny lista</label><input id="nl" placeholder="Ny lista, till exempel Sommarstugan" maxlength="40"><button class="btn sm" type="submit">Skapa</button></form>`;
@@ -294,7 +294,7 @@
       html: `<section class="wrap pcr">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
         <section class="wrap pdp">
           <div class="pg">
-            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}" aria-label="Visa större: ${esc(g.alt)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
+            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}" aria-label="Visa större: ${esc(g.alt)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i Mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
             ${isLamp ? `<button type="button" class="lightswitch" id="lightSw" aria-pressed="true" hidden><i></i><span>Lampan är tänd</span></button>` : ""}
             <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
           </div>
@@ -307,7 +307,7 @@
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
             <p class="small qty-note" id="qtyNote" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${RQ.payRow()}
-            ${RQ.room && RQ.room.has() ? `<a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.room.thumb()}</span><span><b>Ställ in i mitt rum</b><small>Se den hemma hos dig och handla hela rummet på en gång.</small></span>${RQ.roomIco}</a>`
+            ${RQ.room && RQ.room.has() ? `<a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.room.thumb()}</span><span><b>Ställ in i Mitt rum</b><small>Se den hemma hos dig och handla hela rummet på en gång.</small></span>${RQ.roomIco}</a>`
               : `<button type="button" class="roomcta" data-room-setup="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.roomIco}</span><span><b>Se den i ditt rum</b><small>Ta en bild av ditt rum, så ställer vi in produkten där.</small></span>${RQ.plus}</button>`}
             ${RQ.p3d ? RQ.p3d.card(p) : ""}
             <div class="pactions">
@@ -999,7 +999,7 @@
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-wish],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-undo-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
-    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad i önskelistan" : "Spara i önskelistan"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
+    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
     if (t.matches("[data-add]")) { S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
     if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }

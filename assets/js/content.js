@@ -28,20 +28,20 @@
       lead: "Fem steg från att du hittar något du gillar till att det står hemma hos dig.",
       html: () => `
         <ol class="steps-list">
-          <li><h3>Upptäck</h3><p>Bläddra i butiken efter kategori eller rum, läs magasinet eller beskriv med egna ord vad du behöver. AI-stylisten och den smarta sökningen föreslår produkter, och stiltestet behöver ingen bild.</p></li>
+          <li><h3>Upptäck</h3><p>Bläddra i butiken efter kategori eller rum, läs magasinet eller beskriv med egna ord vad du behöver. Svep, Hitta rätt och stylisten föreslår produkter, och ingen av dem behöver en bild.</p></li>
           <li><h3>Se det i ditt rum</h3><p>Lägg till ett foto av ditt rum eller välj ett exempelrum. Välj produkter och placera dem där du vill ha dem. Resultatet är en bild att inspireras av, så storlek och färg kan skilja sig från verkligheten. Kontrollera alltid produktsidan.</p></li>
-          <li><h3>Spara det du gillar</h3><p>I Mitt hem samlar du rumsprojekt, sparade bilder, favoriter och din stil, så att du kan fortsätta där du slutade.</p></li>
+          <li><h3>Spara det du gillar</h3><p>I Mitt hem samlar du det du sparat, dina rumsprojekt och din stil, så att du kan fortsätta där du slutade.</p></li>
           <li><h3>Beställ tryggt</h3><p>Lägg enskilda produkter eller en hel look i varukorgen och betala i Shopifys säkra kassa. Leveranssätt, kostnad och beräknad leveranstid visas innan du betalar. Vi ser aldrig dina kortuppgifter.</p></li>
           <li><h3>Leverans och hjälp</h3><p>Följ din beställning, tänk på att varor kan komma i olika paket och hör av dig om något inte stämmer. ${openBuy}</p></li>
         </ol>
         <h2>Verktygen</h2>
         <p>Alla verktyg är gratis. Studio Plus är ett tillval för dig som vill ha fler AI-bilder.</p>
         <table class="tbl"><thead><tr><th>Verktyg</th><th>Vad det gör</th><th>Konto</th></tr></thead><tbody>
-          <tr><td><a href="#svep">Svep fram din stil</a></td><td>Svep tio kort eller svara på fyra snabba frågor och få din stilprofil.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#mitt-rum">Mitt rum</a></td><td>Se produkterna i ett foto av ditt rum, dag som kväll. Här finns också Färger ur ditt rum.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#hitta-ratt">Hitta rätt</a></td><td>Till ditt hem, som present eller med egna ord. AI-stylisten finns ett tryck bort.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#svep">Svep</a></td><td>Svep tio kort eller gör fyra snabba val och få din stilprofil.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#mitt-rum">Mitt rum</a></td><td>Se produkterna i ett foto av ditt rum, dag som kväll, och se vad som passar färgerna där.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#hitta-ratt">Hitta rätt</a></td><td>Till ditt hem, som present eller med egna ord. Stylisten finns ett tryck bort.</td><td>Behövs inte</td></tr>
           <tr><td><a href="#looks">Looks</a></td><td>Färdiga looks med rabatt, eller bygg din egen.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#mitt-hem">Mitt hem</a></td><td>Favoriter, dina rum och mått, din stil och dina projekt på ett ställe.</td><td>Sparas i din webbläsare</td></tr>
+          <tr><td><a href="#mitt-hem">Mitt hem</a></td><td>Det du sparat, dina rum och mått, din stil och dina projekt på ett ställe.</td><td>Sparas i din webbläsare</td></tr>
         </tbody></table>
         <p class="note">Verktygens resultat är förslag, inte garantier eller produktfakta. Kontrollera alltid mått, material och pris på produktsidan innan du köper.</p>`,
     },
@@ -148,7 +148,7 @@
         ]],
         ["Produkter", [
           ["Omfattas produkterna av garanti?", "Du har alltid rätt att reklamera fel i tre år enligt konsumentköplagen. Om en tillverkare ger en garanti utöver det står det på produktsidan."],
-          ["Hur väljer jag rätt produkt?", "Läs produktsidan, prova produkten i Mitt rum eller fråga AI-stylisten."],
+          ["Hur väljer jag rätt produkt?", "Läs produktsidan, prova produkten i Mitt rum eller fråga stylisten."],
           ["Vad gör jag om produkten är felaktig?", "Skriv till oss med ordernummer och gärna en bild, så löser vi det. Läs mer om <a href='#juridik-garanti'>reklamation</a>."],
           ["Varför kan jag inte köpa vissa produkter?", "RumIQ är i en tidig fas. Produkter märkta Exempel visar hur butiken kommer att se ut men går inte att köpa än."],
         ]],
@@ -181,7 +181,7 @@
         <h3>Ärligt hela vägen</h3>
         <p>AI-bilder märks som inspiration. Pris och frakt visas innan du betalar. Vi hittar inte på recensioner, lagersaldon eller leveranslöften.</p>
         <h2>Så vill vi förbättra hela upplevelsen</h2>
-        <p>Från att du upptäcker något, till att du ser det i ditt rum, sparar och jämför, och beställer i några få steg. Utan att du behöver gissa.</p>
+        <p>Från att du upptäcker något, till att du ser det i ditt rum, sparar det och beställer i några få steg. Utan att du behöver gissa.</p>
         <h2>Där vi är i dag</h2>
         <p>RumIQ är i en tidig fas. Sortimentet växer och vissa produkter är tydligt märkta exempel som inte går att köpa än. Vi har inget eget lager. Tanken är att leverantörerna skickar direkt till dig från lager inom EU, och leverantörerna bekräftas innan butiken öppnar.</p>
         <h2>Frågor eller idéer?</h2>

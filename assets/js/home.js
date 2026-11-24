@@ -82,7 +82,7 @@
 
 
       <section class="sec looks-sec" id="looks-hem">
-        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Färdiga looks</h2><p>Tre eller fyra saker som hör ihop. Ett tryck, så ligger allt i varukorgen.</p></div><span class="sec-end">${RQ.rowNav("homeLooks", "looks")}<a class="link" href="#looks">Alla looks</a></span></div>
+        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Looks</h2><p>Tre eller fyra saker som hör ihop. Ett tryck, så ligger allt i varukorgen.</p></div><span class="sec-end">${RQ.rowNav("homeLooks", "looks")}<a class="link" href="#looks">Alla looks</a></span></div>
           <div class="looks-row" id="homeLooks">${RQ.LOOKS.map(RQ.lookCard).join("")}</div></div>
       </section>
 
@@ -121,7 +121,7 @@
     const ico = (path) => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
     const items = [
       [ico('<path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/>'), "Se det hemma först", "Ställ in produkterna i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare."],
-      [ico('<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>'), d.minDays ? `Hemma om ${d.minDays}–${d.maxDays} arbetsdagar` : "Snabb leverans", `${d.fromCountry || "Lager i EU"}. Du ser leveransdatumet innan du beställer, och kan välja ombud, paketskåp eller hem.`],
+      [ico('<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>'), d.minDays ? `Målet: hemma om ${d.minDays}–${d.maxDays} arbetsdagar` : "Leverans till ombud, paketskåp eller hem", `${d.fromCountry || "Lager i EU"}. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.`],
       [ico('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/>'), d.openPurchaseDays ? `${d.openPurchaseDays} dagars öppet köp` : "14 dagars ångerrätt", `Ångra med en knapp på sajten. ${d.returnText || ""}`.trim()],
       [ico('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'), "Du är med och väljer", "Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in."],
     ];

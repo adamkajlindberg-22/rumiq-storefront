@@ -96,7 +96,7 @@
     html(p) {
       const c = this.cfg(p), r = this.range(c);
       return `<div class="lk" role="group" aria-label="Leveranskoll"><p class="lk-h">Leveranskoll</p>
-        <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="${c.fromCountry ? "on" : ""}"><i></i><b>Skickas från</b><span>${c.fromCountry ? esc(c.fromCountry) : PENDING}</span></li><li class="${r ? "on" : ""}"><i></i><b>Hos dig</b><span>${r || PENDING}</span></li></ol>
+        <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="${c.fromCountry ? "on" : ""}"><i></i><b>Skickas från</b><span>${c.fromCountry ? esc(c.fromCountry) : PENDING}</span></li><li class="${r ? "on" : ""}"><i></i><b>Målet: hos dig</b><span>${r || PENDING}</span></li></ol>
         <p class="lk-f">${c.openPurchaseDays ? `${c.openPurchaseDays} dagars öppet köp.` : "14 dagars ångerrätt."} ${c.returnText ? esc(c.returnText) : "Hur returen går till står här när den är bekräftad."}${(window.RQ_CONFIG || {}).freeShippingFrom ? ` Fri frakt till ombud och paketskåp från ${kr(window.RQ_CONFIG.freeShippingFrom)}.` : ""}</p></div>`;
     },
   };
@@ -151,7 +151,7 @@
           <button class="btn" type="button" id="shAdd" data-add="${p.handle}::0">Lägg i varukorgen</button>
           <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${ICO.heart}</button>
         </div>
-        <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i mitt rum</span></button>
+        <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i Mitt rum</span></button>
         ${RQ.delivery.html(p)}
         <a class="sh-more" href="#produkt-${p.handle}">Se hela produkten ${ICO.arrow}</a>
       </div>`;
@@ -387,7 +387,7 @@
     const sum = ps.reduce((s, p) => s + p.price, 0), net = ready ? lookNet(ready) : sum;
     return `<div class="order mylook"><header><b>${esc(l.name)}</b><span class="price" style="font-family:var(--mono)">${net < sum ? `<s>${kr(sum)}</s> ` : ""}${kr(net)}</span></header>
       <div class="mylook-line">${ps.map((p) => `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt="" loading="lazy"></button>`).join("")}</div>
-      <div class="ctrl-row"><button class="btn sm" type="button" data-look-buy="${ps.map((p) => p.handle).join(",")}" data-look-name="${esc(l.name)}">Lägg i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${ps.map((p) => p.handle).join(",")}">Se i mitt rum</button><button class="chip" type="button" data-dellook="${l.id}">Ta bort</button></div></div>`;
+      <div class="ctrl-row"><button class="btn sm" type="button" data-look-buy="${ps.map((p) => p.handle).join(",")}" data-look-name="${esc(l.name)}">Lägg i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${ps.map((p) => p.handle).join(",")}">Se i Mitt rum</button><button class="chip" type="button" data-dellook="${l.id}">Ta bort</button></div></div>`;
   }).join("");
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-look-add]");
@@ -400,7 +400,7 @@
     const mine = S.looks(), pct = Math.round(lookRate() * 100);
     return {
     title: "Looks · RumIQ",
-    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", `Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.${pct ? ` <b class="look-off"><span>Hela looken ger</span> ${pct} % <span>rabatt.</span></b>` : ""}`)}
+    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Looks", `Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.${pct ? ` <b class="look-off"><span>Hela looken ger</span> ${pct} % <span>rabatt.</span></b>` : ""}`)}
       <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}
         <a class="own-look" href="#mitt-rum"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look i ditt rum</b><small>Ställ in det du gillar, se totalpriset och hur väl sakerna går ihop.</small></span></a></div>
         ${mine.length ? `<div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Dina sparade looks</h2></div><div class="mylooks">${RQ.savedLooksHtml()}</div>` : ""}
@@ -571,7 +571,7 @@
   };
   RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>
-      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Färdiga looks</a></nav>`;
+      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Looks</a></nav>`;
 
   /* ------------------------------------------------------------------ Upptäck */
   V.upptack = () => ({
@@ -579,7 +579,7 @@
     html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck"]]), "Upptäck", "Gå in i rummen, svep fram din stil eller ta en färdig look. Allt går att handla där du står.")}
       <section class="wrap up-top">${RQ.svepTeaser()}</section>
       ${RQ.journey.html()}
-      <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Färdiga looks</h2><p>Saker som hör ihop, med ett tryck.</p></div><a class="link" href="#looks">Alla looks</a></div><div class="looks-row">${RQ.LOOKS.map(RQ.lookCard).join("")}</div></div></section>
+      <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Looks</h2><p>Saker som hör ihop, med ett tryck.</p></div><a class="link" href="#looks">Alla looks</a></div><div class="looks-row">${RQ.LOOKS.map(RQ.lookCard).join("")}</div></div></section>
       <section class="wrap" style="margin-bottom:4rem">${RQ.voteTeaser()}</section>
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Magasin</h2><p>Korta texter om ljus, material, färg och vardag.</p></div><a class="link" href="#magasin">Alla artiklar</a></div><div class="mag-grid">${RQ.ARTICLES.slice(0, 3).map(RQ.magCard).join("")}</div></div></section>`,
     mount: (root) => RQ.journey.mount(root),

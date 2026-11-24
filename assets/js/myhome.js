@@ -204,24 +204,24 @@
     const hs = S.wishlist().map((p) => p.handle); if (!hs.length) return;
     const nm = ((S.customer && S.customer()) || {}).name || "";
     const url = new URL("delad/", document.baseURI).href + "#delad-" + encList(hs, nm); // from the site root, whatever page we are on
-    try { if (navigator.share) { await navigator.share({ title: "Min önskelista på RumIQ", url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
-    try { await navigator.clipboard.writeText(url); RQ.toast("Länken till din önskelista är kopierad."); } catch (e) { window.prompt("Kopiera länken:", url); }
+    try { if (navigator.share) { await navigator.share({ title: "Det jag sparat på RumIQ", url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(url); RQ.toast("Länken till det du sparat är kopierad."); } catch (e) { window.prompt("Kopiera länken:", url); }
     RQ.track("wishlist_share", { items: hs.length });
   };
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-share-wish]"); if (b) RQ.shareWishLink(b); });
   V.shared = (payload) => {
-    const L = decList(payload), crumbs = RQ.crumbs([["Hem", "hem"], ["Delad önskelista"]]);
-    if (!L) return { title: "Delad önskelista · RumIQ", html: `<header class="page-head wrap">${crumbs}<h1 class="h1">Den här listan är tom.</h1><p class="lead">Länken saknar produkter, eller så har den klippts av. Be om en ny länk, eller titta runt i butiken.</p><div class="ctrl-row" style="margin-top:1.4rem"><a class="btn" href="#butik">Till butiken</a></div></header>` };
+    const L = decList(payload), crumbs = RQ.crumbs([["Hem", "hem"], ["Delad lista"]]);
+    if (!L) return { title: "Delad lista · RumIQ", html: `<header class="page-head wrap">${crumbs}<h1 class="h1">Den här listan är tom.</h1><p class="lead">Länken saknar produkter, eller så har den klippts av. Be om en ny länk, eller titta runt i butiken.</p><div class="ctrl-row" style="margin-top:1.4rem"><a class="btn" href="#butik">Till butiken</a></div></header>` };
     const ps = L.hs.map(RQ.byHandle), total = ps.reduce((a, p) => a + p.price, 0);
     return {
-      title: (L.name ? `${gen(L.name)} önskelista` : "Delad önskelista") + " · RumIQ",
-      html: `<header class="page-head wrap">${crumbs}<span class="eyebrow">Delad önskelista</span><h1 class="h1">${L.name ? `${esc(gen(L.name))} önskelista` : "En önskelista till dig"}</h1>
+      title: (L.name ? `${gen(L.name)} lista` : "Delad lista") + " · RumIQ",
+      html: `<header class="page-head wrap">${crumbs}<span class="eyebrow">Delad lista</span><h1 class="h1">${L.name ? `${esc(gen(L.name))} lista` : "En lista till dig"}</h1>
           <p class="lead">${ps.length} ${ps.length === 1 ? "sak" : "saker"} · ${kr(total)}. Köp något som present, spara det du också gillar eller se allt i ditt eget rum.</p>
           <div class="ctrl-row" style="margin-top:1.4rem"><button class="btn" type="button" id="shAll">Lägg alla i varukorgen · ${kr(total)}</button><button class="btn ghost" type="button" id="shSave">Spara hos mig</button></div></header>
         <section class="wrap" style="padding-bottom:5rem"><div class="grid">${ps.map(RQ.card).join("")}</div>
           <p class="small" style="margin-top:1.6rem">Listan finns bara i länken. Vi sparar inget om den på någon server.</p></section>`,
       mount(root) {
-        const a = $("#shAll", root); a.addEventListener("click", () => RQ.addMany(L.hs, a, "Önskelistan"));
+        const a = $("#shAll", root); a.addEventListener("click", () => RQ.addMany(L.hs, a, "Listan"));
         const b = $("#shSave", root); b.addEventListener("click", () => { let n = 0; L.hs.forEach((h) => { if (!S.isWished(h)) { S.toggleWish(h); n++; } }); RQ.toast(n ? `${n} ${n === 1 ? "sak sparad" : "saker sparade"}. <a href="#mitt-hem">Visa</a>` : "Du har redan sparat allt."); });
         RQ.track("wishlist_open", { items: L.hs.length });
       },

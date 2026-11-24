@@ -104,7 +104,7 @@
       <div class="sv-ctrl" id="${px}Ctrl">
         ${compact ? "" : `<button class="sv-b undo" type="button" id="${px}Undo" aria-label="Ångra senaste" title="Ångra senaste" disabled>${SV.undo}</button>`}
         <button class="sv-b no" type="button" id="${px}No" aria-label="Nej tack" title="Nej tack">${ICO.x}</button>
-        ${compact ? "" : `<button class="sv-b room" type="button" id="${px}Room" aria-label="Ställ in i mitt rum" title="Ställ in i mitt rum">${RQ.roomIco}</button>`}
+        ${compact ? "" : `<button class="sv-b room" type="button" id="${px}Room" aria-label="Ställ in i Mitt rum" title="Ställ in i Mitt rum">${RQ.roomIco}</button>`}
         <button class="sv-b bag" type="button" id="${px}Bag" aria-label="Lägg i varukorgen" title="Lägg i varukorgen">${SV.bag}</button>
         <button class="sv-b yes" type="button" id="${px}Yes" aria-label="Spara" title="Spara">${ICO.heart}</button>
       </div>
@@ -516,7 +516,7 @@
   RQ.svepTeaser = () => {
     const t = RQ.taste.get(), top = RQ.taste.top(t)[0], picks = deck().slice(0, 3);
     return `<a class="svt" href="#svep"><div class="svt-cards" aria-hidden="true">${picks.map((p, k) => `<img src="${RQ.img(p, 600)}" alt="" loading="lazy" style="--k:${k}">`).join("")}</div>
-      <div class="svt-tx"><span class="eyebrow">${top ? `Din stil: ${esc(RQ.STYLES[top].name)}` : "Hitta din stil"}</span><h3>${t.n ? "Fortsätt där du var." : "Vilken stil är din?"}</h3><p>Svep höger på det du gillar och vänster på resten. Efter tio kort sorteras hela butiken efter dig.</p><span class="btn sm">${t.n ? "Fortsätt" : "Börja svepa"}</span></div></a>`;
+      <div class="svt-tx"><span class="eyebrow">${top ? `Din stil: ${esc(RQ.STYLES[top].name)}` : "Svep"}</span><h3>${t.n ? "Fortsätt där du var." : "Vilken stil är din?"}</h3><p>Svep höger på det du gillar och vänster på resten. Efter tio kort sorteras hela butiken efter dig.</p><span class="btn sm">${t.n ? "Fortsätt" : "Börja svepa"}</span></div></a>`;
   };
   // a small way into Svep for pages that would otherwise be empty
   RQ.svepNudge = (title = "Osäker på vad du gillar?", text = "Svep tio kort, så sparas det du gillar här och butiken sorterar sig efter dig.") => {
