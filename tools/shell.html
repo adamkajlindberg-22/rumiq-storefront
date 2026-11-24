@@ -28,7 +28,20 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <a class="nav-logo" href="./" aria-label="RumIQ, till startsidan"><img class="logo-day" src="assets/brand/rumiq-grafit-288.webp" alt="RumIQ" width="288" height="72"><img class="logo-night" src="assets/brand/rumiq-vit-288.webp" alt="" aria-hidden="true" width="288" height="72" loading="lazy"></a>
     <ul class="menu">
       <li><a href="upptack/">Upptäck</a></li>
-      <li><button type="button" data-mega="megaShop" aria-expanded="false" aria-controls="megaShop">Butik <svg viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg></button></li>
+      <li><button type="button" data-mega="megaShop" aria-expanded="false" aria-controls="megaShop">Butik <svg viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg></button>
+  <div class="mega" id="megaShop" role="region" aria-label="Butik">
+    <div class="mega-in">
+      <div><h4>Kategorier</h4><ul>
+        <li><a href="butik/">Alla produkter</a></li>
+        <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
+        <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
+      <div><h4>Mer i butiken</h4><ul><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li><li><a href="presentkort/">Presentkort</a></li></ul>
+        <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
+        </div>
+      <div class="feature"><a href="kategori-belysning-atmosfar/"><img src="assets/img/p/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy"><span>Belysning & atmosfär</span></a><a href="kategori-sovrum-komfort/"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy"><span>Sovrum & komfort</span></a></div>
+    </div>
+  </div>
+      </li>
       <li><a href="looks/">Looks</a></li>
     </ul>
     <div class="tools">
@@ -47,18 +60,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat i Mitt hem"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
       <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
       <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
-    </div>
-  </div>
-  <div class="mega" id="megaShop" role="region" aria-label="Butik">
-    <div class="mega-in">
-      <div><h4>Kategorier</h4><ul>
-        <li><a href="butik/">Alla produkter</a></li>
-        <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
-        <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
-      <div><h4>Mer i butiken</h4><ul><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li><li><a href="presentkort/">Presentkort</a></li></ul>
-        <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
-        </div>
-      <div class="feature"><a href="kategori-belysning-atmosfar/"><img src="assets/img/p/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy"><span>Belysning & atmosfär</span></a><a href="kategori-sovrum-komfort/"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy"><span>Sovrum & komfort</span></a></div>
     </div>
   </div>
 </header>
