@@ -37,7 +37,7 @@ UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.1
 SAMPLE = """async (r) => { const im = new Image(); await new Promise((ok) => { im.onload = ok; im.src = 'assets/img/rum/' + r + '-1600.webp'; });
   await RQ.room.saveImage(im, { sample: true, map: r, type: r, name: r }); }"""
 SPOT = "(h) => { const it = RQ.room.scene().find((x) => x.h === h); return it ? [it.x, it.y, it.w] : null; }"
-BOX = "(h) => { const r = document.querySelector(`.rm-item[data-h=\\"${h}\\"]`).getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }"
+BOX = "(h) => { const r = document.querySelector(`.rm-item[data-h=\"${h}\"]`).getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }"
 TOAST = "[...document.querySelectorAll('.toast.show')].map((t) => t.innerText).join(' ')"
 VIEW = """(() => { const r = document.getElementById('rmStage').getBoundingClientRect(), c = document.getElementById('rmCanvas').getBoundingClientRect(); return { sx: r.left, sy: r.top, sw: r.width, sh: r.height, cx: c.left, cy: c.top, cw: c.width, ch: c.height }; })()"""
 # the positions the things are drawn at, in % of the picture

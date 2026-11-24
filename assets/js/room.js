@@ -596,8 +596,9 @@
           [drag.x, drag.y] = inside(drag.x, drag.y, drag.w, drag.hp * drag.w / drag.ow);
           live(drag.h, { x: drag.x, y: drag.y, w: drag.w });
         });
-        /* a thing stays inside the picture: at most a third of it may hang over an edge */
-        const inside = (x, y, w, hp) => [clamp(x, Math.min(50, w / 6), Math.max(50, 100 - w / 6)), clamp(y, Math.min(60, hp * 0.67), 104)];
+        /* a thing stays inside the picture: at most a third of it may hang over the sides or the top. Below, where it
+           stands, only a sliver (under a tenth of its height, at most 4 % of the picture): a small thing is not lost under the edge */
+        const inside = (x, y, w, hp) => [clamp(x, Math.min(50, w / 6), Math.max(50, 100 - w / 6)), clamp(y, Math.min(60, hp * 0.67), 100 + Math.min(4, hp * 0.08))];
         const up = (e) => {
           if (!pts.has(e.pointerId)) return; pts.delete(e.pointerId);
           if (pinch) { if (pts.size < 2) { if (pinch.cur) resize(sel, pinch.cur); pinch = null; } return; }
