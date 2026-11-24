@@ -435,41 +435,42 @@
     const lists = S.lists();
     let active = RQ.ss.get("rumiq-list") || "fav";
     if (active !== "fav" && !lists.some((l) => l.id === active)) active = "fav";
-    const cur = active === "fav" ? { id: "fav", name: "Favoriter", handles: S._wish } : lists.find((l) => l.id === active);
+    const cur = active === "fav" ? { id: "fav", name: "Allt sparat", handles: S._wish } : lists.find((l) => l.id === active);
     const items = cur.handles.map(RQ.byHandle).filter(Boolean);
     const total = items.reduce((s, p) => s + p.price, 0);
-    return { title: "Önskelista · RumIQ",
-      html: `${head(crumbs([["Hem", "hem"], ["Önskelista"]]), "Önskelista", "Dina favoriter och egna listor, till exempel en per rum. Listorna finns kvar i den här webbläsaren.")}
+    return { title: "Sparat · RumIQ",
+      html: `${head(crumbs([["Hem", "hem"], ["Mitt hem", "mitt-hem"], ["Sparat"]]), "Sparat", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
       <section class="wrap" style="padding-bottom:6rem">
-        <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Favoriter (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
+        <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Allt sparat (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="padding:.5rem .9rem;border-radius:999px;width:10rem"><button class="chip" type="submit">Skapa</button></form></div>
-        <div class="listhead"><div><h2 class="h3">${esc(cur.name)}</h2><p class="small">${items.length} produkter · ${kr(total)}</p></div>
+        <div class="listhead"><div><h2 class="h3">${esc(cur.name)}</h2>${items.length ? `<p class="small">${items.length} ${items.length === 1 ? "produkt" : "produkter"} · ${kr(total)}</p>` : ""}</div>
           <div class="ctrl-row" style="margin:0">${items.length ? `<button class="btn sm" type="button" id="allCart">Lägg alla i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${items.slice(0, 8).map((p) => p.handle).join(",")}">Se dem i ditt rum</button><button class="btn ghost sm" type="button" id="share">Kopiera lista</button>` : ""}${active !== "fav" ? `<button class="chip" type="button" id="ren">Byt namn</button><button class="chip" type="button" id="del">Ta bort listan</button>` : ""}</div></div>
-        ${active === "fav" && items.length && RQ.priceWatch ? RQ.priceWatch.html(items.map((x) => x.handle)) : ""}
-        ${items.length ? RQ.grid(items) : `<div class="empty"><h3>Listan är tom</h3><p>${active === "fav" ? "Tryck på hjärtat på en produkt för att spara den här." : "Öppna en produkt och välj Spara i ett rum."}</p><a class="btn ghost" href="#butik">Utforska butiken</a></div>${active === "fav" && RQ.svepNudge ? RQ.svepNudge() : ""}`}
+        ${items.length ? RQ.grid(items) + (active === "fav" && RQ.priceWatch ? `<div style="margin-top:2rem">${RQ.priceWatch.html(items.map((x) => x.handle))}</div>` : "") : `<div class="empty"><h3>Listan är tom</h3><p>${active === "fav" ? "Tryck på hjärtat på en produkt för att spara den här." : "Öppna en produkt och välj Spara i ett rum."}</p><a class="btn ghost" href="#butik">Utforska butiken</a></div>${active === "fav" && RQ.svepNudge ? RQ.svepNudge() : ""}`}
       </section>`,
       mount(root) {
         root.addEventListener("click", (e) => { const t = e.target.closest("[data-tab]"); if (t) { RQ.ss.set("rumiq-list", t.dataset.tab); RQ.router(); } });
         $("#mkList", root).addEventListener("submit", (e) => { e.preventDefault(); const v = $("#mkl", root).value.trim(); if (!v) return; const l = S.createList(v); RQ.ss.set("rumiq-list", l.id); RQ.router(); });
-        const ac = $("#allCart", root); if (ac) ac.addEventListener("click", () => { items.forEach((p) => S.addToCart(p.handle + "::0", 1)); RQ.toast(`${items.length} produkter i varukorgen. <a href="#" data-open-cart>Visa</a>`); });
+        const ac = $("#allCart", root); if (ac) ac.addEventListener("click", () => RQ.addMany(items.map((p) => p.handle), ac, cur.name)); // addMany ignores a double tap
         const sh = $("#share", root); if (sh) sh.addEventListener("click", async () => { const txt = `${cur.name} (RumIQ)\n` + items.map((p) => `- ${p.name}, ${kr(p.price)}`).join("\n") + `\nTotalt ${kr(total)}`; try { await navigator.clipboard.writeText(txt); RQ.toast("Listan är kopierad. Klistra in den var du vill."); } catch (er) { RQ.toast("Kunde inte kopiera i den här webbläsaren."); } });
         const rn = $("#ren", root); if (rn) rn.addEventListener("click", () => { const h = $(".listhead h2", root); h.innerHTML = `<form id="rnf" style="display:flex;gap:.4rem"><input value="${esc(cur.name)}" maxlength="40" style="padding:.5rem .9rem"><button class="chip" type="submit">Spara</button></form>`; $("#rnf", root).addEventListener("submit", (ev) => { ev.preventDefault(); const v = ev.currentTarget.querySelector("input").value.trim(); if (v) S.renameList(cur.id, v); RQ.router(); }); });
         let armed = false; const dl = $("#del", root); if (dl) dl.addEventListener("click", () => { if (!armed) { armed = true; dl.textContent = "Klicka igen för att ta bort"; return; } S.deleteList(cur.id); RQ.ss.set("rumiq-list", "fav"); RQ.router(); });
       } };
   };
   /* ---------------- magazine */
-  RQ.magCard = (a) => `<a class="mag" href="#artikel-${a.slug}"><div class="im"><img src="${a.img}" alt="" loading="lazy"></div><h3>${esc(a.title)}</h3><p>${esc(a.lead)}</p><span class="min">${a.minutes} min läsning</span></a>`;
+  // reading time counted from the text itself (200 words a minute), so a short text does not claim four minutes
+  const readMin = (a) => Math.max(1, Math.round(String(a.body || "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length / 200));
+  RQ.magCard = (a) => `<a class="mag" href="#artikel-${a.slug}"><div class="im"><img src="${a.img}" alt="" loading="lazy"></div><h3>${esc(a.title)}</h3><p>${esc(a.lead)}</p><span class="min">${readMin(a)} min läsning</span></a>`;
   V.magasin = () => ({ html: `${head(crumbs([["Hem", "hem"], ["Magasin"]]), "Magasin", "Idéer för ditt hem. Korta texter om ljus, material, färg och vardag.")}
       <section class="wrap" style="padding-bottom:6rem"><div class="mag-grid stagger" data-watch>${RQ.ARTICLES.map(RQ.magCard).join("")}</div></section>` });
   V.artikel = (slug) => {
     const a = RQ.articleBySlug(slug); if (!a) return null;
     const saved = S.savedArticles().includes(slug);
     return { title: `${a.title} · RumIQ Magasin`,
-      html: `<header class="page-head wrap" style="padding-bottom:0">${crumbs([["Hem", "hem"], ["Magasin", "magasin"], [a.title]])}<h1 class="h1" style="max-width:22ch">${esc(a.title)}</h1><p class="lead">${esc(a.lead)}</p>
-        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${a.minutes} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad i Mitt hem" : "Spara artikeln"}</button></div></header>
+      html: `<header class="page-head wrap" style="padding-bottom:0">${crumbs([["Hem", "hem"], ["Magasin", "magasin"], ["Artikel"]])}<h1 class="h1" style="max-width:22ch">${esc(a.title)}</h1><p class="lead">${esc(a.lead)}</p>
+        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${readMin(a)} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad i Mitt hem" : "Spara artikeln"}</button></div></header>
         <div class="wrap"><div class="article-hero reveal"><img src="${a.img.replace("-1200", "-1600")}" onerror="this.src='${a.img}'" alt=""></div></div>
-        <article class="wrap prose" style="padding-bottom:4rem">${a.body}</article>
-        <section class="sec tight kalk"><div class="wrap"><div class="sec-head"><span class="eyebrow">Från artikeln</span><h2 class="h2">Saker som passar</h2></div>${RQ.grid(a.picks.map(RQ.byHandle).filter(Boolean), "three")}</div></section>
+        <div class="wrap"><article class="prose" style="padding-bottom:4rem">${a.body}</article></div>
+        <section class="sec tight kalk"><div class="wrap"><div class="sec-head"><span class="eyebrow">Från artikeln</span><h2 class="h2">Saker som passar</h2></div>${RQ.grid(a.picks.map(RQ.byHandle).filter(Boolean))}</div></section>
         <section class="sec tight"><div class="wrap"><div class="sec-head"><span class="eyebrow">Läs mer</span></div><div class="mag-grid">${RQ.ARTICLES.filter((x) => x.slug !== slug).slice(0, 3).map(RQ.magCard).join("")}</div></div></section>`,
       mount(root) { $("#saveArt", root).addEventListener("click", (e) => { const on = S.toggleArticle(slug); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Sparad i Mitt hem" : "Spara artikeln"; }); },
     };

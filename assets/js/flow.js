@@ -26,8 +26,10 @@
     if (!a.supabaseUrl || !a.supabaseAnonKey || !t) return Promise.resolve("preview");
     const row = { email: String(body.email || "").toLowerCase().slice(0, 254), list: String(body.lista || "väntelista").slice(0, 120), note: body.roster ? String(body.roster).slice(0, 500) : null, lang: window.RQ_LANG === "en" ? "en" : "sv", consent: true };
     return fetch(`${a.supabaseUrl}/rest/v1/${t}`, { method: "POST", headers: { apikey: a.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(row) })
-      .then((r) => (r.ok || r.status === 409 ? "sent" : "error"), () => "preview");
+      .then((r) => (r.ok || r.status === 409 ? "sent" : "error"), () => "error");
   };
+  // one request at a time per form: the button rests while it runs, so two taps are one sign-up
+  RQ.once = (f, run) => { const b = f.querySelector("button[type=submit]"); if (!b || b.disabled) return Promise.resolve(); b.disabled = true; f.setAttribute("aria-busy", "true"); const end = () => { b.disabled = false; f.removeAttribute("aria-busy"); }; return Promise.resolve().then(run).then(end, end); };
   const post = (body) => { const u = formEndpoint(); if (!u) return toSupabase(body); return fetch(u, { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => (r.ok ? "sent" : "error"), () => "error"); };
   RQ.subscribe = (body) => post(body).then((res) => { if (res === "sent" && RQ.track) RQ.track("sign_up", { list: body.lista || "" }); return res; });
   const PREVIEW_NOTE = "Förhandsversion: adressen sparas inte än. När butiken öppnar fungerar det här på riktigt.";
@@ -70,6 +72,7 @@
   const baseConfirm = RQ.confirmAdd;
   RQ.confirmAdd = (btn, name) => { baseConfirm(btn, name); RQ.fly(flySource(btn)); };
   const addMany = (handles, btn, label) => {
+    if (btn && btn.classList && btn.classList.contains("done")) return 0; // the same button again within a moment: a double tap, not a second order
     handles.forEach((h) => S.addToCart(h + "::0", 1));
     const n = handles.length;
     RQ.toast(`${label ? esc(label) + ": " : ""}${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen. <a href="#" data-open-cart>Visa</a>`);
@@ -120,10 +123,10 @@
     if (!emailOk(v)) { err.textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
     err.textContent = "";
     const h = f.dataset.notify;
-    post({ email: v, lista: "Produkt: " + h }).then((res) => {
+    RQ.once(f, () => post({ email: v, lista: "Produkt: " + h }).then((res) => {
       if (!afterPost(f, res, "Klart. Vi mejlar när den går att köpa. Inget annat.")) return;
       const list = ls.get("rumiq-notify", []); if (res === "sent" && !list.includes(h)) ls.set("rumiq-notify", [...list, h]);
-    });
+    }));
   });
 
   /* ------------------------------------------------------------------ product sheet */
@@ -146,7 +149,7 @@
         ${vs.length ? `<div class="sh-v" role="radiogroup" aria-label="Variant">${vs.map((v, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === 0}" data-shv="${i}">${esc(v)}</button>`).join("")}</div>` : ""}
         <div class="sh-act">
           <button class="btn" type="button" id="shAdd" data-add="${p.handle}::0">Lägg i varukorgen</button>
-          <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)} i önskelistan">${ICO.heart}</button>
+          <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${ICO.heart}</button>
         </div>
         <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i mitt rum</span></button>
         ${RQ.delivery.html(p)}
@@ -247,7 +250,7 @@
   RQ.hotspots = {
     render(id, opts = {}) {
       const r = RQ.HOTSPOTS[id], room = RQ.roomById(id); if (!r) return "";
-      const spots = r.spots.map(([h, x, y]) => { const p = RQ.byHandle(h); return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}. Liknande i butiken."><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)} · Liknande i butiken</em></span></button>`; }).join("");
+      const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).map(([h, x, y]) => { const p = RQ.byHandle(h); return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}. Liknande i butiken."><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)} · Liknande i butiken</em></span></button>`; }).join("");
       return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}" style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 100vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async"><div class="hs-layer">${spots}</div></div></div>`;
     },
     caption: () => `<p class="hs-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p>`,
@@ -275,7 +278,7 @@
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-shop-room]"); if (!b) return;
     const id = b.dataset.shopRoom, hs = RQ.hotspots.handles(id), room = RQ.roomById(id);
-    addMany(hs, b, room ? room.name : "");
+    if (!addMissing(hs, b, room ? room.name : "Rummet").length) return;
     const stage = b.closest("section, .jr-room") && $(`.hs-stage[data-room="${id}"]`, b.closest("section, .jr-room"));
     if (stage) $$(".hs:not([hidden])", stage).forEach((s, i) => setTimeout(() => RQ.fly(s, RQ.cut(RQ.byHandle(s.dataset.hs))), i * 110));
   });
@@ -289,12 +292,11 @@
         <div class="jr-stick">
           ${ids.map((id, i) => { const r = RQ.roomById(id), t = RQ.hotspots.total(id), c = RQ.hotspots.handles(id).length; return `<article class="jr-room${i === 0 ? " on" : ""}" data-i="${i}" ${i ? "inert" : ""} aria-label="${esc(r.name)}">
             <div class="jr-copy"><span class="eyebrow">${String(i + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")} · <span>${esc(r.name)}</span></span><h3>${esc(r.lead)}</h3><p class="jr-tip">${esc(r.tips[0])}</p>
-              <div class="jr-row"><button class="btn" type="button" data-shop-room="${id}">Handla rummet · ${kr(t)}</button><a class="link" href="#rum-${id}">${c} saker · mer för rummet</a></div></div>
+              <div class="jr-row"><button class="btn" type="button" data-shop-room="${id}">Handla rummet · ${kr(t)}</button><a class="link" href="#rum-${id}">${c} saker · mer för rummet</a></div><p class="hs-cap jr-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p></div>
             <div class="jr-img">${RQ.hotspots.render(id, { eager: i === 0 })}</div></article>`; }).join("")}
           <nav class="jr-dots" aria-label="Rum">${ids.map((id, i) => `<button type="button" data-jr="${i}" aria-current="${i === 0}"><span>${esc(RQ.roomById(id).name)}</span></button>`).join("")}</nav>
         </div>
-        <div class="wrap">${RQ.hotspots.caption()}</div>
-      </section>`;
+      </section><div class="wrap jr-cap-after">${RQ.hotspots.caption()}</div>`;
     },
     mount(root) {
       const sec = $(".journey", root); if (!sec) return () => {};
@@ -359,42 +361,90 @@
   const lookById = (id) => RQ.LOOKS.find((l) => l.id === id);
   const lookTotal = (l) => l.items.reduce((s, h) => s + RQ.byHandle(h).price, 0);
   // price with the whole-look discount, and the saving shown next to it
-  const lookNet = (l) => { const t = lookTotal(l), r = +((window.RQ_CONFIG || {}).lookDiscount || 0); return Math.round(t - Math.round(t * r)); };
+  const lookRate = () => +((window.RQ_CONFIG || {}).lookDiscount || 0);
+  const lookNet = (l) => { const t = lookTotal(l), r = lookRate(); return Math.round(t - Math.round(t * r)); };
   RQ.lookNet = lookNet;
+  const inCart = (h) => S.cartLines().some((l) => l.product.handle === h);
+  // what is already in the cart is not added again: a look is one of each
+  const addMissing = (handles, btn, label) => {
+    const miss = handles.filter((h) => !inCart(h));
+    if (!miss.length) { RQ.toast(`${esc(label)} <span>ligger redan i varukorgen.</span> <a href="#" data-open-cart>Visa</a>`); return []; }
+    return addMany(miss, btn, label) ? miss : [];
+  };
+  // a ready-made look whose things these are (a saved look keeps its discount and its name)
+  const lookOf = (handles) => RQ.LOOKS.find((l) => l.items.length === handles.length && l.items.every((h) => handles.includes(h)));
+  const lookImg = (l, eager) => `<img src="assets/img/rum/${l.room}-900.webp" srcset="assets/img/rum/${l.room}-900.webp 900w, assets/img/rum/${l.room}-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" width="1600" height="893">`;
   RQ.lookCard = (l) => {
-    const room = RQ.roomById(l.room);
-    return `<article class="lc"><a class="lc-im" href="#look-${l.id}"><img src="assets/img/rum/${l.room}-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">${esc(room.name)}</span></a>
+    const room = RQ.roomById(l.room), cut = lookNet(l) < lookTotal(l);
+    return `<article class="lc"><a class="lc-im" href="#look-${l.id}">${lookImg(l)}<span class="lc-tag">${esc(room.name)}</span></a>
       <div class="lc-line">${l.items.map((h) => { const p = RQ.byHandle(h); return `<button type="button" data-sheet="${h}" aria-label="${esc(p.name)}"><img src="${RQ.cut(p)}" alt="" loading="lazy"></button>`; }).join("")}</div>
       <div class="lc-tx"><h3><a href="#look-${l.id}">${esc(l.name)}</a></h3><p>${esc(l.lead)}</p>
-        <div class="lc-row"><span class="price">${l.items.length} saker</span><button class="btn sm" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button></div></div></article>`;
+        <div class="lc-row"><span class="price">${l.items.length} saker${cut ? ` · <s>${kr(lookTotal(l))}</s>` : ""}</span><button class="btn sm" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button></div></div></article>`;
   };
+  // the looks you have saved yourself (from Mitt rum or a ready-made one): the same block in Mitt hem and on Looks
+  RQ.savedLooksHtml = () => S.looks().map((l) => {
+    const ps = (l.handles || []).map(RQ.byHandle).filter(Boolean), ready = lookOf(ps.map((p) => p.handle));
+    const sum = ps.reduce((s, p) => s + p.price, 0), net = ready ? lookNet(ready) : sum;
+    return `<div class="order mylook"><header><b>${esc(l.name)}</b><span class="price" style="font-family:var(--mono)">${net < sum ? `<s>${kr(sum)}</s> ` : ""}${kr(net)}</span></header>
+      <div class="mylook-line">${ps.map((p) => `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt="" loading="lazy"></button>`).join("")}</div>
+      <div class="ctrl-row"><button class="btn sm" type="button" data-look-buy="${ps.map((p) => p.handle).join(",")}" data-look-name="${esc(l.name)}">Lägg i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${ps.map((p) => p.handle).join(",")}">Se i mitt rum</button><button class="chip" type="button" data-dellook="${l.id}">Ta bort</button></div></div>`;
+  }).join("");
   document.addEventListener("click", (e) => {
-    const b = e.target.closest("[data-look-add]"); if (b) { const l = lookById(b.dataset.lookAdd); addMany(l.items, b, l.name); const host = b.closest(".lc, .look-page"); if (host) $$(".lc-line img, .lp-item img", host).forEach((im, k) => setTimeout(() => RQ.fly(im), k * 110)); return; }
-    const s = e.target.closest("[data-look-save]"); if (s) { const l = lookById(s.dataset.lookSave); S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad i Mitt hem"; RQ.toast(`Looken sparades. <a href="#mitt-hem">Visa i Mitt hem</a>`); }
+    const b = e.target.closest("[data-look-add]");
+    if (b) { const l = lookById(b.dataset.lookAdd); const added = addMissing(l.items, b, l.name); const host = b.closest(".lc, .look-page"); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
+    const mb = e.target.closest("[data-look-buy]"); if (mb) { addMissing(mb.dataset.lookBuy.split(",").filter(Boolean), mb, mb.dataset.lookName || "Looken"); return; }
+    const s = e.target.closest("[data-look-save]");
+    if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad i Mitt hem"; RQ.toast(`Looken sparades. <a href="#mitt-hem">Visa i Mitt hem</a>`); }
   });
-  V.looks = () => ({
+  V.looks = () => {
+    const mine = S.looks(), pct = Math.round(lookRate() * 100);
+    return {
     title: "Looks · RumIQ",
-    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", "Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.")}
-      <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}</div>
-        <a class="own-look" href="#mitt-rum"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look i ditt rum</b><small>Ställ in det du gillar, se totalpriset och hur väl sakerna går ihop.</small></span></a>
+    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", `Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.${pct ? ` <b class="look-off"><span>Hela looken ger</span> ${pct} % <span>rabatt.</span></b>` : ""}`)}
+      <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}
+        <a class="own-look" href="#mitt-rum"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look i ditt rum</b><small>Ställ in det du gillar, se totalpriset och hur väl sakerna går ihop.</small></span></a></div>
+        ${mine.length ? `<div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Dina sparade looks</h2></div><div class="mylooks">${RQ.savedLooksHtml()}</div>` : ""}
         <div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Samlat kring en idé</h2><p>Större urval för den som vill bläddra vidare.</p></div>${RQ.colCards()}</section>`,
-  });
+    mount(root) {
+      const del = (e) => { const d = e.target.closest("[data-dellook]"); if (d && root.contains(d)) { S.deleteLook(d.dataset.dellook); RQ.router(); } };
+      root.addEventListener("click", del); return () => root.removeEventListener("click", del);
+    },
+  }; };
   V.look = (id) => {
     const l = lookById(id); if (!l) return null; const room = RQ.roomById(l.room);
+    const inPic = RQ.hotspots.handles(l.room).filter((h) => l.items.includes(h)).length;
+    const CAP_DOTS = "Bilden är en illustration. Prickarna visar saker ur looken.", CAP_NONE = "Bilden är en illustration av rummet. Sakerna i looken ser du i listan.";
+    const total = lookTotal(l), net = lookNet(l), off = total - net;
+    // the buy block follows the cart: nothing in it, some of the look in it, all of it in it
+    const buy = () => {
+      const miss = l.items.filter((h) => !inCart(h)), have = l.items.length - miss.length, saved = S.looks().some((x) => x.name === l.name);
+      const save = `<button class="btn ghost" type="button" data-look-save="${l.id}"${saved ? " disabled" : ""}>${saved ? "Sparad i Mitt hem" : "Spara looken"}</button>`;
+      if (!miss.length) return `<p class="lp-in" role="status"><span>Hela looken ligger i varukorgen.</span>${off ? ` <span>Rabatten är avdragen:</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-open-cart>Visa varukorgen</button>${save}</div>`;
+      if (have) { const rest = miss.reduce((s, h) => s + RQ.byHandle(h).price, 0) - off;
+        return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>ligger i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}"><span>Lägg till resten</span> · ${kr(Math.max(0, rest))}</button>${save}</div>`; }
+      return `<div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(net)}</button>${save}</div>`;
+    };
     return {
       title: `${l.name} · RumIQ`,
       html: `<section class="wrap look-page">
         ${RQ.crumbs([["Hem", "hem"], ["Looks", "looks"], [l.name]])}
         <div class="lp-grid">
-          <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage" })}${RQ.hotspots.caption()}</div>
+          <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage", only: l.items })}<p class="hs-cap" id="lpCap">${inPic ? CAP_DOTS : CAP_NONE}</p></div>
           <div class="lp-tx"><span class="eyebrow">Look · <span>${esc(room.name)}</span></span><h1 class="h1">${esc(l.name)}</h1><p class="lead">${esc(l.lead)}</p>
-            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
-            <div class="lp-sum"><span>Hela looken${lookNet(l) < lookTotal(l) ? ` <small>du sparar ${kr(lookTotal(l) - lookNet(l))}</small>` : ""}</span><b>${lookNet(l) < lookTotal(l) ? `<s>${kr(lookTotal(l))}</s> ` : ""}${kr(lookNet(l))}</b></div>
-            <div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button><button class="btn ghost" type="button" data-look-save="${l.id}">Spara looken</button></div>
+            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item" data-h="${h}"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn qadd" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
+            <div class="lp-sum"><span>Hela looken${off ? ` <small><span>Du sparar</span> ${kr(off)}</small>` : ""}</span><b>${off ? `<s>${kr(total)}</s> ` : ""}${kr(net)}</b></div>
+            <div class="lp-buy" id="lpBuy">${buy()}</div>
             <p class="small" style="margin-top:1rem">Produkterna är exempel tills butiken öppnar.</p></div>
         </div></section>
         <section class="sec"><div class="wrap"><div class="sec-head"><h2 class="h2">Fler looks</h2></div><div class="looks-row">${RQ.LOOKS.filter((x) => x.id !== id).map(RQ.lookCard).join("")}</div></div></section>`,
-      mount: (root) => RQ.hotspots.mount(root),
+      mount: (root) => {
+        const offHs = RQ.hotspots.mount(root);
+        // the caption only speaks of dots when one is actually in the cropped picture
+        const cap = () => { const c = $("#lpCap", root); if (c) c.textContent = $$(".lp-stage .hs", root).some((h) => !h.hidden) ? CAP_DOTS : CAP_NONE; };
+        cap(); setTimeout(cap, 400); addEventListener("resize", cap);
+        const offCart = S.onChange((w) => { const el = $("#lpBuy", root); if (el && (w === "cart" || w === "all" || w === "looks")) { const had = el.contains(document.activeElement); el.innerHTML = buy(); if (had) { const b = $(".btn", el); b && b.focus({ preventScroll: true }); } } });
+        return () => { offHs && offHs(); offCart && offCart(); removeEventListener("resize", cap); };
+      },
     };
   };
 
@@ -403,7 +453,7 @@
   /* Önska: vote for the next product and share your own ideas, on one page (was Rösta and Dela en idé) */
   V.onska = () => ({
     title: "Önska · RumIQ",
-    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Önska"]]), "Önska", "Vi har inget lager, så vi kan lyssna först. Rösta fram nästa produkt eller föreslå något helt eget.")}
+    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Önska"]]), "Önska", "Vi har inget eget lager, så vi kan lyssna först. Rösta fram nästa produkt eller föreslå något helt eget.")}
       <section class="wrap onska" style="padding-bottom:3rem"><h2 class="h3" id="rosta">Rösta fram nästa produkt</h2><p class="small" style="margin:.4rem 0 1.2rem">Välj upp till tre saker du vill att vi tar in.</p>
         <p class="vote-left" id="voteLeft" aria-live="polite"></p>
         <div class="vote-grid">${RQ.CANDIDATES.map((c) => `<button type="button" class="vote" data-vote="${c.id}" aria-pressed="false">${c.img ? `<img class="vote-img" src="${c.img}" alt="" loading="lazy" width="400" height="400">` : `<span class="sw" style="background:${c.tone}"></span>`}<b>${esc(c.name)}</b><span>${esc(c.line)}</span><i aria-hidden="true">${ICO.heart}</i></button>`).join("")}</div>
@@ -423,7 +473,7 @@
       $("#voteMail", root).addEventListener("submit", (e) => {
         e.preventDefault(); const f = e.currentTarget, val = $("input", f).value.trim();
         if (!emailOk(val)) { $(".nt-err", f).textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
-        $(".nt-err", f).textContent = ""; post({ email: val, lista: "Rösta", roster: ls.get("rumiq-votes", []).join(", ") }).then((res) => afterPost(f, res, "Tack. Ett mejl när resultatet är klart. Inget annat."));
+        $(".nt-err", f).textContent = ""; RQ.once(f, () => post({ email: val, lista: "Rösta", roster: ls.get("rumiq-votes", []).join(", ") }).then((res) => afterPost(f, res, "Tack. Ett mejl när resultatet är klart. Inget annat.")));
       });
       paint();
       root.addEventListener("click", (e) => { const b = e.target.closest("[data-idea-vote]"); if (b) { S.voteIdea(b.dataset.ideaVote); $("#ideer", root).innerHTML = ideasHtml(); } });
@@ -519,7 +569,7 @@
     });
     return () => offs.forEach((f) => f());
   };
-  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
+  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>
       <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Färdiga looks</a></nav>`;
 

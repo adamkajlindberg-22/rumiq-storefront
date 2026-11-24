@@ -1,5 +1,7 @@
 /* RumIQ Svep: swipe your style.
-   Right = save to Favourites, up = straight into the cart, left = no thanks, undo = one step back.
+   Right = save to Favourites, left = no thanks, undo = one step back. Into the cart: the bag button, the
+   up arrow, or a drag upwards with a mouse. A finger moving up or down always scrolls the page, so on
+   touch screens there is no swipe-up (it used to put things in the cart when someone only scrolled).
    One engine (runDeck) drives three decks:
    - Svep: rounds of 10 cards that learn while you swipe, for the whole shop or one room (#svep-rum-<id>).
    - The three-card taster on the home page, which carries on into Svep where it stopped.
@@ -78,7 +80,7 @@
     </article>`;
   const svSoon = (c, i) => `<article class="sv-card soon" data-h="soon:${c.id}" style="--i:${i};--tone:${c.tone}" aria-hidden="${i ? "true" : "false"}">
       <div class="sv-soon"><span class="sv-soon-tag">Kommer snart?</span>${c.img ? `<img class="sv-soon-img" src="${c.img}" alt="${esc(c.name)}" draggable="false">` : `<span class="sv-soon-sw" aria-hidden="true"></span>`}<b>${esc(c.name)}</b><p>${esc(c.line)}</p>
-        <small>Vi har inget lager, så vi kan fråga först. Svep höger om du vill att vi tar in den.</small></div>
+        <small><span class="sv-soon-why">Vi har inget eget lager, så vi kan fråga först.</span> <span>Svep höger om du vill att vi tar in den.</span></small></div>
       ${stamps("Ja tack", "Ja tack")}
     </article>`;
 
@@ -97,15 +99,15 @@
   /* ---------------------------------------------------------------- deck markup and engine */
   const deckHtml = (px, compact) => `<div class="sv-wrap${compact ? " compact" : ""}">
       <div class="sv-prog" aria-hidden="true"><i id="${px}Bar"></i></div>
+      <p class="sv-meta"><span id="${px}Count"></span><span class="sv-chip" id="${px}Chip" hidden></span></p>
       <div class="sv-deck" id="${px}Deck" aria-live="polite"></div>
       <div class="sv-ctrl" id="${px}Ctrl">
-        ${compact ? "" : `<button class="sv-b undo" type="button" id="${px}Undo" aria-label="Ångra senaste" disabled>${SV.undo}</button>`}
-        <button class="sv-b no" type="button" id="${px}No" aria-label="Nej tack">${ICO.x}</button>
-        ${compact ? "" : `<button class="sv-b room" type="button" id="${px}Room" aria-label="Ställ in i mitt rum">${RQ.roomIco}</button>`}
-        <button class="sv-b bag" type="button" id="${px}Bag" aria-label="Lägg i varukorgen">${SV.bag}</button>
-        <button class="sv-b yes" type="button" id="${px}Yes" aria-label="Spara i favoriter">${ICO.heart}</button>
+        ${compact ? "" : `<button class="sv-b undo" type="button" id="${px}Undo" aria-label="Ångra senaste" title="Ångra senaste" disabled>${SV.undo}</button>`}
+        <button class="sv-b no" type="button" id="${px}No" aria-label="Nej tack" title="Nej tack">${ICO.x}</button>
+        ${compact ? "" : `<button class="sv-b room" type="button" id="${px}Room" aria-label="Ställ in i mitt rum" title="Ställ in i mitt rum">${RQ.roomIco}</button>`}
+        <button class="sv-b bag" type="button" id="${px}Bag" aria-label="Lägg i varukorgen" title="Lägg i varukorgen">${SV.bag}</button>
+        <button class="sv-b yes" type="button" id="${px}Yes" aria-label="Spara" title="Spara">${ICO.heart}</button>
       </div>
-      <p class="sv-meta"><span id="${px}Count"></span><span class="sv-chip" id="${px}Chip" hidden></span></p>
       ${compact ? "" : `<p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. Backsteg ångrar.</p>`}
     </div>`;
 
@@ -115,7 +117,7 @@
     const deckEl = el("Deck");
     const st0 = cfg.start || {};
     const st = { done: [...(st0.done || [])], answers: { ...(st0.answers || {}) }, saved: [...(st0.saved || [])], bagged: [...(st0.bagged || [])], forced: [], history: [], over: false, soonDone: !!st0.soonDone };
-    let stack = [], busy = false;
+    let stack = [], busy = false, queue = [];
     const cards = () => $$(".sv-card", deckEl);
     const topCard = () => cards().pop();
     const paint = () => {
@@ -129,6 +131,7 @@
       const b = el("Bar"); if (b) b.style.width = `${(st.done.length / total) * 100}%`;
       const room = el("Room"), first = stack[0];
       if (room) { room.disabled = !!first.soon; if (first.soon) delete room.dataset.roomBtn; else { room.dataset.roomBtn = first.handle; room.setAttribute("aria-pressed", !!(RQ.room && RQ.room.inScene(first.handle))); } }
+      const bag = el("Bag"); if (bag) bag.disabled = !!first.soon; // a "Kommer snart" card cannot be bought
       const u = el("Undo"); if (u) u.disabled = !st.history.length;
       const top = RQ.taste.top(t)[0], chip = el("Chip");
       if (chip && t.n >= 5 && top) { chip.hidden = false; chip.textContent = `Din stil växer fram: ${RQ.STYLES[top].name}`; }
@@ -138,12 +141,17 @@
       if (st.over) return; st.over = true;
       ["Ctrl", "Count", "Chip"].forEach((n) => { const x = el(n); if (x) x.hidden = true; });
       const pr = $(".sv-prog", deckEl.parentNode); if (pr) pr.hidden = true;
+      const mt = $(".sv-meta", deckEl.parentNode); if (mt) mt.hidden = true;
       const k = $(".sv-keys", deckEl.parentNode); if (k) k.hidden = true;
       cfg.onFinish(st, deckEl);
     };
     const flash = (c, cls) => { const s = $(`.sv-stamp.${cls}`, c); if (s) s.style.opacity = 1; };
     const decide = (dir, c0) => {
-      if (busy || st.over) return; const c = c0 || topCard(); if (!c) return;
+      if (st.over) return;
+      // a key or a tap while the last card is still flying out waits its turn instead of being dropped
+      if (busy) { if (!c0 && queue.length < 3) queue.push(dir); return; }
+      const c = c0 || topCard(); if (!c) return;
+      if (dir === 2 && c.classList.contains("soon")) dir = 1;
       busy = true; const h = c.dataset.h, isSoon = h.startsWith("soon:");
       const rec = { h, dir, before: JSON.stringify(RQ.taste.get()), wish: false, bag: false, soon: isSoon ? JSON.stringify([ls.get("rumiq-soon", {}), ls.get("rumiq-votes", [])]) : null };
       if (isSoon) {
@@ -160,7 +168,7 @@
       if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) {}
       st.history.push(rec); st.forced = st.forced.filter((x) => x !== h); st.done.push(h);
       cfg.onDecide && cfg.onDecide(st);
-      const next = () => { busy = false; paint(); };
+      const next = () => { busy = false; paint(); if (queue.length && !st.over) decide(queue.shift()); else queue = []; };
       if (reduced()) return next();
       flash(c, dir === 1 ? "yes" : dir === 2 ? "up" : "no");
       c.style.transition = "transform .26s cubic-bezier(.3,.6,.2,1), opacity .26s";
@@ -168,6 +176,7 @@
       setTimeout(next, 210);
     };
     const undo = () => {
+      queue = [];
       if (busy || st.over || !st.history.length) return;
       const r = st.history.pop(); ls.set("rumiq-taste", JSON.parse(r.before));
       if (r.soon) { const [s, v] = JSON.parse(r.soon); ls.set("rumiq-soon", s); ls.set("rumiq-votes", v); st.soonDone = false; }
@@ -182,44 +191,49 @@
       if (!ims.length || nx === cur) { c.animate([{ transform: `translateX(${d * 6}px)` }, { transform: "none" }], { duration: 180 }); return; }
       ims.forEach((im, k) => im.classList.toggle("on", k === nx)); dots.forEach((x, k) => x.classList.toggle("on", k === nx)); c.dataset.img = nx;
     };
-    // drag: sideways = save or skip, upwards = cart; a tap on the edges flips the picture, in the middle opens the product
-    let drag = null, lastX = 0;
-    const down = (e) => { const c = e.target.closest(".sv-card"); if (!c || c !== topCard() || busy) return; c.classList.remove("hint"); drag = { c, x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0 }; c.setPointerCapture && c.setPointerCapture(e.pointerId); c.style.transition = "none"; };
+    // drag: sideways = save or skip; upwards = cart, with a mouse or pen only (a finger moving up scrolls the page).
+    // A tap on the edges flips the picture, in the middle it opens the product.
+    let drag = null, lastX = 0, tapped = null;
+    const down = (e) => { tapped = null; const c = e.target.closest(".sv-card"); if (!c || c !== topCard() || busy) return; c.classList.remove("hint"); drag = { c, x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0, touch: e.pointerType === "touch" }; c.setPointerCapture && c.setPointerCapture(e.pointerId); c.style.transition = "none"; };
+    const back = (c) => { c.style.transition = "transform .45s var(--spring)"; c.style.transform = ""; $$(".sv-stamp", c).forEach((s) => (s.style.opacity = 0)); };
     const move = (e) => {
       if (!drag) return; drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y; const { c, dx, dy } = drag;
-      const upish = dy < 0 && Math.abs(dy) > Math.abs(dx);
-      c.style.transform = `translate(${dx}px, ${upish ? dy : dy * 0.25}px) rotate(${upish ? 0 : dx / 18}deg)`;
+      const upish = !drag.touch && dy < 0 && Math.abs(dy) > Math.abs(dx);
+      c.style.transform = `translate(${dx}px, ${upish ? dy : drag.touch ? 0 : dy * 0.25}px) rotate(${upish ? 0 : dx / 18}deg)`;
       const kx = Math.min(1, Math.abs(dx) / 110), ky = Math.min(1, -dy / 120);
       $(".sv-stamp.yes", c).style.opacity = !upish && dx > 0 ? kx : 0; $(".sv-stamp.no", c).style.opacity = !upish && dx < 0 ? kx : 0; $(".sv-stamp.up", c).style.opacity = upish ? ky : 0;
     };
+    // the browser took the gesture (page scroll) or the pointer was lost: nothing is decided, the card goes back
+    const cancel = () => { if (!drag) return; const c = drag.c; drag = null; back(c); };
     const up = () => {
-      if (!drag) return; const { c, dx, dy, t } = drag; drag = null;
+      if (!drag) return; const { c, dx, dy, t, touch } = drag; drag = null;
       const ms = Math.max(1, performance.now() - t), vx = Math.abs(dx) / ms, vy = -dy / ms, w = c.offsetWidth, hgt = c.offsetHeight;
       if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
         c.style.transform = ""; if (c.classList.contains("soon")) return;
         const r = c.getBoundingClientRect(), x = (lastX - r.left) / r.width;
         if (x < 0.3) return flip(c, -1); if (x > 0.7) return flip(c, 1);
-        RQ.sheet.open(c.dataset.h, { from: c }); return;
+        tapped = c; return; // opened by the click that follows: opening here let that click close the sheet again on phones
       }
-      const upish = dy < 0 && Math.abs(dy) > Math.abs(dx);
-      if (upish && (-dy > hgt * 0.22 || vy > 0.6)) return decide(2, c);
-      if (!upish && (Math.abs(dx) > w * 0.3 || vx > 0.6)) return decide(dx > 0 ? 1 : -1, c);
-      c.style.transition = "transform .45s var(--spring)"; c.style.transform = ""; $$(".sv-stamp", c).forEach((s) => (s.style.opacity = 0));
+      const sideways = Math.abs(dx) >= Math.abs(dy);
+      if (sideways && (Math.abs(dx) > w * 0.3 || (vx > 0.6 && Math.abs(dx) > 24))) return decide(dx > 0 ? 1 : -1, c);
+      if (!touch && !sideways && dy < 0 && (-dy > hgt * 0.22 || vy > 0.6)) return decide(2, c);
+      back(c);
     };
     const pdown = (e) => { lastX = e.clientX; down(e); }, pup = (e) => { lastX = e.clientX; up(); };
-    deckEl.addEventListener("pointerdown", pdown); addEventListener("pointermove", move); addEventListener("pointerup", pup); addEventListener("pointercancel", up);
+    const tap = (e) => { const c = tapped; tapped = null; if (c && c === topCard() && e.target.closest(".sv-card") === c && !RQ.sheet.isOpen()) RQ.sheet.open(c.dataset.h, { from: c }); };
+    deckEl.addEventListener("pointerdown", pdown); deckEl.addEventListener("click", tap); addEventListener("pointermove", move); addEventListener("pointerup", pup); addEventListener("pointercancel", cancel);
     const on = (n, f) => { const b = el(n); if (b) b.addEventListener("click", f); };
     on("No", () => decide(-1)); on("Yes", () => decide(1)); on("Bag", () => decide(2)); on("Undo", undo);
     const key = (e) => {
-      if (st.over || e.target.closest("input,textarea,select") || RQ.sheet.isOpen()) return;
+      if (st.over || e.target.closest("input,textarea,select") || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
       if (e.key === "ArrowRight") { e.preventDefault(); decide(1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); }
       if (e.key === "ArrowUp") { e.preventDefault(); decide(2); }
       if (e.key === "Backspace" || (e.key === "z" && (e.metaKey || e.ctrlKey))) { e.preventDefault(); undo(); }
     };
     if (cfg.keys) addEventListener("keydown", key);
-    paint();
-    return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", pup); removeEventListener("pointercancel", up); removeEventListener("keydown", key); };
+    if (cfg.finished) finish(); else paint();
+    return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", pup); removeEventListener("pointercancel", cancel); removeEventListener("keydown", key); };
   }
 
   /* ---------------------------------------------------------------- the style picture */
@@ -251,7 +265,7 @@
     }
     const picks = liked.slice(0, 3);
     if (picks.length) {
-      y = Math.max(y + 40, 1340); const sz = 280, gap = 30;
+      const sz = 280, gap = 30; y = Math.min(Math.max(y + 40, 1340), H - 210 - sz);
       const ims = await Promise.all(picks.map((p) => loadImg(RQ.cut(p))));
       picks.forEach((p, i) => {
         const px = 90 + i * (sz + gap); x.fillStyle = "#F7F7F4"; x.beginPath(); x.roundRect(px, y, sz, sz, 28); x.fill();
@@ -269,8 +283,8 @@
     try {
       if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: tr("Min stil på RumIQ"), text: `${txt} ${url}` }); return; }
       if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "min-stil-rumiq.png"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
-      try { await navigator.clipboard.writeText(`${txt} ${url}`); } catch (e) {}
-      RQ.toast(blob ? "Bilden är sparad och länken kopierad." : "Länken är kopierad.");
+      let copied = false; try { await navigator.clipboard.writeText(`${txt} ${url}`); copied = true; } catch (e) {}
+      RQ.toast(blob ? (copied ? "Bilden är sparad och länken kopierad." : "Bilden är sparad.") : copied ? "Länken är kopierad." : "Det gick inte att dela härifrån. Kopiera adressen i webbläsaren i stället.");
     } catch (e) {}
   };
 
@@ -304,17 +318,28 @@
     RQ.track && RQ.track("svep_together_link", {});
   });
 
+  // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
+  const toRoom = (hs) => {
+    const R = RQ.room; if (!R) return;
+    const put = () => { hs.forEach((h) => R.add(h, true)); location.hash = "#mitt-rum"; };
+    if (R.has()) put(); else R.openSetup(put);
+  };
+
   /* ---------------------------------------------------------------- Svep (the full page) */
   const roundAnswers = (st) => { const hs = st.done.filter((h) => !h.startsWith("soon:") && RQ.byHandle(h)); return { hs, a: hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join("") }; };
   const savedTiles = (list) => `<div class="sv-liked">${list.map((p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(p.name)}</span><small>${kr(p.price)}</small></button>`).join("")}</div>`;
   const resultHtml = (st, scope) => {
     const t = RQ.taste.get(), prof = RQ.styleProfile(t), top = prof.mix.filter((m) => m.pct >= 25).slice(0, 2);
     const more = RQ.PRODUCTS.some((p) => inScope(p, scope) && !(p.handle in t.seen));
+    const room = scope ? RQ.roomById(scope) : null;
+    // nothing left to swipe and no round behind us: say so, instead of a result that appears from nowhere
+    const allDone = !more ? `<p class="sv-alldone">${room ? `<span>Du har svept alla kort för</span> <span>${esc(room.name.toLowerCase())}</span>.` : "Du har svept alla kort i butiken."}${room ? ` <a href="#svep">Svep hela butiken</a>` : ""}</p>` : "";
     const saved = st.saved.map(RQ.byHandle).filter(Boolean), ra = roundAnswers(st);
     return { top, saved, html: `<div class="svep-result" tabindex="-1">
       <span class="eyebrow">Din stilprofil</span>
       <h2 class="h2">${top.length ? top.map((s) => `<span>${esc(s.name)}</span>`).join(" <span>och</span> ") : "Vi lär oss fortfarande"}</h2>
       <p class="lead">${top.length ? esc(RQ.STYLES[top[0].id].text) : "Spara några saker du gillar, så kan butiken sortera efter dig."}</p>
+      ${allDone}
       ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
         ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
       ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved)}
@@ -324,49 +349,62 @@
       ${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
       ${ra.hs.length >= 3 ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Inreder ni tillsammans?</b><p>Skicka samma kort till någon. När ni båda har svept ser ni vad ni gillar gemensamt.</p>
         ${linkForm("svTwo", "Ditt namn, om du vill", "Skicka korten")}</div></div>` : ""}
-      <div class="ctrl-row" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep ${ROUND} till</button>` : ""}<a class="btn ghost" href="#for-dig">Butiken för dig</a>${top.length ? `<button class="btn ghost" type="button" id="svShare">${SV.share}<span>Dela min stil</span></button>` : ""}</div>
-      <button class="tlink" type="button" id="svAgain">Börja om från början</button></div>` };
+      <div class="ctrl-row" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep tio till</button>` : ""}<a class="btn ghost" href="#for-dig">Butiken för dig</a>${top.length ? `<button class="btn ghost" type="button" id="svShare">${SV.share}<span>Dela min stil</span></button>` : ""}</div>
+      <button class="tlink" type="button" id="svAgain">Börja om från början</button><p class="small" id="svAgainNote" role="status"></p></div>` };
   };
   const scopeNav = (scope) => `<nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="#svep"${scope ? "" : ' aria-current="true"'}>Hela butiken</a>${RQ.ROOMS.map((r) => `<a class="chip" href="#svep-rum-${r.id}"${scope === r.id ? ' aria-current="true"' : ""}>${esc(r.name)}</a>`).join("")}</nav>`;
   const legend = `<ul class="sv-legend">
-      <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar i dina favoriter och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar under Sparat och lär oss din stil.</span></div></li>
       <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
-      <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet.</span></div></li>
+      <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
     </ul>`;
+  // a room with fewer cards left than a full round: how many there are (0 = a normal round of ten)
+  const roomLeft = (scope) => { if (!scope) return 0; const t = RQ.taste.get(), n = RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length; return n && n < ROUND ? n : 0; };
+  const KEEP = "rumiq-svep-result"; // the finished round, kept for this tab so that Back and reload show the profile again
   V.svep = (scope) => {
     const room = scope ? RQ.roomById(scope) : null; if (scope && !room) return V.notfound();
     return {
       title: room ? `Svep · ${room.name} · RumIQ` : "Svep · RumIQ",
       html: `<section class="wrap svep" aria-label="Svep">
-        <div class="sv-head">${RQ.crumbs(room ? [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], [room.name]] : [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep"]])}<h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över och uppåt lägger i varukorgen. Tryck på kanterna för fler bilder.</p>
+        <div class="sv-head">${RQ.crumbs(room ? [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], [room.name]] : [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep"]])}<h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           ${scopeNav(scope)}
           ${legend}
-          <p class="small sv-after">Klicka på bildens kanter för fler bilder. Efter ${ROUND} kort får du din stilprofil.</p>
+          <p class="small sv-after">Klicka på bildens kanter för fler bilder, eller mitt på bilden för att läsa mer. ${roomLeft(scope) ? `<span>${roomLeft(scope)}</span> <span>kort för</span> <span>${esc(room.name.toLowerCase())}</span>, <span>sedan får du din stilprofil.</span>` : "Efter tio kort får du din stilprofil."}</p>
           <a class="sv-two-link" href="#svep-ihop">${SV.two}<span>Inreder ni tillsammans? <b>Svep tillsammans</b></span></a></div>
         ${deckHtml("sv", false)}</section>`,
       mount(root) {
-        const carry = !scope && ss.get("rumiq-svep-carry", null); // dropped once this page takes the round further
+        const kept = ss.get(KEEP, null), keep = kept && kept.scope === (scope || "") && Array.isArray(kept.done) && kept.done.length ? kept : null;
+        const carry = !keep && !scope && ss.get("rumiq-svep-carry", null); // dropped once this page takes the round further
         const unseen = (t, st) => RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length;
-        const soonOpen = (st) => !scope && !st.soonDone && st.done.length <= 5 && !!nextSoon();
+        // "Kommer snart" comes as card six, so it only counts in a round that gets that far
+        const soonOpen = (st, t) => !scope && !st.soonDone && st.done.length <= 5 && st.done.length + unseen(t, st) >= 5 && !!nextSoon();
+        const cur = $(".sv-scope [aria-current]", root), nav = cur && cur.parentNode; if (nav && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
         return runDeck(root, {
-          px: "sv", ctx: scope ? "svep:" + scope : "svep", keys: true, start: carry, onDecide: () => ss.del("rumiq-svep-carry"),
-          total: (st, t) => Math.min(ROUND, st.done.length + unseen(t, st) + (soonOpen(st) ? 1 : 0)),
+          px: "sv", ctx: scope ? "svep:" + scope : "svep", keys: true, start: keep || carry, finished: !!keep, onDecide: () => ss.del("rumiq-svep-carry"),
+          total: (st, t) => Math.min(ROUND, st.done.length + unseen(t, st) + (soonOpen(st, t) ? 1 : 0)),
           next: (st, t, skip, n) => {
             const out = upcoming(t, skip, n, st.done.length, scope);
-            if (n === 3 && st.done.length === 5 && soonOpen(st)) { out.unshift(nextSoon()); out.length = Math.min(out.length, 3); }
+            if (n === 3 && st.done.length === 5 && soonOpen(st, t)) { out.unshift(nextSoon()); out.length = Math.min(out.length, 3); }
             return out;
           },
           why: (p, t) => { const s = RQ.taste.top(t)[0]; return t.likes >= 2 && s && p.styles.includes(s) ? `Passar din stil: ${RQ.STYLES[s].name}` : ""; },
           onFinish: (st, deckEl) => {
             const r = resultHtml(st, scope); deckEl.outerHTML = r.html;
             const res = $(".svep-result", root); res.focus({ preventScroll: true });
-            RQ.track && RQ.track("swipe_round", { saved: r.saved.length, bagged: st.bagged.length, style: r.top.length ? r.top[0].id : "", scope: scope || "" });
-            const again = () => { const h = scope ? "#svep-rum-" + scope : "#svep"; location.hash = "#upptack"; setTimeout(() => (location.hash = h), 0); };
-            $("#svAgain", root).addEventListener("click", () => { RQ.taste.reset(); again(); });
+            const fresh = !(keep && keep.done.length === st.done.length);
+            if (st.done.length) ss.set(KEEP, { scope: scope || "", done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged, soonDone: st.soonDone });
+            if (fresh) RQ.track && RQ.track("swipe_round", { saved: r.saved.length, bagged: st.bagged.length, style: r.top.length ? r.top[0].id : "", scope: scope || "" });
+            // a new round is drawn in place: no detour through another page, so Back still leads where you came from
+            const again = () => { ss.del(KEEP); RQ.router(); scrollTo(0, 0); };
+            let armed = false;
+            $("#svAgain", root).addEventListener("click", (e) => {
+              if (!armed) { armed = true; e.currentTarget.textContent = "Tryck igen för att börja om"; $("#svAgainNote", root).textContent = "Din stilprofil nollställs. Det du har sparat ligger kvar."; return; }
+              RQ.taste.reset(); try { localStorage.removeItem("rumiq-style"); } catch (er) {} again();
+            });
             const m = $("#svMore", root); m && m.addEventListener("click", again);
-            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "din runda"));
-            const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => { r.saved.forEach((p) => RQ.room && RQ.room.add(p.handle, true)); location.hash = "#mitt-rum"; });
+            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda"));
+            const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => toRoom(r.saved.map((p) => p.handle)));
             const sh = $("#svShare", root); sh && sh.addEventListener("click", () => shareStyle(r.top, (r.saved.length ? r.saved : RQ.styleProfile().liked.map(RQ.byHandle)).filter(Boolean)));
             const ans = roundAnswers(st);
             bindLinkForm($("#svTwo", root), (n) => twoLink(ans.hs, ans.a, null, n, ""), tr("Svep tillsammans på RumIQ"), tr("Svep samma kort som jag, så ser vi vad vi båda gillar."));
@@ -415,14 +453,17 @@
       html: `<section class="wrap svep" aria-label="Svep tillsammans">
         <div class="sv-head">${crumbs}<span class="eyebrow">Svep tillsammans</span><h1 class="h1">Vad gillar ni båda?</h1>
           <p class="lead keep">${two.na ? `<b class="sv-name">${esc(two.na)}</b> ` : ""}<span>${two.na ? "har svept de här korten." : "Någon har svept de här korten."}</span> <span>Svep dem du också, så ser ni vad ni har gemensamt.</span></p>
-          ${legend}<p class="small sv-after">Du ser inte vad den andra har svarat förrän du är klar.</p></div>
+          ${legend}<p class="small sv-after keep">Du ser inte vad den andra har svarat förrän du är klar.</p></div>
         ${deckHtml("sv", false)}</section>`,
       mount(root) {
+        // your answers to these cards are kept for this tab, so a reload shows the comparison instead of the cards again
+        const K2 = "rumiq-svep-two", kept = ss.get(K2, null), keep = kept && kept.raw === payload && kept.answers ? kept : null;
         return runDeck(root, {
-          px: "sv", ctx: "ihop", keys: true, hint: true,
+          px: "sv", ctx: "ihop", keys: true, hint: true, start: keep ? { done: two.hs, answers: keep.answers } : null, finished: !!keep,
           total: () => two.hs.length,
           next: (st, t, skip, n) => two.hs.filter((h) => !skip.has(h)).slice(0, n).map(RQ.byHandle),
           onFinish: (st, deckEl) => {
+            ss.set(K2, { raw: payload, answers: st.answers });
             const b = two.hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join(""), res = { ...two, b };
             const c = compare(res, true); deckEl.outerHTML = c.html;
             $(".svep-result", root).focus({ preventScroll: true });
@@ -435,8 +476,8 @@
     };
   };
   const bindTwoActions = (root, both) => {
-    const all = $("#twoAll", root); all && all.addEventListener("click", () => RQ.addMany(both.map((p) => p.handle), all, "det ni båda gillar"));
-    const rm = $("#twoRoom", root); rm && rm.addEventListener("click", () => { both.forEach((p) => RQ.room && RQ.room.add(p.handle, true)); location.hash = "#mitt-rum"; });
+    const all = $("#twoAll", root); all && all.addEventListener("click", () => RQ.addMany(both.map((p) => p.handle), all, "Det ni båda gillar"));
+    const rm = $("#twoRoom", root); rm && rm.addEventListener("click", () => toRoom(both.map((p) => p.handle)));
   };
 
   /* ---------------------------------------------------------------- the taster on the home page */
@@ -463,7 +504,7 @@
           ss.set("rumiq-svep-carry", { done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged });
           const left = ROUND - st.done.length;
           deckEl.outerHTML = `<div class="svh-done" tabindex="-1"><span class="eyebrow">${st.done.length} av ${ROUND} klara</span><h3>Snyggt. ${left} kort kvar till din stilprofil.</h3>
-            ${st.saved.length ? `<p>${st.saved.length} ${st.saved.length === 1 ? "sak har" : "saker har"} hamnat i dina favoriter.</p>` : `<p>Ju fler kort, desto bättre förstår vi vad du gillar.</p>`}
+            ${st.saved.length ? `<p>${st.saved.length} ${st.saved.length === 1 ? "sak har" : "saker har"} hamnat under Sparat.</p>` : `<p>Ju fler kort, desto bättre förstår vi vad du gillar.</p>`}
             <a class="btn" href="#svep">Fortsätt svepa</a></div>`;
         },
       });
@@ -475,7 +516,7 @@
   RQ.svepTeaser = () => {
     const t = RQ.taste.get(), top = RQ.taste.top(t)[0], picks = deck().slice(0, 3);
     return `<a class="svt" href="#svep"><div class="svt-cards" aria-hidden="true">${picks.map((p, k) => `<img src="${RQ.img(p, 600)}" alt="" loading="lazy" style="--k:${k}">`).join("")}</div>
-      <div class="svt-tx"><span class="eyebrow">${top ? `Din stil: ${esc(RQ.STYLES[top].name)}` : "Hitta din stil"}</span><h3>${t.n ? "Fortsätt där du var." : "Vilken stil är din?"}</h3><p>Svep höger på det du gillar och vänster på det du inte gillar. Efter tio bilder sorteras hela butiken efter dig.</p><span class="btn sm">${t.n ? "Fortsätt" : "Hitta din stil"}</span></div></a>`;
+      <div class="svt-tx"><span class="eyebrow">${top ? `Din stil: ${esc(RQ.STYLES[top].name)}` : "Hitta din stil"}</span><h3>${t.n ? "Fortsätt där du var." : "Vilken stil är din?"}</h3><p>Svep höger på det du gillar och vänster på resten. Efter tio kort sorteras hela butiken efter dig.</p><span class="btn sm">${t.n ? "Fortsätt" : "Börja svepa"}</span></div></a>`;
   };
   // a small way into Svep for pages that would otherwise be empty
   RQ.svepNudge = (title = "Osäker på vad du gillar?", text = "Svep tio kort, så sparas det du gillar här och butiken sorterar sig efter dig.") => {

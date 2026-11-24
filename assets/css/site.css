@@ -529,14 +529,17 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .palette{display:flex;border-radius:var(--r-s);overflow:hidden;height:4.5rem;margin:1rem 0}
 .palette i{flex:1;position:relative}
 .palette i span{position:absolute;bottom:.4rem;left:.5rem;font-size:.66rem;font-weight:600;color:rgba(0,0,0,.6);background:rgba(255,255,255,.65);padding:.1rem .3rem;border-radius:3px}
-.chat{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);display:flex;flex-direction:column;min-height:30rem}
-.chat .log{flex:1;padding:1.4rem;display:grid;gap:1rem;align-content:start;overflow:auto;max-height:36rem}
+.chat{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);display:flex;flex-direction:column;height:clamp(19rem,calc(100svh - var(--chat-top,22rem) - var(--dock-h) - 1.4rem),46rem)}
+.chat .log{flex:1;min-height:0;padding:1.4rem;display:grid;gap:1rem;align-content:start;overflow:auto;overscroll-behavior:contain}
 .msg{max-width:85%;padding:.85rem 1.1rem;border-radius:14px;font-size:.98rem;line-height:1.5}
 .msg.me{justify-self:end;background:var(--ink);color:var(--bg);border-bottom-right-radius:4px}
 .msg.ai{background:var(--bg);border:1px solid var(--line2);border-bottom-left-radius:4px}
 .msg.ai .mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-top:.8rem}
-.msg.ai .mini a{text-decoration:none;font-size:.8rem;line-height:1.25}
-.msg.ai .mini img{border-radius:var(--r-img);aspect-ratio:4/5;object-fit:cover;margin-bottom:.3rem;background:var(--img-bg)}
+.msg.ai .mini a{text-decoration:none;font-size:.8rem;line-height:1.25;min-width:0;display:grid;align-content:start;gap:.1rem}
+.msg.ai .mini a span{overflow-wrap:anywhere;hyphens:auto;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.msg.ai p + p{margin-top:.6rem}
+.msg-help{font-weight:600;text-underline-offset:3px}
+.msg.ai .mini img{border-radius:var(--r-img);width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;margin-bottom:.3rem;background:var(--img-bg)}
 .chat form{display:flex;gap:.5rem;padding:.8rem;border-top:1px solid var(--line)}
 .chat form input{flex:1}
 .typing{display:inline-flex;gap:.25rem}
@@ -743,6 +746,9 @@ details.pw[open] summary::after{content:" −"}
 .otp{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.45rem;max-width:22rem}
 .otp input{min-width:0;width:100%;text-align:center;font-size:1.4rem;font-weight:560;padding:.75rem 0;font-variant-numeric:tabular-nums}
 .sso-demo{display:grid;gap:.9rem}
+.auth-down{display:grid;gap:.8rem;margin-top:1.6rem}
+.auth-down p{color:var(--ink2)}
+.auth-down .ctrl-row{margin-top:.4rem}
 .sso-demo > svg{width:2.4rem;height:2.4rem}
 .sso-demo p{color:var(--ink2)}
 .auth-aside{padding-top:1rem}
@@ -1372,7 +1378,10 @@ html.sheet-lock{overflow:hidden}
 .jr-dots{position:absolute;right:calc((100% - var(--wrap)) / 2 - 1.6rem);top:50%;transform:translateY(-50%);display:grid;gap:.55rem;z-index:3}
 .jr-dots button{width:.55rem;height:.55rem;border-radius:50%;border:0;background:color-mix(in srgb,var(--ink) 22%,transparent);padding:0;transition:background .3s,transform .3s var(--spring)}
 .jr-dots button[aria-current=true]{background:var(--ink);transform:scale(1.35)}
-.journey .hs-cap{position:relative;margin-top:-2.4rem}
+.journey .hs-cap{margin-top:.2rem}
+/* the note about the pictures stands with each room on wide screens; on phones, where the room fills the screen, it comes after the walk */
+.jr-cap-after{display:none}
+@media (max-width:900px){.jr-cap{display:none}.jr-cap-after{display:block;margin-top:.8rem}}
 @media (max-width:1400px){.jr-dots{right:.6rem}}
 @media (max-width:900px){
   .journey{height:calc(var(--n) * 80svh + 100svh)}
@@ -1391,6 +1400,7 @@ html.sheet-lock{overflow:hidden}
 .journey.flat .jr-img .hs-stage{aspect-ratio:16/10;height:auto}
 .journey.flat .jr-dots{display:none}
 .journey.flat .hs-cap{margin-top:0}
+.journey.flat .jr-room:not(:first-of-type) .jr-cap{display:none}
 
 /* ---------------------------------------------------------------- Looks */
 .looks-row{display:grid;grid-auto-flow:column;grid-auto-columns:min(22rem,82vw);gap:1.2rem;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:1rem;margin:0 calc(-1*var(--gutter));padding-left:var(--gutter);padding-right:var(--gutter);scrollbar-width:thin;scroll-padding-left:var(--gutter)}
@@ -1412,6 +1422,23 @@ html.sheet-lock{overflow:hidden}
 .lc-tx p{font-size:.92rem;color:var(--muted)}
 .lc-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-top:.4rem}
 .lc-row .price{font-size:.9rem;font-weight:560}
+.lc-row .price s{color:var(--muted);font-weight:400}
+.look-off{font-weight:600;color:var(--ink);white-space:nowrap}
+.looks-grid .own-look{margin-top:0;max-width:none;grid-template-columns:1fr;justify-items:center;align-content:center;text-align:center;gap:.8rem;min-height:14rem}
+.mh-none{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;align-items:baseline;justify-content:space-between;padding:1rem 1.2rem;border:1px dashed var(--line);border-radius:var(--r)}
+.mh-none p{color:var(--muted)}
+.mh-none b{color:var(--ink);font-weight:560}
+.mh .watch{margin:1.6rem 0 0}
+#hrOpen[hidden],.hr-form[hidden]{display:none}
+.mh .sv-nudge{margin-top:1rem}
+.mylooks{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1.2rem}
+.mylook{margin:0;display:grid;gap:.8rem;align-content:start;background:var(--paper)}
+.mylook header{margin:0}
+.mylook header s{color:var(--muted);font-weight:400}
+.mylook-line{display:flex;flex-wrap:wrap;gap:.4rem}
+.mylook-line button{width:4.2rem;height:4.2rem;border:0;border-radius:12px;background:var(--img-bg);padding:.35rem;overflow:hidden}
+.mylook-line img{display:block;width:100%;height:100%;object-fit:contain}
+.mylook .ctrl-row{margin:0}
 .look-page{padding:1.4rem 0 3rem}
 .lp-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(1.5rem,4vw,4rem);align-items:start;margin-top:1.4rem}
 .lp-stage{aspect-ratio:16/10}
@@ -1426,7 +1453,14 @@ html.sheet-lock{overflow:hidden}
 .lp-item span{font-size:.86rem;color:var(--muted)}
 .lp-item .iconbtn svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.8}
 .lp-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.8rem;font-size:1.05rem}
-@media (max-width:900px){.lp-grid{grid-template-columns:1fr}.lp-tx{position:static}.lp-stage{aspect-ratio:4/5}}
+.lp-in{font-size:.95rem;color:var(--ink2);margin-bottom:.7rem}
+.lp-buy .ctrl-row{margin:0}
+.lp-item .iconbtn.done{background:#2C4A3E;border-color:#2C4A3E;color:#F7F7F4}
+.lp-item .iconbtn.done span{display:none}
+.lp-item .iconbtn.done svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:2}
+/* one column on phones only; from a small tablet the picture and the list stand side by side */
+@media (max-width:700px){.lp-grid{grid-template-columns:1fr}.lp-tx{position:static}.lp-stage{aspect-ratio:4/3}.lp-tx .h1{font-size:2.2rem}.lp-tx .lp-list{order:5}.lp-tx > .small{order:6;margin-top:0!important}.lp-sum{border-top:0;padding-top:0}}
+@media (min-width:701px) and (max-width:1000px){.lp-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.6rem}.lp-stage{aspect-ratio:4/5}.lp-tx .h1{font-size:2.4rem}}
 
 /* ---------------------------------------------------------------- Svep */
 .svep{padding:1.4rem 0 5rem}
@@ -1439,6 +1473,7 @@ html.sheet-lock{overflow:hidden}
 .sv-info{position:absolute;left:.7rem;right:.7rem;bottom:.7rem;background:rgba(247,247,244,.94);color:#22252A;border-radius:12px;padding:.75rem .9rem;display:grid;gap:.2rem;backdrop-filter:blur(8px)}
 .sv-info div{display:flex;justify-content:space-between;gap:.8rem;font-weight:600}
 .sv-info div span{white-space:nowrap}
+.sv-info div b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-width:0}
 .sv-info small{color:#696B68;font-size:.8rem}
 .sv-stamp{position:absolute;top:1.1rem;padding:.35rem .8rem;border-radius:8px;font-weight:700;font-size:1.05rem;letter-spacing:-.01em;opacity:0;border:2px solid currentColor;background:rgba(247,247,244,.85)}
 .sv-stamp.yes{left:1rem;color:#2C4A3E;transform:rotate(-8deg)}
@@ -1457,7 +1492,8 @@ html.sheet-lock{overflow:hidden}
 .sv-keys{text-align:center}
 .svep-result{max-width:40rem;text-align:center;display:grid;gap:.8rem;justify-items:center;outline:none;animation:rqRise .6s var(--ease) both}
 .sv-liked{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-top:.6rem}
-.sv-liked button{border:1px solid var(--line2);background:var(--paper);border-radius:12px;padding:.5rem;width:6.4rem;display:grid;gap:.3rem;font-size:.76rem;color:var(--ink2)}
+.sv-liked button{border:1px solid var(--line2);background:var(--paper);border-radius:12px;padding:.5rem;width:6.9rem;display:grid;gap:.3rem;align-content:start;font-size:.8rem;line-height:1.25;color:var(--ink2);min-width:0}
+.sv-liked button span{overflow-wrap:anywhere;hyphens:auto}
 .sv-liked img{height:4rem;width:100%;object-fit:contain}
 
 /* ---------------------------------------------------------------- teasers, Upptäck, Rösta */
@@ -1523,16 +1559,24 @@ html.sheet-lock{overflow:hidden}
   .jr-row .link{align-self:flex-start;font-size:.92rem}
 }
 /* Svep on phones: the deck and its buttons always fit above the dock */
+@media (max-width:900px) and (max-height:780px){.svep:not(.two-intro) .sv-head .lead:not(.keep){display:none}.svep .sv-head h1{font-size:1.6rem}.sv-info small{display:none}.sv-info{font-size:.92rem}}
 @media (max-width:900px){
   .svep{padding-top:.6rem}
   .svep .crumbs{display:none}
   .sv-head h1{font-size:1.9rem}
   .sv-head .lead{font-size:.98rem}
-  .sv-wrap{margin-top:1rem;gap:.8rem}
+  .sv-wrap{margin-top:1rem;gap:.7rem}
+  .sv-meta{margin:-.2rem 0}
   .sv-deck{width:min(26rem,86vw,calc((100svh - var(--nav-h) - var(--dock-h) - 17rem) * .77))}
+  .sv-info{padding:.6rem .75rem;left:.5rem;right:.5rem;bottom:.5rem}
+  .sv-head{gap:.6rem}
   .sv-keys{display:none}
 }
 .svep-result ~ .sv-meta{display:none}
+.sv-meta[hidden]{display:none}
+.svep:has(.svep-result) .sv-head .lead:not(.keep){display:none}
+.sv-alldone{color:var(--ink2);font-size:.95rem}
+.sv-alldone a{margin-left:.3rem}
 /* Svep v7: pictures per card, upward = cart, undo, progress, style profile */
 .sv-prog{width:min(26rem,88vw);height:3px;border-radius:3px;background:var(--line);overflow:hidden}
 .sv-prog i{display:block;height:100%;width:0;background:var(--ink);transition:width .4s var(--ease)}
@@ -1546,9 +1590,12 @@ html.sheet-lock{overflow:hidden}
 .sv-stamp.up{left:50%;top:38%;transform:translateX(-50%) rotate(-3deg);color:#2C4A3E}
 .sv-b.undo{width:2.6rem;height:2.6rem}
 .sv-b.undo svg{width:1.1rem;height:1.1rem}
-.sv-b.undo:disabled{opacity:.35;pointer-events:none}
+.sv-b:disabled{opacity:.35;pointer-events:none}
 .sv-b.bag{width:3.2rem;height:3.2rem}
 .sv-card.hint{animation:svHint 2.6s ease-in-out .9s 2}
+/* touch screens: the hint only leans sideways, because there is no swipe upwards there */
+@media (hover:none){.sv-card.hint{animation-name:svHintX}}
+@keyframes svHintX{0%,100%{transform:none}22%{transform:translateX(26px) rotate(3deg)}44%{transform:none}66%{transform:translateX(-26px) rotate(-3deg)}88%{transform:none}}
 @keyframes svHint{0%,100%{transform:none}18%{transform:translateX(26px) rotate(3deg)}36%{transform:none}54%{transform:translateX(-26px) rotate(-3deg)}72%{transform:none}86%{transform:translateY(-22px)}}
 .svep-result{max-width:46rem}
 .sp-grid{display:grid;gap:1.4rem;width:100%;margin-top:.6rem;text-align:left}
@@ -1563,7 +1610,7 @@ html.sheet-lock{overflow:hidden}
 .sp-tone{display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;padding:.25rem .6rem .25rem .3rem;border:1px solid var(--line);border-radius:999px}
 .sp-tone i{width:1.3rem;height:1.3rem;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
 .sp-saved{width:100%;margin-top:.8rem;display:grid;gap:.6rem;justify-items:center}
-.sv-liked button small{color:var(--muted);font-size:.72rem}
+.sv-liked button small{color:var(--muted);font-size:.78rem}
 .sp-acts{justify-content:center}
 .sp-acts .btn svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6;margin-right:.4rem;vertical-align:-3px}
 .sp-look{display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:center;text-align:left;width:100%;max-width:34rem;padding:1rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);color:inherit;text-decoration:none;margin-top:.6rem;transition:transform .3s var(--spring)}
@@ -1575,7 +1622,7 @@ html.sheet-lock{overflow:hidden}
 .sp-look small{color:var(--muted);font-size:.85rem}
 #svShare svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6;margin-right:.4rem;vertical-align:-3px}
 .svep-result .tlink{margin-top:.4rem}
-@media (max-width:640px){.sv-ctrl{gap:.6rem}.sp-row{grid-template-columns:6.8rem 1fr 2.6rem}}
+@media (max-width:640px){.sv-ctrl{gap:.6rem}.sp-row{grid-template-columns:6.8rem 1fr 2.6rem}.sp-acts{flex-direction:column;align-items:stretch;width:100%}.sp-acts .btn{justify-content:center;text-align:center}.sp-look{grid-template-columns:1fr}.sp-look-ims img{width:3.6rem;height:3.6rem}}
 @media (prefers-reduced-motion:reduce){.sv-card.hint{animation:none}.sp-bar i{animation:none}}
 
 
@@ -1852,7 +1899,7 @@ body.on-checkout .tools{grid-column:3}
   .svep:not(:has(.svep-result)) .sv-legend{display:grid;gap:.15rem;list-style:none;margin:1.2rem 0 0;padding:0;max-width:30rem}
   .sv-legend li{display:flex;gap:.9rem;align-items:center;padding:.7rem 0;border-top:1px solid var(--line)}
   .sv-legend li:last-child{border-bottom:1px solid var(--line)}
-  .sv-legend kbd{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:10px;border:1px solid var(--line);background:var(--card,#fff);font:600 1rem/1 inherit;font-family:inherit;color:var(--ink)}
+  .sv-legend kbd{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:10px;border:1px solid var(--line);background:var(--paper);font:600 1rem/1 inherit;font-family:inherit;color:var(--ink)}
   .sv-legend div{display:grid;gap:.1rem}
   .sv-legend b{font-weight:600}
   .sv-legend span{color:var(--muted);font-size:.92rem}
@@ -1862,6 +1909,7 @@ body.on-checkout .tools{grid-column:3}
 /* ---------------------------------------------------------------- Svep v8: rooms, together, home taster, nudges */
 .sv-scope{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem}
 .sv-scope .chip{padding:.38rem .75rem;font-size:.85rem}
+@media (min-width:901px){.sv-scope{gap:.3rem}.sv-scope .chip{padding:.36rem .55rem;font-size:.82rem}}
 .sv-scope .chip[aria-current=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .sv-two-link{display:inline-flex;gap:.6rem;align-items:center;margin-top:1rem;color:var(--ink2);text-decoration:none;font-size:.92rem}
 .sv-two-link svg,.sp-two-ic svg,.svh .btn svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -2105,13 +2153,18 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 .vtz:hover .vtz-sw img{transform:translateY(-4px)}
 .sv-soon-img{width:min(62%,15rem);aspect-ratio:1;object-fit:cover;border-radius:18px;box-shadow:0 22px 40px -22px rgba(0,0,0,.55);margin:.2rem 0;pointer-events:none;user-select:none}
 .sv-soon{gap:.6rem}
+/* the picture gives way when the card is small, so everything stays inside it */
+.sv-soon{display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.sv-soon > *{flex:none}
+.sv-soon .sv-soon-img{flex:0 1 auto;min-height:0;width:auto;height:15rem;max-width:100%}
+@media (max-width:900px){.sv-soon{padding:1rem 1.1rem;gap:.4rem}.sv-soon-tag{font-size:.7rem;padding:.3rem .55rem}.sv-soon .sv-soon-img{height:11rem}.sv-soon b{font-size:1.4rem}.sv-soon p{font-size:.92rem}.sv-soon small{font-size:.8rem;margin-top:.1rem}.sv-soon-why{display:none}}
 @media (max-width:560px){.vote-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}.vote{padding:.75rem .75rem .9rem}.vote b{font-size:.95rem}.vote span{font-size:.85rem}}
 .mh-favacts{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
 .mh-favacts .btn svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 /* v11: Presentkort */
 .gc{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4.5rem);align-items:center;padding-top:1rem}
 .gc-card{aspect-ratio:1.586;border-radius:22px;background:radial-gradient(120% 140% at 15% 10%,#5b5a55 0%,#2b2c2e 55%,#1c1d1f 100%);box-shadow:0 40px 70px -40px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08);position:relative;padding:8% 9%;display:flex;flex-direction:column;justify-content:space-between;color:#F7F7F4;transform:rotate(-3deg)}
-.gc-card img{width:34%;height:auto}
+.gc-card img{width:34%;height:auto;aspect-ratio:4/1;object-fit:contain;object-position:left center;align-self:flex-start}
 .gc-amt{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:560;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .gc-sub{font-size:.85rem;opacity:.75;margin-top:-1rem}
 .gc-amts{display:flex;gap:.5rem;flex-wrap:wrap;margin:1.6rem 0 1.2rem}
@@ -2120,6 +2173,10 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 .gc-points li::before{content:"";display:inline-block;width:.45rem;height:.45rem;border-radius:50%;background:var(--ink);margin-right:.7rem;vertical-align:middle}
 .gc-soon{border:1px solid var(--line);border-radius:var(--r);padding:1.2rem;background:var(--paper);display:grid;gap:.8rem}
 .gc-soon p{margin:0;color:var(--ink2)}
+.gc-soon .field{display:flex;gap:.5rem}
+.gc-soon .field input{flex:1;min-width:0}
+.gc-soon .status:empty{display:none}
+.gc-info .lead{margin-top:1rem}
 @media (max-width:820px){.gc{grid-template-columns:1fr}.gc-card{max-width:24rem;margin:0 auto 1rem}}
 
 /* ============ v12: snappier. Shorter motion, cheaper paint, light by default ============ */
@@ -2362,11 +2419,35 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .imgopts.pick button[aria-pressed=true] span{font-weight:650}
 .imgopts.pick button[aria-pressed=true]::after{content:"";position:absolute;right:.4rem;top:.4rem;width:1.35rem;height:1.35rem;border-radius:50%;background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F7F7F4' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/70% no-repeat}
 .quiz .q h3 small{display:block;margin-top:.2rem;font-size:.9rem;font-weight:400;letter-spacing:0;color:var(--ink2)}
-@media (max-width:640px){.imgopts.pick{grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}.imgopts.pick button span{font-size:.78rem}}
+/* Hitta rätt: numbered questions, the focus ring and the tick sit on the picture, the result is scrolled to */
+.q-n{display:inline-grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:50%;background:var(--ink);color:var(--bg);font-size:.9rem;font-weight:600;margin-right:.6rem;vertical-align:.12em;letter-spacing:0}
+.quiz .q-max{display:flex;flex-wrap:wrap;gap:1rem 1.2rem;align-items:flex-end}
+.quiz .q-max label{flex:0 1 20rem;min-width:0}
+.quiz .q-max .ctrl-row{margin:0}
+.q-out{scroll-margin-top:calc(var(--nav-h) + 1rem)}
+.q-out:empty{display:none}
+.q-out [tabindex="-1"]:focus,#ssOut [tabindex="-1"]:focus{outline:none}
+.imgopts.pick button:focus-visible{outline:none}
+.imgopts.pick button:focus-visible img{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+.imgopts.pick button[aria-pressed=true]{box-shadow:none}
+.imgopts.pick button[aria-pressed=true]::after{background-color:#22252A;box-shadow:0 0 0 2px #F7F7F4}
+@media (min-width:900px){.imgopts.pick{grid-template-columns:repeat(auto-fill,minmax(8.4rem,1fr));max-width:66rem;gap:.8rem}.imgopts.pick button span{font-size:.92rem}}
+.ss-form{max-width:52rem;display:grid;gap:.7rem;padding:1.2rem;border:1px solid var(--line2);border-radius:var(--r);background:var(--paper)}
+.ss-form label{font-weight:560;color:var(--ink)}
+.ss-form .field{display:flex;gap:.5rem}
+.ss-form input{flex:1;min-width:0}
+@media (max-width:640px){.ss-form .field{flex-direction:column}}
+#ssOut{scroll-margin-top:calc(var(--nav-h) + 1rem)}
+.ss-read{color:var(--ink2);margin-bottom:1.6rem}
+@media (max-width:640px){.imgopts.pick{grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}.imgopts.pick button span{font-size:.8rem;overflow-wrap:break-word}}
 /* 7. Stylist: questions to start from, and what to do with an answer */
 .chat .starters{display:flex;flex-wrap:wrap;gap:.4rem}
 .chat .starters .chip,.msg .follow .chip{white-space:normal;text-align:left;line-height:1.3}
 .msg .follow{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.8rem}
+.msg .follow a.chip{text-decoration:none}
+/* the stylist on phones: a short head, so the conversation and its field fit on the first screen */
+@media (max-width:900px){.stylist-head{padding-top:.8rem;padding-bottom:.8rem}.stylist-head .crumbs,.stylist-head .lead{display:none}.stylist-head .h1{font-size:1.9rem}.chat .log{padding:1rem}.msg{max-width:92%}}
+@media (min-width:901px){.stylist-head{padding-bottom:1.4rem}}
 /* 8. "Gör bilden verklig": the small line is readable on the tinted card */
 .ai-card span{color:var(--ink2)}
 /* 9. Kassan: form and order summary side by side on wide screens, under each other on phones and tablets
