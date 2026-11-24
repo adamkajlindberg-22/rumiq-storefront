@@ -401,7 +401,7 @@
     return {
     title: "Looks · RumIQ",
     html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Looks"]]), "Färdiga looks", `Tre eller fyra saker som hör ihop. Lägg hela looken i varukorgen med ett tryck, eller välj det du vill ha.${pct ? ` <b class="look-off"><span>Hela looken ger</span> ${pct} % <span>rabatt.</span></b>` : ""}`)}
-      <section class="wrap" style="padding-bottom:6rem"><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}
+      <section class="wrap" style="padding-bottom:6rem"><h2 class="sr">Alla looks</h2><div class="looks-grid stagger" data-watch>${RQ.LOOKS.map(RQ.lookCard).join("")}
         <a class="own-look" href="#mitt-rum"><span class="ol-plus" aria-hidden="true">+</span><span><b>Bygg din egen look i ditt rum</b><small>Ställ in det du gillar, se totalpriset och hur väl sakerna går ihop.</small></span></a></div>
         ${mine.length ? `<div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Dina sparade looks</h2></div><div class="mylooks">${RQ.savedLooksHtml()}</div>` : ""}
         <div class="sec-head" style="margin:4rem 0 1.4rem"><h2 class="h2">Samlat kring en idé</h2><p>Större urval för den som vill bläddra vidare.</p></div>${RQ.colCards()}</section>`,

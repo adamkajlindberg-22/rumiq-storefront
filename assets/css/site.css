@@ -75,8 +75,8 @@ a.eyebrow:hover{color:var(--ink)}
 .caption{font-size:.84rem;color:var(--muted);margin-top:.8rem;max-width:var(--measure)}
 
 /* ---------------------------------------------------------------- controls */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;border:1px solid var(--ink);text-decoration:none;white-space:nowrap;
-  background:var(--ink);color:var(--bg);min-height:3.25rem;padding:0 1.6rem;border-radius:var(--r-btn);font-weight:560;font-size:.98rem;letter-spacing:-.01em;
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;border:1px solid var(--ink);text-decoration:none;white-space:normal;text-wrap:balance;text-align:center;
+  background:var(--ink);color:var(--bg);min-height:3.25rem;padding:.35rem 1.6rem;border-radius:var(--r-btn);font-weight:560;font-size:.98rem;letter-spacing:-.01em;
   transition:background .35s var(--ease),color .35s var(--ease),border-color .35s,transform .2s var(--ease);position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
 .btn:hover{background:color-mix(in srgb,var(--ink) 86%,var(--accent))}
 .btn:active{transform:scale(.985)}
@@ -184,6 +184,7 @@ a.eyebrow:hover{color:var(--ink)}
 .mnav .mnav-grid a{font-size:1.02rem;letter-spacing:-.01em;color:var(--ink2)}
 .mnav .mnav-lang,.mnav .mnav-light{display:inline-flex;align-items:center;gap:.4rem;min-height:2.75rem;font-size:.92rem;font-weight:600;padding:0 1rem;color:inherit;background:var(--sunk);border:0;border-radius:999px;cursor:pointer}
 .dock{display:none}
+.menu-nav{display:contents}
 
 /* ---------------------------------------------------------------- frame */
 main{min-height:60vh}
@@ -346,7 +347,7 @@ main{min-height:60vh}
 .qty input{width:2.2rem;text-align:center;border:0!important;background:transparent!important;padding:0!important;-moz-appearance:textfield;font-variant-numeric:tabular-nums}
 .qty input::-webkit-inner-spin-button{-webkit-appearance:none}
 .buy .qty button{min-width:2.75rem}
-.buy{display:flex;gap:.6rem;margin:1.6rem 0 0}
+.buy{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.6rem 0 0}
 .buy .btn{flex:1}
 .qty-note{margin-top:.55rem;color:var(--ink2)}
 .qty-note:empty{display:none}
@@ -432,9 +433,9 @@ details[open] > summary .pm::after{transform:translate(-50%,-50%) rotate(0)}
 .tile{position:relative;border-radius:var(--r-img);overflow:hidden;aspect-ratio:3/4;display:block;text-decoration:none;color:#F7F7F4;background:var(--img-bg)}
 .tile img{width:100%;height:100%;object-fit:cover;transition:transform 1.4s var(--ease)}
 .tile:hover img{transform:scale(1.03)}
-.tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(14,15,14,.55))}
+.tile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(14,15,14,.4) 66%,rgba(14,15,14,.74))} /* white text over light photos stays 4.5:1 */
 .tile span{position:absolute;left:1.1rem;bottom:1rem;right:1.1rem;z-index:1;font-size:1.35rem;font-weight:560;letter-spacing:-.025em;line-height:1.15}
-.tile small{display:block;font-size:.85rem;font-weight:400;opacity:.85;margin-top:.2rem;letter-spacing:0}
+.tile small{display:block;font-size:.85rem;font-weight:400;margin-top:.2rem;letter-spacing:0}
 .tiles.wide .tile{aspect-ratio:4/5}
 .tile span{overflow-wrap:anywhere;hyphens:auto}
 /* eight room tiles: four across down to a tablet, so no row is left with two */
@@ -685,7 +686,7 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .toast a,.toast button{display:inline-flex;align-items:center;min-height:2.75rem;margin:-.85rem 0;padding-inline:.3rem}
 .cookie{position:fixed;left:1rem;bottom:calc(1rem + var(--dock-h) + env(safe-area-inset-bottom));z-index:120;width:min(25rem,calc(100% - 2rem));background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:1.25rem;box-shadow:var(--shadow);transform:translateY(calc(100% + 3rem));visibility:hidden;transition:transform .6s var(--ease),visibility 0s .6s}
 .cookie.show{transform:none;visibility:visible;transition:transform .6s var(--ease)}
-.cookie h3{font-weight:560;font-size:1.05rem}
+.cookie :is(h2,h3){font-weight:560;font-size:1.05rem}
 .cookie p{font-size:.9rem;color:var(--ink2);margin:.4rem 0 1rem}
 .cookie .row{display:flex;gap:.45rem;flex-wrap:wrap}
 .cookie .opts{display:grid;gap:.6rem;margin:.2rem 0 1rem}
@@ -1355,6 +1356,7 @@ html.sheet-lock{overflow:hidden}
 .hs-l em{font-style:normal;font-size:.76rem;color:#696B68}
 .hs.flip .hs-l{left:auto;right:calc(100% - .2rem);transform:translate(4px,-50%)}
 .hs:hover .hs-l,.hs:focus-visible .hs-l{opacity:1;transform:translate(0,-50%)}
+.hs.hush .hs-l{opacity:0}
 .hs-cap{font-size:.8rem;color:var(--muted);margin-top:.7rem}
 @media (hover:none){.hs-l{display:none}}
 
@@ -1800,7 +1802,7 @@ body.on-home footer.site .news{display:none}
 /* cookie choice as a slim bar */
 .cookie{left:50%;width:min(56rem,calc(100% - 2rem));display:grid;grid-template-columns:1fr auto;align-items:center;gap:.4rem 1.4rem;padding:.85rem 1rem .85rem 1.2rem;transform:translate(-50%,calc(100% + 3rem))}
 .cookie.show{transform:translateX(-50%)}
-.cookie h3{display:none}
+.cookie :is(h2,h3){display:none}
 .cookie p{margin:0;font-size:.88rem}
 .cookie .row{margin:0!important;flex-wrap:nowrap}
 .cookie .row #ckMore{background:none;border:0;padding:0 .2rem;text-decoration:underline;text-underline-offset:3px;min-height:2.75rem}
@@ -1821,7 +1823,7 @@ footer.site .bottom .bottom-link{color:var(--muted);text-decoration:underline;te
 .fsm-bar{height:5px;border-radius:99px;background:var(--line);overflow:hidden}
 .fsm-bar i{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width .5s var(--ease)}
 .empty-cart{display:grid;gap:.6rem;margin-top:.6rem}
-.empty-cart h3{font-size:1.25rem;font-weight:560}
+.empty-cart :is(h2,h3){font-size:1.25rem;font-weight:560}
 .empty-cart > p{color:var(--ink2)}
 .ec-looks{display:grid;gap:.6rem;margin-top:.6rem}
 .ec-look{display:flex;align-items:center;gap:1rem;padding:.7rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper)}

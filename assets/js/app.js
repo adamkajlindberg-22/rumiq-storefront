@@ -46,7 +46,9 @@
   };
   RQ.toast = (html, ms) => {
     const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); t.classList.add("show");
-    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), ms || 3600);
+    // a toast with a link stays 6 s, and waits while the pointer or the focus is on it (2.2.1)
+    const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":hover, :focus-within")) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); };
+    clearTimeout(toastT); toastT = setTimeout(hide, wait);
   };
   const swatches = (p) => (p.variants ? `<span class="swatches" role="img" aria-label="${p.variants.length} färger">${p.tone.slice(0, p.variants.length).map((c) => `<i style="background:${c}"></i>`).join("")}</span>` : "");
   const plus = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
@@ -305,7 +307,7 @@
             <p class="short">${esc(p.short)}</p>
             ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div><p class="small vnote" id="vnote" hidden><span>Bilderna visar färgen</span> <b>${esc(vs[0].title)}</b>.</p></div>` : ""}
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
-            <p class="small qty-note" id="qtyNote" role="status"></p>
+            <p class="small qty-note" id="qtyNote" role="status"></p><p class="sr" id="qtySaid" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${RQ.payRow()}
             ${RQ.room && RQ.room.has() ? `<a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.room.thumb()}</span><span><b>Ställ in i mitt rum</b><small>Se den hemma hos dig och handla hela rummet på en gång.</small></span>${RQ.roomIco}</a>`
               : `<button type="button" class="roomcta" data-room-setup="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.roomIco}</span><span><b>Se den i ditt rum</b><small>Ta en bild av ditt rum, så ställer vi in produkten där.</small></span>${RQ.plus}</button>`}
@@ -395,7 +397,7 @@
         /* the field always shows what will be added: whole numbers from 1 to 99, corrected in the field itself */
         const qty = () => { const n = Math.round(+String(q.value).replace(",", ".")); const v = !isFinite(n) || n < 1 ? 1 : Math.min(MAXQ, n); if (String(v) !== q.value) q.value = v; qNote.textContent = n > MAXQ ? `Max ${MAXQ} per produkt.` : ""; return v; };
         q.addEventListener("change", qty);
-        $$("[data-q]", root).forEach((b) => b.addEventListener("click", () => { q.value = (Math.round(+q.value) || 1) + +b.dataset.q; qty(); }));
+        $$("[data-q]", root).forEach((b) => b.addEventListener("click", () => { q.value = (Math.round(+q.value) || 1) + +b.dataset.q; $("#qtySaid", root).textContent = `Antal: ${qty()}`; }));
         const put = () => { const want = qty(), line = S.cartLines().find((l) => l.id === variant), room = MAXQ - (line ? line.quantity : 0), n = Math.min(want, room);
           if (n < 1) { qNote.textContent = `Du har redan ${MAXQ} i varukorgen. Det är max per produkt.`; return 0; }
           S.addToCart(variant, n); q.value = 1; qNote.textContent = n < want ? `Max ${MAXQ} per produkt. Vi lade till ${n}.` : ""; return n; };
@@ -685,7 +687,7 @@
     RQ.markImages(root);
     $$(".menu a").forEach((a) => a.classList.toggle("active", rawOf(a) === raw));
     const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
-    $$("[data-dock]").forEach((a) => a.classList.toggle("on", !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw))));
+    $$("[data-dock]").forEach((a) => { const on = !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw)); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     const anchor = /^faq-\d+$/.test(raw) && document.getElementById(raw);
     if (anchor) anchor.scrollIntoView();
     if (backTo) scrollBack(backTo); // after the page has started, so its own parts are in place
@@ -828,8 +830,11 @@
   let opener = null; const remember = () => { const a = document.activeElement; opener = a && a !== document.body && !a.closest("#cart,#mnav,#search") ? a : opener; };
   drawer.setAttribute("role", "dialog"); drawer.setAttribute("aria-modal", "true"); drawer.tabIndex = -1;
   // the page behind stands still while the cart is open; the focus goes to the drawer itself (no ring on the close button after a tap)
-  const openCart = () => { remember(); renderCart(); closeLight(); $("#toast").classList.remove("show"); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); document.documentElement.style.overflow = "hidden"; setTimeout(() => drawer.focus({ preventScroll: true }), 50); };
-  const closeAll = () => { const was = drawer.classList.contains("open") || $("#search").classList.contains("open") || $("#mnav").classList.contains("open"); if (was && opener && opener.isConnected && document.activeElement && document.activeElement.closest("#cart,#mnav,#search")) { try { opener.focus({ preventScroll: true }); } catch (e) {} } opener = null; if (was) $("#toast").classList.remove("show"); drawer.classList.remove("open"); scrimAll.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); $("#search").classList.remove("open"); $("#mnav").classList.remove("open"); $("#burger").setAttribute("aria-expanded", "false"); closeMega(); closeLight(); document.documentElement.style.overflow = ""; };
+  const openCart = () => { remember(); renderCart(); closeLight(); $("#toast").classList.remove("show"); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); behind(true); document.documentElement.style.overflow = "hidden"; setTimeout(() => drawer.focus({ preventScroll: true }), 50); };
+  // while the cart, the search or the menu is open, the page behind cannot be reached, also not by a screen reader's reading cursor
+  const behind = (on) => ["#nav", "#view", "footer.site", "#dock"].forEach((q) => { const el = $(q); if (el) el.inert = on; });
+  RQ.behind = behind;
+  const closeAll = () => { behind(false); const was = drawer.classList.contains("open") || $("#search").classList.contains("open") || $("#mnav").classList.contains("open"); if (was && opener && opener.isConnected && document.activeElement && document.activeElement.closest("#cart,#mnav,#search")) { try { opener.focus({ preventScroll: true }); } catch (e) {} } opener = null; if (was) $("#toast").classList.remove("show"); drawer.classList.remove("open"); scrimAll.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); $("#search").classList.remove("open"); $("#mnav").classList.remove("open"); $("#burger").setAttribute("aria-expanded", "false"); closeMega(); closeLight(); document.documentElement.style.overflow = ""; };
   RQ.openCart = openCart; RQ.closeAll = closeAll;
   // keep the keyboard inside whatever layer is open (quick view, search, menu or cart)
   const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -918,7 +923,7 @@
   // an empty cart or checkout is never a dead end: two looks and what you looked at last
   RQ.emptyCartHtml = (wide) => {
     const seen = (S.recentlySeen ? S.recentlySeen("") : []).slice(0, wide ? 4 : 2);
-    return `<div class="empty-cart${wide ? " wide" : ""}"><h3>Varukorgen är tom</h3><p>Börja med en färdig look. Hela looken ger ${Math.round(((window.RQ_CONFIG || {}).lookDiscount || 0) * 100)} % rabatt.</p>
+    return `<div class="empty-cart${wide ? " wide" : ""}">${wide ? "<h2>Varukorgen är tom</h2>" : "<h3>Varukorgen är tom</h3>"}<p>Börja med en färdig look. Hela looken ger ${Math.round(((window.RQ_CONFIG || {}).lookDiscount || 0) * 100)} % rabatt.</p>
       <div class="ec-looks">${RQ.LOOKS.slice(0, 2).map((l) => `<a class="ec-look" href="#look-${l.id}" data-close><span class="ec-imgs">${l.items.slice(0, 3).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="" loading="lazy">`).join("")}</span><span><b>${esc(l.name)}</b><small>${l.items.length} saker</small></span></a>`).join("")}</div>
       ${seen.length ? `<p class="eyebrow" style="margin-top:1.6rem">Senast visade</p><div class="ec-seen">${seen.map((p) => `<a href="#produkt-${p.handle}" data-close><img src="${RQ.img(p, 600)}" alt=""><span>${esc(p.name)}</span></a>`).join("")}</div>` : ""}
       ${RQ.svepNudge ? RQ.svepNudge("Vet du inte var du ska börja?", "Svep tio kort, så hittar vi det som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}
@@ -964,7 +969,7 @@
   };
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
-  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); const into = (n) => { sInput.focus(); if (document.activeElement === sInput) sInput.select(); else if (n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 60); }; // the field may still be turning visible (reduced motion): try again on the next frames
+  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); behind(true); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); const into = (n) => { sInput.focus(); if (document.activeElement === sInput) sInput.select(); else if (n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 60); }; // the field may still be turning visible (reduced motion): try again on the next frames
   // keys in the search: Enter puts the keyboard away on a phone and steps into the hits, the arrows walk through them
   const sItems = () => $$("a.chip, button.chip, .card .ct a, .empty a, .mag-grid a", sRes).filter((el) => el.offsetParent);
   $("#search").addEventListener("keydown", (e) => {
@@ -1022,7 +1027,7 @@
       return; }
     if (t.matches("[data-line]")) { const l = S.cartLines().find((x) => x.id === t.dataset.line); if (l) S.setQty(l.id, l.quantity + +t.dataset.d); return; }
     if (t.matches("[data-action=cookies]")) { RQ.showCookies(true); return; }
-    if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
+    if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); behind(true); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
     if (t.id === "mnavClose") { closeAll(); return; }
     if (t.matches("a[data-after]")) RQ.ss.set("rumiq-after-login", "#" + t.dataset.after);
     if (t.matches("[data-close]") || t.matches("a[href^='#']")) { closeAll(); }
@@ -1083,7 +1088,9 @@
     });
     return { sync, anyOpen };
   })();
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !e.target.closest("input,textarea,select"))) { e.preventDefault(); RQ.openSearch(); } });
+  // the name that shows on a hotspot under the pointer or the focus can be put away with Escape (1.4.13)
+  document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; const h = document.querySelector(".hs:hover, .hs:focus-visible"); if (!h) return; h.classList.add("hush"); const off = () => h.classList.remove("hush"); h.addEventListener("mouseleave", off, { once: true }); h.addEventListener("blur", off, { once: true }); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && (e.target === document.body || e.target.id === "view"))) { e.preventDefault(); RQ.openSearch(); } });
 
   // nav state on scroll
   const nav = $("#nav"); let solid = null;

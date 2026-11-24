@@ -21,12 +21,17 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
+<div class="cookie" id="cookie" role="dialog" aria-label="Cookies">
+  <h2>Cookies</h2><p>Nödvändiga cookies får butiken att fungera. Statistik och marknadsföring bara om du vill. <a href="juridik-cookies/">Läs mer</a></p>
+  <div class="opts" hidden><label class="check"><input type="checkbox" checked disabled> Nödvändiga</label><label class="check"><input type="checkbox" id="ckStats"> Statistik</label><label class="check"><input type="checkbox" id="ckMkt"> Marknadsföring</label><button class="btn sm" type="button" id="ckSave">Spara val</button></div>
+  <div class="row"><button class="btn sm" type="button" id="ckNeed">Bara nödvändiga</button><button class="btn ghost sm" type="button" id="ckAll">Godkänn alla</button><button class="btn ghost sm" type="button" id="ckMore">Välj själv</button></div>
+</div>
 
 
 <header class="nav" id="nav">
   <div class="nav-in">
     <a class="nav-logo" href="./" aria-label="RumIQ, till startsidan"><img class="logo-day" src="assets/brand/rumiq-grafit-288.webp" alt="RumIQ" width="288" height="72"><img class="logo-night" src="assets/brand/rumiq-vit-288.webp" alt="" aria-hidden="true" width="288" height="72" loading="lazy"></a>
-    <ul class="menu">
+    <nav class="menu-nav" aria-label="Huvudmeny"><ul class="menu">
       <li><a href="upptack/">Upptäck</a></li>
       <li><button type="button" data-mega="megaShop" aria-expanded="false" aria-controls="megaShop">Butik <svg viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg></button>
   <div class="mega" id="megaShop" role="region" aria-label="Butik">
@@ -43,7 +48,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   </div>
       </li>
       <li><a href="looks/">Looks</a></li>
-    </ul>
+    </ul></nav>
     <div class="tools">
       <a class="roompill" href="mitt-rum/"><span class="rp-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span><span>Mitt rum</span><span class="badge" data-count="scene"></span></a>
       <button class="searchbtn" type="button" data-open-search><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Sök</span><kbd>/</kbd></button>
@@ -75,13 +80,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <div class="mnav-grid"><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Spåra min beställning</a><a href="frakt/">Frakt & leverans</a><a href="returer/">Returer</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a></div>
 </nav>
 
-<nav class="dock" id="dock" aria-label="Snabbmeny">
-  <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
-  <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
-  <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
-  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
-  <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
-</nav>
+
 
 <noscript><p class="noscript">Butiken behöver JavaScript för varukorg, sök och Mitt rum. Slå på det i webbläsaren, så fungerar allt.</p></noscript>
 <main id="view" class="view" tabindex="-1"></main>
@@ -102,6 +101,14 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   </div>
 </footer>
 
+<nav class="dock" id="dock" aria-label="Snabbmeny">
+  <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
+  <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
+  <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
+  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
+</nav>
+
 
 <div class="scrim-all" id="scrimAll"></div>
 <section class="drawer" id="cart" aria-label="Varukorg" aria-hidden="true">
@@ -115,11 +122,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <p class="sr" id="searchSaid" role="status"></p><div class="res" id="searchRes"></div></div>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-label="Cookies">
-  <h3>Cookies</h3><p>Nödvändiga cookies får butiken att fungera. Statistik och marknadsföring bara om du vill. <a href="juridik-cookies/">Läs mer</a></p>
-  <div class="opts" hidden><label class="check"><input type="checkbox" checked disabled> Nödvändiga</label><label class="check"><input type="checkbox" id="ckStats"> Statistik</label><label class="check"><input type="checkbox" id="ckMkt"> Marknadsföring</label><button class="btn sm" type="button" id="ckSave">Spara val</button></div>
-  <div class="row"><button class="btn sm" type="button" id="ckNeed">Bara nödvändiga</button><button class="btn ghost sm" type="button" id="ckAll">Godkänn alla</button><button class="btn ghost sm" type="button" id="ckMore">Välj själv</button></div>
-</div>
+
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

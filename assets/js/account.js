@@ -80,7 +80,7 @@
             const r = await RQ.auth.sendCode(email, signup ? f.name.value.trim() : "", signup && f.news.checked);
             busy(f, false);
             main.hidden = true; step.hidden = false;
-            step.innerHTML = `<h2 class="h3">Skriv in koden</h2><p style="margin:.5rem 0 1.2rem;color:#4a4741">Vi har skickat en kod på sex siffror till <b>${esc(email)}</b>.</p>
+            step.innerHTML = `<h2 class="h3">Skriv in koden</h2><p style="margin:.5rem 0 1.2rem;color:var(--ink2)">Vi har skickat en kod på sex siffror till <b>${esc(email)}</b>.</p>
               ${r.demoCode ? `<p class="example-note"><span>●</span><span><b>Förhandsversion.</b> Inget mejl skickas. Din testkod är <b style="font-family:var(--mono);letter-spacing:.1em">${r.demoCode}</b>.</span></p>` : ""}
               <form id="verify" novalidate style="margin-top:1.2rem"><div class="otp">${[0, 1, 2, 3, 4, 5].map((i) => `<input inputmode="numeric" maxlength="1" aria-label="Siffra ${i + 1}" ${i === 0 ? 'autocomplete="one-time-code"' : ""}>`).join("")}</div>
               <button class="btn block" type="submit">Logga in</button><div class="ctrl-row" style="justify-content:space-between"><button class="link" type="button" id="resend" style="border:0;background:none">Skicka en ny kod</button><button class="link" type="button" id="back" style="border:0;background:none">Byt e-post</button></div><p class="status" id="vStatus" role="alert"></p></form>`;
