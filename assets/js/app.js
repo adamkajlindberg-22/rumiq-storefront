@@ -412,12 +412,24 @@
     V[k] = () => RQ.infoPage(k, v.kicker, v.title, v.lead, v.html(), k === "kontakt" ? mountContact : null);
   });
   V.juridik = (k) => { const v = RQ.LEGAL[k]; if (!v) return null; return RQ.infoPage("juridik-" + k, "Juridisk information", v.title, v.lead, v.html()); };
+  // a message under the field it belongs to (the box is made on first use), and the field marked for screen readers
+  RQ.fieldErr = (el, msg) => {
+    let box = el.parentNode.querySelector(".ferr");
+    if (!box) { box = document.createElement("span"); box.className = "ferr"; box.id = "fe-" + (el.id || el.name || "f") + "-" + Math.random().toString(36).slice(2, 7); el.after(box); }
+    box.textContent = msg || ""; box.hidden = !msg;
+    if (msg) { el.setAttribute("aria-invalid", "true"); el.setAttribute("aria-describedby", box.id); } else { el.removeAttribute("aria-invalid"); el.removeAttribute("aria-describedby"); }
+    return !msg;
+  };
+  const MAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   function mountContact(root) {
     const f = $("#contactForm", root); if (!f) return;
+    const RULES = [["name", (v) => (v ? "" : "Skriv ditt namn.")], ["email", (v) => (MAIL_OK.test(v) ? "" : v ? "Skriv en giltig e-postadress, till exempel namn@exempel.se." : "Skriv din e-postadress.")], ["msg", (v) => (v ? "" : "Skriv ditt meddelande.")]];
+    RULES.forEach(([n, rule]) => f[n].addEventListener("input", () => { if (f[n].getAttribute("aria-invalid")) RQ.fieldErr(f[n], rule(f[n].value.trim())); }));
     f.addEventListener("submit", (e) => {
       e.preventDefault();
       const st = $("#contactStatus", root);
-      if (!f.name.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.value.trim()) || !f.msg.value.trim()) { st.textContent = "Fyll i namn, en giltig e-post och ditt meddelande."; st.classList.add("err"); return; }
+      const bad = RULES.filter(([n, rule]) => !RQ.fieldErr(f[n], rule(f[n].value.trim())));
+      if (bad.length) { st.textContent = bad.length === 1 ? "En sak behöver rättas innan du kan skicka." : `${bad.length} saker behöver rättas innan du kan skicka.`; st.classList.add("err"); f[bad[0][0]].focus(); return; }
       st.classList.remove("err");
       st.textContent = "Förhandsversion: formuläret är inte kopplat än, så meddelandet skickades inte. Skriv till support@rumiq.se så länge.";
     });
@@ -975,9 +987,15 @@
   $$(".lang").forEach((b) => b.addEventListener("click", () => { S.setLang(window.RQ_LANG === "en" ? "sv" : "en"); location.reload(); }));
 
   // footer newsletter: RumIQ's sign-up table (or a form service, see config.js)
-  $("#newsForm").addEventListener("submit", async (e) => { e.preventDefault(); const f = e.currentTarget, v = f.email.value.trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { RQ.toast("Skriv en giltig e-postadress."); return; }
-    const res = await RQ.subscribe({ email: v, lista: "Nyhetsbrev" });
-    RQ.toast(res === "sent" ? "Tack. Du får nyhetsbrevet och 10 % på första köpet när vi öppnar." : res === "preview" ? "Förhandsversion: adressen sparades inte här." : "Det gick inte att skicka just nu. Försök igen om en stund."); if (res !== "error") f.reset(); });
+  // the answer is written under the field (a toast far from the form is easy to miss); nothing is called saved that was not
+  $("#newsEmail").setAttribute("autocomplete", "email"); $("#newsEmail").setAttribute("autocapitalize", "off");
+  $("#newsForm").addEventListener("submit", async (e) => { e.preventDefault(); const f = e.currentTarget, v = f.email.value.trim(), btn = $("button", f);
+    let st = $("#newsStatus", f); if (!st) { st = document.createElement("p"); st.id = "newsStatus"; st.className = "status"; st.setAttribute("role", "status"); f.appendChild(st); }
+    const say = (msg, err) => { st.textContent = msg; st.classList.toggle("err", !!err); };
+    if (!MAIL_OK.test(v)) { say(v ? "Skriv en giltig e-postadress, till exempel namn@exempel.se." : "Skriv din e-postadress.", true); f.email.setAttribute("aria-invalid", "true"); f.email.focus(); return; }
+    f.email.removeAttribute("aria-invalid"); if (btn.disabled) return; btn.disabled = true; say("");
+    const res = await RQ.subscribe({ email: v, lista: "Nyhetsbrev" }); btn.disabled = false;
+    say(res === "sent" ? "Tack. Du får nyhetsbrevet och 10 % på första köpet när vi öppnar." : res === "preview" ? "Förhandsversion: adressen sparades inte här." : "Det gick inte att skicka just nu. Försök igen om en stund.", res === "error"); if (res === "sent") f.reset(); });
   // company details in the footer (RQ_CONFIG.company)
   (() => { const c = (window.RQ_CONFIG || {}).company || {}, el = $("#coInfo"); if (!el) return; const parts = [c.name, c.orgnr && "Org.nr " + c.orgnr, c.address, c.phone].filter(Boolean);
     el.textContent = parts.length ? parts.join(" · ") : "Företagsnamn, organisationsnummer, adress och telefon visas här när bolaget är registrerat."; })();
