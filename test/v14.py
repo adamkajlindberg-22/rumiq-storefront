@@ -99,7 +99,7 @@ with sync_playwright() as p:
         ok(order[0] == "strand-jutematta", f"{tag} the rug is drawn first, under everything else")
         ok(pg.evaluate("getComputedStyle(document.querySelector('.rm-item.k-surface'), '::after').content") != "none", f"{tag} standing things cast a shadow")
         ok(pg.evaluate("document.querySelectorAll('#rmItems .rm-item.land').length") == 0, f"{tag} things already in the room do not land again")
-        ok(pg.evaluate("!document.getElementById('rmHarm').hidden && +document.getElementById('rmHmv').textContent > 0"), f"{tag} 'Går ihop' shows a score")
+        ok(pg.evaluate("!document.getElementById('rmHarm').hidden && document.getElementById('rmHmv').textContent.trim().length > 3 && parseFloat(document.getElementById('rmHm').style.width) > 0"), f"{tag} 'Går ihop' shows a word and a meter")
         ok(pg.evaluate("document.querySelector('.rm-colors .palette i') !== null"), f"{tag} the room's colours are shown in Mitt rum")
 
         # 4. toolbar: three actions and Mer

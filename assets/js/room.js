@@ -15,7 +15,8 @@
   let room = ls.get(KEY, null), blobUrl = null, prev = null;
   const emit = (what) => document.dispatchEvent(new CustomEvent("rq-room", { detail: what }));
   // only a picture kept in this browser counts as a room; anything else in the storage is ignored
-  if (!room || typeof room !== "object" || typeof room.img !== "string" || !/^data:image\//.test(room.img) || !(room.w > 0) || !(room.h > 0)) room = null;
+  if (!room || typeof room !== "object" || typeof room.img !== "string" || !/^data:image\//.test(room.img) || !(+room.w > 0) || !(+room.h > 0)) room = null;
+  if (room) { room.w = +room.w; room.h = +room.h; if (!Array.isArray(room.pal)) room.pal = []; room.pal = room.pal.filter((x) => x && /^#[0-9a-f]{6}$/i.test(x.hex)); }
   const FULL = "Webbläsarens lagring är full. Ta bort ett gammalt projekt i Mitt hem och försök igen.";
 
   /* Where things belong. A lamp stands on a table, a throw lies on the sofa, a print hangs on the wall and a
@@ -83,7 +84,7 @@
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
       while (taken(x, learned.y, w) && n < 6) { n++; x = learned.x + (n % 2 ? 1 : -1) * Math.ceil(n / 2) * (w + 2.5); }
-      return { x: clamp(x, 3, 97), y: learned.y, w: +w.toFixed(1), sy: learned.sy };
+      return { x: +clamp(x, 3, 97).toFixed(1), y: learned.y, w: +w.toFixed(1), sy: learned.sy };
     }
     const k = !M && L.k > 0 ? L.k : 1; // your own photo: the size you gave the first thing sets the scale for the rest
     const place = (kd) => {
@@ -120,7 +121,7 @@
   const dE = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
   function analyse(img) {
-    const W = 96, H = Math.max(1, Math.round(96 * img.naturalHeight / img.naturalWidth));
+    const W = 96, H = Math.max(1, Math.round(96 * (img.naturalHeight || img.height) / (img.naturalWidth || img.width)));
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const cx = cv.getContext("2d", { willReadFrequently: true }); cx.drawImage(img, 0, 0, W, H);
     const d = cx.getImageData(0, 0, W, H).data, px = [];
@@ -147,7 +148,7 @@
     if (!tones.length) return null;
     const ds = tones.map((t) => Math.min(...P.map((x) => dE(t, x.l) * (1.15 - Math.min(0.3, x.n)))));
     const avg = ds.reduce((a, b) => a + b, 0) / ds.length;
-    return Math.max(35, Math.min(98, Math.round(108 - avg * 2.2)));
+    return Math.max(20, Math.min(98, Math.round(112 - avg * 3.4)));
   }
 
   /* the products' light follows the room's light */
@@ -171,11 +172,13 @@
     mode: () => !!room && ls.get(MODE, true) !== false,
     setMode(on) { ls.set(MODE, !!on); emit("mode"); },
     async saveImage(img, meta = {}) {
-      const max = 1400, k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
-      const W = Math.round(img.naturalWidth * k), H = Math.round(img.naturalHeight * k);
-      const cv = document.createElement("canvas"); cv.width = W; cv.height = H; cv.getContext("2d").drawImage(img, 0, 0, W, H);
+      // a panorama or a very tall strip is trimmed around its middle (to 2.2:1 or 1:2.2), so the room can be shown at a useful size
+      const nw = img.naturalWidth, nh = img.naturalHeight, sw = Math.min(nw, Math.round(nh * 2.2)), sh = Math.min(nh, Math.round(nw * 2.2)), sx = Math.round((nw - sw) / 2), sy0 = Math.round((nh - sh) / 2);
+      const max = 1400, k = Math.min(1, max / Math.max(sw, sh));
+      const W = Math.round(sw * k), H = Math.round(sh * k);
+      const cv = document.createElement("canvas"); cv.width = W; cv.height = H; cv.getContext("2d").drawImage(img, sx, sy0, sw, sh, 0, 0, W, H);
       let data = cv.toDataURL("image/jpeg", 0.82);
-      const a = analyse(img);
+      const a = analyse(cv);
       const next = { img: data, w: W, h: H, pal: a.pal, light: a.light, warm: a.warm, type: meta.type || null, name: meta.name || "", sample: !!meta.sample, map: meta.map || null, at: new Date().toISOString() };
       let ok = ls.set(KEY, next);
       if (!ok) { data = cv.toDataURL("image/jpeg", 0.62); next.img = data; ok = ls.set(KEY, next); }
@@ -301,7 +304,8 @@
       <label class="btn ghost"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>Välj en bild<input type="file" accept="image/*" class="sr" data-room-file></label>
     </div>
     <p class="sheet-err" role="alert" hidden></p>
-    <p class="small sheet-tip">Ställ dig i dörröppningen och ta bilden i dagsljus, gärna på bredden så att hela rummet kommer med.</p>
+    <p class="small sheet-tip" data-tip-touch>Ställ dig i dörröppningen och ta bilden i dagsljus, gärna på bredden så att hela rummet kommer med.</p>
+    <p class="small sheet-tip" data-tip-desk hidden>Du kan också dra hit en bild eller klistra in den. Bäst blir en bild i dagsljus där hela rummet syns.</p>
     <h3>Eller prova med ett exempelrum</h3>
     <div class="sheet-samples">${RQ.SAMPLE_ROOMS.map((r) => `<button type="button" data-room-sample="${r.img}" data-type="${r.id}"><img src="${r.img.replace("-1600", "-600")}" alt="" loading="lazy"><span>${esc(r.name)}</span></button>`).join("")}</div>
     <h3>Vilket rum är det?</h3>
@@ -318,7 +322,9 @@
     chosenType = room && room.type;
     $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType));
     $("#roomSheetTitle", sheet).textContent = room ? "Byt rum" : "Lägg in ditt rum";
-    $(".cam", sheet).hidden = !matchMedia("(pointer:coarse)").matches;
+    const touch = matchMedia("(pointer:coarse)").matches;
+    $(".cam", sheet).hidden = !touch; $("[data-tip-touch]", sheet).hidden = !touch; $("[data-tip-desk]", sheet).hidden = touch;
+    $(".sheet-acts .btn:not(.cam)", sheet).classList.toggle("ghost", touch); // on a computer "Välj en bild" is the one main button
     fail(""); sheet.classList.add("open"); document.documentElement.style.overflow = "hidden";
     setTimeout(() => $(".sheet-x", sheet).focus(), 60);
   };
@@ -331,7 +337,7 @@
     close();
     const cb = after; after = null;
     if (cb) cb();
-    else if (/^(mitt-rum|studio(-rum|-analys|-kombinera)?$)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) { RQ.router(); RQ.toast("Klart. Här är ditt rum."); } // the editor is drawn with the new photo
+    else if (/^(mitt-rum|studio(-rum|-analys|-kombinera)?$)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) { RQ.router(); scrollTo(0, 0); if (room.sample || !R.scene().length) RQ.toast("Klart. Här är ditt rum."); } // the editor is drawn with the new photo
     else RQ.toast('Klart. Nu visas butiken i ditt rum. <a href="#butik">Till butiken</a>');
   };
   sheet.addEventListener("click", (e) => {
@@ -339,14 +345,21 @@
     const t = e.target.closest("[data-room-type] [data-v]"); if (t) { chosenType = chosenType === t.dataset.v ? null : t.dataset.v; $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType)); if (room) R.setType(chosenType); return; }
     const s = e.target.closest("[data-room-sample]"); if (s) { busy(true); const im = new Image(); im.onload = () => done(im, { sample: true, map: s.dataset.type, type: s.dataset.type, name: $("span", s).textContent }); im.onerror = () => { busy(false); fail("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); }; im.src = s.dataset.roomSample; }
   });
-  $$("[data-room-file]", sheet).forEach((inp) => inp.addEventListener("change", () => {
-    const f = inp.files[0]; inp.value = ""; if (!f) return;
+  const takeFile = (f) => {
+    if (!f) return;
     if (!/^image\//.test(f.type) && !/\.(heic|heif)$/i.test(f.name)) { fail("Det där är ingen bild. Välj en JPG, PNG eller WebP."); return; }
-    busy(true); const url = URL.createObjectURL(f); const im = new Image();
-    im.onload = () => { done(im, { name: "Mitt rum" }); setTimeout(() => URL.revokeObjectURL(url), 4000); };
+    busy(true); fail(""); const url = URL.createObjectURL(f); const im = new Image();
+    im.onload = () => { const small = Math.max(im.naturalWidth, im.naturalHeight) < 700; done(im, { name: "Mitt rum" }).then(() => { if (small && room && !room.sample) RQ.toast("Bilden är liten och kan se suddig ut. En större bild ger ett finare rum."); }); setTimeout(() => URL.revokeObjectURL(url), 4000); };
     im.onerror = () => { busy(false); fail(/\.(heic|heif)$/i.test(f.name) ? "Den här webbläsaren kan inte läsa HEIC-bilder. Spara bilden som JPG eller ta en ny bild här." : "Bilden gick inte att läsa. Prova en JPG eller PNG."); };
     im.src = url;
-  }));
+  };
+  $$("[data-room-file]", sheet).forEach((inp) => inp.addEventListener("change", () => { const f = inp.files[0]; inp.value = ""; takeFile(f); }));
+  // on a computer: drop a picture on the sheet, or paste one
+  const card0 = $(".sheet-card", sheet);
+  ["dragenter", "dragover"].forEach((ev) => card0.addEventListener(ev, (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) { e.preventDefault(); card0.classList.add("drop"); } }));
+  ["dragleave", "drop"].forEach((ev) => card0.addEventListener(ev, (e) => { if (ev === "dragleave" && card0.contains(e.relatedTarget)) return; card0.classList.remove("drop"); }));
+  card0.addEventListener("drop", (e) => { if (!e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); takeFile(e.dataTransfer.files[0]); });
+  document.addEventListener("paste", (e) => { if (!sheet.classList.contains("open") || !e.clipboardData) return; const f = [...e.clipboardData.files].find((x) => /^image\//.test(x.type)); if (f) { e.preventDefault(); takeFile(f); } });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheet.classList.contains("open")) { e.stopImmediatePropagation(); close(); } }, true);
   // swipe the sheet down to close it on phones
   (() => { const card = $(".sheet-card", sheet); let y0 = null, dy = 0;
@@ -378,7 +391,7 @@
   };
   const setupBlock = (want) => `<div class="rm-empty">
       <div class="rm-empty-in">
-        ${want ? `<p class="rm-want"><img src="${RQ.cut(want)}" alt=""><span>Du valde <b>${esc(want.name)}</b>. Den står i rummet så fort bilden är inne.</span></p>` : ""}
+        ${want ? `<p class="rm-want"><img src="${RQ.cut(want)}" alt=""><span><b>${esc(want.name)}</b> står i rummet så fort bilden är inne.</span></p>` : ""}
         <h2 class="h2">Börja med en bild av ditt rum.</h2>
         <p class="lead">Sedan ställer du in produkter där du vill ha dem, ser vad hela rummet kostar och handlar allt på en gång.</p>
         <div class="ctrl-row" style="margin-top:1.6rem"><button class="btn" type="button" data-room-setup>Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button></div>
@@ -392,7 +405,7 @@
     const want = pre && RQ.byHandle(pre) && !room ? RQ.byHandle(pre) : null; // came from a product without a room yet
     const more = `<nav class="rm-more" aria-label="Fler sätt att välja"><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
     return {
-      title: "Mitt rum · RumIQ",
+      title: pre && RQ.byHandle(pre) ? `${RQ.byHandle(pre).name} i ditt rum · RumIQ` : "Mitt rum · RumIQ",
       html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
         ${room ? "" : more}</section>
         ${room ? `<section class="rm wrap">
@@ -412,7 +425,7 @@
               <div class="rm-morewrap"><button type="button" class="rm-tool" id="rmMore" aria-haspopup="true" aria-expanded="false" aria-controls="rmMenu">${ICO.more}<span>Mer</span></button>
                 <div class="rm-menu" id="rmMenu" role="menu" aria-label="Mer" hidden>
                   <button type="button" role="menuitem" class="rm-ai" data-ai-create>${ICO.spark}<span>Visa på riktigt<small>En AI-bild av rummet med sakerna</small></span></button>
-                  <button type="button" role="menuitemcheckbox" id="rmNight" aria-checked="false">${ICO.moon}<span>Kväll<small>Se lamporna lysa</small></span></button>
+                  <button type="button" role="menuitemcheckbox" id="rmNight" aria-checked="false">${ICO.moon}<span>Kvällsljus<small>Se lamporna lysa i rummet</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmBefore" aria-checked="false">${ICO.eye}<span>Visa före<small>Rummet utan sakerna</small></span></button>
                   <button type="button" role="menuitem" data-room-setup>${ICO.swap}<span>Byt rum<small>Ny bild eller ett exempelrum</small></span></button>
                 </div></div>
@@ -516,10 +529,14 @@
 
         const draw = () => {
           const list = R.scene(), order = R.ordered(); let fresh = 0; const news = [];
+          { const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h; }
           wrap.innerHTML = order.map((it, i) => { const p = RQ.byHandle(it.h), kind = kindOf(p), isNew = !seen.has(it.h), r = meta(p)[2]; if (isNew) news.push(it);
             return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${fresh++}` : ""}"><img src="${RQ.cut(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
+          const teach = news.length && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length; // own photo, nothing shown yet
           if (news.length) { wrap.style.setProperty("--pre", lookAt(news) ? "360ms" : "90ms");
-            const f = $("#rmFirst", root); if (!ls.get("rumiq-room-landed", false)) { ls.set("rumiq-room-landed", true); f.textContent = "Så här kan det se ut hemma hos dig."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); } }
+            const f = $("#rmFirst", root);
+            if (teach) { f.textContent = "Dra den dit den ska stå och gör den lagom stor. Nästa sak följer efter."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); }
+            else if (!ls.get("rumiq-room-landed", false)) { ls.set("rumiq-room-landed", true); f.textContent = "Så här kan det se ut hemma hos dig."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); } }
           list.forEach((it) => seen.add(it.h)); [...seen].forEach((h) => { if (!list.some((it) => it.h === h)) seen.delete(h); });
           $("#rmHint", root).hidden = list.length > 0;
           $("#rmList", root).innerHTML = list.length ? list.map((it) => { const p = RQ.byHandle(it.h); return `<li class="${sel === it.h ? "on" : ""}"><button type="button" class="rm-li" data-pick="${it.h}"><img src="${RQ.img(p, 600)}" alt=""><span><b>${esc(p.name)}</b><span>${kr(p.price)}</span></span></button><button type="button" class="iconbtn" data-del="${it.h}" aria-label="Ta bort ${esc(p.name)} ur rummet">${ICO.trash}</button></li>`; }).join("") : `<li class="rm-none">Inget i rummet än. Tryck på <b>Inred åt mig</b> eller <b>Lägg till</b>.</li>`;
