@@ -22,14 +22,14 @@
      rug lies on the floor. kind = where it goes, cm = the real width of what the cut-out shows, r = the
      cut-out's height / width. Widths are approximate until the suppliers' measurements are confirmed. */
   const KIND = {
-    "glob-bordslampa-opalglas": ["surface", 20, 1.63], "lysa-keramiklampa": ["surface", 34, 0.99], "svamp-uppladdningsbar-lampa": ["surface", 17, 1.77],
+    "glob-bordslampa-opalglas": ["surface", 20, 1.62], "lysa-keramiklampa": ["surface", 30.5, 1.11], "svamp-uppladdningsbar-lampa": ["surface", 17, 1.77],
     "skarbrada-ek-med-handtag": ["surface", 22, 1.84], "forradsburkar-glas-ek-3-pack": ["surface", 36, 0.74], "sand-keramikvas": ["surface", 17, 1.85],
     "tvalpump-stengods": ["surface", 26, 0.9], "glod-doftljus-keramik": ["surface", 9, 1.25], "stilla-ljusstake-massing-2-pack": ["surface", 12, 2.93],
-    "skrivbordsorganisator-ek": ["surface", 30, 0.86], "vaffelhandduk-bomull": ["surface", 42, 0.66],
-    "plad-ullblandning-havre": ["throw", 80, 0.84], "lin-kuddfodral": ["cushion", 88, 0.62], "vila-paslakanset-linne": ["bedding", 60, 0.53],
+    "skrivbordsorganisator-ek": ["surface", 30, 0.86], "vaffelhandduk-bomull": ["surface", 39, 0.64],
+    "plad-ullblandning-havre": ["throw", 80, 0.84], "lin-kuddfodral": ["cushion", 88, 0.58], "vila-paslakanset-linne": ["bedding", 60, 0.53],
     "affisch-linje-ekram": ["wall", 53, 1.3], "affisch-horisont-ekram": ["wall", 53, 1.3],
     "forvaringslada-filt": ["floor", 42, 0.81], "flatad-forvaringskorg": ["floor", 40, 1.19], "terrakottakruka-rafflad": ["floor", 36, 1.92],
-    "strand-jutematta": ["rug", 230, 0.37], "dagsljus-linnegardin-2-pack": ["window", 60, 2.68],
+    "strand-jutematta": ["rug", 230, 0.37], "dagsljus-linnegardin-2-pack": ["window", 60, 2.63],
   };
   const meta = (p) => KIND[p.handle] || [p.wall ? "wall" : "surface", p.wall ? 50 : 20, 1.2];
   const kindOf = (p) => meta(p)[0];
@@ -40,27 +40,27 @@
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
       surface: [[78, 68.8, 25], [73.4, 68.4, 25], [82.6, 68, 25]],
-      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[62.4, 72.6, 17], [80, 72, 17]], bedding: [[70.5, 65.5, 16.5]],
+      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[62.4, 72.6, 17], [80, 72, 17]], bedding: [],
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
       rug: [[45, 96, 50, 0.42]], window: [[92, 83, 15, 1.13]] },
     sovrum: { h: 55, k: 0.95, sun: 1,
       surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]],
-      cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[52, 62, 19], [40, 66, 19]],
+      cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[47, 67, 19], [60, 66, 19]],
       wall: [[50, 43, 15], [62, 43, 15], [40, 43, 15]],
-      floor: [[26.5, 95], [88, 86], [78, 94], [44, 97]],
+      floor: [[87, 89], [77, 96], [45, 98], [60, 96]],
       rug: [[63, 99, 52, 0.4]], window: [[80.6, 74, 13.5, 1.12]] },
-    kok: { h: 52, k: 1.0, sun: 1,
-      surface: [[70.6, 62.4, 26], [57.6, 62.2, 26], [14, 66.5, 32], [46, 62.2, 26]],
-      cushion: [[86, 99.5, 24]], throw: [[21.5, 93, 20]], bedding: [[14, 66.5, 32]],
+    kok: { h: 52, k: 0.58, sun: 1, // the only free floor is the passage to the right; the hob and the sink are not places to put things
+      surface: [[70.6, 62.4, 26], [59.6, 62.2, 26], [23, 62.4, 26]],
+      cushion: [], throw: [], bedding: [],
       wall: [[62, 38, 15], [49, 38, 15]],
-      floor: [[80, 91], [89, 96], [78, 99]],
+      floor: [[81.5, 93], [88, 98]],
       rug: [[84, 99, 26, 0.5]], window: [[90.6, 97, 15, 1.33]] },
     hall: { h: 56, k: 0.9, sun: 1,
-      surface: [[12.8, 59.7, 30], [49, 67.6, 18.5], [59, 67.6, 18.5], [39, 67.6, 18.5], [4.5, 60.4, 30]],
+      surface: [[49, 67.6, 18.5], [59, 67.6, 18.5], [39, 67.6, 18.5], [4.8, 60.4, 30], [17.3, 58.9, 30]],
       cushion: [[42, 67.6, 18.5]], throw: [[57, 71, 18.5]], bedding: [[49, 67.6, 18.5]],
       wall: [[41, 47, 15.5], [27, 30, 15.5]],
-      floor: [[36.6, 83], [61.5, 83.5], [48, 83], [24, 88]],
+      floor: [[24.5, 87], [47, 94], [66, 93], [33, 96]], // beside and in front of the bench, never through it
       rug: [[46, 98, 52, 0.4]], window: [[74.4, 83, 13, 1.27]] },
   };
   /* A room we have not seen before: sensible spots for each kind, until the customer shows where things stand. */
@@ -78,7 +78,7 @@
   const SORT = { surface: "s", cushion: "t", throw: "t", bedding: "t", floor: "f", rug: "r", window: "w", wall: "a" };
   const spotFor = (p, list, raw) => {
     const [kind, cm] = meta(p), M = mapOf(), G = M || GENERIC;
-    const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && SORT[kindOf(q)] === SORT[k || kind] && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(4.5, (it.w + w) * 0.4); });
+    const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && SORT[it.on || kindOf(q)] === SORT[k || kind] && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
@@ -98,6 +98,7 @@
     };
     let sp = place(kind), moved = false;
     if (!sp) for (const fk of FALLBACK[kind] || []) { if ((sp = place(fk))) { moved = fk; break; } }
+    if (!sp && M && kind !== "rug" && kind !== "window" && kind !== "wall" && G.floor && G.floor.length) { const f = G.floor[G.floor.length - 1]; sp = { x: f[0], y: f[1], w: +clamp(cm * floorScale(f[1], M) / 100, 2.5, 70).toFixed(1) }; moved = "floor"; } // nowhere left: on the floor, to be moved by hand
     if (!sp) { const s0 = (G[kind] && G[kind][0]) || GENERIC[kind][0] || GENERIC.surface[0]; sp = kind === "rug" || kind === "window" ? { x: s0[0], y: s0[1], w: s0[2], sy: s0[3] } : { x: s0[0], y: s0[1], w: +clamp(cm * (s0[2] || floorScale(s0[1], M)) / 100 * k, 2.5, 70).toFixed(1) }; }
     return moved ? { ...sp, moved } : sp;
   };
@@ -182,7 +183,7 @@
       room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null;
       ls.del(LEARN); ls.set(MODE, true);
       // what stood in the old room is put where it belongs in the new one
-      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved); moved.push({ h: it.h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), flip: false, light: 100 }); });
+      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved); moved.push({ h: it.h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 }); });
       if (moved.length) ls.set(SCENE, moved);
       emit("room"); return true;
     },
@@ -201,7 +202,7 @@
       const p = RQ.byHandle(h); if (!p) return false; RQ.track && RQ.track("studio_place", { item_id: h });
       const list = R.scene(); if (list.some((it) => it.h === h)) return false;
       const sp = spotFor(p, list);
-      list.push({ h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), flip: false, light: 100 });
+      list.push({ h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
       if (!R.saveScene(list)) { RQ.toast(FULL); return false; }
       R.lastMoved = sp.moved ? h : null;
       if (!quiet && sp.moved) RQ.toast(`Där var det fullt, så ${esc(p.name)} står på golvet. Dra den dit du vill.`);
@@ -229,7 +230,7 @@
     },
     total: () => R.scene().reduce((s, it) => s + RQ.byHandle(it.h).price, 0),
     /* back to front: what lies on the floor is drawn before what stands on it */
-    ordered() { return R.scene().map((it, i) => ({ it, i, z: it.top ? 190 + i : it.back ? -9 + i / 100 : RANK[kindOf(RQ.byHandle(it.h))] * 10 + (it.y + (kindOf(RQ.byHandle(it.h)) === "surface" ? 12 : 0)) / 12 })).sort((a, b) => a.z - b.z || a.i - b.i).map((x) => x.it); },
+    ordered() { return R.scene().map((it, i) => ({ it, i, z: it.top ? 190 + i : it.back ? -9 + i / 100 : RANK[kindOf(RQ.byHandle(it.h))] * 10 + (it.y + (kindOf(RQ.byHandle(it.h)) === "surface" && !it.on ? 12 : 0)) / 12 })).sort((a, b) => a.z - b.z || a.i - b.i).map((x) => x.it); },
     /* how well the things in the room go together (style and colour), with one piece of advice */
     harmony() {
       const ps = R.scene().map((it) => RQ.byHandle(it.h)); if (ps.length < 2) return null;
