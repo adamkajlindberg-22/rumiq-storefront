@@ -41,12 +41,13 @@
   RQ.plus = plus;
   const roomIco = '<svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg>';
   RQ.roomIco = roomIco;
-  RQ.card = (p) => {
+  /* first: "eager" or "high" for the cards at the top of a list (the pictures a visitor sees first are fetched at once, "high" with priority) */
+  RQ.card = (p, first) => {
     const R = RQ.room, on = R && R.mode(), m = on ? R.match(p) : null;
-    const photo = `<img class="fade" src="${RQ.img(p, 600)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="${esc(p.name)}" loading="lazy" decoding="async" width="600" height="750">`;
+    const photo = `<img class="fade" src="${RQ.img(p, 600)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="${esc(p.name)}" ${first === "high" ? 'fetchpriority="high"' : first === "eager" ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="600" height="750">`;
     // with "Visa i mitt rum" on, the product photo still comes first; the room is the second picture (hover, or swipe on a phone)
     const ph = on ? `${photo}<span class="hov inroom">${R.layer(p)}<i class="inr-tag">I ditt rum</i></span>`
-      : `${photo}<img class="hov fade" src="assets/img/d/${p.handle}-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
+      : `${photo}<img class="hov fade" data-src="assets/img/d/${p.handle}-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()">`;
     return `
     <article class="card${on ? " in-room" : ""}" style="--tone:${p.tone[0]}22">
       <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
@@ -58,7 +59,7 @@
       <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
   };
-  RQ.grid = (list, cls = "") => (list.length ? `<div class="grid ${cls}">${list.map(RQ.card).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
+  RQ.grid = (list, cls = "", top = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
   const crumbs = (items) => `<ol class="crumbs">${items.map(([t, h]) => `<li>${h ? `<a href="#${h}">${esc(t)}</a>` : esc(t)}</li>`).join("")}</ol>`;
   RQ.crumbs = crumbs;
   const head = (kicker, title, lead, extra = "") => `<header class="page-head wrap">${kicker}<h1 class="h1">${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ""}${extra}</header>`;
@@ -556,6 +557,7 @@
 
   /* images fade in on their tone colour once decoded */
   document.addEventListener("load", (e) => { const t = e.target; if (t.tagName === "IMG" && t.classList.contains("fade")) t.classList.add("ok"); }, true);
+  if (matchMedia("(hover:hover)").matches) document.addEventListener("pointerover", (e) => { if (e.pointerType && e.pointerType !== "mouse") return; const c = e.target.closest && e.target.closest(".card"); const im = c && c.querySelector("img.hov[data-src]"); if (im) { im.src = im.dataset.src; im.removeAttribute("data-src"); } }, { passive: true });
   RQ.markImages = (root) => $$("img.fade", root).forEach((im) => { if (im.complete && im.naturalWidth) im.classList.add("ok"); });
 
   /* ---------------------------------------------------------------- reveal */
