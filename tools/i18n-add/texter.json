@@ -39,8 +39,6 @@
  "Beskriv med egna ord": "Describe it in your own words",
  "RumIQ – skandinavisk inredning du ser i ditt eget rum": "RumIQ – Scandinavian interiors you see in your own room",
  "Öppna Mitt rum": "Open My room",
- "Skapa en AI-bild": "Create an AI picture",
- "Rummet med sakerna, i rätt ljus och med skuggor": "The room with your things, in the right light and with shadows",
  "Med egna ord": "In your own words",
  "Se alla looks": "See all looks",
  "{0} saker ·": "{0} items ·",
@@ -60,5 +58,6 @@
  "Ordning i hallen under {0} kr": "A tidy hallway under {0} kr",
  "Ingår i färdiga looks": "Part of these looks",
  "Om RumIQ · RumIQ": "About RumIQ",
- "Så fungerar RumIQ · RumIQ": "How RumIQ works · RumIQ"
+ "Så fungerar RumIQ · RumIQ": "How RumIQ works · RumIQ",
+ "Rummet med sakerna, i rätt ljus": "The room with your things, in the right light"
 }
