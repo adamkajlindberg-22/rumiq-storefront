@@ -153,7 +153,6 @@
         </div>
         <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i mitt rum</span></button>
         ${RQ.delivery.html(p)}
-        ${RQ.notify.html(p)}
         <a class="sh-more" href="#produkt-${p.handle}">Se hela produkten ${ICO.arrow}</a>
       </div>`;
   };
@@ -497,7 +496,7 @@
       const src = fetch(glb, { method: "HEAD" }).then((r) => (r.ok ? glb : json), () => json);
       Promise.all([this.load(), src]).then(([, url]) => {
         const stage = $(".m3d-stage", d); if (!stage) return;
-        stage.innerHTML = `<model-viewer src="${url}" alt="3D-modell av ${esc(p.name)}" camera-controls touch-action="pan-y" ${reduced() ? "" : "auto-rotate"} auto-rotate-delay="800" rotation-per-second="18deg" shadow-intensity="1" shadow-softness=".9" exposure="1.05" environment-image="neutral" interaction-prompt="none" camera-orbit="${m.wall ? "0deg 85deg auto" : "30deg 72deg auto"}" ar ar-modes="webxr scene-viewer quick-look" ar-placement="${m.wall ? "wall" : "floor"}"><button slot="ar-button" class="btn m3d-ar">${RQ.roomIco}Ställ i ditt rum</button></model-viewer>`;
+        stage.innerHTML = `<model-viewer src="${url}" alt="3D-modell av ${esc(p.name)}" camera-controls touch-action="pan-y" ${reduced() ? "" : "auto-rotate"} auto-rotate-delay="800" rotation-per-second="18deg" shadow-intensity="1" shadow-softness=".9" exposure="1.05" environment-image="neutral" interaction-prompt="none" camera-orbit="${m.wall ? "0deg 85deg 135%" : "30deg 72deg 135%"}" min-camera-orbit="auto auto 80%" max-camera-orbit="auto auto 220%" ar ar-modes="webxr scene-viewer quick-look" ar-placement="${m.wall ? "wall" : "floor"}"><button slot="ar-button" class="btn m3d-ar">${RQ.roomIco}Ställ i ditt rum</button></model-viewer>`;
         const mv = $("model-viewer", stage);
         mv.addEventListener("ar-status", () => {}, { once: true });
         setTimeout(() => { if (mv.canActivateAR) d.classList.add("can-ar"); }, 600);
