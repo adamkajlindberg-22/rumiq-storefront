@@ -115,7 +115,7 @@
     ].join("");
     FKEYS.forEach((k) => { if (!groups.includes(`data-f="${k}"`)) st[k] = []; });
     const label = (k, id) => (k === "cat" ? (RQ.catById(id) || {}).name : k === "room" ? (RQ.roomById(id) || {}).name : k === "price" ? (SPANS.find((x) => x[0] === id) || [])[1] : (FAMS.find((x) => x[0] === id) || [])[1]) || id;
-    const chips = () => (nActive() ? FKEYS.flatMap((k) => st[k].map((id) => `<button type="button" class="chip f-chip" data-f-off="${k}:${id}" aria-label="Ta bort filtret ${esc(label(k, id))}">${esc(label(k, id))}${xIco}</button>`)).join("") + `<button type="button" class="tlink" data-f-clear>Rensa filter</button>` : "");
+    const chips = () => (nActive() ? FKEYS.flatMap((k) => st[k].map((id) => `<button type="button" class="chip f-chip" data-f-off="${k}:${id}"><span class="sr">Ta bort filtret</span> <span>${esc(label(k, id))}</span>${xIco}</button>`)).join("") + `<button type="button" class="tlink" data-f-clear>Rensa filter</button>` : "");
     /* the end of a list is never a dead end: a quiet closing line, and for short lists a few things that go with them */
     const tail = (list) => {
       if (!list.length) return `<div class="empty"><h3>Inget matchar de filtren</h3><p>Ta bort ett filter, eller rensa alla och börja om.</p><button class="btn ghost" type="button" data-f-clear>Rensa filter</button></div>`;
@@ -292,7 +292,7 @@
             <h1>${esc(p.name)}</h1>
             <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span></div>${RQ.shipNote(p)}
             <p class="short">${esc(p.short)}</p>
-            ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div><p class="small vnote" id="vnote" hidden>Bilderna visar färgen ${esc(vs[0].title)}.</p></div>` : ""}
+            ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div><p class="small vnote" id="vnote" hidden><span>Bilderna visar färgen</span> <b>${esc(vs[0].title)}</b>.</p></div>` : ""}
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
             <p class="small qty-note" id="qtyNote" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${RQ.payRow()}
