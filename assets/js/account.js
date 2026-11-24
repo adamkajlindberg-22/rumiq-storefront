@@ -6,9 +6,9 @@
   const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v).trim());
   const date = (iso) => new Date(iso).toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" });
 
-  const orderCard = (o) => `<div class="order"><header><div><b>${esc(o.number)}</b><div class="small">${date(o.createdAt)}</div></div><div style="text-align:right"><span class="st">${o.withdrawn ? "ÅNGRAD" : "TESTORDER"}</span><div class="price" style="font-family:var(--mono)">${kr(o.total)}</div></div></header>${o.gift ? `<p class="small gift-line">Present${o.gift.note ? `. Hälsning: ”${esc(o.gift.note)}”` : ", utan priser på följesedeln"}</p>` : ""}
+  const orderCard = (o, here) => `<div class="order"><header><div><b>${esc(o.number)}</b><div class="small">${date(o.createdAt)}</div></div><div style="text-align:right"><span class="st">${o.withdrawn ? "ÅNGRAD" : "TESTORDER"}</span><div class="price" style="font-family:var(--mono)">${kr(o.total)}</div></div></header>${o.gift ? `<p class="small gift-line">Present${o.gift.note ? `. Hälsning: ”${esc(o.gift.note)}”` : ", utan priser på följesedeln"}</p>` : ""}
     <ul class="small" style="list-style:none;display:grid;gap:.2rem">${o.lines.map((l) => `<li>${l.quantity} × ${esc(l.title)}${l.variant !== "Standard" ? `, ${esc(l.variant)}` : ""}</li>`).join("")}</ul>
-    <div class="ctrl-row"><a class="chip" href="#spara-order" data-track="${o.number}">Följ beställningen</a>${o.withdrawn ? "" : `<a class="chip" href="#angra" data-wd="${o.number}">Ångra köp</a>`}</div></div>`;
+    <div class="ctrl-row">${here === true ? "" : `<a class="chip" href="#spara-order" data-track="${o.number}">Följ beställningen</a>`}${o.withdrawn ? "" : `<a class="chip" href="#angra" data-wd="${o.number}">Ångra köp</a>`}</div></div>`;
 
   /* ---------------- Konto: sign in, create account, account pages */
   const BENEFITS = `<div class="auth-aside"><span class="eyebrow">Med ett gratis konto kan du</span>
@@ -151,57 +151,100 @@
   };
 
   /* ---------------- Kassa (test mode) */
+  const cfgDel = () => (window.RQ_CONFIG || {}).delivery || {};
+  // one sentence about the return window, read from the settings (never typed by hand)
+  const returnLine = () => (cfgDel().openPurchaseDays ? `${cfgDel().openPurchaseDays} dagars öppet köp från att du tog emot varan. Lagen ger alltid 14 dagars ångerrätt.` : "14 dagars ångerrätt från att du tog emot varan.");
+  const shipOf = (id) => S.SHIPPING.find((x) => x.id === id) || S.SHIPPING[0];
+  const shipPrice = (n) => (n ? kr(n) : "Fri");
+  const digits = (v) => String(v).replace(/\D/g, "");
+  // checkout fields: what must be right, and the words shown under the field when it is not
+  const CO_RULES = {
+    email: (v) => (emailOk(v) ? "" : v ? "Skriv en giltig e-postadress, till exempel namn@exempel.se." : "Skriv din e-postadress."),
+    phone: (v) => (!v || (/^\+?[\d\s()-]+$/.test(v) && digits(v).length >= 7 && digits(v).length <= 15) ? "" : "Skriv numret med siffror, till exempel 070 123 45 67."),
+    first: (v) => (/\p{L}/u.test(v) ? "" : "Skriv ditt förnamn."),
+    last: (v) => (/\p{L}/u.test(v) ? "" : "Skriv ditt efternamn."),
+    street: (v) => (/\p{L}{2}/u.test(v) ? "" : "Skriv gatuadressen, till exempel Storgatan 1."),
+    zip: (v) => (digits(v).length === 5 && /^[\d\s]+$/.test(v) ? "" : "Postnumret ska ha fem siffror, till exempel 123 45."),
+    city: (v) => (/\p{L}{2}/u.test(v) ? "" : "Skriv orten."),
+  };
   V.checkout = () => {
     const lines = S.cartLines();
     if (!lines.length) return { html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Kassa"]]), "Kassa", "")}<section class="wrap" style="padding-bottom:5rem">${RQ.emptyCartHtml(true)}</section>` };
     const c = S.customer() || {};
+    const nm = String(c.name || "").trim().split(/\s+/), first = nm[0] || "", last = nm.slice(1).join(" ");
+    // the summary is drawn from the cart each time, so it always shows what will be ordered
+    const summary = () => { const ls = S.cartLines(), n = S.cartCount();
+      return `<details class="co-det" open><summary><h2 class="h3">Sammanfattning</h2><span class="co-mini"><span>${n} ${n === 1 ? "vara" : "varor"}</span><b data-co="total"></b></span></summary>
+        <div id="coLines">${ls.map((l) => `<div class="line" style="grid-template-columns:3.6rem 1fr auto"><img src="${RQ.img(l.product, 600)}" alt="" width="58" height="72" loading="lazy" decoding="async"><div><h4>${esc(l.product.name)}</h4><div class="v">${l.quantity} st${l.variant.title !== "Standard" ? " · " + esc(l.variant.title) : ""}</div></div><span class="lp">${kr(l.lineTotal)}</span></div>`).join("")}</div>
+        <div class="co-sums"><div class="sum"><span>Delsumma</span><span>${kr(S.cartSubtotal())}</span></div>${S.lookDiscounts().map((d) => `<div class="sum disc"><span>Hela looken ${esc(d.look.name)}</span><span>−${kr(d.amount)}</span></div>`).join("")}<div class="sum"><span>Frakt</span><span data-co="ship"></span></div><div class="sum total"><span>Totalt</span><span data-co="total"></span></div><div class="sum small"><span>Varav moms</span><span data-co="vat"></span></div></div></details>`; };
+    const fld = (name, label, attrs, cls = "") => `<label${cls ? ` class="${cls}"` : ""}>${label}<input name="${name}" ${attrs}><span class="ferr" id="coe-${name}" hidden></span></label>`;
     return {
       title: "Kassa · RumIQ",
-      html: `<header class="page-head wrap" style="padding-bottom:1rem">${RQ.crumbs([["Hem", "hem"], ["Varukorg"], ["Kassa"]])}<h1 class="h1">Kassa</h1>
+      html: `<header class="page-head wrap" style="padding-bottom:1rem">${RQ.crumbs([["Hem", "hem"], ["Varukorg"], ["Kassa"]]).replace("<li>Varukorg</li>", '<li><button type="button" class="crumb-btn" data-open-cart>Varukorg</button></li>')}<h1 class="h1">Kassa</h1>
           <div class="example-note" style="margin-top:1.4rem;max-width:46rem"><span>●</span><span><b>Testläge.</b> Varukorgen innehåller exempelprodukter. Du kan gå igenom hela kassan, men inget betalas och inget skickas. När butiken öppnar sker betalningen i Shopifys säkra kassa.</span></div></header>
         <section class="wrap split co-split" style="padding-bottom:5rem;align-items:start">
           <form id="co" novalidate>
-            <div class="panel"><h2 class="h3">1. Kontakt</h2><div class="form-grid" style="margin-top:1rem"><label class="full">E-post<input type="email" name="email" autocomplete="email" value="${esc(c.email || "")}" required></label><label class="full">Telefon (valfritt, för avisering)<input type="tel" name="phone" autocomplete="tel" value="${esc(c.phone || "")}"></label></div>${c.email ? "" : `<p class="small" style="margin-top:.8rem">Har du ett konto? <a href="#konto" data-after="kassa">Logga in</a> så fylls uppgifterna i. Annars handlar du som gäst.</p>`}</div>
-            <div class="panel"><h2 class="h3">2. Leveransadress</h2><div class="form-grid" style="margin-top:1rem"><label>Förnamn<input name="first" autocomplete="given-name" value="${esc(c.name || "")}" required></label><label>Efternamn<input name="last" autocomplete="family-name" required></label><label class="full">Gatuadress<input name="street" autocomplete="street-address" value="${esc((c.address || {}).street || "")}" required></label><label>Postnummer<input name="zip" autocomplete="postal-code" inputmode="numeric" value="${esc((c.address || {}).zip || "")}" required></label><label>Ort<input name="city" autocomplete="address-level2" value="${esc((c.address || {}).city || "")}" required></label><label class="full">Land<select name="country" autocomplete="country-name"><option>Sverige</option></select></label></div></div>
-            <div class="panel"><h2 class="h3">3. Leveranssätt</h2><div style="display:grid;gap:.6rem;margin-top:1rem">${S.SHIPPING.map((s, i) => `<label class="check" style="border:1px solid var(--line);border-radius:12px;padding:.9rem 1rem;justify-content:space-between;display:flex"><span style="display:flex;gap:.7rem"><input type="radio" name="ship" value="${s.id}" ${i === 0 ? "checked" : ""}> <span><b style="color:var(--grafit);font-weight:500">${s.title}</b><br><span class="small">Leveranstid: ${s.eta}${s.note ? ` · ${s.note}` : ""}</span></span></span><span style="font-family:var(--mono)">${(S.shippingCost(s.id) ? kr(S.shippingCost(s.id)) : "Fri")}</span></label>`).join("")}</div><p class="small" style="margin-top:.8rem">Leveranssätt och priser är exempel tills leverantörerna är bekräftade.</p><label class="check" style="margin-top:1.1rem"><input type="checkbox" name="gift" id="coGift"> Det är en present</label><div class="gift-box" id="coGiftBox" hidden><p class="small">Priserna syns inte på följesedeln. Skriv en hälsning, så lägger vi den på ett kort i paketet.</p><label class="full">Hälsning (frivillig)<textarea name="giftNote" rows="3" maxlength="240" placeholder="Grattis på nya hemmet!"></textarea></label></div></div>
+            <div class="panel"><h2 class="h3">1. Kontakt</h2><div class="form-grid" style="margin-top:1rem">${fld("email", "E-post", `type="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(c.email || "")}" required`, "full")}${fld("phone", "Telefon (valfritt, för avisering)", `type="tel" autocomplete="tel" value="${esc(c.phone || "")}"`, "full")}</div>${c.email ? "" : `<p class="small" style="margin-top:.8rem">Har du ett konto? <a href="#konto" data-after="kassa">Logga in</a> så fylls uppgifterna i. Annars handlar du som gäst.</p>`}</div>
+            <div class="panel"><h2 class="h3">2. Leveransadress</h2><div class="form-grid" style="margin-top:1rem">${fld("first", "Förnamn", `autocomplete="given-name" value="${esc(first)}" required`, "half")}${fld("last", "Efternamn", `autocomplete="family-name" value="${esc(last)}" required`, "half")}${fld("street", "Gatuadress", `autocomplete="street-address" value="${esc((c.address || {}).street || "")}" required`, "full")}${fld("zip", "Postnummer", `autocomplete="postal-code" inputmode="numeric" maxlength="7" value="${esc((c.address || {}).zip || "")}" required`, "half")}${fld("city", "Ort", `autocomplete="address-level2" value="${esc((c.address || {}).city || "")}" required`, "half")}<label class="full">Land<select name="country" autocomplete="country-name"><option>Sverige</option></select></label></div></div>
+            <div class="panel"><h2 class="h3">3. Leveranssätt</h2><div style="display:grid;gap:.6rem;margin-top:1rem">${S.SHIPPING.map((s, i) => `<label class="check ship-opt"><span class="so-l"><input type="radio" name="ship" value="${s.id}" ${i === 0 ? "checked" : ""}> <span><b>${s.title}</b><span class="small">Leveranstid: ${s.eta}${s.note ? `<br>${s.note}` : ""}</span></span></span><span class="so-p" data-ship-price="${s.id}">${shipPrice(S.shippingCost(s.id))}</span></label>`).join("")}</div><p class="small" style="margin-top:.8rem">Leveranssätt och priser är exempel tills leverantörerna är bekräftade.</p><label class="check" style="margin-top:1.1rem"><input type="checkbox" name="gift" id="coGift"> Det är en present</label><div class="gift-box" id="coGiftBox" hidden><p class="small">Priserna syns inte på följesedeln. Skriv en hälsning, så lägger vi den på ett kort i paketet.</p><label class="full">Hälsning (frivillig)<textarea name="giftNote" rows="3" maxlength="240" placeholder="Grattis på nya hemmet!"></textarea></label></div></div>
             <div class="panel"><h2 class="h3">4. Betalning</h2><p style="margin-top:.6rem;color:var(--ink2)">När butiken öppnar betalar du i Shopifys kassa. Vi ser aldrig dina kortuppgifter. I testläget hoppar vi över betalningen.</p>${RQ.payRow ? RQ.payRow() : ""}
-              <label class="check" style="margin-top:1rem"><input type="checkbox" name="terms" required> <span>Jag godkänner <a href="#juridik-villkor">köpvillkoren</a> och har läst om min <a href="#juridik-angerratt">ångerrätt</a>.</span></label>
-              <button class="btn block" type="submit" style="margin-top:1.2rem">Lägg testorder</button><p class="status" id="coStatus" role="alert"></p></div>
+              <label class="check" style="margin-top:1rem"><input type="checkbox" name="terms" required aria-describedby="coe-terms"> <span>Jag godkänner <a href="#juridik-villkor">köpvillkoren</a> och har läst om min <a href="#juridik-angerratt">ångerrätt</a>.</span></label><span class="ferr" id="coe-terms" hidden></span>
+              <div class="co-final"><div class="sum"><span>Frakt</span><span data-co="ship"></span></div><div class="sum total"><span>Totalt</span><span data-co="total"></span></div></div>
+              <button class="btn block" type="submit" style="margin-top:1.2rem">Lägg testorder</button><p class="status err" id="coStatus" role="alert"></p></div>
           </form>
-          <aside class="panel" style="position:sticky;top:calc(var(--bar-h) + var(--nav-h) + 1rem)"><h2 class="h3">Sammanfattning</h2><div id="coLines">${lines.map((l) => `<div class="line" style="grid-template-columns:3.6rem 1fr auto"><img src="${RQ.img(l.product, 600)}" alt=""><div><h4>${esc(l.product.name)}</h4><div class="v">${l.quantity} st${l.variant.title !== "Standard" ? " · " + esc(l.variant.title) : ""}</div></div><span class="lp">${kr(l.lineTotal)}</span></div>`).join("")}</div>
-            <div style="display:grid;gap:.5rem;margin-top:1rem"><div class="sum"><span>Delsumma</span><span>${kr(S.cartSubtotal())}</span></div>${S.lookDiscounts().map((d) => `<div class="sum disc"><span>Hela looken ${esc(d.look.name)}</span><span>−${kr(d.amount)}</span></div>`).join("")}<div class="sum"><span>Frakt</span><span id="coShip"></span></div><div class="sum total"><span>Totalt</span><span id="coTotal"></span></div><div class="sum small"><span>Varav moms</span><span id="coVat"></span></div></div></aside>
+          <aside class="panel co-sum" id="coSum">${summary()}</aside>
         </section>`,
       mount(root) {
-        const f = $("#co", root);
-        const upd = () => { const ship = S.shippingCost(f.ship.value); const t = S.cartTotalBeforeShipping() + ship; $("#coShip", root).textContent = kr(ship); $("#coTotal", root).textContent = kr(t); $("#coVat", root).textContent = kr(S.vatIncluded(t)); };
-        $$("[name=ship]", f).forEach((r) => r.addEventListener("change", upd)); upd();
+        const f = $("#co", root), sum = $("#coSum", root), phone = matchMedia("(max-width:900px)");
+        const set = (k, v) => $$(`[data-co=${k}]`, root).forEach((el) => (el.textContent = v));
+        const upd = () => { const ship = S.shippingCost(f.ship.value), t = S.cartTotalBeforeShipping() + ship;
+          set("ship", shipPrice(ship)); set("total", kr(t)); set("vat", kr(S.vatIncluded(t)));
+          $$("[data-ship-price]", f).forEach((el) => (el.textContent = shipPrice(S.shippingCost(el.dataset.shipPrice)))); };
+        // on a phone the summary is one line above the form (open it to see the things); beside the form it is always open
+        const fold = () => { const d = $(".co-det", sum); d.open = !phone.matches; d.addEventListener("toggle", () => { if (!phone.matches && !d.open) d.open = true; }); };
+        $$("[name=ship]", f).forEach((r) => r.addEventListener("change", upd)); fold(); upd();
         f.gift.addEventListener("change", () => { $("#coGiftBox", root).hidden = !f.gift.checked; });
+        // the cart can change while the checkout is open (the drawer, another tab): the summary follows it
+        let placing = false;
+        const off = S.onChange((w) => { if (w !== "cart" || placing) return; if (!S.cartLines().length) return RQ.router(); const was = $(".co-det", sum).open; sum.innerHTML = summary(); fold(); if (phone.matches) $(".co-det", sum).open = was; upd(); });
+        // errors: under the field they belong to, all at once, and the first one gets the focus
+        const mark = (el, box, msg) => { box.textContent = msg; box.hidden = !msg; if (msg) { el.setAttribute("aria-invalid", "true"); el.setAttribute("aria-describedby", box.id); } else { el.removeAttribute("aria-invalid"); if (el.name !== "terms") el.removeAttribute("aria-describedby"); } };
+        const check = (name) => { const el = f[name], msg = name === "terms" ? (el.checked ? "" : "Kryssa i rutan för att godkänna köpvillkoren.") : CO_RULES[name](el.value.trim()); mark(el, $("#coe-" + name, f), msg); return !msg; };
+        const NAMES = [...Object.keys(CO_RULES), "terms"];
+        NAMES.forEach((n) => { const el = f[n]; el.addEventListener(n === "terms" ? "change" : "input", () => { if (el.getAttribute("aria-invalid")) { check(n); if (!$$("[aria-invalid=true]", f).length) $("#coStatus", root).textContent = ""; } });
+          if (n !== "terms") el.addEventListener("blur", () => { if (n === "zip" && digits(el.value).length === 5 && /^[\d\s]+$/.test(el.value)) el.value = digits(el.value).replace(/^(\d{3})(\d{2})$/, "$1 $2"); if (el.value.trim() || el.getAttribute("aria-invalid")) check(n); }); });
         f.addEventListener("submit", (e) => {
-          e.preventDefault(); const st = $("#coStatus", root);
-          const need = ["first", "last", "street", "zip", "city"].filter((n) => !f[n].value.trim());
-          if (!emailOk(f.email.value)) return (st.textContent = "Skriv en giltig e-postadress."), f.email.focus();
-          if (need.length) return (st.textContent = "Fyll i hela leveransadressen."), f[need[0]].focus();
-          if (!/^\d{3}\s?\d{2}$/.test(f.zip.value.trim())) return (st.textContent = "Postnumret ska ha fem siffror, till exempel 123 45."), f.zip.focus();
-          if (!f.terms.checked) return (st.textContent = "Godkänn köpvillkoren för att fortsätta.");
-          const o = S.placeTestOrder({ contact: { email: f.email.value.trim(), phone: f.phone.value.trim() }, address: { first: f.first.value.trim(), last: f.last.value.trim(), street: f.street.value.trim(), zip: f.zip.value.trim(), city: f.city.value.trim(), country: f.country.value }, shippingId: f.ship.value, gift: f.gift && f.gift.checked ? { note: f.giftNote.value.trim().slice(0, 240) } : null });
-          if (o && S.customer() && !(S.customer().address || {}).street) S.setProfile({ address: { street: f.street.value.trim(), zip: f.zip.value.trim(), city: f.city.value.trim() }, phone: f.phone.value.trim() });
-          if (o) location.hash = "#order-" + o.number;
+          e.preventDefault(); if (placing) return; const st = $("#coStatus", root);
+          const bad = NAMES.filter((n) => !check(n));
+          if (bad.length) { st.textContent = bad.length === 1 ? "En sak behöver rättas innan du kan beställa." : `${bad.length} saker behöver rättas innan du kan beställa.`; const el = f[bad[0]]; (el.closest("label") || el).scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); el.focus({ preventScroll: true }); return; }
+          st.textContent = ""; placing = true;
+          const zip = digits(f.zip.value).replace(/^(\d{3})(\d{2})$/, "$1 $2");
+          const o = S.placeTestOrder({ contact: { email: f.email.value.trim(), phone: f.phone.value.trim() }, address: { first: f.first.value.trim(), last: f.last.value.trim(), street: f.street.value.trim(), zip, city: f.city.value.trim(), country: f.country.value }, shippingId: f.ship.value, gift: f.gift && f.gift.checked ? { note: f.giftNote.value.trim().slice(0, 240) } : null });
+          if (o && S.customer() && !(S.customer().address || {}).street) S.setProfile({ address: { street: f.street.value.trim(), zip, city: f.city.value.trim() }, phone: f.phone.value.trim() });
+          if (o) location.hash = "#order-" + o.number; else placing = false;
         });
+        return off;
       },
     };
   };
+  // the receipt on the thank-you page: what was ordered, where it goes, how, and what it cost
+  const receipt = (o) => { const a = o.address || {}, sh = shipOf(o.shippingId), eta = RQ.delivery ? RQ.delivery.range(RQ.delivery.cfg(), o.createdAt) : "", net = o.subtotal - (o.discount || 0) + (o.shipping || 0);
+    return `<div class="order receipt"><header><div><b>${esc(o.number)}</b><div class="small">${date(o.createdAt)}</div></div><span class="st">${o.withdrawn ? "ÅNGRAD" : "TESTORDER"}</span></header>
+      <ul class="rc-lines">${o.lines.map((l) => { const p = RQ.byHandle(l.handle); return `<li>${p ? `<img src="${RQ.img(p, 600)}" alt="" width="48" height="60" loading="lazy" decoding="async">` : "<span></span>"}<span><b>${esc(l.title)}</b><small>${l.quantity} st${l.variant !== "Standard" ? " · " + esc(l.variant) : ""}</small></span><span class="lp">${kr(l.price * l.quantity)}</span></li>`; }).join("")}</ul>
+      <div class="co-sums"><div class="sum"><span>Delsumma</span><span>${kr(o.subtotal)}</span></div>${o.discount ? `<div class="sum disc"><span>Rabatt på hel look</span><span>−${kr(o.discount)}</span></div>` : ""}<div class="sum"><span>Frakt</span><span>${shipPrice(o.shipping)}</span></div><div class="sum total"><span>Totalt</span><span>${kr(o.total)}</span></div><div class="sum small"><span>Varav moms</span><span>${kr(S.vatIncluded(net))}</span></div></div>
+      <dl class="rc-facts">${a.street ? `<div><dt>Levereras till</dt><dd>${esc(a.first || "")} ${esc(a.last || "")}<br>${esc(a.street)}<br>${esc(a.zip || "")} ${esc(a.city || "")}</dd></div>` : ""}<div><dt>Leveranssätt</dt><dd>${esc(sh.title)}<br>Målet är ${esc(sh.eta)}${eta ? `<br><span class="small">Beräknat: <span>${eta}</span></span>` : ""}</dd></div>${o.gift ? `<div><dt>Present</dt><dd>${o.gift.note ? `Hälsning: ”${esc(o.gift.note)}”` : "Utan priser på följesedeln"}</dd></div>` : ""}</dl></div>`; };
   V.orderDone = (num) => {
     const o = S.orders().find((x) => x.number === num); if (!o) return null;
     return { title: "Tack för din testorder · RumIQ",
       html: `<header class="page-head wrap"><span class="eyebrow">Testorder ${esc(o.number)}</span><h1 class="h1">Tack! Så här hade det sett ut.</h1><p class="lead">Ingen betalning gjordes och inget skickas. När butiken är öppen får du en orderbekräftelse via e-post till ${esc(o.contact.email)}.</p></header>
-        <section class="wrap split" style="padding-bottom:5rem;align-items:start"><div>${orderCard(o)}<h2 class="h3" style="margin-top:2rem">Vad händer nu?</h2><ol class="timeline"><li class="done"><div><b>Beställningen tas emot</b><small>Du får en bekräftelse via e-post.</small></div></li><li><div><b>Leverantören packar</b><small>Varor från olika leverantörer kan skickas separat.</small></div></li><li><div><b>Skickad</b><small>Du får spårningsnummer när fraktbolaget har det.</small></div></li><li><div><b>Levererad</b><small>14 dagars ångerrätt räknas från att du tagit emot varan.</small></div></li></ol></div>
-          <div class="panel"><h3 class="h3" style="font-size:1.2rem">Ångra eller följ</h3><p class="small" style="margin:.5rem 0 1rem">Du kan prova att följa och ångra testordern också.</p><div class="ctrl-row"><a class="btn sm" href="#spara-order">Följ beställningen</a><a class="btn ghost sm" href="#angra">Ångra köp</a></div></div></section>`,
-      mount() { RQ.ss.set("rumiq-prefill", o.number); } };
+        <section class="wrap split" style="padding-bottom:5rem;align-items:start"><div>${receipt(o)}<div class="ctrl-row" style="margin-top:1.2rem"><a class="btn" href="#butik">Fortsätt handla</a><a class="btn ghost" href="#spara-order" data-track="${o.number}">Följ beställningen</a></div>${o.withdrawn ? "" : `<p class="small" style="margin-top:1rem">Ångrat dig? <a href="#angra" data-wd="${o.number}">Ångra köpet här</a>. Du kan prova det med testordern också.</p>`}</div>
+          <div><h2 class="h3">Vad händer nu?</h2><ol class="timeline"><li class="done"><div><b>Beställningen tas emot</b><small>Du får en bekräftelse via e-post.</small></div></li><li><div><b>Leverantören packar</b><small>Varor från olika leverantörer kan skickas separat.</small></div></li><li><div><b>Skickad</b><small>Du får spårningsnummer när fraktbolaget har det.</small></div></li><li><div><b>Levererad</b><small>${returnLine()}</small></div></li></ol></div></section>`,
+      mount(root) { RQ.ss.set("rumiq-prefill", o.number); root.addEventListener("click", (e) => { const t = e.target.closest("[data-track],[data-wd]"); if (t) RQ.ss.set("rumiq-prefill", t.dataset.track || t.dataset.wd); }); } };
   };
 
   /* ---------------- Spåra min beställning */
   V.track = () => RQ.infoPage("spara-order", "Kundservice", "Spåra min beställning", "Ange ordernummer och e-post, så ser du var beställningen är.",
-    `<form id="trForm" class="form-grid" novalidate><label>Ordernummer<input name="num" placeholder="Till exempel TEST-1001" required></label><label>E-post<input type="email" name="email" required></label><button class="btn" type="submit">Visa status</button><p class="status full" id="trStatus"></p></form><div id="trOut"></div>
+    `<form id="trForm" class="form-grid" novalidate><label>Ordernummer<input name="num" placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label><label>E-post<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Visa status</button><p class="status full" id="trStatus"></p></form><div id="trOut"></div>
      <h2>Om du har en riktig beställning</h2><p>Använd länken till orderstatus i orderbekräftelsen. Spårning från fraktbolaget visas när leverantören eller fraktbolaget skickar den. Varor från olika leverantörer kan komma i separata paket.</p>`,
     (root) => {
       const f = $("#trForm", root); const pre = RQ.ss.get("rumiq-prefill"); if (pre) { f.num.value = pre; const o = S.findOrder(pre); if (o) f.email.value = o.contact.email; }
@@ -210,7 +253,7 @@
         if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna i den här webbläsaren. Kontrollera ordernumret och e-posten."; $("#trOut", root).innerHTML = ""; return; }
         st.textContent = "";
         const dc = RQ.delivery ? RQ.delivery.cfg() : {}, eta = RQ.delivery ? RQ.delivery.range(dc, o.createdAt) : "", ship = (S.SHIPPING.find((x) => x.id === o.shippingId) || {}).title || "";
-        $("#trOut", root).innerHTML = `<div class="panel" style="margin-top:1.6rem">${orderCard(o)}
+        $("#trOut", root).innerHTML = `<div class="panel" style="margin-top:1.6rem">${orderCard(o, true)}
           ${o.withdrawn ? "" : `<div class="tr-eta"><span class="eyebrow">Beräknad leverans</span><b>${eta || "Bekräftas innan vi öppnar"}</b>${ship ? `<small>${esc(ship)}${dc.fromCountry ? ` · ${esc(dc.fromCountry)}` : ""}</small>` : ""}</div>`}
           <ol class="timeline"><li class="done"><div><b>Mottagen</b><small>${date(o.createdAt)}</small></div></li>
           <li class="${o.withdrawn ? "done" : ""}"><div><b>${o.withdrawn ? "Köpet ångrat" : "Packas"}</b><small>${o.withdrawn ? date(o.withdrawnAt) : "Testorder, skickas inte"}</small></div></li>
@@ -222,9 +265,9 @@
 
   /* ---------------- Ångra avtalet här */
   V.withdraw = () => RQ.infoPage("angra", "Kundservice", "Ångra avtalet här", "Ångra hela eller delar av en beställning. Du behöver inte logga in och inte ange något skäl.",
-    `<div id="wdStep1"><form id="wdForm" class="form-grid" novalidate><label>Ordernummer<input name="num" required placeholder="Till exempel TEST-1001"></label><label>E-post som användes vid köpet<input type="email" name="email" required></label><button class="btn" type="submit">Hitta beställningen</button><p class="status full" id="wdStatus"></p></form></div>
+    `<div id="wdStep1"><form id="wdForm" class="form-grid" novalidate><label>Ordernummer<input name="num" required placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false"></label><label>E-post som användes vid köpet<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Hitta beställningen</button><p class="status full" id="wdStatus"></p></form></div>
      <div id="wdStep2"></div>
-     <h2>Bra att veta</h2><ul><li>Du har 14 dagar på dig från att du tog emot varan.</li><li>Efter att du ångrat har du 14 dagar på dig att skicka tillbaka varan.</li><li>Vi betalar tillbaka senast 14 dagar efter ditt meddelande, men får vänta tills varan kommit tillbaka.</li><li>Du kan också skriva till support@rumiq.se eller använda Konsumentverkets standardformulär.</li></ul>
+     <h2>Bra att veta</h2><ul><li>${returnLine()}</li><li>Efter att du ångrat har du 14 dagar på dig att skicka tillbaka varan.</li><li>Vi betalar tillbaka senast 14 dagar efter ditt meddelande, men får vänta tills varan kommit tillbaka.</li><li>Du kan också skriva till support@rumiq.se eller använda Konsumentverkets standardformulär.</li></ul>
      <p class="note">I förhandsversionen hittar formuläret bara testordrar som lagts i den här webbläsaren.</p>`,
     (root) => {
       const f = $("#wdForm", root); const pre = RQ.ss.get("rumiq-prefill"); if (pre) { f.num.value = pre; const o = S.findOrder(pre); if (o) f.email.value = o.contact.email; }
