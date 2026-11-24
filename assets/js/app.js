@@ -32,9 +32,22 @@
 
   /* ---------------------------------------------------------------- small UI */
   let toastT;
-  RQ.toast = (html) => {
-    const t = $("#toast"); t.innerHTML = html; t.classList.add("show");
-    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 3600);
+  // the toast rises at the bottom, just above whatever bar is there (dock, buy bar, the cart's footer), never over the header
+  const toastLift = () => {
+    const H = innerHeight; let top = H;
+    (document.elementsFromPoint ? [...document.elementsFromPoint(innerWidth / 2, H - 6), ...document.elementsFromPoint(innerWidth / 2, H - 30)] : []).forEach((el) => {
+      for (let n = el; n && n !== document.body && n.id !== "toast"; n = n.parentElement) {
+        const pos = getComputedStyle(n).position; if (pos !== "fixed" && pos !== "sticky") continue;
+        const bar = n.id === "cart" ? n.querySelector("footer") : n, r = bar ? bar.getBoundingClientRect() : null;
+        if (r && r.height && r.height < H * 0.5 && r.bottom > H - 40) top = Math.min(top, r.top);
+        break;
+      }
+    });
+    return Math.max(0, Math.round(H - top));
+  };
+  RQ.toast = (html, ms) => {
+    const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); t.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), ms || 3600);
   };
   const swatches = (p) => (p.variants ? `<span class="swatches" role="img" aria-label="${p.variants.length} färger">${p.tone.slice(0, p.variants.length).map((c) => `<i style="background:${c}"></i>`).join("")}</span>` : "");
   const plus = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
@@ -574,7 +587,9 @@
   const drawer = $("#cart"), scrimAll = $("#scrimAll");
   // the control that opened a layer gets the focus back when the layer closes
   let opener = null; const remember = () => { const a = document.activeElement; opener = a && a !== document.body && !a.closest("#cart,#mnav,#search") ? a : opener; };
-  const openCart = () => { remember(); renderCart(); closeLight(); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); setTimeout(() => $("#cart .close").focus(), 50); };
+  drawer.setAttribute("role", "dialog"); drawer.setAttribute("aria-modal", "true"); drawer.tabIndex = -1;
+  // the page behind stands still while the cart is open; the focus goes to the drawer itself (no ring on the close button after a tap)
+  const openCart = () => { remember(); renderCart(); closeLight(); $("#toast").classList.remove("show"); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); document.documentElement.style.overflow = "hidden"; setTimeout(() => drawer.focus({ preventScroll: true }), 50); };
   const closeAll = () => { const was = drawer.classList.contains("open") || $("#search").classList.contains("open") || $("#mnav").classList.contains("open"); if (was && opener && opener.isConnected && document.activeElement && document.activeElement.closest("#cart,#mnav,#search")) { try { opener.focus({ preventScroll: true }); } catch (e) {} } opener = null; drawer.classList.remove("open"); scrimAll.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); $("#search").classList.remove("open"); $("#mnav").classList.remove("open"); $("#burger").setAttribute("aria-expanded", "false"); closeMega(); closeLight(); document.documentElement.style.overflow = ""; };
   RQ.openCart = openCart; RQ.closeAll = closeAll;
   // keep the keyboard inside whatever layer is open (quick view, search, menu or cart)
@@ -590,17 +605,35 @@
     else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
   });
+  // a look that is one thing short of complete: the thing, and what the whole look would save
+  const lookNudge = (lines) => {
+    const rate = +((window.RQ_CONFIG || {}).lookDiscount || 0); if (!rate || !RQ.LOOKS) return null;
+    const left = {}; lines.forEach((l) => { left[l.product.handle] = (left[l.product.handle] || 0) + l.quantity; });
+    S.lookDiscounts().forEach((d) => d.look.items.forEach((h) => left[h]--));
+    let best = null;
+    RQ.LOOKS.forEach((L) => { const miss = L.items.filter((h) => !(left[h] > 0)); if (miss.length !== 1 || L.items.length < 3) return; const p = RQ.byHandle(miss[0]); if (!p) return;
+      const save = Math.round(L.items.reduce((s, h) => s + (RQ.byHandle(h) || { price: 0 }).price, 0) * rate); if (!best || save > best.save) best = { look: L, p, save }; });
+    return best;
+  };
+  // the same look twice is one row ("2 × ...")
+  RQ.discRows = (disc) => { const g = new Map(); disc.forEach((d) => { const x = g.get(d.look.id) || { name: d.look.name, n: 0, amount: 0 }; x.n++; x.amount += d.amount; g.set(d.look.id, x); });
+    return [...g.values()].map((x) => `<div class="sum disc"><span>${x.n > 1 ? x.n + " × " : ""}Hela looken ${esc(x.name)}</span><span>−${kr(x.amount)}</span></div>`).join(""); };
   function renderCart() {
     const lines = S.cartLines();
     const body = $("#cart .body"), foot = $("#cart footer");
+    // the cart is drawn again after every change: remember which control had the focus and give it back
+    const a = document.activeElement, had = !!a && a !== drawer && drawer.contains(a) && !a.closest("header");
+    const key = !had ? "" : a.dataset.line ? `[data-line="${a.dataset.line}"][data-d="${a.dataset.d}"]` : a.dataset.rm ? `[data-rm="${a.dataset.rm}"]` : a.dataset.add ? `[data-add="${a.dataset.add}"]` : "";
+    const refocus = () => { if (!had) return; let el = key ? $(key, drawer) : null; if (el && el.disabled && a.dataset.line) el = $(`[data-line="${a.dataset.line}"]:not([disabled])`, drawer); (el && !el.disabled ? el : drawer).focus({ preventScroll: true }); };
     if (!lines.length) {
       body.innerHTML = RQ.emptyCartHtml();
-      foot.innerHTML = ""; return;
+      foot.innerHTML = ""; refocus(); return;
     }
-    const sub = S.cartSubtotal(), disc = S.lookDiscounts(), net = sub - S.cartDiscount();
-    body.innerHTML = RQ.freeShipHtml(net) + RQ.fillGapHtml(lines, net) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close><img src="${RQ.img(l.product, 600)}" alt=""></a><div><h4><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h4>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska">−</button><input value="${l.quantity}" aria-label="Antal" readonly><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka">+</button></div><button class="rm" type="button" data-rm="${l.id}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}</span></div>`).join("") +
+    const sub = S.cartSubtotal(), disc = S.lookDiscounts(), net = sub - S.cartDiscount(), free = !!(S.freeShipping && S.freeShipping()), ship = S.shippingCost ? S.shippingCost("ombud") : 0, nudge = lookNudge(lines);
+    body.innerHTML = RQ.freeShipHtml(net) + (nudge ? `<div class="gap look-nudge"><p class="eyebrow">Nästan hela looken ${esc(nudge.look.name)}</p><div class="gap-i"><img src="${RQ.cut(nudge.p)}" alt="" width="42" height="42" loading="lazy"><span><b>${esc(nudge.p.name)}</b><small>Lägg till och spara ${kr(nudge.save)}</small></span><button class="btn sm ghost" type="button" data-add="${nudge.p.handle}::0" aria-label="Lägg ${esc(nudge.p.name)} i varukorgen">Lägg till</button></div></div>` : RQ.fillGapHtml(lines, net)) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close><img src="${RQ.img(l.product, 600)}" alt="" width="74" height="92" loading="lazy" decoding="async"></a><div><h4><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h4>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska antalet ${esc(l.product.name)}"${l.quantity <= 1 ? " disabled" : ""}>−</button><input value="${l.quantity}" aria-label="Antal ${esc(l.product.name)}" readonly tabindex="-1"><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka antalet ${esc(l.product.name)}"${l.quantity >= 99 ? " disabled" : ""}>+</button></div><button class="rm" type="button" data-rm="${l.id}" aria-label="Ta bort ${esc(l.product.name)}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}${l.quantity > 1 ? `<small>${kr(l.variant.price)}/st</small>` : ""}</span></div>`).join("") +
       `<div class="example-note" style="margin-top:1.2rem"><span>●</span><span><b>Testläge.</b> Varukorgen innehåller exempelprodukter. Du kan prova kassan, men inget betalas och inget skickas.</span></div>`;
-    foot.innerHTML = `<div class="sum"><span>Delsumma</span><span>${kr(sub)}</span></div>${disc.map((d) => `<div class="sum disc"><span>Hela looken ${esc(d.look.name)}</span><span>−${kr(d.amount)}</span></div>`).join("")}<div class="sum small"><span>Frakt</span><span>${S.freeShipping && S.freeShipping() ? "Fri till ombud och paketskåp" : "Från 49 kr"}</span></div><div class="sum small"><span>Varav moms (25 %)</span><span>${kr(S.vatIncluded(net))}</span></div><a class="btn block" href="#kassa" data-close>Till kassan</a><button class="btn ghost block" type="button" data-cart-room>${RQ.roomIco}Se varorna i ditt rum</button>`;
+    foot.innerHTML = `<div class="sum"><span>Delsumma</span><span>${kr(sub)}</span></div>${RQ.discRows(disc)}<div class="sum small"><span>Frakt till ombud eller paketskåp</span><span>${free ? "Fri" : kr(ship)}</span></div><div class="sum total"><span>Totalt</span><span>${kr(net + ship)}</span></div><div class="sum small"><span>Varav moms (25 %)</span><span>${kr(S.vatIncluded(net + ship))}</span></div><a class="btn block" href="#kassa" data-close>Till kassan</a><button class="btn ghost block cart-room" type="button" data-cart-room>${RQ.roomIco}Se varorna i ditt rum</button>`;
+    refocus();
   }
   S.onChange((w) => { RQ.paintShell(); if (drawer.classList.contains("open")) renderCart(); });
   // day/evening on a room picture: the same room after sunset, so you see how the lamps change it
@@ -632,7 +665,7 @@
   };
   RQ.freeShipHtml = (net) => {
     const from = (window.RQ_CONFIG || {}).freeShippingFrom; if (!from) return "";
-    const left = Math.max(0, from - net), pct = Math.min(100, Math.round((net / from) * 100));
+    const left = Math.max(0, from - net), pct = left ? Math.min(97, Math.floor((net / from) * 100)) : 100;
     return `<div class="fsm" role="status"><p>${left ? `<b>${kr(left)}</b> kvar till fri frakt` : "<b>Fri frakt</b> på den här beställningen"}</p><span class="fsm-bar"><i style="width:${pct}%"></i></span></div>`;
   };
   // an empty cart or checkout is never a dead end: two looks and what you looked at last
@@ -676,7 +709,7 @@
 
   // global clicks
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-wish],[data-compare],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
+    const t = e.target.closest("[data-wish],[data-compare],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-undo-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
     if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad i önskelistan" : "Spara i önskelistan"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
     if (t.matches("[data-compare]")) { const on = S.toggleCompare(t.dataset.compare); if (t.classList.contains("chip")) { t.setAttribute("aria-pressed", on); t.textContent = on ? "I jämförelsen" : "Jämför"; } else if (t.closest(".pactions")) { t.setAttribute("aria-pressed", on); $("span", t).textContent = on ? "I jämförelsen" : "Jämför"; } else if (t.classList.contains("btn")) t.textContent = on ? "I jämförelsen" : "Jämför"; RQ.toast(on ? `Tillagd i jämförelsen (${S._cmp.length} av 4). <a href="#jamfor">Jämför</a>` : "Borttagen ur jämförelsen"); if (current === "jamfor") RQ.router(); return; }
@@ -684,7 +717,14 @@
     if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }
     if (t.matches("[data-q]") && t.closest("#searchRes")) { sInput.value = t.dataset.q; doSearch(); return; }
-    if (t.matches("[data-rm]")) { S.setQty(t.dataset.rm, 0); return; }
+    if (t.matches("[data-rm]")) { // nothing leaves the cart for good by one tap: the toast offers to put it back
+      const l = S.cartLines().find((x) => x.id === t.dataset.rm), at = S._cart.findIndex((x) => x.v === t.dataset.rm);
+      S.setQty(t.dataset.rm, 0);
+      if (l) { undoRm = { v: l.id, q: l.quantity, at }; RQ.toast(`<span>${esc(l.product.name)} togs bort.</span> <button type="button" data-undo-rm>Ångra</button>`, 7000); }
+      return; }
+    if (t.matches("[data-undo-rm]")) { const u = undoRm; undoRm = null; $("#toast").classList.remove("show");
+      if (u && !S._cart.some((x) => x.v === u.v)) { S._cart.splice(Math.min(Math.max(0, u.at), S._cart.length), 0, { v: u.v, q: u.q }); S.setQty(u.v, u.q); const b = $(`[data-rm="${u.v}"]`, drawer); if (b && drawer.classList.contains("open")) b.focus({ preventScroll: true }); }
+      return; }
     if (t.matches("[data-line]")) { const l = S.cartLines().find((x) => x.id === t.dataset.line); if (l) S.setQty(l.id, l.quantity + +t.dataset.d); return; }
     if (t.matches("[data-action=cookies]")) { RQ.showCookies(true); return; }
     if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
@@ -693,6 +733,7 @@
     if (t.matches("[data-close]") || t.matches("a[href^='#']")) { closeAll(); }
     if (t.matches("[data-cart-room]")) { const hs = S.cartLines().map((l) => l.product.handle); const go = () => { hs.forEach((h) => RQ.room.add(h, true)); location.hash = "#mitt-rum"; }; closeAll(); if (RQ.room.has()) go(); else RQ.room.openSetup(go); }
   });
+  let undoRm = null;
   scrimAll.addEventListener("click", closeAll);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !e.target.closest("input,textarea,select"))) { e.preventDefault(); RQ.openSearch(); } });
 
@@ -717,15 +758,23 @@
 
 
   // add-to-cart feedback: the button itself confirms, the cart count bumps
+  // what was just put in the cart (how many, which colour), so the confirmation can say it
+  let lastAdd = null; const add0 = S.addToCart;
+  S.addToCart = (v, q = 1) => { lastAdd = { v, q, at: Date.now() }; return add0.call(S, v, q); };
+  // a second tap while the button still says "Tillagd" is a slip of the finger, not a second order
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("button.done"); if (b && b._t) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
   RQ.confirmAdd = (btn, name) => {
+    const la = lastAdd && Date.now() - lastAdd.at < 400 ? lastAdd : null, r = la ? S.variantById(la.v) : null;
+    const what = name ? `${la && la.q > 1 ? la.q + " × " : ""}${esc(name)}${r && r.variant && r.variant.title !== "Standard" ? ", " + esc(r.variant.title) : ""}` : "";
     if (btn && btn.classList) {
       const isQ = btn.classList.contains("qadd");
       if (!btn.dataset.label) btn.dataset.label = btn.innerHTML;
       btn.classList.add("done");
       btn.innerHTML = isQ ? '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Tillagd</span>' : "Tillagd i varukorgen";
-      clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove("done"); btn.innerHTML = btn.dataset.label; }, 1800);
+      clearTimeout(btn._t); btn._t = setTimeout(() => { btn._t = null; btn.classList.remove("done"); btn.innerHTML = btn.dataset.label; }, 1800);
     }
-    RQ.toast(`${name ? esc(name) + " ligger i varukorgen." : "Lagd i varukorgen."} <a href="#" data-open-cart>Visa</a>`);
+    if ($("#cart").classList.contains("open")) return; // in the open cart the new row is the confirmation
+    RQ.toast(`${what ? `<span><span>${what}</span> <span>ligger i varukorgen.</span></span>` : "<span>Lagd i varukorgen.</span>"} <a href="#" data-open-cart>Visa</a>`);
   };
 
   // daylight switch

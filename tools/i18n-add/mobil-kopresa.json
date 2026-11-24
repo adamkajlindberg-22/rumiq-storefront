@@ -29,5 +29,18 @@
   ". Du kan prova det med testordern också.": ". You can try it with the test order too.",
   "Beräknat:": "Estimated:",
   "Leveranstid: {0}–{1} arbetsdagar": "Delivery time: {0}–{1} working days",
-  "Hämta när det passar dig": "Collect when it suits you"
+  "Hämta när det passar dig": "Collect when it suits you",
+  "Nästan hela looken {PA}": "Almost the whole look {PA}",
+  "Lägg till och spara {0} kr": "Add it and save {0} kr",
+  "Frakt till ombud eller paketskåp": "Shipping to a pickup point or parcel locker",
+  "{0} kr/st": "{0} kr each",
+  "{0} × Hela looken {PA}": "{0} × Whole look {PA}",
+  "Minska antalet {PA}": "Fewer {PA}",
+  "Öka antalet {PA}": "More {PA}",
+  "Antal {PA}": "Quantity {PA}",
+  "Ta bort {PA}": "Remove {PA}",
+  "{PA} togs bort.": "{PA} was removed.",
+  "Ångra": "Undo",
+  "ligger i varukorgen.": "is in the cart.",
+  "{0} × {PA}": "{0} × {PA}"
 }

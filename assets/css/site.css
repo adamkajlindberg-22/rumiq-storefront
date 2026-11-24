@@ -566,10 +566,20 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-sh
 .line h4{font-weight:560;font-size:.98rem;line-height:1.3;letter-spacing:-.01em}
 .line h4 a{text-decoration:none}
 .line .v{font-size:.85rem;color:var(--muted)}
-.line .qty{margin-top:.55rem;height:2.25rem}
-.line .qty button{width:2.1rem}
-.line .lp{font-size:.95rem;font-weight:500;white-space:nowrap}
-.line .rm{border:0;background:none;color:var(--muted);font-size:.84rem;text-decoration:underline;text-underline-offset:.2em;margin-top:.45rem;display:block}
+.line .qty{margin-top:.55rem;height:2.75rem}
+.line .qty button{width:2.75rem}
+.line .qty input{pointer-events:none}
+.qty button:disabled{color:var(--muted);opacity:.4}
+.line .lp{font-size:.95rem;font-weight:500;white-space:nowrap;text-align:right}
+.line .lp small{display:block;font-weight:400;font-size:.8rem;color:var(--muted)}
+.line .rm{border:0;background:none;color:var(--muted);font-size:.84rem;text-decoration:underline;text-underline-offset:.2em;margin-top:.1rem;display:block;min-height:2.75rem;padding:0 .6rem 0 0}
+.drawer:focus{outline:0}
+.drawer footer .sum.total{margin-top:.1rem}
+.drawer footer .cart-room{min-height:2.75rem}
+@media (max-width:700px){
+  .drawer footer{gap:.55rem;padding-top:.9rem}
+  .drawer footer .cart-room{border:0;background:none;padding:0;min-height:2.75rem;height:auto;font-weight:500;text-decoration:underline;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent);margin-bottom:-.5rem}
+}
 .sum{display:flex;justify-content:space-between;font-size:.95rem}
 .sum.small{font-size:.88rem}
 .sum.total{font-size:1.1rem;font-weight:600;padding-top:.5rem;border-top:1px solid var(--line)}
@@ -584,9 +594,11 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .search .hint{margin-top:1rem;color:var(--muted);font-size:.94rem}
 .search .res{margin-top:2.2rem}
 .search .res > .eyebrow{display:block;margin-bottom:1rem}
-.toast{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:calc(1.4rem + var(--dock-h) + env(safe-area-inset-bottom));z-index:130;transform:translateY(calc(100% + 3rem));visibility:hidden;background:var(--ink);color:var(--bg);padding:.85rem 1.1rem;border-radius:var(--r-s);font-size:.94rem;display:flex;gap:1rem;align-items:center;transition:transform .5s var(--ease),visibility 0s .5s;box-shadow:0 20px 40px -20px rgba(0,0,0,.5);max-width:calc(100% - 2rem)}
-.toast.show{transform:none;visibility:visible;transition:transform .5s var(--ease)}
-.toast a{color:inherit;font-weight:600}
+.toast{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:calc(var(--toast-lift,0px) + .9rem + env(safe-area-inset-bottom));z-index:350;transform:translateY(1.2rem);opacity:0;visibility:hidden;background:var(--ink);color:var(--bg);padding:.85rem 1.1rem;border-radius:var(--r-s);font-size:.94rem;display:flex;gap:1rem;align-items:center;transition:transform .5s var(--ease),visibility 0s .5s;box-shadow:0 20px 40px -20px rgba(0,0,0,.5);max-width:calc(100% - 2rem)}
+.toast.show{transform:none;opacity:1;visibility:visible;transition:transform .5s var(--ease),opacity .3s}
+.toast a,.toast button{color:inherit;font-weight:600;white-space:nowrap}
+.toast button{border:0;background:none;padding:0;font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:.2em}
+.toast a,.toast button{display:inline-flex;align-items:center;min-height:2.75rem;margin:-.85rem 0;padding-inline:.3rem}
 .cookie{position:fixed;left:1rem;bottom:calc(1rem + var(--dock-h) + env(safe-area-inset-bottom));z-index:120;width:min(25rem,calc(100% - 2rem));background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:1.25rem;box-shadow:var(--shadow);transform:translateY(calc(100% + 3rem));visibility:hidden;transition:transform .6s var(--ease),visibility 0s .6s}
 .cookie.show{transform:none;visibility:visible;transition:transform .6s var(--ease)}
 .cookie h3{font-weight:560;font-size:1.05rem}
@@ -1363,9 +1375,9 @@ html.sheet-lock{overflow:hidden}
   ::view-transition-new(root),::view-transition-old(root){animation:none}
   .sv-card,.svt-cards img,.lc,.lc-im img{transition:none}
 }
-/* phones: the toast drops from the top so it never covers the buttons people are pressing */
+@media (min-width:701px){body:has(#cart.open) .toast{right:min(27rem,100%)}}
 @media (max-width:900px){
-  .toast{bottom:auto;top:calc(var(--nav-h) + .6rem + env(safe-area-inset-top));transform:translateY(calc(-100% - 6rem));max-width:calc(100% - 1.4rem)}
+  .toast{max-width:calc(100% - 1.4rem)}
   .jr-row{flex-direction:column;align-items:stretch;gap:.7rem}
   .jr-row .link{align-self:flex-start;font-size:.92rem}
 }
@@ -1967,8 +1979,8 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 .search.open{transition:opacity .18s var(--ease)}
 .sheet-scrim{transition:opacity .25s var(--ease)}
 .sheet-in{transition:transform .32s var(--ease)}
-.toast{transition:transform .3s var(--ease),visibility 0s .3s}
-.toast.show{transition:transform .3s var(--ease)}
+.toast{transition:transform .3s var(--ease),opacity .25s,visibility 0s .3s}
+.toast.show{transition:transform .3s var(--ease),opacity .2s}
 .buybar{transition:transform .28s var(--ease)}
 .btn{transition:background .16s var(--ease),color .16s var(--ease),border-color .16s,transform .12s var(--ease)}
 /* 4. Frosted glass is costly: every blurred element re-blurs what is behind it on each scroll frame.
