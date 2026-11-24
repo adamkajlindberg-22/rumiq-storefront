@@ -680,6 +680,9 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .search .res > .eyebrow{display:block;margin-bottom:1rem}
 .toast{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:calc(var(--toast-lift,0px) + .9rem + env(safe-area-inset-bottom));z-index:350;transform:translateY(1.2rem);opacity:0;visibility:hidden;background:var(--fill);color:var(--on-fill);padding:.85rem 1.1rem;border-radius:var(--r-s);font-size:.94rem;display:flex;gap:1rem;align-items:center;transition:transform .5s var(--ease),visibility 0s .5s;box-shadow:0 20px 40px -20px rgba(0,0,0,.5);max-width:calc(100% - 2rem)}
 .toast.show{transform:none;opacity:1;visibility:visible;transition:transform .5s var(--ease),opacity .3s}
+/* in the Mitt rum editor the bottom of the screen is all controls (toolbar, hint, buy bar): the message comes in at the top, over the title */
+body:has(#rmStage) .toast{top:calc(var(--nav-h) + .75rem);bottom:auto;transform:translateY(-1rem)}
+body:has(#rmStage) .toast.show{transform:none}
 .toast a,.toast button{color:inherit;font-weight:600;white-space:nowrap}
 .toast button{border:0;background:none;padding:0;font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:.2em}
 .toast a,.toast button{display:inline-flex;align-items:center;min-height:2.75rem;margin:-.85rem 0;padding-inline:.3rem}
