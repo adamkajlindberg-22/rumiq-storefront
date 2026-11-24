@@ -251,7 +251,7 @@
     render(id, opts = {}) {
       const r = RQ.HOTSPOTS[id], room = RQ.roomById(id); if (!r) return "";
       const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).map(([h, x, y]) => { const p = RQ.byHandle(h); return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}. Liknande i butiken."><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)} · Liknande i butiken</em></span></button>`; }).join("");
-      return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}" style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 100vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async"><div class="hs-layer">${spots}</div></div></div>`;
+      return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}" style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 180vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async"><div class="hs-layer">${spots}</div></div></div>`;
     },
     caption: () => `<p class="hs-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p>`,
     handles(id) { return [...new Set((RQ.HOTSPOTS[id] || { spots: [] }).spots.map((s) => s[0]))]; },
