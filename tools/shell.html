@@ -104,10 +104,10 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 
 <div class="scrim-all" id="scrimAll"></div>
-<aside class="drawer" id="cart" aria-label="Varukorg" aria-hidden="true">
-  <header><h2>Varukorg <small data-count="cartline"></small></h2><button class="iconbtn close" type="button" data-close aria-label="Stäng varukorgen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
-  <div class="body"></div><footer></footer><p class="sr" id="cartSaid" role="status"></p>
-</aside>
+<section class="drawer" id="cart" aria-label="Varukorg" aria-hidden="true">
+  <header role="none"><h2>Varukorg <small data-count="cartline"></small></h2><button class="iconbtn close" type="button" data-close aria-label="Stäng varukorgen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <div class="body"></div><footer role="none"></footer><p class="sr" id="cartSaid" role="status"></p>
+</section>
 
 <div class="search" id="search" role="dialog" aria-modal="true" aria-label="Sök">
   <div class="wrap"><div class="sbar"><label class="sr" for="searchInput">Sök</label><div class="sfield"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div><button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>

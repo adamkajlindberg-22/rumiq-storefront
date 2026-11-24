@@ -62,10 +62,10 @@
     title: "Snabbval · Svep · RumIQ",
     html: `<header class="page-head wrap">${crumbs("Snabbval", ["Svep", "svep"])}<h1 class="h1">Fyra snabba val</h1><p class="lead">Ingen tid att svepa? Fyra val ger din stil, en färgpalett och förslag. Svaren hamnar i samma stilprofil som Svep.</p></header>
       <section class="wrap quiz" style="padding-bottom:5rem">
-        <div class="q"><h3>1. Vilket rum tänker du på?</h3><div class="chips" data-q="room">${RQ.ROOMS.map((r) => `<button class="chip" type="button" data-v="${r.id}" aria-pressed="false">${esc(r.name)}</button>`).join("")}</div></div>
-        <div class="q"><h3>2. Vilken bild känns mest som hemma?</h3><div class="imgopts" data-q="img">${Object.entries(RQ.STYLES).map(([k, s]) => `<button type="button" data-v="${k}" aria-pressed="false"><img src="${STYLE_IMG[k]}" alt="${esc(s.name)} rum" loading="lazy"><span>${["Ljust och naturligt", "Rent och stilla", "Tidlöst och varmt", "Mjukt och ombonat"][Object.keys(RQ.STYLES).indexOf(k)]}</span></button>`).join("")}</div></div>
-        <div class="q"><h3>3. Vilka material tycker du om? Välj gärna flera.</h3><div class="chips" data-q="mat" data-multi="1">${Object.keys(MATERIALS).map((m) => `<button class="chip" type="button" data-v="${m}" aria-pressed="false">${m[0].toUpperCase() + m.slice(1)}</button>`).join("")}</div></div>
-        <div class="q"><h3>4. Hur vill du att rummet ska kännas?</h3><div class="chips" data-q="feel">${Object.keys(FEEL).map((f) => `<button class="chip" type="button" data-v="${f}" aria-pressed="false">${f[0].toUpperCase() + f.slice(1)}</button>`).join("")}</div></div>
+        <div class="q"><h2>1. Vilket rum tänker du på?</h2><div class="chips" data-q="room">${RQ.ROOMS.map((r) => `<button class="chip" type="button" data-v="${r.id}" aria-pressed="false">${esc(r.name)}</button>`).join("")}</div></div>
+        <div class="q"><h2>2. Vilken bild känns mest som hemma?</h2><div class="imgopts" data-q="img">${Object.entries(RQ.STYLES).map(([k, s]) => `<button type="button" data-v="${k}" aria-pressed="false"><img src="${STYLE_IMG[k]}" alt="${esc(s.name)} rum" loading="lazy"><span>${["Ljust och naturligt", "Rent och stilla", "Tidlöst och varmt", "Mjukt och ombonat"][Object.keys(RQ.STYLES).indexOf(k)]}</span></button>`).join("")}</div></div>
+        <div class="q"><h2>3. Vilka material tycker du om? Välj gärna flera.</h2><div class="chips" data-q="mat" data-multi="1">${Object.keys(MATERIALS).map((m) => `<button class="chip" type="button" data-v="${m}" aria-pressed="false">${m[0].toUpperCase() + m.slice(1)}</button>`).join("")}</div></div>
+        <div class="q"><h2>4. Hur vill du att rummet ska kännas?</h2><div class="chips" data-q="feel">${Object.keys(FEEL).map((f) => `<button class="chip" type="button" data-v="${f}" aria-pressed="false">${f[0].toUpperCase() + f.slice(1)}</button>`).join("")}</div></div>
         <button class="btn" type="button" id="styleGo">Visa min stil</button>
         <div id="styleOut" style="margin-top:2rem"></div>
       </section>`,
@@ -283,8 +283,8 @@
     title: "Hitta rätt · RumIQ",
     html: `<header class="page-head wrap">${crumbs("Hitta ditt hemurval")}<h1 class="h1">Hitta ditt hemurval</h1><p class="lead">Vad skulle göra hemmet bättre? Välj ett rum och vad du behöver mest, så visar vi passande produkter ur sortimentet.</p></header>
       <section class="wrap quiz" style="padding-bottom:5rem">
-        <div class="q" id="gQ1"><h3><span class="q-n">1</span>Vilket rum?</h3>${roomOpts()}</div>
-        <div class="q" id="gQ2"><h3><span class="q-n">2</span>Vad behöver du mest?</h3>${picOpts("need", Object.entries(RQ.NEEDS).map(([k, v]) => [k, softWrap(v), pimg(NEED_IMG[k])]), "Vad behöver du mest?")}</div>
+        <div class="q" id="gQ1"><h2><span class="q-n">1</span>Vilket rum?</h2>${roomOpts()}</div>
+        <div class="q" id="gQ2"><h2><span class="q-n">2</span>Vad behöver du mest?</h2>${picOpts("need", Object.entries(RQ.NEEDS).map(([k, v]) => [k, softWrap(v), pimg(NEED_IMG[k])]), "Vad behöver du mest?")}</div>
         <div class="q q-max"><label>Högsta pris per produkt (kr, valfritt)<input type="number" id="gmax" min="1" step="50" inputmode="numeric" placeholder="Inget maxpris"></label><button class="btn" type="button" id="gGo">Visa mitt hemurval</button></div>
         <div id="gOut" class="q-out"></div></section>`,
     mount(root) {
@@ -325,9 +325,9 @@
     title: "Som present · Hitta rätt · RumIQ",
     html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Butik", "butik"], ["Presentguiden"]])}<h1 class="h1">Presentguiden</h1><p class="lead">Svara på tre korta frågor och ange ett maxpris, så visar vi passande saker ur sortimentet.</p></header>
       <section class="wrap quiz" style="padding-bottom:5rem">
-        <div class="q" id="gfQ1"><h3><span class="q-n">1</span>Vem är presenten till?</h3>${picOpts("for", Object.entries(RQ.GIFT_FOR).map(([k, v]) => [k, v, pimg(FOR_IMG[k])]), "Vem är presenten till?")}</div>
-        <div class="q" id="gfQ2"><h3><span class="q-n">2</span>Tillfället</h3>${picOpts("occ", Object.entries(RQ.OCCASIONS).map(([k, v]) => [k, v, pimg(OCC_IMG[k])]), "Tillfället")}</div>
-        <div class="q"><h3><span class="q-n">3</span>Mottagarens stil <small>Hoppa över om du inte vet</small></h3>${picOpts("style", ["skandinavisk", "minimalistisk", "klassisk", "mjuk"].map((k) => [k, RQ.STYLES[k].name, STYLE_IMG[k]]), "Mottagarens stil")}</div>
+        <div class="q" id="gfQ1"><h2><span class="q-n">1</span>Vem är presenten till?</h2>${picOpts("for", Object.entries(RQ.GIFT_FOR).map(([k, v]) => [k, v, pimg(FOR_IMG[k])]), "Vem är presenten till?")}</div>
+        <div class="q" id="gfQ2"><h2><span class="q-n">2</span>Tillfället</h2>${picOpts("occ", Object.entries(RQ.OCCASIONS).map(([k, v]) => [k, v, pimg(OCC_IMG[k])]), "Tillfället")}</div>
+        <div class="q"><h2><span class="q-n">3</span>Mottagarens stil <small>Hoppa över om du inte vet</small></h2>${picOpts("style", ["skandinavisk", "minimalistisk", "klassisk", "mjuk"].map((k) => [k, RQ.STYLES[k].name, STYLE_IMG[k]]), "Mottagarens stil")}</div>
         <div class="q q-max"><label>Högsta presentpris (kr)<input type="number" id="gfMax" min="1" step="50" inputmode="numeric" value="800"></label><div class="ctrl-row"><button class="btn" type="button" id="gfGo">Hitta en present</button><a class="btn ghost" href="#presentkort">Hellre ett presentkort</a></div></div>
         <div id="gfOut" class="q-out"></div></section>`,
     mount(root) {
