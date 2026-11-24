@@ -11,5 +11,10 @@
  "{PA}, inramad": "{PA}, framed",
  "Produkter": "Products",
  "{PA}, släckt": "{PA}, lamp off",
- "{PA}: {0} st. Totalt {1} kr.": "{PA}: {0} pcs. Total {1} kr."
+ "{PA}: {0} st. Totalt {1} kr.": "{PA}: {0} pcs. Total {1} kr.",
+ "Flytta": "Move",
+ "Flytta åt vänster": "Move left",
+ "Flytta uppåt": "Move up",
+ "Flytta nedåt": "Move down",
+ "Flytta åt höger": "Move right"
 }

@@ -448,6 +448,7 @@
               <div class="rm-sel-h"><img id="rmSelImg" alt=""><div><b id="rmSelName"></b><span id="rmSelPrice"></span></div><a class="tlink" id="rmSelLink" href="#">Visa</a></div>
               <div class="range-row"><span>Storlek</span><input type="range" id="rmSize" min="3" max="96" step=".5" aria-label="Storlek"></div>
               <div class="range-row"><span>Ljus</span><input type="range" id="rmLight" min="60" max="135" aria-label="Ljus"></div>
+              <div class="range-row rm-move" role="group" aria-label="Flytta"><span aria-hidden="true">Flytta</span><div><button type="button" class="chip" data-mv="-2,0" aria-label="Flytta åt vänster">←</button><button type="button" class="chip" data-mv="0,-2" aria-label="Flytta uppåt">↑</button><button type="button" class="chip" data-mv="0,2" aria-label="Flytta nedåt">↓</button><button type="button" class="chip" data-mv="2,0" aria-label="Flytta åt höger">→</button></div></div>
               <div class="rm-sel-a"><button type="button" class="chip" id="rmFlip">${ICO.flip}Spegelvänd</button><button type="button" class="chip" id="rmFront">${ICO.front}Längst fram</button><button type="button" class="chip" id="rmBack">${ICO.back}Längst bak</button><button type="button" class="chip" id="rmDel">${ICO.trash}Ta bort</button></div>
             </div>
             <div class="rm-listhead"><h2 class="h3">I rummet</h2><span class="small" id="rmCount"></span></div>
@@ -618,6 +619,9 @@
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(it.h); }
           if (e.key === "+" || e.key === "-") { e.preventDefault(); sel = it.h; resize(it.h, it.w + (e.key === "+" ? 1 : -1)); refocus(it.h); }
           if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); const l = R.ordered().map((x) => x.h), i = l.indexOf(it.h); removeIt(it.h); refocus(l[i + 1] || l[i - 1]); } });
+        // moving without dragging (2.5.7): the arrows in the panel nudge the chosen thing, like the arrow keys
+        $("#rmSel", root).addEventListener("click", (e) => { const b = e.target.closest("[data-mv]"); if (!b || !sel) return; const it = R.scene().find((x) => x.h === sel), el = it && $(`.rm-item[data-h="${it.h}"]`, wrap); if (!el) return;
+          const [dx, dy] = b.dataset.mv.split(",").map(Number), [x, y] = inside(it.x + dx, it.y + dy, it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }); });
         const undoKey = (e) => { if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z" && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || "")) && R.canUndo()) { e.preventDefault(); R.undo(); RQ.toast("Ångrat."); } };
         document.addEventListener("keydown", undoKey);
         $("#rmZoom", root).addEventListener("click", () => { if (view.z > 1.01 && !view.whole) { view.z = 1; paintView(true); return; } view.whole = !view.whole; ls.set("rumiq-room-view", view.whole ? "whole" : "near"); stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); });
