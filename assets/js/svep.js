@@ -344,7 +344,7 @@
       <h2 class="h2">${top.length ? top.map((s) => `<span>${esc(s.name)}</span>`).join(" <span>och</span> ") : "Vi lär oss fortfarande"}</h2>
       <p class="lead">${top.length ? esc(RQ.STYLES[top[0].id].text) : "Spara några saker du gillar, så kan butiken sortera efter dig."}</p>
       ${allDone}
-      ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
+      ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
         ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
       ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved)}
         <div class="ctrl-row sp-acts"><button class="btn" type="button" id="svAll">Lägg alla i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="svRoomAll">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div>
@@ -430,7 +430,7 @@
     return { both: bothP, html: `<div class="svep-result two" tabindex="-1">
       <span class="eyebrow">Svep tillsammans</span>
       <h2 class="h2">${both.length ? `Ni gillar båda ${both.length} ${both.length === 1 ? "sak" : "saker"}` : "Ni gillade olika saker den här gången"}</h2>
-      <div class="two-meter" aria-label="Hur lika ni tycker"><span class="two-names"><b class="sv-name">${esc(nA)}</b><b class="sv-name">${esc(nB)}</b></span><span class="sp-bar"><i style="width:${pct}%"></i></span><span class="two-pct">${pct} % gemensamt</span></div>
+      <div class="two-meter" role="group" aria-label="Hur lika ni tycker"><span class="two-names"><b class="sv-name">${esc(nA)}</b><b class="sv-name">${esc(nB)}</b></span><span class="sp-bar"><i style="width:${pct}%"></i></span><span class="two-pct">${pct} % gemensamt</span></div>
       ${both.length ? `<div class="sp-saved"><span class="eyebrow">Ni gillar båda</span>${savedTiles(bothP)}
         <div class="ctrl-row sp-acts"><button class="btn" type="button" id="twoAll">Lägg det ni båda gillar i varukorgen · ${kr(bothP.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="twoRoom">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div></div>` : `<p class="lead">Det är också bra att veta. Prova en runda för ett rum ni ska inreda, så blir det lättare att mötas.</p>`}
       ${group("Bara", nA, onlyA)}${group("Bara", nB === "Du" ? "" : nB, onlyB).replace("Bara · ", "Bara du · ")}

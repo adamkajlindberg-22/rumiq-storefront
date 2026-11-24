@@ -383,6 +383,9 @@ main{min-height:60vh}
 details[open] > summary .pm::after{transform:translate(-50%,-50%) rotate(0)}
 .buybar{position:fixed;left:0;right:0;bottom:0;z-index:70;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.7rem max(var(--gutter), calc((100vw - 1360px)/2)) calc(.7rem + env(safe-area-inset-bottom));transform:translateY(110%);visibility:hidden;transition:transform .45s var(--ease),visibility 0s .45s}
 .buybar.show{transform:none;visibility:visible;transition:transform .45s var(--ease)}
+/* the buy bar waits while the cookie choice is open, and steps aside on very low screens (a phone on its side): the page's own buy button is there */
+html:has(.cookie.show) .buybar.show:not(.rm-bar){transform:translateY(110%);visibility:hidden}
+@media (max-height:480px){.buybar.show:not(.rm-bar){transform:translateY(110%);visibility:hidden}}
 .buybar .bb-p{display:flex;align-items:center;gap:.8rem;min-width:0}
 .buybar img{width:2.6rem;height:3.25rem;object-fit:cover;border-radius:var(--r-img);flex:none}
 .buybar .bb-t{display:flex;flex-direction:column;line-height:1.25;min-width:0}
@@ -1134,6 +1137,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-item img{width:100%;pointer-events:none;transition:filter .3s}
 /* the frame is an outline, so lamps (whose ::before is the glow) get it too */
 .rm-item.sel,.rm-item:focus-visible{outline:2px dashed #F7F7F4;outline-offset:5px;border-radius:3px;box-shadow:0 0 0 5px rgba(20,22,26,.2),0 0 0 8px rgba(20,22,26,.12)}
+.rm-item:focus-visible{outline:2px solid #22252A;outline-offset:5px;box-shadow:0 0 0 9px rgba(247,247,244,.92)} /* the keyboard ring shows on light walls and dark floors alike */
 .rm-item:active{cursor:grabbing}
 .rm-stage.before .rm-items{opacity:0;transition:opacity .2s}
 .rm-hold{position:absolute;left:.8rem;top:.8rem;z-index:3;display:inline-flex;align-items:center;gap:.45rem;height:2.5rem;padding:0 1rem 0 .8rem;border:0;border-radius:999px;background:rgba(247,247,244,.9);color:#22252A;font-size:.86rem;font-weight:600;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}

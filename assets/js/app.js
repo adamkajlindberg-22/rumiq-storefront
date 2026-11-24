@@ -69,14 +69,14 @@
       <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
       <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)} i önskelistan">${I.heart}</button>
       <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${roomIco}</button>
-      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
+      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <button class="qv" type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
       <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
   };
   RQ.grid = (list, cls = "", top = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
-  const crumbs = (items) => `<ol class="crumbs">${items.map(([t, h]) => `<li>${h ? `<a href="#${h}">${esc(t)}</a>` : esc(t)}</li>`).join("")}</ol>`;
+  const crumbs = (items) => `<nav aria-label="Brödsmulor"><ol class="crumbs">${items.map(([t, h], i) => `<li>${h ? `<a href="#${h}">${esc(t)}</a>` : i === items.length - 1 ? `<span aria-current="page">${esc(t)}</span>` : esc(t)}</li>`).join("")}</ol></nav>`;
   RQ.crumbs = crumbs;
   const head = (kicker, title, lead, extra = "") => `<header class="page-head wrap">${kicker}<h1 class="h1">${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ""}${extra}</header>`;
   RQ.head = head;
@@ -296,7 +296,7 @@
       html: `<section class="wrap pcr">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
         <section class="wrap pdp">
           <div class="pg">
-            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
+            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
             ${isLamp ? `<button type="button" class="lightswitch" id="lightSw" aria-pressed="true" hidden><i></i><span>Lampan är tänd</span></button>` : ""}
             <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
           </div>
@@ -1116,7 +1116,7 @@
   $("#ckAll").addEventListener("click", () => { S.setConsent({ stats: true, mkt: true }); $("#cookie").classList.remove("show"); });
   $("#ckNeed").addEventListener("click", () => { S.setConsent({ stats: false, mkt: false }); $("#cookie").classList.remove("show"); });
   $("#ckSave").addEventListener("click", () => { S.setConsent({ stats: $("#ckStats").checked, mkt: $("#ckMkt").checked }); $("#cookie").classList.remove("show"); });
-  $("#ckMore").addEventListener("click", () => { $("#cookie .opts").hidden = !$("#cookie .opts").hidden; });
+  $("#ckMore").addEventListener("click", (e) => { const o = $("#cookie .opts"); o.hidden = !o.hidden; e.currentTarget.setAttribute("aria-expanded", !o.hidden); });
 
 
   // add-to-cart feedback: the button itself confirms, the cart count bumps
@@ -1278,7 +1278,7 @@
   // product tabs: Om, Mått och skötsel, Frakt och retur (arrow keys move between them)
   const tabTo = (bar, t) => { $$("[role=tab]", bar).forEach((x) => { const on = x === t; x.setAttribute("aria-selected", on); x.tabIndex = on ? 0 : -1; const pnl = document.getElementById(x.getAttribute("aria-controls")); if (pnl) pnl.hidden = !on; }); };
   document.addEventListener("click", (e) => { const t = e.target.closest("[data-ptabs] [role=tab]"); if (t) tabTo(t.parentNode, t); });
-  document.addEventListener("keydown", (e) => { const t = e.target.closest && e.target.closest("[data-ptabs] [role=tab]"); if (!t || !/^Arrow(Left|Right)$/.test(e.key)) return; const all = $$("[role=tab]", t.parentNode), i = all.indexOf(t), n = all[(i + (e.key === "ArrowRight" ? 1 : all.length - 1)) % all.length]; tabTo(t.parentNode, n); n.focus(); e.preventDefault(); });
+  document.addEventListener("keydown", (e) => { const t = e.target.closest && e.target.closest("[data-ptabs] [role=tab]"); if (!t || !/^(Arrow(Left|Right)|Home|End)$/.test(e.key)) return; const all = $$("[role=tab]", t.parentNode), i = all.indexOf(t), n = e.key === "Home" ? all[0] : e.key === "End" ? all[all.length - 1] : all[(i + (e.key === "ArrowRight" ? 1 : all.length - 1)) % all.length]; tabTo(t.parentNode, n); n.focus(); e.preventDefault(); });
 
   // pages with nothing to show yet stay out of the menus: Erbjudanden until a product is on sale, Nyheter until RQ_CONFIG.showNews
   const showFlags = () => { const c = window.RQ_CONFIG || {}, h = document.documentElement; h.toggleAttribute("data-no-offers", !RQ.PRODUCTS.some((p) => p.was)); h.toggleAttribute("data-no-news", !c.showNews); };

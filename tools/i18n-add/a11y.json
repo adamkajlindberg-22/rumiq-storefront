@@ -24,5 +24,10 @@
  "Huvudmeny": "Main menu",
  "Antal: {0}": "Quantity: {0}",
  "Skriv ordernumret, till exempel TEST-1001.": "Enter the order number, for example TEST-1001.",
- "Skriv e-postadressen du använde vid köpet.": "Enter the email address you used for the purchase."
+ "Skriv e-postadressen du använde vid köpet.": "Enter the email address you used for the purchase.",
+ "Flyttad.": "Moved.",
+ "Storlek {0} %.": "Size {0} %.",
+ "{PA} är borttagen.": "{PA} is removed.",
+ "Lägg till {PA} i varukorgen": "Add {PA} to cart",
+ "Brödsmulor": "Breadcrumb"
 }
