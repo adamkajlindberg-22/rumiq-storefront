@@ -127,7 +127,7 @@
     const results = (list) => (list.length ? RQ.grid(list, "three", true) : "") + tail(list);
     const first = listFor(st.sort);
     return {
-      html: `${head(crumbs(trail), esc(title), lead, banner ? `<div class="banner-img reveal"><img src="${banner}" alt="" loading="eager" decoding="async" width="1600" height="900"></div>` : "").replace('class="page-head wrap"', 'class="page-head wrap shop-head"')}
+      html: `${head(crumbs(trail), esc(title), lead, banner ? `<div class="banner-img reveal"><img src="${banner}" alt="" loading="eager" decoding="async" width="1600" height="893"></div>` : "").replace('class="page-head wrap"', 'class="page-head wrap shop-head"')}
         ${extraTop}
         <section class="wrap" style="padding-bottom:${extraBottom ? "3rem" : "6rem"}">
           <div class="shop${groups ? "" : " nofilters"}">
@@ -200,7 +200,7 @@
   };
   V.rumindex = () => ({
     html: `${head(crumbs([["Hem", "hem"], ["Efter rum"]]), "Handla efter rum", "Välj ett rum och se idéer, tips och produkter som passar där.")}
-      <section class="wrap" style="padding-bottom:6rem"><div class="tiles wide stagger" data-watch>${RQ.ROOMS.map((r) => `<a class="tile" href="#rum-${r.id}"><img src="assets/img/rum/${r.id}-900.webp" srcset="assets/img/rum/${r.id}-900.webp 900w, assets/img/rum/${r.id}-1600.webp 1600w" sizes="(max-width:640px) 111vw, 56vw" alt="" loading="lazy" decoding="async" width="1600" height="900"><span>${esc(r.name)}<small>${esc(r.lead)}</small></span></a>`).join("")}<a class="tile" href="#inspiration" style="background:#22252A"><span>Rumsinspiration<small>Idéer för varje rum, samlade på ett ställe.</small></span></a></div></section>`,
+      <section class="wrap" style="padding-bottom:6rem"><div class="tiles wide stagger" data-watch>${RQ.ROOMS.map((r) => `<a class="tile" href="#rum-${r.id}"><img src="assets/img/rum/${r.id}-900.webp" srcset="assets/img/rum/${r.id}-900.webp 900w, assets/img/rum/${r.id}-1600.webp 1600w" sizes="(max-width:640px) 111vw, 56vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span>${esc(r.name)}<small>${esc(r.lead)}</small></span></a>`).join("")}<a class="tile" href="#inspiration" style="background:#22252A"><span>Rumsinspiration<small>Idéer för varje rum, samlade på ett ställe.</small></span></a></div></section>`,
   });
   V.rum = (id) => {
     const r = RQ.roomById(id); if (!r) return null;
@@ -223,7 +223,7 @@
   const COL_IMG = { "det-organiserade-hemmet": "forradsburkar-glas-ek-3-pack", "skandinaviskt-hemmaliv": "rum", "vardagens-favoriter": "svamp-uppladdningsbar-lampa" };
   const COL_BANNER = { "det-organiserade-hemmet": "assets/img/rum/hall-1600.webp", "vardagens-favoriter": "assets/img/rum/kok-1600.webp" };
   const colImg = (id, w) => (COL_IMG[id] === "rum" ? `assets/img/rum-${w >= 1600 ? 1600 : 900}.webp` : `assets/img/p/${COL_IMG[id]}-${w >= 1600 ? 900 : 600}.webp`);
-  const colCards = RQ.colCards = () => `<div class="cols3 stagger" data-watch>${RQ.COLLECTIONS.map((c) => `<a class="colcard" href="#kollektion-${c.id}"><div class="im"><img src="${colImg(c.id, 900)}" alt="" loading="lazy"></div><div class="tx"><span class="eyebrow">${S.list({ col: c.id }).length} produkter</span><h3 style="margin-top:.5rem">${esc(c.name)}</h3><p>${esc(c.lead)}</p></div></a>`).join("")}</div>`;
+  const colCards = RQ.colCards = () => `<div class="cols3 stagger" data-watch>${RQ.COLLECTIONS.map((c) => `<a class="colcard" href="#kollektion-${c.id}"><div class="im"><img src="${colImg(c.id, 900)}" alt="" loading="lazy" decoding="async" width="900" height="${COL_IMG[c.id] === "rum" ? 503 : 1125}"></div><div class="tx"><span class="eyebrow">${S.list({ col: c.id }).length} produkter</span><h3 style="margin-top:.5rem">${esc(c.name)}</h3><p>${esc(c.lead)}</p></div></a>`).join("")}</div>`;
   RQ.colCards = colCards;
 
   /* ---------------- product page */
@@ -482,9 +482,9 @@
     };
   };
   V.inspiration = () => ({ html: `${head(crumbs([["Hem", "hem"], ["Rumsinspiration"]]), "Rumsinspiration", "Rum att drömma sig bort i, och idéer att ta med hem. Bilderna är illustrationer.")}
-      <section class="wrap"><div class="tiles stagger" data-watch>${RQ.ROOMS.map((r, i) => `<a class="tile ${i === 0 ? "big" : ""}" href="#rum-${r.id}"><img src="assets/img/rum/${r.id}-${i === 0 ? 1600 : 900}.webp" alt="" loading="lazy"><span>${esc(r.name)}<small>${esc(r.lead)}</small></span></a>`).join("")}</div></section>
+      <section class="wrap"><div class="tiles stagger" data-watch>${RQ.ROOMS.map((r, i) => `<a class="tile ${i === 0 ? "big" : ""}" href="#rum-${r.id}"><img src="assets/img/rum/${r.id}-${i === 0 ? 1600 : 900}.webp" srcset="assets/img/rum/${r.id}-900.webp 900w, assets/img/rum/${r.id}-1600.webp 1600w" sizes="${i === 0 ? "(max-width:640px) 100vw, 60vw" : "(max-width:640px) 111vw, 56vw"}" alt="" loading="${i < 2 ? "eager" : "lazy"}" decoding="async" width="1600" height="893"><span>${esc(r.name)}<small>${esc(r.lead)}</small></span></a>`).join("")}</div></section>
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Magasin</span><h2 class="h2">Idéer för ditt hem</h2></div><a class="link arrow" href="#magasin">Alla artiklar</a></div><div class="mag-grid">${RQ.ARTICLES.slice(0, 3).map(RQ.magCard).join("")}</div></div></section>
-      <section class="sec kalk"><div class="wrap split"><div><span class="eyebrow">Mitt rum</span><h2 class="h2" style="margin-top:.9rem">Fri inredningsidé för ditt eget rum</h2><p class="lead" style="margin-top:1rem">Lägg till ett foto av ditt rum och prova produkterna där, eller svep fram en riktning.</p><div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-rum">Se det i ditt rum</a><a class="btn ghost" href="#svep">Svep fram din stil</a></div></div><div class="im"><img src="assets/img/rum/sovrum-900.webp" alt="" loading="lazy"></div></div></section>` });
+      <section class="sec kalk"><div class="wrap split"><div><span class="eyebrow">Mitt rum</span><h2 class="h2" style="margin-top:.9rem">Fri inredningsidé för ditt eget rum</h2><p class="lead" style="margin-top:1rem">Lägg till ett foto av ditt rum och prova produkterna där, eller svep fram en riktning.</p><div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-rum">Se det i ditt rum</a><a class="btn ghost" href="#svep">Svep fram din stil</a></div></div><div class="im"><img src="assets/img/rum/sovrum-900.webp" srcset="assets/img/rum/sovrum-900.webp 900w, assets/img/rum/sovrum-1600.webp 1600w" sizes="(max-width:900px) 100vw, 50vw" alt="" loading="lazy" decoding="async" width="1600" height="893"></div></div></section>` });
 
   /* ---------------- info + legal */
   const infoNav = (active) => `<ul class="sidenav"><li><h4>Kundservice</h4></li>${[["kontakt", "Kontakt"], ["onska", "Önska en produkt"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}"${h === active ? ' aria-current="page"' : ""}>${t}</a></li>`).join("")}
@@ -769,6 +769,22 @@
     b.parentElement.addEventListener("mouseenter", () => matchMedia("(hover:hover)").matches && open());
   });
   $("#nav").addEventListener("mouseleave", () => matchMedia("(hover:hover)").matches && closeMega());
+  /* keyboard: Escape closes the panel and returns to its button, tabbing out of the panel closes it */
+  megaBtns.forEach((b) => { const li = b.parentElement;
+    li.addEventListener("keydown", (e) => { if (e.key === "Escape" && b.getAttribute("aria-expanded") === "true") { e.stopPropagation(); closeMega(); b.focus(); } });
+    li.addEventListener("focusout", (e) => { if (b.getAttribute("aria-expanded") === "true" && e.relatedTarget && !li.contains(e.relatedTarget)) closeMega(); });
+  });
+  /* the menu shows where you are, and every icon in the bar says what it is when the mouse rests on it */
+  const NAV_AT = [[/^(upptack|svep|magasin|artikel-|inspiration|hitta-ratt|onska|for-dig)/, 0], [/^(butik|kategori-|produkt-|rum$|rum-|nyheter|favoriter|erbjudanden|kollektion-|presentkort)/, 1], [/^(looks$|look-|kollektioner)/, 2]];
+  const navMark = () => {
+    const r = location.hash.slice(1) || location.pathname.replace(/\/$/, "").split("/").pop() || "", hit = NAV_AT.find(([re]) => re.test(r));
+    $$(".menu > li > a, .menu > li > button").forEach((el, i) => { const on = !!hit && hit[1] === i; el.classList.toggle("active", on); if (el.tagName === "A") { if (on) el.setAttribute("aria-current", "page"); else el.removeAttribute("aria-current"); } });
+    $$(".tools > a[aria-label], .tools > button[aria-label], #lampBtn").forEach((el) => { const t = el.getAttribute("aria-label"); if (el.title !== t) el.title = t; });
+    const rp = $(".roompill"); if (rp && !rp.title) rp.title = "Mitt rum";
+  };
+  RQ.navMark = navMark;
+  if (window.MutationObserver) new MutationObserver(navMark).observe($("#view"), { childList: true });
+  document.addEventListener("DOMContentLoaded", navMark);
 
   // global clicks
   document.addEventListener("click", (e) => {
