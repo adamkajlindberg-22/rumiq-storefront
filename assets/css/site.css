@@ -1440,6 +1440,8 @@ html.sheet-lock{overflow:hidden}
 /* ---------------------------------------------------------------- Looks */
 .looks-row{display:grid;grid-auto-flow:column;grid-auto-columns:min(22rem,82vw);gap:1.2rem;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:1rem;margin:0 calc(-1*var(--gutter));padding-left:var(--gutter);padding-right:var(--gutter);scrollbar-width:thin;scroll-padding-left:var(--gutter)}
 .looks-row > *{scroll-snap-align:start}
+/* on a desktop a row without arrows (the look page, Upptäck) becomes a plain grid: no card is cut off and nothing needs sideways scrolling */
+@media (min-width:1101px){.looks-row:not(#homeLooks){grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin:0;padding:0}.looks-row:not(#homeLooks) > :nth-child(n+7){display:none}} /* two full rows; Alla looks is one click away */
 .looks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1.6rem}
 .lc{display:flex;flex-direction:column;background:var(--paper);border-radius:var(--r-img);overflow:hidden;border:1px solid var(--line2);transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
 .lc:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
