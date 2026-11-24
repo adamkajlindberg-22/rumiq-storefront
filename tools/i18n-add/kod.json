@@ -1,0 +1,12 @@
+{
+  "Något gick snett": "Something went wrong",
+  "Sidan kunde inte visas": "The page could not be shown",
+  "Sidan kunde inte visas · RumIQ": "The page could not be shown · RumIQ",
+  "Prova att ladda om sidan. Hjälper inte det kan du rensa det som är sparat i den här webbläsaren. Då töms varukorgen och det du har sparat.": "Try reloading the page. If that does not help you can clear what is saved in this browser. That empties the cart and what you have saved.",
+  "Ladda om sidan": "Reload the page",
+  "Rensa sparat och ladda om": "Clear saved data and reload",
+  "Sidan kunde inte laddas. Kontrollera anslutningen.": "The page could not be loaded. Check your connection.",
+  "Försök igen": "Try again",
+  "Webbläsarens lagring är full, så det här sparas inte. Ta bort ett sparat rum i": "Your browser's storage is full, so this will not be saved. Remove a saved room in",
+  "Butiken behöver JavaScript för varukorg, sök och Mitt rum. Slå på det i webbläsaren, så fungerar allt.": "The shop needs JavaScript for the cart, search and My room. Switch it on in your browser and everything works."
+}

@@ -425,86 +425,232 @@
     [/^presentguiden$/, () => V.findRight("present")], [/^mitt-hem$/, () => V.myHome()],
     [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
   ];
-  let current = null, cleanup = null, firstRun = true;
+  let current = null, cleanup = null, firstRun = true, drawn = 0;
   let routing = null; // the route being drawn, until render() has run: popstate and hashchange both report one navigation
+  let popNav = false; // the navigation in progress is Back or Forward: return to where the customer was
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function render(raw) {
+  const dec = (s) => { try { return decodeURIComponent(s); } catch (e) { return s; } }; // a stray "%" in an address must never stop the script
+  const isHomeRaw = (raw) => /^(hem)?$/.test(raw);
+
+  /* Where the customer was on each page, so Back returns there instead of to the top. */
+  try { history.scrollRestoration = "manual"; } catch (e) {}
+  const scrolls = new Map();
+  let settle = 0;
+  const scrollBack = (y) => {
+    const id = ++settle; let n = 0;
+    const stop = () => { settle++; };
+    ["wheel", "touchstart", "keydown", "pointerdown"].forEach((t) => window.addEventListener(t, stop, { once: true, passive: true }));
+    // the page may still grow above this point (a toolbar, pictures): hold the place for a second, until the customer moves
+    const step = () => { if (id !== settle) return; if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); if (n++ < 14) setTimeout(step, 70); };
+    step();
+  };
+
+  /* One polite voice for route changes: screen readers hear the new page's name, and the keyboard starts at its top. */
+  const live = document.createElement("p");
+  live.className = "sr"; live.id = "routeLive"; live.setAttribute("role", "status"); live.setAttribute("aria-live", "polite");
+  document.body.appendChild(live);
+
+  /* The page head follows the view: title, description, canonical address and the sharing tags.
+     RQ.META[route] = { title, description, image } wins when the build provides it; otherwise the view's own
+     title and lead are used. Routes that show another page point their canonical address at that page. */
+  const CANON = { studio: "mitt-rum", "studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", kollektioner: "looks", ideer: "onska", rosta: "onska", jamfor: "mitt-hem", presentguiden: "hitta-ratt-present", "studio-sok": "hitta-ratt-ord", "studio-hemurval": "hitta-ratt" };
+  const HOME_TITLE = "RumIQ · Skandinavisk inredning och smarta verktyg för hemmet";
+  const metaEl = (sel) => document.head.querySelector(sel);
+  const HEAD0 = { desc: (metaEl('meta[name="description"]') || {}).content || "", image: (metaEl('meta[property="og:image"]') || {}).content || "" };
+  let siteRoot = null; // the public address of the start page, read once from the canonical link the page came with
+  const publicRoot = () => {
+    if (siteRoot) return siteRoot;
+    const c = metaEl('link[rel="canonical"]'); let u;
+    try { u = new URL((c && c.getAttribute("href")) || SITE.href, SITE.href); } catch (e) { u = new URL(SITE.href); }
+    const m = /^(.*\/)([^/]+)\/$/.exec(u.pathname);
+    if (m && isRoute(dec(m[2]))) u.pathname = m[1];
+    u.search = ""; u.hash = "";
+    return (siteRoot = u.href);
+  };
+  const setMeta = (sel, attr, val) => { const el = metaEl(sel); if (el && val != null && el.getAttribute(attr) !== val) el.setAttribute(attr, val); };
+  function paintHead(raw, view, root, found) {
+    const M = (RQ.META && RQ.META[raw]) || {};
+    const isHome = isHomeRaw(raw), h1 = !view.title && !isHome && root.querySelector("h1");
+    const title = M.title || view.title || (isHome ? HOME_TITLE : h1 ? `${h1.textContent.trim().replace(/\s+/g, " ")} · RumIQ` : "RumIQ");
+    document.title = title;
+    const lead = !isHome && root.querySelector(".lead, .short");
+    const text = (M.description || view.description || (lead ? lead.textContent.trim().replace(/\s+/g, " ") : "") || HEAD0.desc);
+    const desc = text.length > 158 ? text.slice(0, 155).replace(/\s+\S*$/, "") + "…" : text;
+    const to = CANON[raw] || (/^studio-kombinera-/.test(raw) ? "mitt-rum" : raw);
+    const url = found && pathable(to) ? new URL(isHomeRaw(to) ? "./" : encodeURI(to) + "/", publicRoot()).href : publicRoot();
+    const pm = /^produkt-(.+)$/.exec(raw), prod = pm && RQ.byHandle(pm[1]);
+    const image = M.image || view.image || (prod ? new URL(RQ.img(prod, 900), publicRoot()).href : HEAD0.image);
+    setMeta('link[rel="canonical"]', "href", url);
+    setMeta('meta[name="description"]', "content", desc);
+    setMeta('meta[property="og:title"]', "content", title);
+    setMeta('meta[property="og:description"]', "content", desc);
+    setMeta('meta[property="og:url"]', "content", url);
+    setMeta('meta[property="og:image"]', "content", image);
+    return title;
+  }
+
+  /* When a page cannot be drawn (a value kept in the browser that no longer fits, or a fault of ours), the
+     customer gets a way forward instead of a page whose buttons do nothing. */
+  V.crashed = () => ({
+    title: "Sidan kunde inte visas · RumIQ", crashed: true,
+    html: `${head(`<span class="eyebrow">Något gick snett</span>`, "Sidan kunde inte visas", "Prova att ladda om sidan. Hjälper inte det kan du rensa det som är sparat i den här webbläsaren. Då töms varukorgen och det du har sparat.")}
+      <section class="wrap" style="padding-bottom:6rem"><div class="ctrl-row"><button class="btn" type="button" id="crashReload">Ladda om sidan</button><button class="btn ghost" type="button" id="crashClear">Rensa sparat och ladda om</button><a class="btn ghost" href="./">Till startsidan</a></div></section>`,
+    mount(root) {
+      $("#crashReload", root).addEventListener("click", () => location.reload());
+      $("#crashClear", root).addEventListener("click", () => { try { S.clearAll(); } catch (e) {} location.reload(); });
+    },
+  });
+  const lookup = (raw) => {
     let view = null;
     for (const [re, fn] of ROUTES) { const m = raw.match(re); if (m) { view = fn(m); break; } }
     // in-page anchors such as #faq-2 fall back to their page
     if (!view && /^faq-\d+$/.test(raw)) view = V.faq();
-    if (!view) view = V.notfound();
+    return view;
+  };
+  function render(raw) {
+    let view = null, found = true;
+    try { view = lookup(raw); } catch (e) { console.error(e); view = V.crashed(); }
+    if (!view) { view = V.notfound(); found = false; }
     if (view.lazy) { // a tool that has not loaded yet: keep what is on screen (the prerendered page), load, then draw
       document.documentElement.classList.add("loading-tools");
-      RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); else if (routing === raw) routing = null; }, () => { routing = null; document.documentElement.classList.remove("loading-tools"); RQ.toast("Sidan kunde inte laddas. Kontrollera anslutningen och försök igen."); });
+      RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); else if (routing === raw) routing = null; }, () => {
+        routing = null; document.documentElement.classList.remove("loading-tools");
+        // the address goes back to the page that is still on screen; the customer can try again from the message
+        if (current != null && currentRaw() === raw) { try { history.replaceState(null, "", pathFor(current)); } catch (e) {} }
+        RQ.toast(`Sidan kunde inte laddas. Kontrollera anslutningen. <a href="${esc(hrefFor(raw))}">Försök igen</a>`);
+      });
       return;
     }
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
     const root = $("#view");
-    const isHome = /^(hem)?$/.test(raw);
-    root.className = "view" + (isHome ? " home" : "");
+    const isHome = isHomeRaw(raw), moved = current !== raw, first = !drawn++;
+    // the first draw replaces the prerendered page with the same pictures: they must not fade out and in again
+    root.className = "view" + (isHome ? " home" : "") + (first ? " first" : "");
     document.body.classList.toggle("on-home", isHome);
     document.body.classList.toggle("on-product", /^produkt-/.test(raw));
     document.body.classList.toggle("on-checkout", /^kassa$/.test(raw));
     root.innerHTML = view.html;
-    const h1 = !view.title && !isHome && root.querySelector("h1");
-    document.title = view.title || (isHome ? "RumIQ · Skandinavisk inredning och smarta verktyg för hemmet" : h1 ? `${h1.textContent.trim().replace(/\s+/g, " ")} · RumIQ` : "RumIQ");
-    if (current !== raw) window.scrollTo(0, 0);
+    toPathLinks(root);
+    const title = paintHead(raw, view, root, found && !view.crashed);
+    const backTo = moved && popNav ? scrolls.get(raw) || 0 : 0;
+    if (moved) { settle++; if (!backTo) window.scrollTo(0, 0); }
+    popNav = false;
     current = raw; routing = null;
     // #view outlives every page: whatever a page listens for on it is taken away again when the page leaves
     const offs = [], add = root.addEventListener.bind(root);
     root.addEventListener = (t, f, o) => { offs.push(() => root.removeEventListener(t, f, o)); add(t, f, o); };
     let un = null;
-    try { un = view.mount ? view.mount(root) : null; } finally { delete root.addEventListener; }
+    try { un = view.mount ? view.mount(root) : null; }
+    catch (e) { // the page was written out but could not be started: show the way forward instead of dead buttons
+      console.error(e);
+      if (!view.crashed) { const c = V.crashed(); root.innerHTML = c.html; toPathLinks(root); document.title = c.title; try { c.mount(root); } catch (x) {} }
+    } finally { delete root.addEventListener; }
     if (RQ.mountBav && root.querySelector(".bav")) { const b = RQ.mountBav(root); offs.push(() => b && b()); }
     cleanup = () => { offs.forEach((f) => { try { f(); } catch (e) {} }); if (typeof un === "function") un(); };
     RQ.watch(root);
     RQ.paintShell();
     RQ.markImages(root);
-    $$(".menu a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + raw));
-    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden|jamfor)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista)$/ };
+    $$(".menu a").forEach((a) => a.classList.toggle("active", rawOf(a) === raw));
+    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
     $$("[data-dock]").forEach((a) => a.classList.toggle("on", !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw))));
     const anchor = /^faq-\d+$/.test(raw) && document.getElementById(raw);
     if (anchor) anchor.scrollIntoView();
+    if (backTo) scrollBack(backTo); // after the page has started, so its own parts are in place
     RQ.navCheck && RQ.navCheck();
+    if (moved && !first) { // a new page: the keyboard and the screen reader start at its top (unless the page chose a field itself)
+      if (!root.contains(document.activeElement)) { try { root.focus({ preventScroll: true }); } catch (e) {} }
+      live.textContent = ""; setTimeout(() => { live.textContent = (document.title || title).replace(/\s*·\s*RumIQ.*$/, ""); }, 60);
+    }
+    if (first) setTimeout(() => root.classList.remove("first"), 1200);
   }
   /* Real addresses. Every view has its own path (rumiq.se/produkt-glob-bordslampa-opalglas/) that Google can
-     index; the build script writes a prerendered page for each. Links and code inside the site still say
-     "#route": a click or a hash change is turned into the path form here, without reloading the page.
-     <base href> in every page points at the site root, so relative asset paths keep working. */
+     index; the build script writes a prerendered page for each. Every internal link on the page is that real
+     path ("butik/"), so search engines and "open in new tab" follow it; a normal click is caught here and the
+     view changes without a reload. Templates may still write "#route": those links are turned into paths as
+     they enter the page, and "#route" addresses keep working as an alias.
+     <base href> in every page points at the site root, so relative paths work from every page. */
   const SITE = new URL(".", document.baseURI);
   const isRoute = (raw) => /^faq-\d+$/.test(raw) || ROUTES.some(([re]) => re.test(raw));
-  const pathFor = (raw) => new URL(/^(hem)?$/.test(raw) ? "./" : encodeURIComponent(raw) + "/", SITE).pathname;
-  const currentRaw = () => {
-    const h = decodeURIComponent(location.hash.replace(/^#/, ""));
-    if (h && !h.includes("=")) return h; // "#access_token=…" from a sign-in belongs to the auth client
-    let p = location.pathname; const rp = SITE.pathname;
-    if (p.startsWith(rp)) p = p.slice(rp.length);
-    return decodeURIComponent(p.replace(/index\.html$/, "").replace(/\/+$/, ""));
+  // routes whose address carries an answer or an anchor stay "#route": they have no page of their own on the server
+  const pathable = (raw) => !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw) && !/^studio-kombinera-/.test(raw);
+  const hrefFor = (raw) => (isHomeRaw(raw) ? "./" : pathable(raw) ? encodeURI(raw) + "/" : "#" + raw);
+  const pathFor = (raw) => new URL(isHomeRaw(raw) ? "./" : encodeURIComponent(raw) + "/", SITE).pathname;
+  // "#Butik" and "#butik/" mean "#butik"; the start page has one name, "" ("#hem" is the same page)
+  const tidy = (raw) => { raw = raw.replace(/\/+$/, ""); if (!isRoute(raw) && isRoute(raw.toLowerCase())) raw = raw.toLowerCase(); return raw === "hem" ? "" : raw; };
+  const rawOfPath = (pathname) => {
+    const rp = SITE.pathname; if (!pathname.startsWith(rp)) return null;
+    return dec(pathname.slice(rp.length).replace(/index\.html$/, "").replace(/\/+$/, ""));
   };
-  RQ.pathFor = pathFor; RQ.isRoute = isRoute; RQ.currentRoute = () => current;
-  // prerendered pages carry path links ("butik/") for search engines; inside the running site they are "#butik"
-  const toHashLinks = (root) => $$("a[href]", root).forEach((a) => { const h = a.getAttribute("href"); const m = /^(?:\.\/|([a-z0-9-]+)\/)$/.exec(h); if (m) a.setAttribute("href", "#" + (m[1] || "hem")); });
-  RQ.toHashLinks = toHashLinks;
-  toHashLinks(document);
+  const currentRaw = () => {
+    const h = dec(location.hash.replace(/^#/, ""));
+    if (h && !h.includes("=")) return tidy(h); // "#access_token=…" from a sign-in belongs to the auth client
+    const p = rawOfPath(location.pathname);
+    return tidy(p == null ? dec(location.pathname.replace(/index\.html$/, "").replace(/\/+$/, "")) : p);
+  };
+  // the route a link leads to, or null when it leaves the shop (a file, another site, an anchor that is no route)
+  const rawOf = (a) => {
+    const h = a.getAttribute("href") || "";
+    if (h[0] === "#") { const raw = tidy(dec(h.slice(1))); return h.length > 1 && (isHomeRaw(raw) || isRoute(raw)) ? raw : null; }
+    let u; try { u = new URL(a.href); } catch (e) { return null; }
+    if (u.origin !== SITE.origin || (u.hash && u.hash.length > 1)) return null;
+    const raw = rawOfPath(u.pathname); if (raw == null) return null;
+    return raw === "" || isRoute(tidy(raw)) ? tidy(raw) : null;
+  };
+  RQ.pathFor = pathFor; RQ.hrefFor = hrefFor; RQ.isRoute = isRoute; RQ.currentRoute = () => current;
+  // links written as "#butik" become "butik/" as they enter the page (the quick-view sheet keeps its own, see flow.js)
+  const toPathLinks = (root) => {
+    if (!root || root.nodeType !== 1) return;
+    const list = root.matches && root.matches('a[href^="#"]') ? [root] : [];
+    root.querySelectorAll && list.push(...root.querySelectorAll('a[href^="#"]'));
+    list.forEach((a) => {
+      const h = a.getAttribute("href"); if (h.length < 2 || a.closest("#sheet")) return;
+      const raw = tidy(dec(h.slice(1)));
+      if ((isHomeRaw(raw) || isRoute(raw)) && pathable(raw)) a.setAttribute("href", hrefFor(raw));
+    });
+  };
+  RQ.toPathLinks = toPathLinks; RQ.toHashLinks = toPathLinks; // the old name is still called by the stylist
+  toPathLinks(document.body);
+  if ("MutationObserver" in window) new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach(toPathLinks))).observe(document.body, { childList: true, subtree: true });
+  // go to a route from code: RQ.go("kassa")
+  RQ.go = (raw) => {
+    raw = tidy(String(raw || "").replace(/^#/, ""));
+    if (raw === current && !routing) return;
+    if (!pathable(raw)) { location.hash = "#" + raw; return; }
+    try { history.pushState(null, "", pathFor(raw)); } catch (e) { location.hash = "#" + raw; return; }
+    RQ.router();
+  };
   document.addEventListener("click", (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const a = e.target.closest("a[href]"); if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
-    const h = a.getAttribute("href"); if (h[0] !== "#" || h.length < 2) return;
+    const h = a.getAttribute("href"); if (h === "#" || h === "") return;
     if (a.closest("#sheet")) return; // the quick-view sheet steps its own history entry back first (flow.js)
+    const raw = rawOf(a);
+    if (raw != null) {
+      e.preventDefault();
+      if (a.dataset.after) RQ.ss.set("rumiq-after-login", "#" + a.dataset.after);
+      if (h[0] !== "#" && RQ.closeAll) RQ.closeAll(); // "#route" links are closed by the shell's own click handler
+      RQ.go(raw); return;
+    }
+    if (h[0] !== "#") return; // a file, a mail address or another site: the browser takes it
     e.preventDefault();
-    const raw = decodeURIComponent(h.slice(1));
-    if (isRoute(raw)) { if (raw !== current) location.hash = h; return; }
-    const el = document.getElementById(raw);
+    const id = dec(h.slice(1)), el = document.getElementById(id);
     if (el) { el.scrollIntoView({ block: "start" }); if (el.matches("main,section,[tabindex]")) el.focus({ preventScroll: true }); }
     else location.hash = h;
   }, true);
-  const onNav = () => { const raw = currentRaw(); if (raw === current) { routing = null; return; } if (raw !== routing) RQ.router(); };
+  const onNav = (e) => {
+    const raw = currentRaw();
+    if (raw === current) { routing = null; return; }
+    if (raw === routing) return;
+    popNav = !!e && e.type === "popstate" && !location.hash; // Back or Forward to a page with a real address
+    RQ.router();
+  };
   window.addEventListener("popstate", onNav);
   const COARSE = matchMedia("(pointer: coarse), (max-width: 900px)").matches;
   RQ.router = () => {
     const raw = currentRaw(); routing = raw;
-    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw) && !/^studio-kombinera-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
+    if (current != null && raw !== current) scrolls.set(current, window.scrollY);
+    // "#butik" is an alias: the address bar gets the real path (what follows "?" stays, a sign-in answer after "#" is left alone)
+    if (location.hash && !location.hash.includes("=") && isRoute(raw) && pathable(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw) + location.search); } catch (e) {} }
     // phones and tablets: no view transition. Taking a picture of the whole page before every change costs more
     // than the fade is worth there; the new view gets a short fade instead.
     if (firstRun || !document.startViewTransition || reduced() || raw === current || COARSE) {
@@ -518,7 +664,7 @@
   };
   // a tapped product image morphs into the product page
   document.addEventListener("click", (e) => {
-    const a = e.target.closest(".card a[href^='#produkt-']"); if (!a) return;
+    const a = e.target.closest(".card a[href*='produkt-']"); if (!a) return;
     const img = $(".ph img", a.closest(".card")); if (img) img.style.viewTransitionName = "pimg";
   }, true);
 
