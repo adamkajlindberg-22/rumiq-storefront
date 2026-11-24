@@ -93,7 +93,7 @@ a.eyebrow:hover{color:var(--ink)}
 .link{color:var(--ink);text-decoration:none;font-weight:500;background:linear-gradient(currentColor,currentColor) 0 100%/100% 1px no-repeat;padding-bottom:1px;transition:background-size .45s var(--ease)}
 .link:hover{background-size:0 1px;background-position:100% 100%}
 .arrow::after{content:none}
-.tlink{background:none;border:0;padding:0;color:var(--ink);font-weight:500;text-decoration:underline;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent);transition:text-decoration-color .3s}
+.tlink{background:none;border:0;padding:0;min-height:1.5rem;color:var(--ink);font-weight:500;text-decoration:underline;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent);transition:text-decoration-color .3s}
 .tlink:hover{text-decoration-color:var(--ink)}
 .iconbtn{display:inline-grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%;border:0;background:transparent;position:relative;transition:background .3s;text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
 .iconbtn:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
