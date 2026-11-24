@@ -54,5 +54,6 @@ window.RQ_CONFIG = {
   showNews: false, // true once there are real new arrivals; until then Nyheter is hidden from the menus
   lookDiscount: 0.1,
   freeShippingFrom: 799,
+  shipping: { pickup: 49, home: 89 }, // kr to pickup point/parcel locker and to the door (examples until the carrier is chosen)
   payments: [], // e.g. ["Kort", "Klarna", "Swish", "Apple Pay", "Google Pay"] once they are switched on in Shopify
 };

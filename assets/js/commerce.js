@@ -198,11 +198,11 @@
     clearCart() { S._cart = []; store.set("rumiq-cart", S._cart); emit("cart"); },
 
     /* Shipping options are examples until suppliers are confirmed. */
-    SHIPPING: [
-      { id: "ombud", title: "Hämta hos ombud", eta: "2–5 arbetsdagar", price: 49, free: true },
-      { id: "skap", title: "Paketskåp", eta: "2–5 arbetsdagar", price: 49, free: true, note: "Hämta när det passar dig" },
-      { id: "hem", title: "Hemleverans", eta: "2–5 arbetsdagar", price: 89 },
-    ],
+    SHIPPING: ((sh) => [
+      { id: "ombud", title: "Hämta hos ombud", eta: "2–5 arbetsdagar", price: sh.pickup || 49, free: true },
+      { id: "skap", title: "Paketskåp", eta: "2–5 arbetsdagar", price: sh.pickup || 49, free: true, note: "Hämta när det passar dig" },
+      { id: "hem", title: "Hemleverans", eta: "2–5 arbetsdagar", price: sh.home || 89 },
+    ])((window.RQ_CONFIG || {}).shipping || {}),
     // free to pickup point and parcel locker from RQ_CONFIG.freeShippingFrom (order value after look discounts)
     freeShipping() { const from = (window.RQ_CONFIG || {}).freeShippingFrom; return !!from && S.cartTotalBeforeShipping() >= from; },
     shippingCost(id) { const o = S.SHIPPING.find((s) => s.id === id) || S.SHIPPING[0]; return o.free && S.freeShipping() ? 0 : o.price; },
