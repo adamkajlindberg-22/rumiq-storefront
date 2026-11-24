@@ -51,7 +51,8 @@
   RQ.styleResult = (style, room) => {
     const st = RQ.STYLES[style];
     const picks = RQ.PRODUCTS.filter((p) => p.styles[0] === style || p.styles.includes(style)).filter((p) => !room || p.rooms.includes(room)).slice(0, 6);
-    const tones = [...new Set(picks.flatMap((p) => p.tone))].slice(0, 5);
+    // one swatch per named colour (several shades of white are one "Vit")
+    const tones = picks.flatMap((p) => p.tone).filter((t, i, all) => all.findIndex((x) => toneName(x) === toneName(t)) === i).slice(0, 5);
     return `<div class="result reveal"><span class="eyebrow">Din stil</span><h2>${st.name}</h2><p class="lead" style="margin-top:.6rem">${st.text}</p>
       <div class="palette">${tones.map((t) => `<i style="background:${t}"><span>${esc(toneName(t))}</span></i>`).join("")}</div>
       <p class="small">Färgerna kommer från produkterna som passar stilen.</p></div>

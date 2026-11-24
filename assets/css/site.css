@@ -1440,6 +1440,9 @@ html.sheet-lock{overflow:hidden}
 .sv-b:disabled{opacity:.35;pointer-events:none}
 .sv-b.bag{width:3.2rem;height:3.2rem}
 .sv-card.hint{animation:svHint 2.6s ease-in-out .9s 2}
+/* touch screens: the hint only leans sideways, because there is no swipe upwards there */
+@media (hover:none){.sv-card.hint{animation-name:svHintX}}
+@keyframes svHintX{0%,100%{transform:none}22%{transform:translateX(26px) rotate(3deg)}44%{transform:none}66%{transform:translateX(-26px) rotate(-3deg)}88%{transform:none}}
 @keyframes svHint{0%,100%{transform:none}18%{transform:translateX(26px) rotate(3deg)}36%{transform:none}54%{transform:translateX(-26px) rotate(-3deg)}72%{transform:none}86%{transform:translateY(-22px)}}
 .svep-result{max-width:46rem}
 .sp-grid{display:grid;gap:1.4rem;width:100%;margin-top:.6rem;text-align:left}
@@ -1731,6 +1734,7 @@ body.on-checkout footer.site,body.on-checkout .menu,body.on-checkout .roompill,b
 /* ---------------------------------------------------------------- Svep v8: rooms, together, home taster, nudges */
 .sv-scope{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem}
 .sv-scope .chip{padding:.38rem .75rem;font-size:.85rem}
+@media (min-width:901px){.sv-scope{gap:.3rem}.sv-scope .chip{padding:.36rem .55rem;font-size:.82rem}}
 .sv-scope .chip[aria-current=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .sv-two-link{display:inline-flex;gap:.6rem;align-items:center;margin-top:1rem;color:var(--ink2);text-decoration:none;font-size:.92rem}
 .sv-two-link svg,.sp-two-ic svg,.svh .btn svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
