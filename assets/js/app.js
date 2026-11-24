@@ -722,7 +722,7 @@
   let fullAt = 0;
   S.onChange((w) => {
     if (w !== "full" || Date.now() - fullAt < 6000) return; fullAt = Date.now();
-    setTimeout(() => { if (!S.store.lost) { fullAt = 0; return; } S.store.lost = null; const t = $("#toast"); if (t.classList.contains("show") && /lagring|storage/i.test(t.textContent)) return; RQ.toast('Webbläsarens lagring är full, så det här sparas inte. Ta bort ett sparat rum i <a href="mitt-hem/">Mitt hem</a>.'); }, 0);
+    setTimeout(() => { if (!S.store.lost) { fullAt = 0; return; } S.store.lost = null; const t = $("#toast"); if (t.classList.contains("show") && /lagring|storage/i.test(t.textContent)) return; RQ.toast('Webbläsarens lagring är full, så det här sparas inte. Ta bort något sparat. <a href="#mitt-hem">Mitt hem</a>'); }, 0);
   });
   // day/evening on a room picture: the same room after sunset, so you see how the lamps change it
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-dn]"); if (!b) return; const sec = b.closest(".rm-shop"); const st = sec && $(".hs-stage", sec); if (!st) return; st.classList.toggle("eve", b.dataset.dn === "kvall"); $$("[data-dn]", sec).forEach((x) => x.setAttribute("aria-pressed", x === b)); });

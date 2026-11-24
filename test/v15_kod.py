@@ -270,6 +270,36 @@ with sync_playwright() as p:
     ok(not [f for f in ("assets/img/p/kabelbox-vit-600.webp", "assets/img/p/orbit-tradlost-laddstall-600.webp", "assets/img/p/rund-vaggspegel-ek-600.webp", "assets/3d/kabelbox-vit.glb", "assets/brand/r-champagne.webp") if (ROOT / f).exists()], "[files] pictures of products that left the range are gone")
     ok(sum(1 for f in ("room", "flow", "svep", "myhome", "ai") if "localStorage.getItem(k)" in (ROOT / f"assets/js/{f}.js").read_text(encoding="utf-8")) == 0, "[storage] one reader: no private copies left in room, flow, svep, myhome, ai")
 
+    # ------------------------------------------------ English: one way to write numbers, no Swedish left in cart and checkout
+    PAIRS = json.loads((ROOT / "tools/i18n-add/kod.json").read_text(encoding="utf-8"))
+    ok(isinstance(PAIRS, dict) and all(isinstance(k, str) and isinstance(v, str) and v for k, v in PAIRS.items()), "[english] tools/i18n-add/kod.json is a flat list of pairs")
+    # the build merges the pairs into the dictionary; here they are laid on top the same way, so the check stands on its own
+    EN = "try{localStorage.setItem('rumiq-lang','\"en\"')}catch(e){};document.addEventListener('DOMContentLoaded',()=>{if(window.RQ_EN)Object.assign(RQ_EN.dict," + json.dumps(PAIRS) + ")});"
+    for mobile in (True, False):
+        tag = "[390 en]" if mobile else "[1440 en]"
+        ctx = context(b, mobile); ctx.add_init_script(EN); pg = ctx.new_page(); errs = []
+        pg.on("pageerror", lambda e: errs.append(str(e)))
+        pg.goto(BASE + "look-mjuk-kvall/"); pg.wait_for_timeout(700); pg.evaluate("document.getElementById('ckNeed').click()")
+        txt = pg.evaluate("document.body.innerText")
+        ok(re.search(r"\d,\d{3} kr", txt) and not re.search(r"\d[ \u00a0\u202f]\d{3} kr", txt), f"{tag} prices are written one way on the look page (2,687 kr)")
+        pg.evaluate("RQ.LOOKS.find((l) => l.id === 'mjuk-kvall').items.forEach((h) => RQ.shop.addToCart(h + '::0', 1)); RQ.openCart()"); pg.wait_for_timeout(500)
+        cart = pg.evaluate("document.getElementById('cart').innerText")
+        ok("Whole look Soft evening" in cart and "Of which VAT (25%)" in cart and "example products" in cart and not re.search(r"Hela looken|Varav moms|Varukorgen", cart), f"{tag} the cart drawer is in English")
+        ok(not re.search(r"\d[ \u00a0\u202f]\d{3} kr", cart) and "1 pcs" not in cart, f"{tag} the cart drawer writes numbers one way")
+        pg.evaluate("RQ.closeAll()"); go(pg, "kassa", 700)
+        co = pg.evaluate("document.getElementById('view').innerText")
+        ok(not re.search(r"Hela looken|Varav moms|arbetsdagar|När butiken|\b1 pcs\b", co) and not re.search(r"\d[ \u00a0\u202f]\d{3} kr", co), f"{tag} the checkout has no Swedish rows and one number format")
+        ok(not pg.evaluate("[...document.querySelectorAll('#view textarea[placeholder]')].some((t) => /[åäö]/i.test(t.placeholder))"), f"{tag} hints inside text fields are translated")
+        go(pg, "butik", 600)
+        ok(pg.title() == "All products · RumIQ", f"{tag} the page title is translated ({pg.title()})")
+        go(pg, "produkt-lysa-keramiklampa", 700)
+        ok("incl. VAT" in pg.evaluate("document.getElementById('view').innerText") and "inkl. moms" not in pg.evaluate("document.getElementById('view').innerText"), f"{tag} the product page says incl. VAT")
+        terms = {"Önska": "Requests", "Var är mitt paket?": "Track my order", "Spåra min beställning": "Track my order", "30 dagars öppet köp": "30-day returns", "Hitta rätt": "Find the right piece", "Ljust hela tiden": "Always light", "Reklamation & garanti": "Faults & warranty", "Ångra avtalet här": "Withdraw from a purchase", "4 produkter": "4 items", "1 st": "1 pc", "2 st": "2 pcs", "Svep · Kök": "Swipe · Kitchen", "1 st · Havre": "1 pc · Oat"}
+        got = pg.evaluate("(t) => Object.fromEntries(Object.keys(t).map((k) => [k, RQ_t(k)]))", terms)
+        ok(got == terms, f"{tag} the agreed English terms: {[(k, got[k]) for k in terms if got[k] != terms[k]]}")
+        ok(not errs, f"{tag} no script errors: {errs[:2]}")
+        ctx.close()
+
     b.close()
 
 srv.shutdown()
