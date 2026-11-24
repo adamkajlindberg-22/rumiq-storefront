@@ -27,6 +27,8 @@
   --t-h1:clamp(2.1rem,3.9vw,3.5rem); --t-h1-tool:1.9rem; --t-h3:1.3rem; --t-card:1rem;
   /* one page head: the same room above the crumbs and under the lead on every page */
   --head-pt:clamp(1.4rem,3vw,2.4rem); --head-pb:clamp(1.4rem,3vw,2.4rem);
+  /* one field shape: as tall as a button, or as tall as a compact control (toolbars and one-line forms) */
+  --field-h:3.25rem; --field-h-s:2.75rem; --field-px:1rem;
   --nav-h:4.25rem; --bar-h:0rem; --dock-h:0rem;
   color-scheme:light;
 }
@@ -303,7 +305,7 @@ main{min-height:60vh}
 .example-line b{color:var(--ink2);font-weight:600}
 /* wide screens: a fourth column instead of empty margins */
 @media (min-width:1600px){.shop .grid.three{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23696B68' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right .85rem center;border-radius:var(--r-btn);padding:.55rem 2.3rem .55rem .9rem;font-size:.92rem;color:var(--ink)}
+.select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23696B68' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right .85rem center;border-radius:var(--r-btn);min-height:var(--field-h-s);padding:0 2.3rem 0 var(--field-px);font-size:.92rem;color:var(--ink)}
 
 /* ---------------------------------------------------------------- product page */
 .pcr{padding-top:1.6rem}
@@ -346,7 +348,7 @@ main{min-height:60vh}
 .swatch-row button[aria-checked=true]{border-color:var(--ink);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:var(--r-btn);height:3.25rem}
 .qty button{width:2.7rem;height:100%;border:0;background:none;font-size:1.15rem;color:var(--ink)}
-.qty input{width:2.2rem;text-align:center;border:0!important;background:transparent!important;padding:0!important;-moz-appearance:textfield;font-variant-numeric:tabular-nums}
+.qty input{width:2.2rem;min-height:0!important;text-align:center;border:0!important;background:transparent!important;padding:0!important;-moz-appearance:textfield;font-variant-numeric:tabular-nums}
 .qty input::-webkit-inner-spin-button{-webkit-appearance:none}
 .buy .qty button{min-width:2.75rem}
 .buy{display:flex;gap:.6rem;margin:1.6rem 0 0}
@@ -565,7 +567,8 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .form-grid .full{grid-column:1/-1}
 label{display:grid;gap:.4rem;font-size:.88rem;font-weight:500;color:var(--muted)}
 input:not([type]),input[type=text],input[type=email],input[type=password],input[type=search],input[type=number],input[type=tel],select,textarea{
-  width:100%;border:1px solid var(--line);background:var(--paper);border-radius:var(--r-btn);padding:.85rem 1rem;color:var(--ink);font-size:1rem;transition:border-color .25s,box-shadow .25s}
+  width:100%;border:1px solid var(--line);background:var(--paper);border-radius:var(--r-btn);min-height:var(--field-h);padding:.6rem var(--field-px);color:var(--ink);font-size:1rem;transition:border-color .25s,box-shadow .25s}
+textarea{padding-block:.85rem}
 input::placeholder,textarea::placeholder{color:color-mix(in srgb,var(--muted) 75%,transparent)}
 input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 :root[data-light=kvall] :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea){border-color:color-mix(in srgb,var(--ink) 30%,transparent)}
@@ -711,7 +714,7 @@ footer.site .brand img{height:1.45rem;width:auto;margin-bottom:1.2rem}
 footer.site .brand p{max-width:22rem;color:var(--muted)}
 footer.site .news{margin-top:1.6rem;max-width:24rem}
 footer.site .news .field{display:flex;gap:.4rem;margin-top:.6rem}
-footer.site .news input{padding:.65rem .9rem;font-size:.92rem}
+footer.site .news input{padding:.6rem var(--field-px);font-size:.92rem}
 footer.site .news .status{margin-top:.5rem;min-height:0;font-size:.88rem}
 footer.site .news .status.err{color:var(--danger)}
 footer.site .bottom{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;border-top:1px solid var(--line2);margin-top:3rem;padding-top:1.5rem;font-size:.86rem;color:var(--muted)}
@@ -1336,7 +1339,7 @@ html.sheet-lock{overflow:hidden}
 /* Säg till när den finns */
 .notify{margin-top:.4rem}
 .notify .field,.nt-f{display:flex;gap:.4rem;margin-top:.5rem}
-.nt-f input{flex:1;min-width:0;height:2.75rem;border:1px solid var(--line);border-radius:var(--r-btn);padding:0 .8rem;background:var(--paper);color:var(--ink);font:inherit}
+.nt-f input{flex:1;min-width:0;height:var(--field-h-s);min-height:var(--field-h-s);border:1px solid var(--line);border-radius:var(--r-btn);padding:0 var(--field-px);background:var(--paper);color:var(--ink);font:inherit}
 .nt-err{font-size:.82rem;color:var(--danger);margin-top:.3rem}
 .nt-err:empty{display:none}
 .nt-ok{display:none;font-size:.9rem;color:var(--accent);font-weight:500;margin-top:.4rem}
@@ -1548,7 +1551,7 @@ html.sheet-lock{overflow:hidden}
 .vote-mail{margin-top:2.4rem;max-width:30rem}
 .vote-mail label{font-weight:560}
 .vote-mail .field{display:flex;gap:.4rem;margin-top:.5rem}
-.vote-mail input{flex:1;min-width:0;height:2.75rem;border:1px solid var(--line);border-radius:var(--r-btn);padding:0 .8rem;background:var(--paper);color:var(--ink);font:inherit}
+.vote-mail input{flex:1;min-width:0;height:var(--field-h-s);min-height:var(--field-h-s);border:1px solid var(--line);border-radius:var(--r-btn);padding:0 var(--field-px);background:var(--paper);color:var(--ink);font:inherit}
 @media (max-width:900px){.play{grid-template-columns:1fr}.svt{grid-template-columns:1fr;justify-items:start}.svt-cards{width:7rem;height:8.6rem;margin-left:1rem}}
 
 /* tone chips in search, looks on product page */
@@ -1950,7 +1953,7 @@ body.on-checkout .tools{grid-column:3}
 .sv-linkf{display:grid;gap:.4rem;margin-top:.5rem}
 .sv-linkf label{font-size:.82rem;color:var(--muted)}
 .sv-linkf .field{display:flex;gap:.5rem;flex-wrap:wrap}
-.sv-linkf input{flex:1 1 9rem;min-width:0;border:1px solid var(--line);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);padding:.55rem .7rem;font:inherit;font-size:.92rem}
+.sv-linkf input{flex:1 1 9rem;min-width:0;border:1px solid var(--line);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);min-height:var(--field-h-s);padding:0 var(--field-px);font:inherit;font-size:.92rem}
 .sv-linkf .btn svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
 .sv-linkout{font-size:.78rem!important;color:var(--muted)!important}
 .two-meter{display:grid;gap:.5rem;width:100%;max-width:26rem;margin:.4rem 0 .6rem}
@@ -2002,7 +2005,7 @@ body.on-checkout .tools{grid-column:3}
 .watch-tx b{font-weight:600}
 .watch-tx span{color:var(--muted);font-size:.9rem}
 .watch .field{grid-column:2;display:flex;gap:.5rem;flex-wrap:wrap}
-.watch .field input{flex:1 1 12rem;min-width:0;border:1px solid var(--line);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);padding:.55rem .7rem;font:inherit;font-size:.95rem}
+.watch .field input{flex:1 1 12rem;min-width:0;border:1px solid var(--line);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);min-height:var(--field-h-s);padding:0 var(--field-px);font:inherit;font-size:.95rem}
 .watch .nt-err,.watch .nt-ok{grid-column:2;font-size:.88rem}
 .watch .nt-ok{display:none;color:var(--accent)}
 .watch.sent .nt-ok{display:block}
@@ -2023,7 +2026,7 @@ body.on-checkout .tools{grid-column:3}
 .hr-form{display:grid;gap:1rem;max-width:46rem;margin-top:1rem}
 .hr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem 1.2rem}
 .hr-grid label{display:grid;gap:.35rem;font-size:.9rem;color:var(--ink2)}
-.hr-grid input,.hr-grid select{border:1px solid var(--line);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);padding:.6rem .7rem;font:inherit}
+.hr-grid input,.hr-grid select{border:1px solid var(--line);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);min-height:var(--field-h-s);padding:0 var(--field-px);font:inherit}
 .hr-grid .hr-opt{color:var(--muted);font-size:.8rem;font-weight:400}
 @media (max-width:640px){.hr-grid{grid-template-columns:1fr}.hr-card{grid-template-columns:auto 1fr;}.hr-card .tlink{grid-column:2;justify-self:start}}
 /* "I ditt hem" on the product page */
