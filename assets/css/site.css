@@ -1225,7 +1225,10 @@ html.sheet-lock{overflow:hidden}
 .jr-dots{position:absolute;right:calc((100% - var(--wrap)) / 2 - 1.6rem);top:50%;transform:translateY(-50%);display:grid;gap:.55rem;z-index:3}
 .jr-dots button{width:.55rem;height:.55rem;border-radius:50%;border:0;background:color-mix(in srgb,var(--ink) 22%,transparent);padding:0;transition:background .3s,transform .3s var(--spring)}
 .jr-dots button[aria-current=true]{background:var(--ink);transform:scale(1.35)}
-.journey .hs-cap{position:relative;margin-top:-2.4rem}
+.journey .hs-cap{margin-top:.2rem}
+/* the note about the pictures stands with each room on wide screens; on phones, where the room fills the screen, it comes after the walk */
+.jr-cap-after{display:none}
+@media (max-width:900px){.jr-cap{display:none}.jr-cap-after{display:block;margin-top:.8rem}}
 @media (max-width:1400px){.jr-dots{right:.6rem}}
 @media (max-width:900px){
   .journey{height:calc(var(--n) * 80svh + 100svh)}
@@ -1244,6 +1247,7 @@ html.sheet-lock{overflow:hidden}
 .journey.flat .jr-img .hs-stage{aspect-ratio:16/10;height:auto}
 .journey.flat .jr-dots{display:none}
 .journey.flat .hs-cap{margin-top:0}
+.journey.flat .jr-room:not(:first-of-type) .jr-cap{display:none}
 
 /* ---------------------------------------------------------------- Looks */
 .looks-row{display:grid;grid-auto-flow:column;grid-auto-columns:min(22rem,82vw);gap:1.2rem;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:1rem;margin:0 calc(-1*var(--gutter));padding-left:var(--gutter);padding-right:var(--gutter);scrollbar-width:thin;scroll-padding-left:var(--gutter)}
@@ -1268,6 +1272,12 @@ html.sheet-lock{overflow:hidden}
 .lc-row .price s{color:var(--muted);font-weight:400}
 .look-off{font-weight:600;color:var(--ink);white-space:nowrap}
 .looks-grid .own-look{margin-top:0;max-width:none;grid-template-columns:1fr;justify-items:center;align-content:center;text-align:center;gap:.8rem;min-height:14rem}
+.mh-none{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;align-items:baseline;justify-content:space-between;padding:1rem 1.2rem;border:1px dashed var(--line);border-radius:var(--r)}
+.mh-none p{color:var(--muted)}
+.mh-none b{color:var(--ink);font-weight:560}
+.mh .watch{margin:1.6rem 0 0}
+#hrOpen[hidden],.hr-form[hidden]{display:none}
+.mh .sv-nudge{margin-top:1rem}
 .mylooks{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1.2rem}
 .mylook{margin:0;display:grid;gap:.8rem;align-content:start;background:var(--paper)}
 .mylook header{margin:0}
@@ -1973,7 +1983,7 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 /* v11: Presentkort */
 .gc{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,4.5rem);align-items:center;padding-top:1rem}
 .gc-card{aspect-ratio:1.586;border-radius:22px;background:radial-gradient(120% 140% at 15% 10%,#5b5a55 0%,#2b2c2e 55%,#1c1d1f 100%);box-shadow:0 40px 70px -40px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08);position:relative;padding:8% 9%;display:flex;flex-direction:column;justify-content:space-between;color:#F7F7F4;transform:rotate(-3deg)}
-.gc-card img{width:34%;height:auto}
+.gc-card img{width:34%;height:auto;aspect-ratio:4/1;object-fit:contain;object-position:left center;align-self:flex-start}
 .gc-amt{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:560;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .gc-sub{font-size:.85rem;opacity:.75;margin-top:-1rem}
 .gc-amts{display:flex;gap:.5rem;flex-wrap:wrap;margin:1.6rem 0 1.2rem}
@@ -1982,6 +1992,10 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 .gc-points li::before{content:"";display:inline-block;width:.45rem;height:.45rem;border-radius:50%;background:var(--ink);margin-right:.7rem;vertical-align:middle}
 .gc-soon{border:1px solid var(--line);border-radius:var(--r);padding:1.2rem;background:var(--paper);display:grid;gap:.8rem}
 .gc-soon p{margin:0;color:var(--ink2)}
+.gc-soon .field{display:flex;gap:.5rem}
+.gc-soon .field input{flex:1;min-width:0}
+.gc-soon .status:empty{display:none}
+.gc-info .lead{margin-top:1rem}
 @media (max-width:820px){.gc{grid-template-columns:1fr}.gc-card{max-width:24rem;margin:0 auto 1rem}}
 
 /* ============ v12: snappier. Shorter motion, cheaper paint, light by default ============ */

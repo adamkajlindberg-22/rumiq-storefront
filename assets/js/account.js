@@ -12,7 +12,7 @@
 
   /* ---------------- Konto: sign in, create account, account pages */
   const BENEFITS = `<div class="auth-aside"><span class="eyebrow">Med ett gratis konto kan du</span>
-    <ul class="rules" style="margin-top:1.2rem"><li>Se produkterna i en bild av ditt eget rum och spara resultatet</li><li>Samla favoriter i egna listor, till exempel en per rum</li><li>Spara dina looks, din stil och dina samtal med stylisten</li><li>Följa och ångra beställningar med ett klick</li><li>Gå snabbare genom kassan nästa gång</li></ul>
+    <ul class="rules" style="margin-top:1.2rem"><li>Se produkterna i en bild av ditt eget rum och spara resultatet</li><li>Samla det du sparar i egna listor, till exempel en per rum</li><li>Spara dina looks, din stil och dina samtal med stylisten</li><li>Följa och ångra beställningar med ett klick</li><li>Gå snabbare genom kassan nästa gång</li></ul>
     <p class="small" style="margin-top:1.6rem">Du kan alltid handla som gäst. Kassan kräver inget konto.</p></div>`;
   const demoNote = () => (RQ.auth.mode === "demo" ? `<p class="note" style="margin-top:1.4rem">Förhandsversion: inloggningen är inte kopplad än. Knapparna skapar ett testkonto som bara finns i den här webbläsaren. Inga uppgifter skickas till Google, Apple, Microsoft eller oss.</p>` : "");
 
@@ -116,7 +116,7 @@
           <div style="display:grid;gap:3.2rem;min-width:0">
             <section id="acc-oversikt"><div class="stat-grid">
               <a class="stat" href="#acc-order"><b>${orders.length}</b><span>Beställningar</span></a>
-              <a class="stat" href="#onskelista"><b>${S._wish.length}</b><span>Favoriter</span></a>
+              <a class="stat" href="#onskelista"><b>${S._wish.length}</b><span>Sparat</span></a>
               <a class="stat" href="#acc-listor"><b>${lists.length}</b><span>Listor</span></a>
               <a class="stat" href="#mitt-hem"><b>${S.projects().length}</b><span>Rumsprojekt</span></a></div></section>
             <section id="acc-studio"><div class="sec-row" style="margin-bottom:1.2rem"><h2 class="h3">Mitt rum och AI-bilder</h2><a class="link arrow" href="#studio-plus">Om Studio Plus</a></div><div data-ai-account><p class="small">Laddar…</p></div></section>

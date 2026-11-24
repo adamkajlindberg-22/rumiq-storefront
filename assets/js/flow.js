@@ -152,7 +152,7 @@
         ${vs.length ? `<div class="sh-v" role="radiogroup" aria-label="Variant">${vs.map((v, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === 0}" data-shv="${i}">${esc(v)}</button>`).join("")}</div>` : ""}
         <div class="sh-act">
           <button class="btn" type="button" id="shAdd" data-add="${p.handle}::0">Lägg i varukorgen</button>
-          <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)} i önskelistan">${ICO.heart}</button>
+          <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${ICO.heart}</button>
         </div>
         <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i mitt rum</span></button>
         ${RQ.delivery.html(p)}
@@ -282,7 +282,7 @@
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-shop-room]"); if (!b) return;
     const id = b.dataset.shopRoom, hs = RQ.hotspots.handles(id), room = RQ.roomById(id);
-    addMany(hs, b, room ? room.name : "");
+    if (!addMissing(hs, b, room ? room.name : "Rummet").length) return;
     const stage = b.closest("section, .jr-room") && $(`.hs-stage[data-room="${id}"]`, b.closest("section, .jr-room"));
     if (stage) $$(".hs:not([hidden])", stage).forEach((s, i) => setTimeout(() => RQ.fly(s, RQ.cut(RQ.byHandle(s.dataset.hs))), i * 110));
   });
@@ -296,12 +296,11 @@
         <div class="jr-stick">
           ${ids.map((id, i) => { const r = RQ.roomById(id), t = RQ.hotspots.total(id), c = RQ.hotspots.handles(id).length; return `<article class="jr-room${i === 0 ? " on" : ""}" data-i="${i}" ${i ? "inert" : ""} aria-label="${esc(r.name)}">
             <div class="jr-copy"><span class="eyebrow">${String(i + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")} · <span>${esc(r.name)}</span></span><h3>${esc(r.lead)}</h3><p class="jr-tip">${esc(r.tips[0])}</p>
-              <div class="jr-row"><button class="btn" type="button" data-shop-room="${id}">Handla rummet · ${kr(t)}</button><a class="link" href="#rum-${id}">${c} saker · mer för rummet</a></div></div>
+              <div class="jr-row"><button class="btn" type="button" data-shop-room="${id}">Handla rummet · ${kr(t)}</button><a class="link" href="#rum-${id}">${c} saker · mer för rummet</a></div><p class="hs-cap jr-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p></div>
             <div class="jr-img">${RQ.hotspots.render(id, { eager: i === 0 })}</div></article>`; }).join("")}
           <nav class="jr-dots" aria-label="Rum">${ids.map((id, i) => `<button type="button" data-jr="${i}" aria-current="${i === 0}"><span>${esc(RQ.roomById(id).name)}</span></button>`).join("")}</nav>
         </div>
-        <div class="wrap">${RQ.hotspots.caption()}</div>
-      </section>`;
+      </section><div class="wrap jr-cap-after">${RQ.hotspots.caption()}</div>`;
     },
     mount(root) {
       const sec = $(".journey", root); if (!sec) return () => {};

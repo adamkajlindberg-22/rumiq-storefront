@@ -169,7 +169,7 @@
 
     /* ---------------- ideas (Dela en idé) */
     ideas: () => store.get("rumiq-ideas", []),
-    addIdea(title, text) { const i = [{ id: "i" + Date.now(), title, text, votes: 1, mine: true, at: new Date().toISOString() }, ...S.ideas()]; store.set("rumiq-ideas", i); emit("ideas"); },
+    addIdea(title, text) { const i = [{ id: "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), title, text, votes: 1, mine: true, at: new Date().toISOString() }, ...S.ideas()]; store.set("rumiq-ideas", i); emit("ideas"); },
     voteIdea(id) { store.set("rumiq-ideas", S.ideas().map((i) => (i.id === id ? { ...i, votes: i.voted ? i.votes - 1 : i.votes + 1, voted: !i.voted } : i))); emit("ideas"); },
 
     /* ---------------- settings */

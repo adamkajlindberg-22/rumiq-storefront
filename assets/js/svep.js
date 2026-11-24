@@ -109,7 +109,7 @@
         <button class="sv-b no" type="button" id="${px}No" aria-label="Nej tack" title="Nej tack">${ICO.x}</button>
         ${compact ? "" : `<button class="sv-b room" type="button" id="${px}Room" aria-label="Ställ in i mitt rum" title="Ställ in i mitt rum">${RQ.roomIco}</button>`}
         <button class="sv-b bag" type="button" id="${px}Bag" aria-label="Lägg i varukorgen" title="Lägg i varukorgen">${SV.bag}</button>
-        <button class="sv-b yes" type="button" id="${px}Yes" aria-label="Spara i favoriter" title="Spara i favoriter">${ICO.heart}</button>
+        <button class="sv-b yes" type="button" id="${px}Yes" aria-label="Spara" title="Spara">${ICO.heart}</button>
       </div>
       ${compact ? "" : `<p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. Backsteg ångrar.</p>`}
     </div>`;
@@ -357,7 +357,7 @@
   };
   const scopeNav = (scope) => `<nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="#svep"${scope ? "" : ' aria-current="true"'}>Hela butiken</a>${RQ.ROOMS.map((r) => `<a class="chip" href="#svep-rum-${r.id}"${scope === r.id ? ' aria-current="true"' : ""}>${esc(r.name)}</a>`).join("")}</nav>`;
   const legend = `<ul class="sv-legend">
-      <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar i dina favoriter och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar under Sparat och lär oss din stil.</span></div></li>
       <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
@@ -402,7 +402,7 @@
             const again = () => { ss.del(KEEP); RQ.router(); scrollTo(0, 0); };
             let armed = false;
             $("#svAgain", root).addEventListener("click", (e) => {
-              if (!armed) { armed = true; e.currentTarget.textContent = "Tryck igen för att börja om"; $("#svAgainNote", root).textContent = "Din stilprofil nollställs. Dina favoriter ligger kvar."; return; }
+              if (!armed) { armed = true; e.currentTarget.textContent = "Tryck igen för att börja om"; $("#svAgainNote", root).textContent = "Din stilprofil nollställs. Det du har sparat ligger kvar."; return; }
               RQ.taste.reset(); try { localStorage.removeItem("rumiq-style"); } catch (er) {} again();
             });
             const m = $("#svMore", root); m && m.addEventListener("click", again);
@@ -507,7 +507,7 @@
           ss.set("rumiq-svep-carry", { done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged });
           const left = ROUND - st.done.length;
           deckEl.outerHTML = `<div class="svh-done" tabindex="-1"><span class="eyebrow">${st.done.length} av ${ROUND} klara</span><h3>Snyggt. ${left} kort kvar till din stilprofil.</h3>
-            ${st.saved.length ? `<p>${st.saved.length} ${st.saved.length === 1 ? "sak har" : "saker har"} hamnat i dina favoriter.</p>` : `<p>Ju fler kort, desto bättre förstår vi vad du gillar.</p>`}
+            ${st.saved.length ? `<p>${st.saved.length} ${st.saved.length === 1 ? "sak har" : "saker har"} hamnat under Sparat.</p>` : `<p>Ju fler kort, desto bättre förstår vi vad du gillar.</p>`}
             <a class="btn" href="#svep">Fortsätt svepa</a></div>`;
         },
       });

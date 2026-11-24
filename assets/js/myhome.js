@@ -24,7 +24,7 @@
   RQ.SIZES = SIZES;
 
   /* ---------------------------------------------------------------- rooms */
-  const num = (v) => { const n = Math.round(+String(v || "").replace(",", ".")); return n > 0 && n < 5000 ? n : null; };
+  const num = (v) => { const n = Math.round(+String(v || "").trim().replace(/\s*cm$/i, "").replace(",", ".")); return n > 0 && n < 5000 ? n : null; };
   RQ.homeRooms = {
     list() { return (ls.get("rumiq-home", { rooms: [] }).rooms || []).filter((r) => RQ.roomById(r.type)); },
     save(rooms) { ls.set("rumiq-home", { rooms, at: new Date().toISOString() }); },
@@ -42,7 +42,8 @@
         <p class="lead" style="max-width:40rem">Lägg in dina rum och några mått en gång. Sedan säger varje produktsida om den passar och ryms hos dig.</p>
         <div class="hr-list" id="hrList">${rooms.map((r) => `<div class="hr-card"><span class="hr-ic" aria-hidden="true">${RQ.roomIco}</span><div><b>${esc(this.label(r))}</b><small>${this.dims(r) || "Inga mått än"}</small></div>
           <button class="tlink" type="button" data-hr-edit="${r.id}">Ändra</button><button class="tlink" type="button" data-hr-del="${r.id}">Ta bort</button></div>`).join("")}</div>
-        <form class="hr-form panel" id="hrForm" novalidate><input type="hidden" name="id">
+        <button class="btn ghost" type="button" id="hrOpen" aria-expanded="false" aria-controls="hrForm">${rooms.length ? "Lägg till ett rum" : "Lägg till ditt första rum"}</button>
+        <form class="hr-form panel" id="hrForm" novalidate hidden><input type="hidden" name="id">
           <h3 class="h3" style="font-size:1.15rem" id="hrTitle">${rooms.length ? "Lägg till ett rum" : "Lägg till ditt första rum"}</h3>
           <div class="hr-grid">
             <label>Rum<select name="type">${RQ.ROOMS.map((r) => `<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></label>
@@ -53,14 +54,20 @@
             <label>Fönstrets bredd, cm<input name="windowW" inputmode="numeric" placeholder="120"></label>
           </div>
           <p class="small">Mät det fria golvet där en matta kan ligga, väggen där en tavla kan hänga och fönstret utan karm. Inga mått är obligatoriska.</p>
-          <div class="ctrl-row"><button class="btn" type="submit">Spara rummet</button><button class="btn ghost" type="button" id="hrCancel" hidden>Avbryt</button></div>
+          <div class="ctrl-row"><button class="btn" type="submit">Spara rummet</button><button class="btn ghost" type="button" id="hrCancel">Avbryt</button></div>
           <p class="status" id="hrStatus" role="status"></p></form></div>`;
     },
     mount(root) {
       const f = $("#hrForm", root); if (!f) return;
-      const reset = () => { f.reset(); f.id.value = ""; $("#hrTitle", root).textContent = this.list().length ? "Lägg till ett rum" : "Lägg till ditt första rum"; $("#hrCancel", root).hidden = true; };
+      // the form waits behind one button, so an empty Mitt hem is a short page
+      const opener = $("#hrOpen", root), show = (on) => { f.hidden = !on; opener.hidden = on; opener.setAttribute("aria-expanded", on); };
+      opener.addEventListener("click", () => { show(true); f.type.focus(); });
+      const reset = () => { f.reset(); f.id.value = ""; $("#hrTitle", root).textContent = this.list().length ? "Lägg till ett rum" : "Lägg till ditt första rum"; $("#hrStatus", root).textContent = ""; show(false); };
       f.addEventListener("submit", (e) => {
         e.preventDefault();
+        // a measure that is written but cannot be read is said out loud, not dropped silently
+        const bad = ["floorW", "floorD", "wallW", "windowW"].find((k) => f[k].value.trim() && !num(f[k].value));
+        if (bad) { $("#hrStatus", root).textContent = "Skriv måtten i centimeter med siffror, till exempel 350."; $("#hrStatus", root).classList.add("err"); f[bad].setAttribute("aria-invalid", "true"); f[bad].focus(); return; }
         const r = { id: f.id.value || Math.random().toString(36).slice(2, 9), type: f.type.value, label: f.label.value.trim().slice(0, 30), floorW: num(f.floorW.value), floorD: num(f.floorD.value), wallW: num(f.wallW.value), windowW: num(f.windowW.value) };
         const rooms = this.list(), i = rooms.findIndex((x) => x.id === r.id);
         if (i > -1) rooms[i] = r; else rooms.push(r);
@@ -73,7 +80,7 @@
         if (ed) {
           const r = this.list().find((x) => x.id === ed.dataset.hrEdit); if (!r) return;
           f.id.value = r.id; f.type.value = r.type; f.label.value = r.label || ""; ["floorW", "floorD", "wallW", "windowW"].forEach((k) => (f[k].value = r[k] || ""));
-          $("#hrTitle", root).textContent = `Ändra ${this.label(r)}`; $("#hrCancel", root).hidden = false; f.scrollIntoView({ behavior: "smooth", block: "center" });
+          $("#hrTitle", root).textContent = `Ändra ${this.label(r)}`; show(true); f.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       });
     },
@@ -179,8 +186,11 @@
   const V = RQ.views, kr = (n) => S.kr(n);
   const gen = (n) => (/[sxz]$/i.test(n) ? n : n + "s");
   const cleanName = (n) => String(n || "").replace(/[^\p{L}\p{N} '\-]/gu, "").trim().slice(0, 24);
+  // a product's own number: made from its handle, so a link still means the same things when the catalogue is reordered or grows
+  const pid = (h) => { let x = 7; for (const c of h) x = (x * 31 + c.charCodeAt(0)) >>> 0; return (x % 1679616).toString(36).padStart(4, "0"); };
+  const byPid = () => Object.fromEntries(RQ.PRODUCTS.map((p) => [pid(p.handle), p]));
   const encList = (hs, name) => {
-    const idx = hs.map((h) => RQ.PRODUCTS.findIndex((p) => p.handle === h)).filter((i) => i >= 0).map((i) => i.toString(36));
+    const idx = hs.filter((h) => RQ.byHandle(h)).map(pid);
     const n = cleanName(name);
     return idx.join(".") + (n ? "~" + encodeURIComponent(n) : "");
   };
@@ -188,7 +198,9 @@
     if (!raw) return null;
     let core = raw, name = "";
     const t = raw.indexOf("~"); if (t >= 0) { core = raw.slice(0, t); try { name = cleanName(decodeURIComponent(raw.slice(t + 1))); } catch (e) { name = ""; } }
-    const hs = [...new Set(core.split(".").filter((x) => /^[0-9a-z]{1,2}$/.test(x)).map((x) => RQ.PRODUCTS[parseInt(x, 36)]).filter(Boolean).map((p) => p.handle))].slice(0, 40);
+    // four characters = the product's own number; one or two = an older link that counted places in the catalogue
+    const ids = byPid();
+    const hs = [...new Set(core.split(".").map((x) => (/^[0-9a-z]{4}$/.test(x) ? ids[x] : /^[0-9a-z]{1,2}$/.test(x) ? RQ.PRODUCTS[parseInt(x, 36)] : null)).filter(Boolean).map((p) => p.handle))].slice(0, 40);
     return hs.length ? { hs, name } : null;
   };
   RQ.sharedList = { enc: encList, dec: decList };
@@ -209,12 +221,12 @@
       title: (L.name ? `${gen(L.name)} önskelista` : "Delad önskelista") + " · RumIQ",
       html: `<header class="page-head wrap">${crumbs}<span class="eyebrow">Delad önskelista</span><h1 class="h1">${L.name ? `${esc(gen(L.name))} önskelista` : "En önskelista till dig"}</h1>
           <p class="lead">${ps.length} ${ps.length === 1 ? "sak" : "saker"} · ${kr(total)}. Köp något som present, spara det du också gillar eller se allt i ditt eget rum.</p>
-          <div class="ctrl-row" style="margin-top:1.4rem"><button class="btn" type="button" id="shAll">Lägg alla i varukorgen · ${kr(total)}</button><button class="btn ghost" type="button" id="shSave">Spara i mina favoriter</button></div></header>
+          <div class="ctrl-row" style="margin-top:1.4rem"><button class="btn" type="button" id="shAll">Lägg alla i varukorgen · ${kr(total)}</button><button class="btn ghost" type="button" id="shSave">Spara hos mig</button></div></header>
         <section class="wrap" style="padding-bottom:5rem"><div class="grid">${ps.map(RQ.card).join("")}</div>
           <p class="small" style="margin-top:1.6rem">Listan finns bara i länken. Vi sparar inget om den på någon server.</p></section>`,
       mount(root) {
-        const a = $("#shAll", root); a.addEventListener("click", () => RQ.addMany(L.hs, a, "önskelistan"));
-        const b = $("#shSave", root); b.addEventListener("click", () => { let n = 0; L.hs.forEach((h) => { if (!S.isWished(h)) { S.toggleWish(h); n++; } }); RQ.toast(n ? `${n} ${n === 1 ? "sak sparad" : "saker sparade"} i Mitt hem.` : "Du har redan sparat allt."); });
+        const a = $("#shAll", root); a.addEventListener("click", () => RQ.addMany(L.hs, a, "Önskelistan"));
+        const b = $("#shSave", root); b.addEventListener("click", () => { let n = 0; L.hs.forEach((h) => { if (!S.isWished(h)) { S.toggleWish(h); n++; } }); RQ.toast(n ? `${n} ${n === 1 ? "sak sparad" : "saker sparade"}. <a href="#mitt-hem">Visa</a>` : "Du har redan sparat allt."); });
         RQ.track("wishlist_open", { items: L.hs.length });
       },
     };
@@ -229,7 +241,7 @@
       <section class="wrap gc" style="padding-bottom:5rem">
         <div class="gc-card" aria-hidden="true"><img src="assets/brand/rumiq-vit.webp" alt="" width="480" height="120"><span class="gc-amt" id="gcAmt">${kr(500)}</span><span class="gc-sub">Presentkort · gäller i två år</span></div>
         <div class="gc-info"><span class="eyebrow">Present</span><h1 class="h1">Ge bort ett lugnare hem.</h1>
-          <p class="lead">Ett presentkort på RumIQ, så väljer mottagaren själv. Och kan se allt i sitt eget rum innan hen bestämmer sig.</p>
+          <p class="lead">Mottagaren väljer själv och kan se allt i sitt eget rum först.</p>
           <div class="gc-amts" role="radiogroup" aria-label="Belopp">${AMOUNTS.map((a, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === 1}" data-gc="${a}">${kr(a)}</button>`).join("")}</div>
           <ul class="gc-points"><li>Skickas med e-post direkt, eller på ett datum du väljer</li><li>Med en egen hälsning</li><li>Går att använda på allt i butiken, flera gånger</li></ul>
           <div class="gc-soon"><p><b>Presentkorten kommer när butiken öppnar.</b> Skriv upp dig, så mejlar vi när de går att köpa.</p>
