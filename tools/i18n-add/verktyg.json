@@ -115,7 +115,6 @@
  "här. Det billigaste som passar kostar": "here. The cheapest that fits costs",
  "i": "in",
  "kort för": "cards for",
- "ligger i varukorgen.": "are in the cart.",
  "ligger redan i varukorgen.": "is already in the cart.",
  "rabatt.": "off.",
  "sedan får du din stilprofil.": "then you get your style profile.",
@@ -123,5 +122,6 @@
  "upp till": "up to",
  "Önskelistan": "The wish list",
  "än.": "yet.",
- "än. Det här passar i rummet:": "yet. This suits the room:"
+ "än. Det här passar i rummet:": "yet. This suits the room:",
+ "finns i varukorgen.": "are in the cart."
 }

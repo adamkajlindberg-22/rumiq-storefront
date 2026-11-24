@@ -421,7 +421,7 @@
       const save = `<button class="btn ghost" type="button" data-look-save="${l.id}"${saved ? " disabled" : ""}>${saved ? "Sparad i Mitt hem" : "Spara looken"}</button>`;
       if (!miss.length) return `<p class="lp-in" role="status"><span>Hela looken ligger i varukorgen.</span>${off ? ` <span>Rabatten är avdragen:</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-open-cart>Visa varukorgen</button>${save}</div>`;
       if (have) { const rest = miss.reduce((s, h) => s + RQ.byHandle(h).price, 0) - off;
-        return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>ligger i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}"><span>Lägg till resten</span> · ${kr(Math.max(0, rest))}</button>${save}</div>`; }
+        return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>finns i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}"><span>Lägg till resten</span> · ${kr(Math.max(0, rest))}</button>${save}</div>`; }
       return `<div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(net)}</button>${save}</div>`;
     };
     return {
