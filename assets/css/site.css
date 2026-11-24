@@ -1196,7 +1196,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-steps span{color:var(--muted);font-size:.94rem}
 
 /* home: the whole shop in your room */
-.roomhero{padding-top:clamp(4rem,8vw,7rem)}
+.roomhero{padding-top:clamp(4rem,7.5vw,6.5rem)} /* the same rhythm as every other section */
 .rh{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(2rem,5vw,5rem);align-items:center}
 .rh .display{font-size:clamp(3rem,6.4vw,6.4rem)}
 .rh .lead{margin-top:1.4rem}
