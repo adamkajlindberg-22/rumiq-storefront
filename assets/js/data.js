@@ -276,7 +276,7 @@
   RQ.FILMS = {};
   RQ.film = (p) => (p && RQ.FILMS[p.handle]) || "";
 
-  /* Approximate 3D models (assets/3d, made by tools/models.py). wall: placed on a wall in AR. */
+  /* Approximate 3D models (assets/3d). wall: placed on a wall in AR. */
   RQ.MODELS = {
     "glob-bordslampa-opalglas": {}, "lysa-keramiklampa": {}, "svamp-uppladdningsbar-lampa": {}, "sand-keramikvas": {},
     "terrakottakruka-rafflad": {}, "forradsburkar-glas-ek-3-pack": {},

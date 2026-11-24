@@ -7,7 +7,7 @@
 (function () {
   const RQ = window.RQ, S = RQ.shop, V = RQ.views, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc, kr = S.kr;
   const CFG = (window.RQ_CONFIG && window.RQ_CONFIG.auth) || {};
-  const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+  const ls = { get: (k, d) => S.store.get(k, d, true), set: S.store.set }; // the shop's one reader (commerce.js); the consent is kept as text
   const MAXP = 6;
   const PRICE = 99, PLUS_IMAGES = 100, FREE_IMAGES = 5;
 

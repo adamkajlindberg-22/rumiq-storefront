@@ -16,7 +16,6 @@
     user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
     search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>',
     close: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
-    cmp: '<svg viewBox="0 0 24 24"><path d="M8 4v16M16 4v16M4 8h8M12 16h8"/></svg>',
     spark: '<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>',
     room: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg>',
     eye: '<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -157,7 +156,6 @@
   /* ---------------- product page */
   const LAMPS = ["glob-bordslampa-opalglas", "lysa-keramiklampa", "svamp-uppladdningsbar-lampa"];
   RQ.LAMPS = LAMPS;
-  RQ.LAMPS = LAMPS;
   RQ.gallery = (p) => {
     const g = [{ k: "main", src: RQ.img(p, 1400), thumb: RQ.img(p, 600), alt: `${p.name}, miljöbild` }];
     g.push({ k: "detail", src: `assets/img/d/${p.handle}-1200.webp`, thumb: `assets/img/d/${p.handle}-600.webp`, alt: `${p.name}, detalj` });
@@ -171,7 +169,6 @@
     lock: '<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
     room: '<svg viewBox="0 0 24 24"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>',
     list: '<svg viewBox="0 0 24 24"><path d="M5 5h14v15l-7-4-7 4z"/></svg>',
-    cmp: '<svg viewBox="0 0 24 24"><path d="M8 4v16M16 4v16M4 8h4M16 16h4"/></svg>',
     zoom: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"/></svg>',
   };
   RQ.icons2 = ic;
@@ -203,7 +200,7 @@
       html: `<section class="wrap" style="padding-top:1.6rem">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
         <section class="wrap pdp" style="padding:1.4rem 0 clamp(3rem,7vw,6rem)">
           <div class="pg">
-            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${RQ.room && RQ.room.has() ? "" : ""}${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}" aria-label="Visa större: ${esc(g.alt)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
+            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}" aria-label="Visa större: ${esc(g.alt)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
             ${isLamp ? `<button type="button" class="lightswitch" id="lightSw" aria-pressed="true" hidden><i></i><span>Lampan är tänd</span></button>` : ""}
             <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
             <p class="caption">Bilderna är skapade med AI och visar hur produkten kan se ut. Färg och detaljer kan skilja sig från den riktiga produkten.</p>
@@ -351,24 +348,6 @@
         let armed = false; const dl = $("#del", root); if (dl) dl.addEventListener("click", () => { if (!armed) { armed = true; dl.textContent = "Klicka igen för att ta bort"; return; } S.deleteList(cur.id); RQ.ss.set("rumiq-list", "fav"); RQ.router(); });
       } };
   };
-  V.jamfor = () => {
-    const list = S.compareList();
-    const row = (label, f) => `<tr><th>${label}</th>${list.map((p) => `<td>${f(p)}</td>`).join("")}</tr>`;
-    return { html: `${head(crumbs([["Hem", "hem"], ["Butik", "butik"], ["Jämför"]]), "Jämför produkter", "Lägg till upp till fyra produkter och se dem sida vid sida.")}
-      <section class="wrap" style="padding-bottom:6rem">${list.length ? `<div class="compare-wrap"><table class="compare">
-        <tr><th></th>${list.map((p) => `<td><a href="#produkt-${p.handle}"><img src="${RQ.img(p, 600)}" alt=""></a><h3 class="h3" style="font-size:1.15rem;margin-top:.7rem"><a href="#produkt-${p.handle}" style="text-decoration:none">${esc(p.name)}</a></h3><button class="link" type="button" data-compare="${p.handle}" style="border:0;background:none;margin-top:.4rem;font-size:.85rem">Ta bort</button></td>`).join("")}</tr>
-        ${row("Pris", (p) => `<span class="price" style="font-family:var(--mono)">${kr(p.price)}</span>`)}
-        ${row("Kategori", (p) => esc(RQ.catById(p.cat).name))}
-        ${row("Material", (p) => esc(p.material))}
-        ${row("Färger", (p) => esc((p.variants || ["En färg"]).join(", ")))}
-        ${row("Passar i", (p) => p.rooms.map((r) => RQ.roomById(r).name).join(", "))}
-        ${row("Stil", (p) => p.styles.map((s) => RQ.STYLES[s].name).join(", "))}
-        ${row("Beskrivning", (p) => esc(p.short))}
-        ${row("Mått", () => `<span class="pending">Bekräftas</span>`)}
-        ${row("", (p) => `<button class="btn sm" type="button" data-add="${p.handle}::0">Lägg i varukorgen</button>`)}
-      </table></div>` : `<div class="empty"><h3>Inget att jämföra än</h3><p>Välj Jämför på en produkt, så hamnar den här.</p><a class="btn ghost" href="#butik">Utforska butiken</a></div>`}</section>` };
-  };
-
   /* ---------------- magazine */
   RQ.magCard = (a) => `<a class="mag" href="#artikel-${a.slug}"><div class="im"><img src="${a.img}" alt="" loading="lazy"></div><h3>${esc(a.title)}</h3><p>${esc(a.lead)}</p><span class="min">${a.minutes} min läsning</span></a>`;
   V.magasin = () => ({ html: `${head(crumbs([["Hem", "hem"], ["Magasin"]]), "Magasin", "Idéer för ditt hem. Korta texter om ljus, material, färg och vardag.")}
@@ -410,21 +389,6 @@
     });
   }
 
-  /* ---------------- ideas */
-  V.ideer = () => {
-    const ideas = S.ideas().sort((a, b) => b.votes - a.votes);
-    return RQ.infoPage("ideer", "Kundservice", "Vad vill du se hos RumIQ?", "Föreslå en produkt eller en förbättring, och rösta på andras idéer.",
-      `<h2 style="margin-top:0">Kundernas idéer</h2>
-       ${ideas.length ? `<div style="display:grid;gap:.8rem;margin-top:1rem">${ideas.map((i) => `<div class="order" style="display:flex;gap:1rem;align-items:flex-start"><button class="chip" type="button" data-vote="${i.id}" aria-pressed="${!!i.voted}" style="flex:none">▲ ${i.votes}</button><div><b>${esc(i.title)}</b><p class="small">${esc(i.text)}</p></div></div>`).join("")}</div>` : `<p>Inga publicerade idéer ännu. Bli först!</p>`}
-       <p class="note">I den här förhandsversionen sparas idéerna bara i din webbläsare och syns inte för andra.</p>
-       <h2>Dela en idé</h2>
-       <form id="ideaForm" class="form-grid" novalidate style="margin-top:1rem"><label class="full">Rubrik<input name="title" maxlength="80" required placeholder="Till exempel: Fler mörka textilier"></label><label class="full">Beskriv gärna lite mer<textarea name="text" rows="4" maxlength="600"></textarea></label><button class="btn" type="submit">Skicka idén</button><p class="status full" id="ideaStatus"></p></form>`,
-      (root) => {
-        $$("[data-vote]", root).forEach((b) => b.addEventListener("click", () => { S.voteIdea(b.dataset.vote); RQ.router(); }));
-        $("#ideaForm", root).addEventListener("submit", (e) => { e.preventDefault(); const f = e.currentTarget; if (!f.title.value.trim()) { $("#ideaStatus", root).textContent = "Skriv en kort rubrik."; return; } S.addIdea(f.title.value.trim(), f.text.value.trim()); RQ.toast("Tack för idén!"); RQ.router(); });
-      });
-  };
-
   /* ---------------- 404 */
   V.notfound = () => ({ html: `${head(`<span class="eyebrow">404</span>`, "Den här sidan finns inte", "Länken kan vara gammal eller felstavad.")}<section class="wrap" style="padding-bottom:6rem"><div class="ctrl-row"><a class="btn" href="#hem">Till startsidan</a><a class="btn ghost" href="#butik">Till butiken</a></div></section>` });
 
@@ -450,7 +414,7 @@
     [/^butik$/, () => V.butik()], [/^nyheter$/, () => V.nyheter()], [/^favoriter$/, () => V.favoriter()], [/^erbjudanden$/, () => V.erbjudanden()],
     [/^kategori-(.+)$/, (m) => V.kategori(m[1])], [/^rum$/, () => V.rumindex()], [/^rum-(.+)$/, (m) => V.rum(m[1])],
     [/^kollektioner$/, () => V.looks()], [/^kollektion-(.+)$/, (m) => V.kollektion(m[1])],
-    [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.jamfor()],
+    [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.myHome()], // the compare tool is gone: its old address opens Mitt hem
     [/^magasin$/, () => V.magasin()], [/^artikel-(.+)$/, (m) => V.artikel(m[1])], [/^inspiration$/, () => V.inspiration()],
     [/^juridik-(.+)$/, (m) => V.juridik(m[1])], [/^ideer$/, () => V.onska()],
     [/^(kontakt|faq|frakt|returer|betalning|om|sa-fungerar-det)$/, (m) => V[m[1]]()],
@@ -461,79 +425,237 @@
     [/^presentguiden$/, () => V.findRight("present")], [/^mitt-hem$/, () => V.myHome()],
     [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
   ];
-  let current = null, cleanup = null, firstRun = true;
+  let current = null, cleanup = null, firstRun = true, drawn = 0;
+  let routing = null; // the route being drawn, until render() has run: popstate and hashchange both report one navigation
+  let popNav = false; // the navigation in progress is Back or Forward: return to where the customer was
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function render(raw) {
+  const dec = (s) => { try { return decodeURIComponent(s); } catch (e) { return s; } }; // a stray "%" in an address must never stop the script
+  const isHomeRaw = (raw) => /^(hem)?$/.test(raw);
+
+  /* Where the customer was on each page, so Back returns there instead of to the top. */
+  try { history.scrollRestoration = "manual"; } catch (e) {}
+  const scrolls = new Map();
+  let settle = 0;
+  const scrollBack = (y) => {
+    const id = ++settle; let n = 0;
+    const stop = () => { settle++; };
+    ["wheel", "touchstart", "keydown", "pointerdown"].forEach((t) => window.addEventListener(t, stop, { once: true, passive: true }));
+    // the page may still grow above this point (a toolbar, pictures): hold the place for a second, until the customer moves
+    const step = () => { if (id !== settle) return; if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); if (n++ < 14) setTimeout(step, 70); };
+    step();
+  };
+
+  window.addEventListener("pagehide", () => { if (current != null) RQ.ss.set("rumiq-scroll", JSON.stringify([current, Math.round(window.scrollY)])); });
+
+  /* One polite voice for route changes: screen readers hear the new page's name, and the keyboard starts at its top. */
+  const live = document.createElement("p");
+  live.className = "sr"; live.id = "routeLive"; live.setAttribute("role", "status"); live.setAttribute("aria-live", "polite");
+  document.body.appendChild(live);
+
+  /* The page head follows the view: title, description, canonical address and the sharing tags.
+     RQ.META[route] = { title, description, image } wins when the build provides it; otherwise the view's own
+     title and lead are used. Routes that show another page point their canonical address at that page. */
+  const CANON = { studio: "mitt-rum", "studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", kollektioner: "looks", ideer: "onska", rosta: "onska", jamfor: "mitt-hem", presentguiden: "hitta-ratt-present", "studio-sok": "hitta-ratt-ord", "studio-hemurval": "hitta-ratt" };
+  const HOME_TITLE = "RumIQ · Skandinavisk inredning och smarta verktyg för hemmet";
+  const metaEl = (sel) => document.head.querySelector(sel);
+  const HEAD0 = { desc: (metaEl('meta[name="description"]') || {}).content || "", image: (metaEl('meta[property="og:image"]') || {}).content || "" };
+  let siteRoot = null; // the public address of the start page, read once from the canonical link the page came with
+  const publicRoot = () => {
+    if (siteRoot) return siteRoot;
+    const c = metaEl('link[rel="canonical"]'); let u;
+    try { u = new URL((c && c.getAttribute("href")) || SITE.href, SITE.href); } catch (e) { u = new URL(SITE.href); }
+    const m = /^(.*\/)([^/]+)\/$/.exec(u.pathname);
+    if (m && isRoute(dec(m[2]))) u.pathname = m[1];
+    u.search = ""; u.hash = "";
+    return (siteRoot = u.href);
+  };
+  const setMeta = (sel, attr, val) => { const el = metaEl(sel); if (el && val != null && el.getAttribute(attr) !== val) el.setAttribute(attr, val); };
+  function paintHead(raw, view, root, found) {
+    const M = (RQ.META && RQ.META[raw]) || {};
+    const isHome = isHomeRaw(raw), h1 = !view.title && !isHome && root.querySelector("h1");
+    const title = M.title || view.title || (isHome ? HOME_TITLE : h1 ? `${h1.textContent.trim().replace(/\s+/g, " ")} · RumIQ` : "RumIQ");
+    document.title = title;
+    const lead = !isHome && root.querySelector(".lead, .short");
+    const text = (M.description || view.description || (lead ? lead.textContent.trim().replace(/\s+/g, " ") : "") || HEAD0.desc);
+    const desc = text.length > 158 ? text.slice(0, 155).replace(/\s+\S*$/, "") + "…" : text;
+    const to = CANON[raw] || (/^studio-kombinera-/.test(raw) ? "mitt-rum" : raw);
+    const url = found && pathable(to) ? new URL(isHomeRaw(to) ? "./" : encodeURI(to) + "/", publicRoot()).href : publicRoot();
+    const pm = /^produkt-(.+)$/.exec(raw), prod = pm && RQ.byHandle(pm[1]);
+    const image = M.image || view.image || (prod ? new URL(RQ.img(prod, 900), publicRoot()).href : HEAD0.image);
+    setMeta('link[rel="canonical"]', "href", url);
+    setMeta('meta[name="description"]', "content", desc);
+    setMeta('meta[property="og:title"]', "content", title);
+    setMeta('meta[property="og:description"]', "content", desc);
+    setMeta('meta[property="og:url"]', "content", url);
+    setMeta('meta[property="og:image"]', "content", image);
+    return title;
+  }
+
+  /* When a page cannot be drawn (a value kept in the browser that no longer fits, or a fault of ours), the
+     customer gets a way forward instead of a page whose buttons do nothing. */
+  V.crashed = () => ({
+    title: "Sidan kunde inte visas · RumIQ", crashed: true,
+    html: `${head(`<span class="eyebrow">Något gick snett</span>`, "Sidan kunde inte visas", "Prova att ladda om sidan. Hjälper inte det kan du rensa det som är sparat i den här webbläsaren. Då töms varukorgen och det du har sparat.")}
+      <section class="wrap" style="padding-bottom:6rem"><div class="ctrl-row"><button class="btn" type="button" id="crashReload">Ladda om sidan</button><button class="btn ghost" type="button" id="crashClear">Rensa sparat och ladda om</button><a class="btn ghost" href="./">Till startsidan</a></div></section>`,
+    mount(root) {
+      $("#crashReload", root).addEventListener("click", () => location.reload());
+      $("#crashClear", root).addEventListener("click", () => { try { S.clearAll(); } catch (e) {} location.reload(); });
+    },
+  });
+  const lookup = (raw) => {
     let view = null;
     for (const [re, fn] of ROUTES) { const m = raw.match(re); if (m) { view = fn(m); break; } }
     // in-page anchors such as #faq-2 fall back to their page
     if (!view && /^faq-\d+$/.test(raw)) view = V.faq();
-    if (!view) view = V.notfound();
+    return view;
+  };
+  function render(raw) {
+    let view = null, found = true;
+    try { view = lookup(raw); } catch (e) { console.error(e); view = V.crashed(); }
+    if (!view) { view = V.notfound(); found = false; }
     if (view.lazy) { // a tool that has not loaded yet: keep what is on screen (the prerendered page), load, then draw
       document.documentElement.classList.add("loading-tools");
-      RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); }, () => { document.documentElement.classList.remove("loading-tools"); RQ.toast("Sidan kunde inte laddas. Kontrollera anslutningen och försök igen."); });
+      RQ.loadTools().then(() => { document.documentElement.classList.remove("loading-tools"); if (currentRaw() === raw) render(raw); else if (routing === raw) routing = null; }, () => {
+        routing = null; document.documentElement.classList.remove("loading-tools");
+        // the address goes back to the page that is still on screen; the customer can try again from the message
+        if (current != null && currentRaw() === raw) { try { history.replaceState(null, "", pathFor(current)); } catch (e) {} }
+        RQ.toast(`Sidan kunde inte laddas. Kontrollera anslutningen. <a href="${esc(hrefFor(raw))}">Försök igen</a>`);
+      });
       return;
     }
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
     const root = $("#view");
-    const isHome = /^(hem)?$/.test(raw);
-    root.className = "view" + (isHome ? " home" : "");
+    const isHome = isHomeRaw(raw), moved = current !== raw, first = !drawn++;
+    // the first draw replaces the prerendered page with the same pictures: they must not fade out and in again
+    root.className = "view" + (isHome ? " home" : "") + (first ? " first" : "");
     document.body.classList.toggle("on-home", isHome);
     document.body.classList.toggle("on-product", /^produkt-/.test(raw));
     document.body.classList.toggle("on-checkout", /^kassa$/.test(raw));
     root.innerHTML = view.html;
-    const h1 = !view.title && !isHome && root.querySelector("h1");
-    document.title = view.title || (isHome ? "RumIQ · Skandinavisk inredning och smarta verktyg för hemmet" : h1 ? `${h1.textContent.trim().replace(/\s+/g, " ")} · RumIQ` : "RumIQ");
-    if (current !== raw) window.scrollTo(0, 0);
-    current = raw;
-    if (view.mount) cleanup = view.mount(root) || null;
-    if (RQ.mountBav && root.querySelector(".bav")) { const a = cleanup, b = RQ.mountBav(root); cleanup = () => { a && a(); b(); }; }
+    toPathLinks(root);
+    const title = paintHead(raw, view, root, found && !view.crashed);
+    let backTo = moved && popNav ? scrolls.get(raw) || 0 : 0;
+    if (first) { // a reload, or Back from another site, lands where the customer was
+      try { const nav = performance.getEntriesByType("navigation")[0], was = JSON.parse(RQ.ss.get("rumiq-scroll") || "null"); if (nav && /reload|back_forward/.test(nav.type) && Array.isArray(was) && was[0] === raw && was[1] > 0) backTo = was[1]; } catch (e) {}
+    }
+    if (moved) { settle++; if (!backTo) window.scrollTo(0, 0); }
+    popNav = false;
+    current = raw; routing = null;
+    // #view outlives every page: whatever a page listens for on it is taken away again when the page leaves
+    const offs = [], add = root.addEventListener.bind(root);
+    root.addEventListener = (t, f, o) => { offs.push(() => root.removeEventListener(t, f, o)); add(t, f, o); };
+    let un = null;
+    try { un = view.mount ? view.mount(root) : null; }
+    catch (e) { // the page was written out but could not be started: show the way forward instead of dead buttons
+      console.error(e);
+      if (!view.crashed) { const c = V.crashed(); root.innerHTML = c.html; toPathLinks(root); document.title = c.title; try { c.mount(root); } catch (x) {} }
+    } finally { delete root.addEventListener; }
+    if (RQ.mountBav && root.querySelector(".bav")) { const b = RQ.mountBav(root); offs.push(() => b && b()); }
+    cleanup = () => { offs.forEach((f) => { try { f(); } catch (e) {} }); if (typeof un === "function") un(); };
     RQ.watch(root);
     RQ.paintShell();
     RQ.markImages(root);
-    $$(".menu a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + raw));
-    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden|jamfor)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista)$/ };
+    $$(".menu a").forEach((a) => a.classList.toggle("active", rawOf(a) === raw));
+    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
     $$("[data-dock]").forEach((a) => a.classList.toggle("on", !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw))));
     const anchor = /^faq-\d+$/.test(raw) && document.getElementById(raw);
     if (anchor) anchor.scrollIntoView();
+    if (backTo) scrollBack(backTo); // after the page has started, so its own parts are in place
     RQ.navCheck && RQ.navCheck();
+    if (moved && !first) { // a new page: the keyboard and the screen reader start at its top (unless the page chose a field itself)
+      if (!root.contains(document.activeElement)) { try { root.focus({ preventScroll: true }); } catch (e) {} }
+      live.textContent = ""; setTimeout(() => { live.textContent = (document.title || title).replace(/\s*·\s*RumIQ.*$/, ""); }, 60);
+    }
+    if (first) setTimeout(() => root.classList.remove("first"), 1200);
   }
   /* Real addresses. Every view has its own path (rumiq.se/produkt-glob-bordslampa-opalglas/) that Google can
-     index; the build script writes a prerendered page for each. Links and code inside the site still say
-     "#route": a click or a hash change is turned into the path form here, without reloading the page.
-     <base href> in every page points at the site root, so relative asset paths keep working. */
+     index; the build script writes a prerendered page for each. Every internal link on the page is that real
+     path ("butik/"), so search engines and "open in new tab" follow it; a normal click is caught here and the
+     view changes without a reload. Templates may still write "#route": those links are turned into paths as
+     they enter the page, and "#route" addresses keep working as an alias.
+     <base href> in every page points at the site root, so relative paths work from every page. */
   const SITE = new URL(".", document.baseURI);
   const isRoute = (raw) => /^faq-\d+$/.test(raw) || ROUTES.some(([re]) => re.test(raw));
-  const pathFor = (raw) => new URL(/^(hem)?$/.test(raw) ? "./" : encodeURIComponent(raw) + "/", SITE).pathname;
-  const currentRaw = () => {
-    const h = decodeURIComponent(location.hash.replace(/^#/, ""));
-    if (h && !h.includes("=")) return h; // "#access_token=…" from a sign-in belongs to the auth client
-    let p = location.pathname; const rp = SITE.pathname;
-    if (p.startsWith(rp)) p = p.slice(rp.length);
-    return decodeURIComponent(p.replace(/index\.html$/, "").replace(/\/+$/, ""));
+  // routes whose address carries an answer or an anchor stay "#route": they have no page of their own on the server
+  const pathable = (raw) => !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw) && !/^studio-kombinera-/.test(raw);
+  const hrefFor = (raw) => (isHomeRaw(raw) ? "./" : pathable(raw) ? encodeURI(raw) + "/" : "#" + raw);
+  const pathFor = (raw) => new URL(isHomeRaw(raw) ? "./" : encodeURIComponent(raw) + "/", SITE).pathname;
+  // "#Butik" and "#butik/" mean "#butik"; the start page has one name, "" ("#hem" is the same page)
+  const tidy = (raw) => { raw = raw.replace(/\/+$/, ""); if (!isRoute(raw) && isRoute(raw.toLowerCase())) raw = raw.toLowerCase(); return raw === "hem" ? "" : raw; };
+  const rawOfPath = (pathname) => {
+    const rp = SITE.pathname; if (!pathname.startsWith(rp)) return null;
+    return dec(pathname.slice(rp.length).replace(/index\.html$/, "").replace(/\/+$/, ""));
   };
-  RQ.pathFor = pathFor; RQ.isRoute = isRoute; RQ.currentRoute = () => current;
-  // prerendered pages carry path links ("butik/") for search engines; inside the running site they are "#butik"
-  const toHashLinks = (root) => $$("a[href]", root).forEach((a) => { const h = a.getAttribute("href"); const m = /^(?:\.\/|([a-z0-9-]+)\/)$/.exec(h); if (m) a.setAttribute("href", "#" + (m[1] || "hem")); });
-  RQ.toHashLinks = toHashLinks;
-  toHashLinks(document);
+  const currentRaw = () => {
+    const h = dec(location.hash.replace(/^#/, ""));
+    if (h && !h.includes("=")) return tidy(h); // "#access_token=…" from a sign-in belongs to the auth client
+    const p = rawOfPath(location.pathname);
+    return tidy(p == null ? dec(location.pathname.replace(/index\.html$/, "").replace(/\/+$/, "")) : p);
+  };
+  // the route a link leads to, or null when it leaves the shop (a file, another site, an anchor that is no route)
+  const rawOf = (a) => {
+    const h = a.getAttribute("href") || "";
+    if (h[0] === "#") { const raw = tidy(dec(h.slice(1))); return h.length > 1 && (isHomeRaw(raw) || isRoute(raw)) ? raw : null; }
+    let u; try { u = new URL(a.href); } catch (e) { return null; }
+    if (u.origin !== SITE.origin || (u.hash && u.hash.length > 1)) return null;
+    const raw = rawOfPath(u.pathname); if (raw == null) return null;
+    return raw === "" || isRoute(tidy(raw)) ? tidy(raw) : null;
+  };
+  RQ.pathFor = pathFor; RQ.hrefFor = hrefFor; RQ.isRoute = isRoute; RQ.currentRoute = () => current;
+  // links written as "#butik" become "butik/" as they enter the page (the quick-view sheet keeps its own, see flow.js)
+  const toPathLinks = (root) => {
+    if (!root || root.nodeType !== 1) return;
+    const list = root.matches && root.matches('a[href^="#"]') ? [root] : [];
+    root.querySelectorAll && list.push(...root.querySelectorAll('a[href^="#"]'));
+    list.forEach((a) => {
+      const h = a.getAttribute("href"); if (h.length < 2 || a.closest("#sheet")) return;
+      const raw = tidy(dec(h.slice(1)));
+      if ((isHomeRaw(raw) || isRoute(raw)) && pathable(raw)) a.setAttribute("href", hrefFor(raw));
+    });
+  };
+  RQ.toPathLinks = toPathLinks; RQ.toHashLinks = toPathLinks; // the old name is still called by the stylist
+  toPathLinks(document.body);
+  if ("MutationObserver" in window) new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach(toPathLinks))).observe(document.body, { childList: true, subtree: true });
+  // go to a route from code: RQ.go("kassa")
+  RQ.go = (raw) => {
+    raw = tidy(String(raw || "").replace(/^#/, ""));
+    if (raw === current && !routing) return;
+    if (!pathable(raw)) { location.hash = "#" + raw; return; }
+    try { history.pushState(null, "", pathFor(raw)); } catch (e) { location.hash = "#" + raw; return; }
+    RQ.router();
+  };
   document.addEventListener("click", (e) => {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const a = e.target.closest("a[href]"); if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
-    const h = a.getAttribute("href"); if (h[0] !== "#" || h.length < 2) return;
+    const h = a.getAttribute("href"); if (h === "#" || h === "") return;
     if (a.closest("#sheet")) return; // the quick-view sheet steps its own history entry back first (flow.js)
+    const raw = rawOf(a);
+    if (raw != null) {
+      e.preventDefault();
+      if (a.dataset.after) RQ.ss.set("rumiq-after-login", "#" + a.dataset.after);
+      if (h[0] !== "#" && RQ.closeAll) RQ.closeAll(); // "#route" links are closed by the shell's own click handler
+      RQ.go(raw); return;
+    }
+    if (h[0] !== "#") return; // a file, a mail address or another site: the browser takes it
     e.preventDefault();
-    const raw = decodeURIComponent(h.slice(1));
-    if (isRoute(raw)) { if (raw !== current) location.hash = h; return; }
-    const el = document.getElementById(raw);
+    const id = dec(h.slice(1)), el = document.getElementById(id);
     if (el) { el.scrollIntoView({ block: "start" }); if (el.matches("main,section,[tabindex]")) el.focus({ preventScroll: true }); }
     else location.hash = h;
   }, true);
-  window.addEventListener("popstate", () => { if (currentRaw() !== current) RQ.router(); });
+  const onNav = (e) => {
+    const raw = currentRaw();
+    if (raw === current) { routing = null; return; }
+    if (raw === routing) return;
+    popNav = !!e && e.type === "popstate" && !location.hash; // Back or Forward to a page with a real address
+    RQ.router();
+  };
+  window.addEventListener("popstate", onNav);
   const COARSE = matchMedia("(pointer: coarse), (max-width: 900px)").matches;
   RQ.router = () => {
-    const raw = currentRaw();
-    if (location.hash && isRoute(raw) && !/^faq-\d+$/.test(raw) && !/^svep-ihop-/.test(raw) && !/^delad-/.test(raw) && !/^studio-kombinera-/.test(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw)); } catch (e) {} }
+    const raw = currentRaw(); routing = raw;
+    if (current != null && raw !== current) scrolls.set(current, window.scrollY);
+    // "#butik" is an alias: the address bar gets the real path (what follows "?" stays, a sign-in answer after "#" is left alone)
+    if (location.hash && !location.hash.includes("=") && isRoute(raw) && pathable(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw) + location.search); } catch (e) {} }
     // phones and tablets: no view transition. Taking a picture of the whole page before every change costs more
     // than the fade is worth there; the new view gets a short fade instead.
     if (firstRun || !document.startViewTransition || reduced() || raw === current || COARSE) {
@@ -547,7 +669,7 @@
   };
   // a tapped product image morphs into the product page
   document.addEventListener("click", (e) => {
-    const a = e.target.closest(".card a[href^='#produkt-']"); if (!a) return;
+    const a = e.target.closest(".card a[href*='produkt-']"); if (!a) return;
     const img = $(".ph img", a.closest(".card")); if (img) img.style.viewTransitionName = "pimg";
   }, true);
 
@@ -561,14 +683,12 @@
   /* ---------------------------------------------------------------- reveal */
   const io = "IntersectionObserver" in window ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }) : null;
   RQ.watch = (root) => $$("[data-watch]:not(.in), .reveal:not(.in), .stagger:not(.in)", root).forEach((el) => (io ? io.observe(el) : el.classList.add("in")));
-  RQ.observeImages = (root) => RQ.markImages(root);
 
   /* ---------------------------------------------------------------- shell: cart drawer, search, menus */
   RQ.paintShell = () => {
     $$("[data-count=cart]").forEach((b) => { const n = S.cartCount(); if (+b.dataset.n < n) { b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); } b.textContent = n || ""; b.dataset.n = n; });
     $$("[data-count=cartline]").forEach((b) => { const n = S.cartCount(); b.textContent = n ? `${n} ${n === 1 ? "produkt" : "produkter"}` : ""; });
     $$("[data-count=wish]").forEach((b) => { const n = S._wish.length; b.textContent = n || ""; b.dataset.n = n; });
-    $$("[data-count=cmp]").forEach((b) => { const n = S._cmp.length; b.textContent = n || ""; b.dataset.n = n; });
     const c = S.customer(); const acc = $("#accLink"); if (acc) acc.setAttribute("aria-label", c ? "Mitt konto" : "Logga in");
   };
   const drawer = $("#cart"), scrimAll = $("#scrimAll");
@@ -603,6 +723,12 @@
     foot.innerHTML = `<div class="sum"><span>Delsumma</span><span>${kr(sub)}</span></div>${disc.map((d) => `<div class="sum disc"><span>Hela looken ${esc(d.look.name)}</span><span>−${kr(d.amount)}</span></div>`).join("")}<div class="sum small"><span>Frakt</span><span>${S.freeShipping && S.freeShipping() ? "Fri till ombud och paketskåp" : "Från 49 kr"}</span></div><div class="sum small"><span>Varav moms (25 %)</span><span>${kr(S.vatIncluded(net))}</span></div><a class="btn block" href="#kassa" data-close>Till kassan</a><button class="btn ghost block" type="button" data-cart-room>${RQ.roomIco}Se varorna i ditt rum</button>`;
   }
   S.onChange((w) => { RQ.paintShell(); if (drawer.classList.contains("open")) renderCart(); });
+  // the browser's storage is full: say that this will not be kept, instead of a cart that is empty after a reload
+  let fullAt = 0;
+  S.onChange((w) => {
+    if (w !== "full" || Date.now() - fullAt < 6000) return; fullAt = Date.now();
+    setTimeout(() => { if (!S.store.lost) { fullAt = 0; return; } S.store.lost = null; const t = $("#toast"); if (t.classList.contains("show") && /lagring|storage/i.test(t.textContent)) return; RQ.toast('Webbläsarens lagring är full, så det här sparas inte. Ta bort något du har sparat. <a href="#mitt-hem">Visa</a>'); }, 0);
+  });
   // day/evening on a room picture: the same room after sunset, so you see how the lamps change it
   document.addEventListener("click", (e) => { const b = e.target.closest("[data-dn]"); if (!b) return; const sec = b.closest(".rm-shop"); const st = sec && $(".hs-stage", sec); if (!st) return; st.classList.toggle("eve", b.dataset.dn === "kvall"); $$("[data-dn]", sec).forEach((x) => x.setAttribute("aria-pressed", x === b)); });
   /* the total cost up front: shipping on the product page, so nothing new appears in the checkout */
@@ -676,10 +802,9 @@
 
   // global clicks
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-wish],[data-compare],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
+    const t = e.target.closest("[data-wish],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
     if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad i önskelistan" : "Spara i önskelistan"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
-    if (t.matches("[data-compare]")) { const on = S.toggleCompare(t.dataset.compare); if (t.classList.contains("chip")) { t.setAttribute("aria-pressed", on); t.textContent = on ? "I jämförelsen" : "Jämför"; } else if (t.closest(".pactions")) { t.setAttribute("aria-pressed", on); $("span", t).textContent = on ? "I jämförelsen" : "Jämför"; } else if (t.classList.contains("btn")) t.textContent = on ? "I jämförelsen" : "Jämför"; RQ.toast(on ? `Tillagd i jämförelsen (${S._cmp.length} av 4). <a href="#jamfor">Jämför</a>` : "Borttagen ur jämförelsen"); if (current === "jamfor") RQ.router(); return; }
     if (t.matches("[data-add]")) { S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
     if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }
@@ -859,7 +984,7 @@
   const showFlags = () => { const c = window.RQ_CONFIG || {}, h = document.documentElement; h.toggleAttribute("data-no-offers", !RQ.PRODUCTS.some((p) => p.was)); h.toggleAttribute("data-no-news", !c.showNews); };
   showFlags();
 
-  window.addEventListener("hashchange", RQ.router);
+  window.addEventListener("hashchange", onNav);
   document.addEventListener("DOMContentLoaded", () => {
     RQ.router(); navCheck();
     /* the first screen of the home page belongs to the offer: on the home page the cookie bar waits

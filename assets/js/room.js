@@ -7,11 +7,7 @@
 (function () {
   const RQ = window.RQ, S = RQ.shop, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc, kr = S.kr;
   const KEY = "rumiq-myroom", SCENE = "rumiq-scene", MODE = "rumiq-roommode";
-  const ls = {
-    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
-    del(k) { try { localStorage.removeItem(k); } catch (e) {} },
-  };
+  const ls = S.store; // the shop's one typed reader (commerce.js)
   let room = ls.get(KEY, null), blobUrl = null;
   const emit = (what) => document.dispatchEvent(new CustomEvent("rq-room", { detail: what }));
 

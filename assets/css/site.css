@@ -47,6 +47,7 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 ::selection{background:var(--glow);color:#22252A}
 .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.noscript{position:fixed;z-index:60;top:calc(var(--nav-h) + .6rem);left:50%;transform:translateX(-50%);width:max-content;max-width:min(92vw,36rem);margin:0;padding:.7rem 1.1rem;border-radius:12px;background:#2B2C2A;color:#F7F7F4;font-size:.92rem;line-height:1.4;box-shadow:0 8px 30px rgba(0,0,0,.18)}
 .skip{position:absolute;left:-999px;top:1rem;background:var(--ink);color:var(--bg);padding:.6rem 1rem;border-radius:var(--r-btn);z-index:300;text-decoration:none}
 .skip:focus{left:1rem}
 .env{display:none}
@@ -177,6 +178,7 @@ a.eyebrow:hover{color:var(--ink)}
 /* ---------------------------------------------------------------- frame */
 main{min-height:60vh}
 .view{padding-top:var(--nav-h)}
+.view:focus,.view:focus-visible{outline:0}
 .view.home{padding-top:0}
 .wrap{width:var(--wrap);margin:0 auto}
 .sec{padding:clamp(4.5rem,9vw,8rem) 0;position:relative}
@@ -206,6 +208,8 @@ main{min-height:60vh}
 /* images fade in on their own tone */
 .fade{opacity:0;transition:opacity .7s var(--ease)}
 .fade.ok{opacity:1}
+/* the first draw swaps the prerendered page for the same pictures: no fade out and in */
+.view.first .fade{opacity:1;transition:none}
 
 /* ---------------------------------------------------------------- product cards */
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(2.2rem,4vw,3.4rem) clamp(.75rem,1.6vw,1.4rem)}
@@ -631,11 +635,6 @@ footer.site .co + .ai{margin-top:.4rem}
 .timeline li:last-child::after{display:none}
 .timeline li.done::before{background:var(--accent);border-color:var(--accent)}
 .timeline small{display:block;color:var(--muted)}
-.compare-wrap{overflow:auto}
-.compare{border-collapse:collapse;min-width:44rem;width:100%}
-.compare th,.compare td{padding:1rem;border-bottom:1px solid var(--line);vertical-align:top;text-align:left;font-size:.95rem}
-.compare th{font-weight:560;font-size:.88rem;color:var(--muted);width:9rem}
-.compare img{border-radius:var(--r-img);aspect-ratio:4/5;object-fit:cover;width:100%;max-width:11rem;background:var(--img-bg)}
 .auth-grid{display:grid;grid-template-columns:minmax(0,29rem) 1fr;gap:clamp(2rem,6vw,5rem);align-items:start}
 .auth-card{min-width:0;background:var(--paper);border:1px solid var(--line2);border-radius:var(--r);padding:clamp(1.3rem,3vw,2.2rem)}
 .auth-card form{display:grid;gap:1rem}

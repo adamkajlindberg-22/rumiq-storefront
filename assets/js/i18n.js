@@ -37,6 +37,7 @@
     const RULES = [
       [/^Matchar: (.+)$/, (m) => { const p = m[1].split(", ").map(one); return p.every(Boolean) ? "Matches: " + p.join(", ") : null; }],
       [/^Hej (.+)$/, (m) => "Hi " + m[1]],
+      [/^Hela looken (.+)$/, (m) => { const a = one(m[1]); return a ? "Whole look " + a : null; }],
       [/^Sparad i (.+)\.$/, (m) => "Saved in " + (one(m[1]) || m[1]) + "."],
       [/^Inga träffar på "(.*)"$/, (m) => `No results for "${m[1]}"`],
       [/^Inloggad med (.+) \(testkonto\)\.$/, (m) => `Signed in with ${m[1]} (test account).`],
@@ -55,11 +56,16 @@
       let out = one(s);
       if (!out) for (const [re, fn] of RULES) { const m = s.match(re); if (m && (out = fn(m))) break; }
       if (!out && s.includes(", ")) { const p = s.split(", ").map(one); if (p.every(Boolean)) out = p.join(", "); }
+      // "Svep · Kök", "1 st · Havre" and page titles ("Populärt · RumIQ"): each part on its own, the brand stays
+      if (!out && s.includes(" · ")) { const p = s.split(" · ").map((x) => (/^RumIQ( Studio)?$/.test(x) || !/[A-Za-zÅÄÖåäö]/.test(x) ? x : x === "RumIQ Magasin" ? "RumIQ Magazine" : translate(x))); if (p.every(Boolean)) out = p.join(" · "); }
       if (!out) { // runs of known sentences, e.g. advice paragraphs put together
         const sent = s.split(/(?<=[.!?])\s+/); const parts = []; let i = 0;
         while (i < sent.length) { let j = sent.length, hit = null; for (; j > i; j--) { const k = sent.slice(i, j).join(" "); if ((hit = one(k))) break; } if (!hit) { parts.length = 0; break; } parts.push(hit); i = j; }
         if (parts.length) out = parts.join(" ");
       }
+      // one way to write numbers in English: "2,687 kr", also in prices that are not part of a sentence; "1 pc", "1 item"
+      if (!out) { const f = s.replace(/\d{1,3}(?: \d{3})+(?= ?kr\b)/g, fmtNum); if (f !== s) out = f; }
+      if (out) out = out.replace(/\b1 (pcs|items|products)\b/g, (m, w) => "1 " + w.replace(/s$/, ""));
       cache.set(s, out || null);
       return out || null;
     }
@@ -72,7 +78,7 @@
       if (t && t !== v.trim()) { const lead = v.match(/^\s*/)[0], tail = v.match(/\s*$/)[0]; n.nodeValue = lead + t + tail; }
     }
     function doEl(el) {
-      if (skip(el)) return;
+      if (skip(el) && !(el.tagName === "TEXTAREA" && !el.closest("[translate=no]"))) return; // a text field's own hint and label are ours, what is typed in it is not
       for (const a of ATTR) { if (el.hasAttribute(a)) { const v = el.getAttribute(a), t = translate(v); if (t && t !== v) el.setAttribute(a, t); } }
       if (el.tagName === "INPUT" && /^(submit|button)$/.test(el.type) && el.value) { const t = translate(el.value); if (t) el.value = t; }
     }
