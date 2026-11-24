@@ -1266,9 +1266,10 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .card .qv svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .card:hover .qv,.card .qv:focus-visible{opacity:1;transform:none}
 @media (hover:none),(max-width:640px){.card .qv{opacity:1;transform:none;width:2.4rem;padding:0;justify-content:center}.card .qv span{display:none}}
-/* fingers: the four round buttons on a card answer to 44 px although they are drawn smaller, and heart and room stand apart */
+/* fingers: the four round buttons on a card answer to 44 px although they are drawn smaller, and heart and room stand apart
+   (::after, an invisible edge: ::before is the light backing behind heart and room) */
 @media (hover:none),(max-width:640px){
-  .card .fav::before,.card .rbtn::before,.card .qadd::before,.card .qv::before{content:"";position:absolute;inset:-.25rem}
+  .card .fav::after,.card .rbtn::after,.card .qadd::after,.card .qv::after{content:"";position:absolute;inset:-.25rem}
   .card .rbtn{top:3.15rem}
 }
 

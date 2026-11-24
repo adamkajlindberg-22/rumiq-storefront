@@ -216,7 +216,7 @@ with sync_playwright() as p:
         if mobile:
             pg.goto(BASE + "butik/"); pg.wait_for_timeout(500)
             ok(float(ev("getComputedStyle(document.querySelector('#dock a')).fontSize").replace("px", "")) >= 12, f"{tag} dock: labels are 12 px")
-            hit = ev("(() => { scrollTo(0, 420); const c = document.querySelector('#results .card'), f = c.querySelector('.fav').getBoundingClientRect(), r = c.querySelector('.rbtn').getBoundingClientRect(); const at = (x, y) => { const e = document.elementFromPoint(x, y); return e && e.closest('button') ? e.closest('button').className : ''; }; return [at(f.left + 18, f.top - 3), at(r.left + 18, r.bottom + 3), r.top - f.bottom]; })()")
+            hit = ev("(() => { const c = document.querySelector('#results .card'); c.scrollIntoView({ block: 'center' }); const f = c.querySelector('.fav').getBoundingClientRect(), r = c.querySelector('.rbtn').getBoundingClientRect(); const at = (x, y) => { const e = document.elementFromPoint(x, y); return e && e.closest('button') ? e.closest('button').className : ''; }; return [at(f.left + 18, f.top - 3), at(r.left + 18, r.bottom + 3), r.top - f.bottom]; })()")
             ok("fav" in hit[0] and "rbtn" in hit[1] and hit[2] >= 4, f"{tag} cards: heart and room answer to 44 px and stand apart: {hit}")
             ev("scrollTo(0, 99999)"); pg.wait_for_timeout(700)
             end = ev("(() => { const f = document.querySelector('footer.site').getBoundingClientRect(), l = document.querySelector('footer.site .bottom').getBoundingClientRect(), d = document.getElementById('dock'); return [Math.round(innerHeight - f.bottom), d.classList.contains('away'), l.bottom <= d.getBoundingClientRect().top]; })()")
