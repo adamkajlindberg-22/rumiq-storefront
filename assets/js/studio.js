@@ -91,7 +91,7 @@
   /* ---------------------------------------------------------------- rule-based stylist + smart search */
   const LEX = {
     rooms: { vardagsrum: ["vardagsrum", "soffa", "soffan", "tv", "living", "lounge", "sofa", "couch"], sovrum: ["sovrum", "säng", "sängen", "nattduksbord", "bedroom", "bed", "bedside"], kok: ["kök", "köket", "bänk", "matplats", "middag", "frukost", "kitchen", "dining", "dinner", "breakfast", "worktop"], badrum: ["badrum", "dusch", "handfat", "badrummet", "bathroom", "shower", "sink"], hall: ["hall", "hallen", "entré", "ytterdörr", "hallway", "entrance", "entryway"], hemmakontor: ["kontor", "skrivbord", "jobba", "hemmakontor", "arbetsplats", "office", "desk", "work", "study"], uteliv: ["balkong", "ute", "trädgård", "uteplats", "terrass", "balcony", "outdoor", "outdoors", "garden", "patio", "terrace"] },
-    needs: { ljus: ["ljus", "lampa", "lampor", "mörkt", "mörk", "läsa", "läs", "belysning", "kväll", "mysig", "mysigt", "mysigare", "stämning", "light", "lamp", "lamps", "lighting", "dark", "reading", "read", "evening", "cosy", "cozy", "atmosphere"], forvaring: ["förvaring", "rörigt", "stökigt", "ordning", "plats", "organisera", "sladdar", "kablar", "liten", "litet", "storage", "messy", "cluttered", "tidy", "organise", "organize", "cables", "small"], detaljer: ["kalt", "kallt", "kall", "tomt", "tråkigt", "personligt", "personlighet", "detaljer", "inredning", "fint", "färg", "mysig", "mysigt", "mysigare", "varmt", "varmare", "bare", "empty", "boring", "personal", "details", "decor", "colour", "color", "warm", "warmer"], rutiner: ["enklare", "vardag", "morgon", "rutin", "praktiskt", "smidigt", "ladda", "easier", "everyday", "morning", "routine", "practical", "charge", "charging"] },
+    needs: { ljus: ["ljus", "lampa", "lampor", "mörkt", "mörk", "läsa", "läs", "belysning", "kväll", "mysig", "mysigt", "mysigare", "stämning", "light", "lamp", "lamps", "lighting", "dark", "reading", "read", "evening", "cosy", "cozy", "atmosphere"], forvaring: ["förvaring", "rörigt", "stökigt", "ordning", "plats", "organisera", "sladdar", "kablar", "liten", "litet", "storage", "messy", "cluttered", "tidy", "organise", "organize", "cables", "small"], detaljer: ["kalt", "kallt", "kall", "tomt", "tråkigt", "personligt", "personlighet", "detaljer", "inredning", "fint", "färg", "mysig", "mysigt", "mysigare", "varmt", "varmare", "bare", "empty", "boring", "personal", "details", "decor", "colour", "color", "warm", "warmer"], rutiner: ["enklare", "vardagen", "vardagslivet", "morgon", "rutin", "praktiskt", "smidigt", "ladda", "easier", "everyday", "morning", "routine", "practical", "charge", "charging"] },
     cats: { "belysning-atmosfar": ["lampa", "lampor", "ljus", "belysning", "doftljus", "ljusstake", "ljusstakar", "lamp", "lamps", "light", "lighting", "candle", "candles", "candlestick"], "sovrum-komfort": ["pläd", "filt", "ull", "mjuk", "mjukt", "påslakan", "sängkläder", "örngott", "throw", "blanket", "wool", "soft", "bedding", "duvet"], "hem-inredning": ["kudde", "kuddar", "vas", "inredning", "gardin", "gardiner", "matta", "mattor", "cushion", "cushions", "vase", "decor", "curtain", "curtains", "rug"], "kok-matplats": ["burk", "burkar", "bräda", "skärbräda", "kök", "jar", "jars", "board", "kitchen"], "forvaring-organisering": ["korg", "låda", "förvaring", "basket", "box", "storage"], "badrum-valmaende": ["handduk", "handdukar", "tvål", "badrum", "towel", "towels", "soap", "bathroom"], "tavlor-vaggar": ["tavla", "tavlor", "affisch", "affischer", "poster", "konst", "vägg", "väggen", "ram", "art", "print", "wall", "frame"], uteliv: ["kruka", "växt", "ute", "balkong", "pot", "plant", "plants", "balcony"] },
     styles: { skandinavisk: ["skandinavisk", "nordisk", "ljust", "naturligt", "scandinavian", "nordic", "natural"], minimalistisk: ["minimalistisk", "enkelt", "rent", "avskalat", "lugnt", "minimalist", "minimal", "simple", "clean", "calm"], klassisk: ["klassisk", "tidlös", "classic", "timeless"], mjuk: ["mysig", "mysigt", "mysigare", "ombonat", "mjukt", "varmt", "varmare", "cosy", "cozy", "soft", "warm"] },
     colors: { "#A9B39A": ["grön", "salvia", "green", "sage"], "#F2EFE9": ["vit", "vitt", "white"], "#3A3936": ["grafit", "svart", "mörk", "graphite", "black", "dark"], "#B8714A": ["terrakotta", "rost", "terracotta", "rust"], "#D8C6A8": ["beige", "havre", "sand", "oat"], "#B88A5A": ["ek", "trä", "oak", "wood", "wooden"] },
@@ -147,14 +147,41 @@
     rutiner: "Gör det du gör varje dag enklare: en fast plats för laddningen, saker du använder ofta inom räckhåll och samma material i det som står framme.",
   };
   const ROOM_ADVICE = { hall: "I en liten hall gör en spegel stor skillnad, den fångar ljuset och gör utrymmet större. Ge varje person en egen låda för vantar och mössor.", kok: "Ställ fram det du använder dagligen och ställ undan resten. Samma material på lock och brädor gör bänken lugnare.", badrum: "Häll över tvålen i en pump i stengods och välj två handdukstoner som går ihop, till exempel vit och sand.", hemmakontor: "Dölj grenuttaget och ge telefonen en egen plats. Det tar bort det mesta av röran.", sovrum: "Ett lågt, varmt ljus vid sängen och lådor med lock gör sovrummet lugnt även när det inte är städat.", uteliv: "En sladdlös lampa kan följa med ut på kvällen, och terrakotta passar växter som vill torka upp mellan vattningarna.", vardagsrum: "Flytta in möblerna lite från väggarna, tänd lampor på olika höjd och låt en pläd binda ihop soffan med resten av rummet." };
+  // questions about buying, not about decorating: the stylist does not guess, it points at the page that knows
+  const HELP = [
+    [["frakt", "leverans", "levereras", "leverera", "fraktkostnad", "paketet", "shipping", "delivery"], "frakt", "Frakt och leverans", "Frakt och leverans kan jag inte svara säkert på."],
+    [["retur", "returnera", "ångra", "ångerrätt", "öppet köp", "skicka tillbaka", "pengarna tillbaka", "return", "refund"], "returer", "Returer och återbetalning", "Returer kan jag inte svara säkert på."],
+    [["betala", "betalning", "betalar", "klarna", "swish", "faktura", "delbetal", "payment"], "betalning", "Betalning", "Betalning kan jag inte svara säkert på."],
+    [["beställning", "min order", "spåra", "kundservice", "kundtjänst", "reklamation", "reklamera", "garanti", "trasig", "kontakta"], "kontakt", "Kontakt", "Det där hjälper kundservice dig bäst med."],
+  ];
+  // work the shop does not do: say so before suggesting things that suit the room
+  const CRAFT = ["måla", "målar", "målarfärg", "tapet", "tapetsera", "renovera", "renovering", "kakel", "snickra", "bygga", "elektriker", "paint", "wallpaper", "renovate"];
   RQ.stylistAnswer = (text, max) => {
     const q = RQ.parseNeed(text); if (max) q.max = max;
-    const parts = [];
-    if (q.rooms[0] && ROOM_ADVICE[q.rooms[0]]) parts.push(ROOM_ADVICE[q.rooms[0]]);
-    (q.needs.length ? q.needs : ["detaljer"]).slice(0, 2).forEach((n) => parts.push(ADVICE[n]));
-    const ranked = RQ.rank(q.needs.length || q.rooms.length || q.cats.length ? q : { ...q, needs: ["detaljer", "ljus"] }).slice(0, 3);
-    if (q.max && !ranked.length) parts.push(`Jag hittar inget under ${kr(q.max)} som passar just det här. Prova ett högre maxpris.`);
-    return { text: parts.join(" "), picks: ranked.map((x) => x.p) };
+    const t = " " + q.words.join(" ") + " ";
+    const has = (list) => list.some((w) => t.includes(" " + w));
+    const help = HELP.find((h) => has(h[0]));
+    const namedHit = q.named.some((w) => RQ.PRODUCTS.some((p) => namesIt(p, w)));
+    const known = q.rooms.length || q.needs.length || q.cats.length || q.styles.length || q.colors.length || q.gift || namedHit;
+    const helpOut = help ? { route: help[1], label: help[2] } : null;
+    // not understood: no advice pulled from a hat and no products that only look like an answer
+    if (!known) return { q: text, text: [help ? help[3] + " Det står här:" : "Det där kan jag inte svara på än. Jag kan hjälpa dig med ljus, förvaring, detaljer och presenter, rum för rum."], picks: [], help: helpOut, unknown: !help, cheaper: null };
+    const parts = [], craft = has(CRAFT);
+    if (craft) parts.push("Måla, tapetsera och renovera kan jag inte ge råd om. Men jag kan föreslå saker som passar i rummet.");
+    // asked for a thing we only have relatives of ("golvlampa" when there are table lamps): say that first
+    const exact = (w) => RQ.PRODUCTS.some((p) => nameWords(p).some((n) => n.includes(w) || (sameStart(n, w) >= 4 && sameStart(n, w) >= Math.min(n.length, w.length) - 2)));
+    const miss = q.named.find((w) => w.length >= 7 && !exact(w) && RQ.PRODUCTS.some((p) => namesIt(p, w)));
+    if (miss) parts.push(`Just ”${miss}” har vi inte i sortimentet än. Det här ligger närmast.`);
+    // one piece of advice at a time, so the answer stays short: what you asked for first, otherwise the room
+    if (q.needs[0] && !craft && !miss) parts.push(ADVICE[q.needs[0]]);
+    else if (q.rooms[0] && ROOM_ADVICE[q.rooms[0]]) parts.push(ROOM_ADVICE[q.rooms[0]]);
+    if (!parts.length) parts.push(q.gift ? "Här är saker som brukar bli uppskattade att få." : "Det här ur sortimentet passar det du beskriver.");
+    const ranked = RQ.rank(q).slice(0, 3), picks = ranked.map((x) => x.p);
+    if (!ranked.length) { const any = RQ.rank({ ...q, max: null }); parts.push(q.max && any.length ? `Jag hittar inget under ${kr(q.max)} som passar. Det billigaste kostar ${kr(cheapest(any.map((x) => x.p)))}.` : "Jag hittar inget i sortimentet som passar just det."); }
+    if (help) parts.push(help[3] + " Det står här:");
+    // "Billigare förslag" is only offered when there really is something cheaper that fits
+    const low = picks.length ? Math.min(...picks.map((p) => p.price)) : 0;
+    return { q: text, text: parts, picks, help: helpOut, unknown: false, cheaper: low && RQ.rank(q, low - 1).length ? low - 1 : null };
   };
 
   const STARTERS = ["Mitt vardagsrum känns kalt, hur gör jag det mysigare?", "Jag behöver mjukare ljus vid läsfåtöljen", "Hur får jag en liten hall att kännas mer ordnad?", "Vad passar i ett litet sovrum?", "En present till en inflyttning under 500 kr"];
@@ -162,50 +189,60 @@
     const mine = RQ.room && RQ.room.has() && RQ.room.get().type && RQ.roomById(RQ.room.get().type);
     const starters = [...(mine ? [`Vad saknas i mitt ${mine.name.toLowerCase()}?`] : []), ...STARTERS];
     return {
-    title: "AI-stylist · Hitta rätt · RumIQ",
-    html: `<header class="page-head wrap">${crumbs("AI-stylist", ["Hitta rätt", "hitta-ratt"])}<h1 class="h1">AI-stylist</h1><p class="lead">Beskriv ditt rum och vad du vill förändra. Du får praktiska råd och, när det passar, produkter ur sortimentet.</p></header>
+    title: "Stylisten · Hitta rätt · RumIQ",
+    html: `<header class="page-head wrap stylist-head">${crumbs("Stylisten", ["Hitta rätt", "hitta-ratt"])}<h1 class="h1">Fråga stylisten</h1><p class="lead">Beskriv ditt rum och vad du vill förändra. Du får praktiska råd och, när det passar, produkter ur sortimentet.</p></header>
       <section class="wrap tool-shell" style="padding-bottom:5rem">
-        <div class="chat"><div class="log" id="log" aria-live="polite"><div class="msg ai">Hej! Vad vill du förändra hemma? Välj en fråga att börja med, eller skriv en egen.</div>
+        <div class="chat" id="chat"><div class="log" id="log" aria-live="polite"><div class="msg ai">Hej! Vad vill du förändra hemma? Välj en fråga att börja med, eller skriv en egen. Jag svarar med enkla regler och RumIQs sortiment, inte med en AI-tjänst än.</div>
             <div class="starters" id="starters" role="group" aria-label="Frågor att börja med">${starters.map((q) => `<button class="chip" type="button" data-try="${esc(q)}">${esc(q)}</button>`).join("")}</div></div>
-          <form id="chatForm"><label class="sr" for="chatIn">Din fråga</label><input id="chatIn" type="text" placeholder="Till exempel: mitt vardagsrum känns kalt" autocomplete="off" enterkeyhint="send"><button class="btn" type="submit">Fråga</button></form></div>
-        <aside><div class="panel"><label>Högsta pris per produkt (kr, valfritt)<input type="number" id="maxP" min="0" step="50" inputmode="numeric" placeholder="Inget maxpris"></label></div>
-          <p class="note">Råden är inspiration, inte verifierade produktuppgifter. I förhandsversionen bygger stylisten på regler och RumIQs sortiment, inte på en AI-tjänst.</p><p class="small" id="chatNote" style="margin-top:.8rem"></p><button class="link" type="button" id="chatClear" style="border:0;background:none;margin-top:.4rem;font-size:.88rem">Rensa samtalet</button></aside>
+          <form id="chatForm"><label class="sr" for="chatIn">Din fråga</label><input id="chatIn" type="text" placeholder="Till exempel: mitt vardagsrum känns kalt" autocomplete="off" enterkeyhint="send" maxlength="400"><button class="btn" type="submit">Fråga</button></form></div>
+        <aside><div class="panel"><label>Högsta pris per produkt (kr, valfritt)<input type="number" id="maxP" min="1" step="50" inputmode="numeric" placeholder="Inget maxpris"></label></div>
+          <p class="note">Råden är inspiration, inte verifierade produktuppgifter.</p><p class="small" id="chatNote" style="margin-top:.8rem"></p><button class="link" type="button" id="chatClear" style="border:0;background:none;margin-top:.4rem;font-size:.88rem">Rensa samtalet</button></aside>
       </section>`,
     mount(root) {
-      const log = $("#log", root), inp = $("#chatIn", root);
+      const log = $("#log", root), inp = $("#chatIn", root), chat = $("#chat", root);
+      // the conversation fills what is left of the screen, so the field you write in is always in view
+      const fit = () => chat.style.setProperty("--chat-top", Math.round(chat.getBoundingClientRect().top + scrollY) + "px");
+      fit(); addEventListener("resize", fit);
       const signed = !!S.customer();
       const load = () => { if (signed) return S.store.get("rumiq-chat-saved", []); try { return JSON.parse(RQ.ss.get("rumiq-chat") || "[]"); } catch (e) { return []; } };
       const save = (h) => (signed ? S.store.set("rumiq-chat-saved", h.slice(-40)) : RQ.ss.set("rumiq-chat", JSON.stringify(h.slice(-40))));
       let hist = load(); if (!Array.isArray(hist)) hist = [];
+      hist = hist.filter((m) => m && (m.who === "me" ? typeof m.text === "string" : m.a && Array.isArray(m.a.picks)));
       const note = $("#chatNote", root); if (note) note.textContent = signed ? "Du är inloggad, så samtalet sparas i ditt konto. Du kan rensa det när du vill." : "Som gäst finns samtalet bara kvar i den här fliken. Logga in för att spara det.";
-      const clr = $("#chatClear", root); if (clr) clr.addEventListener("click", () => { hist = []; save(hist); RQ.router(); });
+      let armed = false;
+      const clr = $("#chatClear", root); if (clr) clr.addEventListener("click", () => { if (hist.length && !armed) { armed = true; clr.textContent = "Tryck igen för att rensa samtalet"; return; } hist = []; save(hist); RQ.router(); });
       const add = (who, html) => { const d = document.createElement("div"); d.className = "msg " + who; d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; };
       const prods = (a) => a.picks.map((x) => (typeof x === "string" ? RQ.byHandle(x) : x)).filter(Boolean);
       // after an answer: put the suggestions in your room, or ask for cheaper ones
-      const follow = (a) => { const ps = prods(a); if (!ps.length) return ""; const low = Math.min(...ps.map((p) => p.price));
-        return `<div class="follow"><button class="chip" type="button" data-inroom="${ps.map((p) => p.handle).join(",")}">Ställ in i mitt rum</button>${RQ.PRODUCTS.some((p) => p.price < low) ? `<button class="chip" type="button" data-cheaper="${low - 1}">Billigare förslag</button>` : ""}</div>`; };
-      const answerHtml = (a) => { const ps = prods(a); return `${esc(a.text)}${ps.length ? `<div class="mini">${ps.map((p) => `<a href="#produkt-${p.handle}"><img src="${RQ.img(p, 600)}" alt="">${esc(p.name)}<br><b>${kr(p.price)}</b></a>`).join("")}</div>` : ""}${follow(a)}`; };
+      const follow = (a) => { const ps = prods(a); if (!ps.length) return "";
+        return `<div class="follow"><button class="chip" type="button" data-inroom="${ps.map((p) => p.handle).join(",")}">Ställ in i mitt rum</button>${a.cheaper ? `<button class="chip" type="button" data-cheaper="${+a.cheaper}" data-q="${esc(a.q || "")}">Billigare förslag</button>` : ""}</div>`; };
+      const answerHtml = (a) => { const ps = prods(a), text = Array.isArray(a.text) ? a.text : [a.text];
+        return `${text.map((p) => `<p>${esc(p)}</p>`).join("")}${a.help ? `<p><a class="msg-help" href="#${esc(a.help.route)}">${esc(a.help.label)}</a></p>` : ""}${a.unknown ? `<div class="follow">${starters.slice(0, 2).map((q) => `<button class="chip" type="button" data-try="${esc(q)}">${esc(q)}</button>`).join("")}<a class="chip" href="#kontakt">Kontakta oss</a></div>` : ""}${ps.length ? `<div class="mini">${ps.map((p) => `<a href="#produkt-${p.handle}"><img src="${RQ.img(p, 600)}" alt="" loading="lazy" width="600" height="750"><span>${esc(p.name)}</span><b>${kr(p.price)}</b></a>`).join("")}</div>` : ""}${follow(a)}`; };
       hist.forEach((m) => add(m.who, m.who === "me" ? esc(m.text) : answerHtml(m.a)));
       const st = $("#starters", root); if (hist.length) st.remove();
-      let last = hist.filter((m) => m.who === "me").map((m) => m.q || m.text).pop() || "";
+      let busy = false;
       const ask = (text, opt = {}) => {
-        if (!text.trim()) return; if (st.isConnected) st.remove();
-        const q = opt.q || text; last = q;
+        if (busy) return; // one question at a time
+        if (!text.trim()) { inp.focus(); return; } if (st.isConnected) st.remove();
+        busy = true; armed = false; if (clr) clr.textContent = "Rensa samtalet";
+        const q = opt.q || text;
         const me = add("me", esc(text)); const typing = add("ai", '<span class="typing"><i></i><i></i><i></i></span>');
-        const a = RQ.stylistAnswer(q, opt.max || +$("#maxP", root).value || null);
-        setTimeout(() => { typing.innerHTML = answerHtml(a); RQ.toHashLinks && RQ.toHashLinks(typing); log.scrollTop += me.getBoundingClientRect().top - log.getBoundingClientRect().top - 10; }, 700);
-        hist.push({ who: "me", text, q }, { who: "ai", a: { text: a.text, picks: a.picks.map((p) => p.handle) } });
+        const a = RQ.stylistAnswer(q, opt.max || maxOf($("#maxP", root)));
+        const stored = { q, text: a.text, picks: a.picks.map((p) => p.handle), help: a.help, unknown: a.unknown, cheaper: a.cheaper };
+        setTimeout(() => { busy = false; if (!typing.isConnected) return; typing.innerHTML = answerHtml(stored); RQ.toHashLinks && RQ.toHashLinks(typing); log.scrollTop += me.getBoundingClientRect().top - log.getBoundingClientRect().top - 10; }, 700);
+        hist.push({ who: "me", text, q }, { who: "ai", a: stored });
         save(hist);
       };
-      $("#chatForm", root).addEventListener("submit", (e) => { e.preventDefault(); ask(inp.value); inp.value = ""; });
+      $("#chatForm", root).addEventListener("submit", (e) => { e.preventDefault(); if (busy) return; const v = inp.value; inp.value = ""; ask(v); });
       log.addEventListener("click", (e) => {
         const t = e.target.closest("[data-try]"); if (t) { ask(t.dataset.try); return; }
-        const c = e.target.closest("[data-cheaper]"); if (c) { ask(`Billigare förslag, högst ${kr(+c.dataset.cheaper)}`, { q: last || "detaljer", max: +c.dataset.cheaper }); return; }
+        const c = e.target.closest("[data-cheaper]"); if (c) { ask(`Billigare förslag, högst ${kr(+c.dataset.cheaper)}`, { q: c.dataset.q || "detaljer", max: +c.dataset.cheaper }); return; }
         const r = e.target.closest("[data-inroom]"); if (!r) return;
         const hs = r.dataset.inroom.split(","), R = RQ.room;
         const put = () => { const n = hs.filter((h) => R.add(h, true)).length; RQ.toast(n ? `${n} ${n === 1 ? "sak står" : "saker står"} nu i ditt rum. <a href="#mitt-rum">Öppna</a>` : 'De står redan i ditt rum. <a href="#mitt-rum">Öppna</a>'); };
         if (R.has()) put(); else R.openSetup(put);
       });
+      return () => removeEventListener("resize", fit);
     },
   }; };
 

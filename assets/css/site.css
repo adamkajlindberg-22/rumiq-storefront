@@ -463,14 +463,17 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .palette{display:flex;border-radius:var(--r-s);overflow:hidden;height:4.5rem;margin:1rem 0}
 .palette i{flex:1;position:relative}
 .palette i span{position:absolute;bottom:.4rem;left:.5rem;font-size:.66rem;font-weight:600;color:rgba(0,0,0,.6);background:rgba(255,255,255,.65);padding:.1rem .3rem;border-radius:3px}
-.chat{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);display:flex;flex-direction:column;min-height:30rem}
-.chat .log{flex:1;padding:1.4rem;display:grid;gap:1rem;align-content:start;overflow:auto;max-height:36rem}
+.chat{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);display:flex;flex-direction:column;height:clamp(19rem,calc(100svh - var(--chat-top,22rem) - var(--dock-h) - 1.4rem),46rem)}
+.chat .log{flex:1;min-height:0;padding:1.4rem;display:grid;gap:1rem;align-content:start;overflow:auto;overscroll-behavior:contain}
 .msg{max-width:85%;padding:.85rem 1.1rem;border-radius:14px;font-size:.98rem;line-height:1.5}
 .msg.me{justify-self:end;background:var(--ink);color:var(--bg);border-bottom-right-radius:4px}
 .msg.ai{background:var(--bg);border:1px solid var(--line2);border-bottom-left-radius:4px}
 .msg.ai .mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-top:.8rem}
-.msg.ai .mini a{text-decoration:none;font-size:.8rem;line-height:1.25}
-.msg.ai .mini img{border-radius:var(--r-img);aspect-ratio:4/5;object-fit:cover;margin-bottom:.3rem;background:var(--img-bg)}
+.msg.ai .mini a{text-decoration:none;font-size:.8rem;line-height:1.25;min-width:0;display:grid;align-content:start;gap:.1rem}
+.msg.ai .mini a span{overflow-wrap:anywhere;hyphens:auto;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.msg.ai p + p{margin-top:.6rem}
+.msg-help{font-weight:600;text-underline-offset:3px}
+.msg.ai .mini img{border-radius:var(--r-img);width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;margin-bottom:.3rem;background:var(--img-bg)}
 .chat form{display:flex;gap:.5rem;padding:.8rem;border-top:1px solid var(--line)}
 .chat form input{flex:1}
 .typing{display:inline-flex;gap:.25rem}
@@ -2151,6 +2154,10 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .chat .starters{display:flex;flex-wrap:wrap;gap:.4rem}
 .chat .starters .chip,.msg .follow .chip{white-space:normal;text-align:left;line-height:1.3}
 .msg .follow{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.8rem}
+.msg .follow a.chip{text-decoration:none}
+/* the stylist on phones: a short head, so the conversation and its field fit on the first screen */
+@media (max-width:900px){.stylist-head{padding-top:.8rem;padding-bottom:.8rem}.stylist-head .crumbs,.stylist-head .lead{display:none}.stylist-head .h1{font-size:1.9rem}.chat .log{padding:1rem}.msg{max-width:92%}}
+@media (min-width:901px){.stylist-head{padding-bottom:1.4rem}}
 /* 8. "Gör bilden verklig": the small line is readable on the tinted card */
 .ai-card span{color:var(--ink2)}
 /* 9. Kassan: form and order summary side by side on wide screens, under each other on phones and tablets
