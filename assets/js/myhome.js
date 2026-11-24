@@ -249,7 +249,7 @@
       const f = $("#gcForm", root), st = $("#gcSt", root);
       f.addEventListener("submit", async (e) => {
         e.preventDefault(); const v = $("#gcEmail", root).value.trim();
-        if (!emailOk(v)) { st.textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
+        if (!emailOk(v)) return RQ.badField($("#gcEmail", root), st, "Skriv en e-postadress, till exempel namn@exempel.se.");
         const amt = ($("[data-gc][aria-checked=true]", root) || {}).dataset, btn = f.querySelector("button[type=submit]");
         if (btn.disabled) return; btn.disabled = true; st.textContent = "";
         const res = await (RQ.subscribe ? RQ.subscribe({ email: v, lista: "Presentkort", roster: amt ? amt.gc + " kr" : "" }) : Promise.resolve("preview"));

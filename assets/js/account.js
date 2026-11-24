@@ -72,8 +72,8 @@
         $("#codeForm", root).addEventListener("submit", async (e) => {
           e.preventDefault(); const f = e.currentTarget, st = $("#codeStatus", root); st.classList.remove("err");
           const email = f.email.value.trim();
-          if (!emailOk(email)) return fail(st, { message: "Skriv en giltig e-postadress." });
-          if (signup && !f.terms.checked) return fail(st, { message: "Bekräfta integritetspolicyn och villkoren först." });
+          if (!emailOk(email)) { RQ.badField(f.email, st, ""); return fail(st, { message: "Skriv en giltig e-postadress." }); }
+          if (signup && !f.terms.checked) { RQ.badField(f.terms, st, ""); return fail(st, { message: "Bekräfta integritetspolicyn och villkoren först." }); }
           if (f.querySelector("button[type=submit]").disabled) return; // one code per press
           busy(f, true); st.textContent = "";
           try {
@@ -191,7 +191,7 @@
           <form id="co" novalidate>
             <div class="panel"><h2 class="h3">1. Kontakt</h2><div class="form-grid" style="margin-top:1rem">${fld("email", "E-post", `type="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(c.email || "")}" required`, "full")}${fld("phone", "Telefon (valfritt, för avisering)", `type="tel" autocomplete="tel" value="${esc(c.phone || "")}"`, "full")}</div>${c.email ? "" : `<p class="small" style="margin-top:.8rem">Har du ett konto? <a href="#konto" data-after="kassa">Logga in</a> så fylls uppgifterna i. Annars handlar du som gäst.</p>`}</div>
             <div class="panel"><h2 class="h3">2. Leveransadress</h2><div class="form-grid" style="margin-top:1rem">${fld("first", "Förnamn", `autocomplete="given-name" value="${esc(first)}" required`, "half")}${fld("last", "Efternamn", `autocomplete="family-name" value="${esc(last)}" required`, "half")}${fld("street", "Gatuadress", `autocomplete="street-address" value="${esc((c.address || {}).street || "")}" required`, "full")}${fld("zip", "Postnummer", `autocomplete="postal-code" inputmode="numeric" maxlength="7" value="${esc((c.address || {}).zip || "")}" required`, "half")}${fld("city", "Ort", `autocomplete="address-level2" value="${esc((c.address || {}).city || "")}" required`, "half")}<label class="full">Land<select name="country" autocomplete="country-name"><option>Sverige</option></select></label></div></div>
-            <div class="panel"><h2 class="h3">3. Leveranssätt</h2><div style="display:grid;gap:.6rem;margin-top:1rem">${S.SHIPPING.map((s, i) => `<label class="check ship-opt"><span class="so-l"><input type="radio" name="ship" value="${s.id}" ${i === 0 ? "checked" : ""}> <span><b>${s.title}</b><span class="small">Leveranstid: ${s.eta}${s.note ? `<br>${s.note}` : ""}</span></span></span><span class="so-p" data-ship-price="${s.id}">${shipPrice(S.shippingCost(s.id))}</span></label>`).join("")}</div><p class="small" style="margin-top:.8rem">Leveranssätt och priser är exempel tills leverantörerna är bekräftade.</p><label class="check" style="margin-top:1.1rem"><input type="checkbox" name="gift" id="coGift"> Det är en present</label><div class="gift-box" id="coGiftBox" hidden><p class="small">Priserna syns inte på följesedeln. Skriv en hälsning, så lägger vi den på ett kort i paketet.</p><label class="full">Hälsning (frivillig)<textarea name="giftNote" rows="3" maxlength="240" placeholder="Grattis på nya hemmet!"></textarea></label></div></div>
+            <div class="panel"><h2 class="h3" id="coShipH">3. Leveranssätt</h2><div role="radiogroup" aria-labelledby="coShipH" style="display:grid;gap:.6rem;margin-top:1rem">${S.SHIPPING.map((s, i) => `<label class="check ship-opt"><span class="so-l"><input type="radio" name="ship" value="${s.id}" ${i === 0 ? "checked" : ""}> <span><b>${s.title}</b><span class="small">Leveranstid: ${s.eta}${s.note ? `<br>${s.note}` : ""}</span></span></span><span class="so-p" data-ship-price="${s.id}">${shipPrice(S.shippingCost(s.id))}</span></label>`).join("")}</div><p class="small" style="margin-top:.8rem">Leveranssätt och priser är exempel tills leverantörerna är bekräftade.</p><label class="check" style="margin-top:1.1rem"><input type="checkbox" name="gift" id="coGift"> Det är en present</label><div class="gift-box" id="coGiftBox" hidden><p class="small">Priserna syns inte på följesedeln. Skriv en hälsning, så lägger vi den på ett kort i paketet.</p><label class="full">Hälsning (frivillig)<textarea name="giftNote" rows="3" maxlength="240" placeholder="Grattis på nya hemmet!"></textarea></label></div></div>
             <div class="panel"><h2 class="h3">4. Betalning</h2><p style="margin-top:.6rem;color:var(--ink2)">När butiken öppnar betalar du i Shopifys kassa. Vi ser aldrig dina kortuppgifter. I testläget hoppar vi över betalningen.</p>${RQ.payRow ? RQ.payRow() : ""}
               <label class="check" style="margin-top:1rem"><input type="checkbox" name="terms" required aria-describedby="coe-terms"> <span>Jag godkänner <a href="#juridik-villkor">köpvillkoren</a> och har läst om min <a href="#juridik-angerratt">ångerrätt</a>.</span></label><span class="ferr" id="coe-terms" hidden></span>
               <div class="co-final"><div class="sum"><span>Frakt</span><span data-co="ship"></span></div><div class="sum total"><span>Totalt</span><span data-co="total"></span></div></div>
@@ -249,12 +249,15 @@
 
   /* ---------------- Spåra min beställning */
   V.track = () => RQ.infoPage("spara-order", "Kundservice", "Spåra min beställning", "Ange ordernummer och e-post, så ser du var beställningen är.",
-    `<form id="trForm" class="form-grid" novalidate><label>Ordernummer<input name="num" placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label><label>E-post<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Visa status</button><p class="status full" id="trStatus"></p></form><div id="trOut"></div>
+    `<form id="trForm" class="form-grid" novalidate><label>Ordernummer<input name="num" placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label><label>E-post<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Visa status</button><p class="status full" id="trStatus" role="alert"></p></form><div id="trOut"></div>
      <h2>Om du har en riktig beställning</h2><p>Använd länken till orderstatus i orderbekräftelsen. Spårning från fraktbolaget visas när leverantören eller fraktbolaget skickar den. Varor från olika leverantörer kan komma i separata paket.</p>`,
     (root) => {
       const f = $("#trForm", root); const pre = RQ.ss.get("rumiq-prefill"); if (pre) { f.num.value = pre; const o = S.findOrder(pre); if (o) f.email.value = o.contact.email; }
       f.addEventListener("submit", (e) => {
-        e.preventDefault(); const o = S.findOrder(f.num.value, f.email.value); const st = $("#trStatus", root);
+        e.preventDefault(); const st = $("#trStatus", root);
+        if (!f.num.value.trim()) return RQ.badField(f.num, st, "Skriv ordernumret, till exempel TEST-1001.");
+        if (!emailOk(f.email.value)) return RQ.badField(f.email, st, "Skriv e-postadressen du använde vid köpet.");
+        const o = S.findOrder(f.num.value, f.email.value);
         if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna i den här webbläsaren. Kontrollera ordernumret och e-posten."; $("#trOut", root).innerHTML = ""; return; }
         st.textContent = "";
         const dc = RQ.delivery ? RQ.delivery.cfg() : {}, eta = RQ.delivery ? RQ.delivery.range(dc, o.createdAt) : "", ship = (S.SHIPPING.find((x) => x.id === o.shippingId) || {}).title || "";
@@ -270,7 +273,7 @@
 
   /* ---------------- Ångra avtalet här */
   V.withdraw = () => RQ.infoPage("angra", "Kundservice", "Ångra avtalet här", "Ångra hela eller delar av en beställning. Du behöver inte logga in och inte ange något skäl.",
-    `<div id="wdStep1"><form id="wdForm" class="form-grid" novalidate><label>Ordernummer<input name="num" required placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false"></label><label>E-post som användes vid köpet<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Hitta beställningen</button><p class="status full" id="wdStatus"></p></form></div>
+    `<div id="wdStep1"><form id="wdForm" class="form-grid" novalidate><label>Ordernummer<input name="num" required placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false"></label><label>E-post som användes vid köpet<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Hitta beställningen</button><p class="status full" id="wdStatus" role="alert"></p></form></div>
      <div id="wdStep2"></div>
      <h2>Bra att veta</h2><ul><li>${returnLine()}</li><li>Efter att du ångrat har du 14 dagar på dig att skicka tillbaka varan.</li><li>Vi betalar tillbaka senast 14 dagar efter ditt meddelande, men får vänta tills varan kommit tillbaka.</li><li>Du kan också skriva till support@rumiq.se eller använda Konsumentverkets standardformulär.</li></ul>
      <p class="note">I förhandsversionen hittar formuläret bara testordrar som lagts i den här webbläsaren.</p>`,
@@ -278,7 +281,8 @@
       const f = $("#wdForm", root); const pre = RQ.ss.get("rumiq-prefill"); if (pre) { f.num.value = pre; const o = S.findOrder(pre); if (o) f.email.value = o.contact.email; }
       f.addEventListener("submit", (e) => {
         e.preventDefault(); const st = $("#wdStatus", root);
-        if (!emailOk(f.email.value)) { st.textContent = "Skriv e-postadressen du använde vid köpet."; return; }
+        if (!f.num.value.trim()) return RQ.badField(f.num, st, "Skriv ordernumret, till exempel TEST-1001.");
+        if (!emailOk(f.email.value)) return RQ.badField(f.email, st, "Skriv e-postadressen du använde vid köpet.");
         const o = S.findOrder(f.num.value, f.email.value);
         if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna. Kontrollera ordernumret, eller skriv till support@rumiq.se."; return; }
         if (o.withdrawn) { st.textContent = `Köpet ångrades redan ${date(o.withdrawnAt)}.`; return; }

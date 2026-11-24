@@ -491,6 +491,13 @@
   });
   V.juridik = (k) => { const v = RQ.LEGAL[k]; if (!v) return null; return RQ.infoPage("juridik-" + k, "Juridisk information", v.title, v.lead, v.html()); };
   // a message under the field it belongs to (the box is made on first use), and the field marked for screen readers
+  // a form's one status line tells what is wrong: the field is marked, tied to the message and gets the focus (3.3.1)
+  RQ.badField = (el, st, msg) => {
+    if (!st.id) st.id = "st-" + Math.random().toString(36).slice(2, 7); if (!st.getAttribute("role")) st.setAttribute("role", "alert");
+    st.textContent = msg; el.setAttribute("aria-invalid", "true"); el.setAttribute("aria-describedby", st.id); el.focus();
+    el.addEventListener(el.type === "checkbox" ? "change" : "input", () => { el.removeAttribute("aria-invalid"); el.removeAttribute("aria-describedby"); }, { once: true });
+    return false;
+  };
   RQ.fieldErr = (el, msg) => {
     let box = el.parentNode.querySelector(".ferr");
     if (!box) { box = document.createElement("span"); box.className = "ferr"; box.id = "fe-" + (el.id || el.name || "f") + "-" + Math.random().toString(36).slice(2, 7); el.after(box); }
@@ -1260,7 +1267,7 @@
   $("#newsForm").addEventListener("submit", async (e) => { e.preventDefault(); const f = e.currentTarget, v = f.email.value.trim(), btn = $("button", f);
     let st = $("#newsStatus", f); if (!st) { st = document.createElement("p"); st.id = "newsStatus"; st.className = "status"; st.setAttribute("role", "status"); f.appendChild(st); }
     const say = (msg, err) => { st.textContent = msg; st.classList.toggle("err", !!err); };
-    if (!MAIL_OK.test(v)) { say(v ? "Skriv en giltig e-postadress, till exempel namn@exempel.se." : "Skriv din e-postadress.", true); f.email.setAttribute("aria-invalid", "true"); f.email.focus(); return; }
+    if (!MAIL_OK.test(v)) { say(v ? "Skriv en giltig e-postadress, till exempel namn@exempel.se." : "Skriv din e-postadress.", true); f.email.setAttribute("aria-invalid", "true"); f.email.setAttribute("aria-describedby", "newsStatus"); f.email.focus(); return; }
     f.email.removeAttribute("aria-invalid"); if (btn.disabled) return; btn.disabled = true; say("");
     const res = await RQ.subscribe({ email: v, lista: "Nyhetsbrev" }); btn.disabled = false;
     say(res === "sent" ? "Tack. Du får nyhetsbrevet och 10 % på första köpet när vi öppnar." : res === "preview" ? "Förhandsversion: adressen sparades inte här." : "Det gick inte att skicka just nu. Försök igen om en stund.", res === "error"); if (res === "sent") f.reset(); });

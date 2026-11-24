@@ -472,14 +472,14 @@
       });
       $("#voteMail", root).addEventListener("submit", (e) => {
         e.preventDefault(); const f = e.currentTarget, val = $("input", f).value.trim();
-        if (!emailOk(val)) { $(".nt-err", f).textContent = "Skriv en e-postadress, till exempel namn@exempel.se."; return; }
+        if (!emailOk(val)) return RQ.badField($("input", f), $(".nt-err", f), "Skriv en e-postadress, till exempel namn@exempel.se.");
         $(".nt-err", f).textContent = ""; RQ.once(f, () => post({ email: val, lista: "Rösta", roster: ls.get("rumiq-votes", []).join(", ") }).then((res) => afterPost(f, res, "Tack. Ett mejl när resultatet är klart. Inget annat.")));
       });
       paint();
       root.addEventListener("click", (e) => { const b = e.target.closest("[data-idea-vote]"); if (b) { S.voteIdea(b.dataset.ideaVote); $("#ideer", root).innerHTML = ideasHtml(); } });
       root.addEventListener("submit", (e) => {
         const f = e.target.closest("#ideaForm"); if (!f) return; e.preventDefault();
-        if (!f.title.value.trim()) { $("#ideaStatus", root).textContent = "Skriv en kort rubrik."; return; }
+        if (!f.title.value.trim()) return RQ.badField(f.title, $("#ideaStatus", root), "Skriv en kort rubrik.");
         S.addIdea(f.title.value.trim(), f.text.value.trim()); RQ.toast("Tack för idén!"); $("#ideer", root).innerHTML = ideasHtml();
       });
     },

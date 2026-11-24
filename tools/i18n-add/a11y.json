@@ -22,5 +22,7 @@
  "Håll för före, så ser du rummet utan produkterna": "Hold for before, to see the room without the products",
  "{0} sak": "{0} thing",
  "Huvudmeny": "Main menu",
- "Antal: {0}": "Quantity: {0}"
+ "Antal: {0}": "Quantity: {0}",
+ "Skriv ordernumret, till exempel TEST-1001.": "Enter the order number, for example TEST-1001.",
+ "Skriv e-postadressen du använde vid köpet.": "Enter the email address you used for the purchase."
 }
