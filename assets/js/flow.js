@@ -73,6 +73,7 @@
   const baseConfirm = RQ.confirmAdd;
   RQ.confirmAdd = (btn, name) => { baseConfirm(btn, name); RQ.fly(flySource(btn)); };
   const addMany = (handles, btn, label) => {
+    if (btn && btn.classList && btn.classList.contains("done")) return 0; // the same button again within a moment: a double tap, not a second order
     handles.forEach((h) => S.addToCart(h + "::0", 1));
     const n = handles.length;
     RQ.toast(`${label ? esc(label) + ": " : ""}${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen. <a href="#" data-open-cart>Visa</a>`);
@@ -407,7 +408,7 @@
   /* Önska: vote for the next product and share your own ideas, on one page (was Rösta and Dela en idé) */
   V.onska = () => ({
     title: "Önska · RumIQ",
-    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Önska"]]), "Önska", "Vi har inget lager, så vi kan lyssna först. Rösta fram nästa produkt eller föreslå något helt eget.")}
+    html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Önska"]]), "Önska", "Vi har inget eget lager, så vi kan lyssna först. Rösta fram nästa produkt eller föreslå något helt eget.")}
       <section class="wrap onska" style="padding-bottom:3rem"><h2 class="h3" id="rosta">Rösta fram nästa produkt</h2><p class="small" style="margin:.4rem 0 1.2rem">Välj upp till tre saker du vill att vi tar in.</p>
         <p class="vote-left" id="voteLeft" aria-live="polite"></p>
         <div class="vote-grid">${RQ.CANDIDATES.map((c) => `<button type="button" class="vote" data-vote="${c.id}" aria-pressed="false">${c.img ? `<img class="vote-img" src="${c.img}" alt="" loading="lazy" width="400" height="400">` : `<span class="sw" style="background:${c.tone}"></span>`}<b>${esc(c.name)}</b><span>${esc(c.line)}</span><i aria-hidden="true">${ICO.heart}</i></button>`).join("")}</div>
@@ -523,7 +524,7 @@
     });
     return () => offs.forEach((f) => f());
   };
-  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
+  RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Rösta</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>
       <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Färdiga looks</a></nav>`;
 
