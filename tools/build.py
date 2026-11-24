@@ -337,11 +337,26 @@ def ld_product(p, cat, f):
     return ld
 
 
+def fill(text, f):
+    """tools/seo.json names the promised figures instead of typing them: {openDays}, {freeFrom}, {pickup}, {home}, {minDays}, {maxDays}."""
+    return re.sub(r"\{(openDays|freeFrom|pickup|home|minDays|maxDays)\}", lambda m: str(f[m.group(1)]), text) if text else text
+
+
+def list_description(name, lead, handles, products, tail):
+    first = re.split(r"(?<=[.!?])\s", lead.strip())[0]
+    prices = [products[h]["price"] for h in handles if h in products]
+    count = f" {len(prices)} {'produkt' if len(prices) == 1 else 'produkter'} från {kr(min(prices))}." if prices else ""
+    for s in (f"{name}: {first}{count} {tail}", f"{name}: {first}{count}", f"{name}: {first}"):
+        if len(s) <= 155:
+            return s
+    return clip(f"{name}: {first}")
+
+
 def build_meta(route, got, data, seo):
     """Everything the head of one page says."""
     f = data["facts"]
     own = canonical_route(route)
-    entry = seo.get(own or "hem", {})
+    entry = {k: fill(v, f) for k, v in seo.get(own or "hem", {}).items()}
     products = {p["handle"]: p for p in data["products"]}
     names = {h: p["name"] for h, p in products.items()}
     cats = {c["id"]: c for c in data["categories"]}
@@ -361,12 +376,14 @@ def build_meta(route, got, data, seo):
         m["ld"].append(ld_product(p, cats.get(p["cat"]), f))
     elif kind == "kategori" and key in cats:
         c = cats[key]
+        m["description"] = entry.get("description") or list_description(c["name"] + " hos RumIQ", c["lead"], c["items"], products, "Se allt i ditt eget rum innan du köper.")
         m["ld"].append(ld_itemlist(route, c["name"], c["lead"], c["items"], names))
         if c["items"]:
             m["image"] = f"assets/img/p/{c['items'][0]}-1400.webp"
     elif kind == "rum" and key:
         r = next((x for x in data["rooms"] if x["id"] == key), None)
         if r:
+            m["description"] = entry.get("description") or list_description(r["name"], r["lead"], r["items"], products, "Tryck på prickarna i bilden och handla rummet.")
             m["image"] = f"assets/img/rum/{key}-1600.webp"
             m["ld"].append(ld_itemlist(route, r["name"], r["lead"], r["items"], names, m["image"]))
     elif kind == "kollektion":
@@ -646,7 +663,9 @@ if __name__ == "__main__":
     if a.fast:
         for f in [ROOT / "index.html", ROOT / "404.html"] + [page_path(r) for r in routes() if r]:
             if f.exists():
-                f.write_text(stamp(f.read_text(encoding="utf-8"), v), encoding="utf-8")
+                # a page from before v15 named the language file directly: point it at the built one
+                text = f.read_text(encoding="utf-8").replace('src="assets/js/i18n.js"', 'src="assets/js/i18n.min.js"')
+                f.write_text(stamp(text, v), encoding="utf-8")
         print("stamped pages (fast)")
         sys.exit(0)
     sys.exit(0 if prerender(v) else 1)

@@ -17,8 +17,9 @@
   const attr = (sel, name, val) => { const el = q(sel); if (el && el.getAttribute(name) !== val) el.setAttribute(name, val); };
 
   function load() {
-    if (loading || book) return; loading = true;
-    fetch(new URL(window.RQ_HEADS_SRC || "assets/heads.json", document.baseURI)).then((r) => (r.ok ? r.json() : null))
+    if (loading || book || !window.RQ_HEADS_SRC) return; // pages from an older build name no file: nothing to read
+    loading = true;
+    fetch(new URL(window.RQ_HEADS_SRC, document.baseURI)).then((r) => (r.ok ? r.json() : null))
       .then((j) => { if (j && j.pages) { book = j; apply(); } }).catch(() => {});
   }
 

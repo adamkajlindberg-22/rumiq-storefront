@@ -7,14 +7,14 @@
   const RQ = (window.RQ = window.RQ || {});
 
   RQ.CATEGORIES = [
-    { id: "hem-inredning", name: "Hem & inredning", en: "Home & living", lead: "Gardiner, mattor, vaser och detaljer som gör rummet färdigt." },
-    { id: "kok-matplats", name: "Kök & matplats", en: "Kitchen & dining", lead: "Saker du använder varje dag, gjorda för att stå framme." },
-    { id: "badrum-valmaende", name: "Badrum & välmående", en: "Bath & wellbeing", lead: "Mjuka handdukar och lugna material för morgon och kväll." },
-    { id: "forvaring-organisering", name: "Förvaring & organisering", en: "Storage & organising", lead: "En plats för allt som annars blir liggande." },
-    { id: "belysning-atmosfar", name: "Belysning & atmosfär", en: "Lighting & atmosphere", lead: "Lampor, levande ljus och ljusstakar för dag, kväll och allt däremellan." },
-    { id: "tavlor-vaggar", name: "Tavlor & väggar", en: "Art & walls", lead: "Affischer i ekram som gör väggen till en del av rummet." },
-    { id: "sovrum-komfort", name: "Sovrum & komfort", en: "Bedroom & comfort", lead: "Textil och ljus som hjälper dig att varva ner." },
-    { id: "uteliv", name: "Uteliv", en: "Outdoor living", lead: "För balkongen, trappan och de ljusa kvällarna." },
+    { id: "hem-inredning", name: "Hem & inredning", en: "Home & living", lead: "Gardiner, mattor, vaser och detaljer som gör rummet färdigt. Här finns linnegardiner som släpper in ljuset, en handvävd jutematta, kuddfodral i lin och en vas i keramik, i lugna naturtoner som går att blanda fritt." },
+    { id: "kok-matplats", name: "Kök & matplats", en: "Kitchen & dining", lead: "Saker du använder varje dag, gjorda för att stå framme. En skärbräda i ek som också fungerar för servering och förvaringsburkar i glas med lock i ek håller ordning på bänken och är fina att se på." },
+    { id: "badrum-valmaende", name: "Badrum & välmående", en: "Bath & wellbeing", lead: "Mjuka handdukar och lugna material för morgon och kväll. Våffelvävda handdukar i bomull och en tvålpump i stengods gör handfatet lugnare, utan att badrummet behöver göras om." },
+    { id: "forvaring-organisering", name: "Förvaring & organisering", en: "Storage & organising", lead: "En plats för allt som annars blir liggande. Flätade korgar, förvaringslådor i filt och en skrivbordsorganisatör i ek: förvaring som är fin nog att stå framme i hallen, sovrummet och på skrivbordet." },
+    { id: "belysning-atmosfar", name: "Belysning & atmosfär", en: "Lighting & atmosphere", lead: "Lampor, levande ljus och ljusstakar för dag, kväll och allt däremellan. Bordslampor i opalglas och keramik, en sladdlös lampa att flytta dit ljuset behövs, doftljus och ljusstakar i mässing ger ett varmt, dämpat ljus i flera nivåer." },
+    { id: "tavlor-vaggar", name: "Tavlor & väggar", en: "Art & walls", lead: "Affischer i ekram som gör väggen till en del av rummet. Grafiska motiv i varma jordtoner, 50 × 70 cm, tryckta i Sverige och med ram i ek." },
+    { id: "sovrum-komfort", name: "Sovrum & komfort", en: "Bedroom & comfort", lead: "Textil och ljus som hjälper dig att varva ner. Ett påslakanset i tvättat lin som andas och en mjuk pläd i ullblandning gör sängen till rummets lugnaste plats." },
+    { id: "uteliv", name: "Uteliv", en: "Outdoor living", lead: "För balkongen, trappan och de ljusa kvällarna. En räfflad kruka i terrakotta är början, och sortimentet för uteplatsen växer." },
   ];
 
   RQ.ROOMS = [

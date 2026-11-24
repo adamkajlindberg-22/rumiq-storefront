@@ -72,11 +72,11 @@
   "title": "För dig · RumIQ"
  },
  "frakt": {
-  "description": "Frakt hos RumIQ: 49 kr till ombud och paketskåp, 89 kr hem, fri frakt från 799 kr. Leverans inom 2–5 arbetsdagar från lager i EU.",
+  "description": "Frakt hos RumIQ: {pickup} kr till ombud och paketskåp, {home} kr hem, fri frakt från {freeFrom} kr. Målet är leverans inom {minDays}–{maxDays} arbetsdagar.",
   "title": "Frakt och leverans – priser och leveranstid · RumIQ"
  },
  "hem": {
-  "description": "Skandinavisk inredning du ser i ditt eget rum innan du köper: lampor, textil, förvaring och tavlor. Fri frakt från 799 kr och 30 dagars öppet köp.",
+  "description": "Skandinavisk inredning du ser i ditt eget rum innan du köper: lampor, textil, förvaring och tavlor. Fri frakt från {freeFrom} kr och {openDays} dagars öppet köp.",
   "title": "RumIQ – skandinavisk inredning du ser i ditt eget rum"
  },
  "hitta-ratt": {
@@ -96,7 +96,7 @@
   "title": "Jämför produkter · RumIQ"
  },
  "juridik-angerratt": {
-  "description": "Ångerrätt hos RumIQ: du har 14 dagars ångerrätt enligt lag och 30 dagars öppet köp hos oss. Så ångrar du ett köp.",
+  "description": "Ångerrätt hos RumIQ: du har 14 dagars ångerrätt enligt lag och {openDays} dagars öppet köp hos oss. Så ångrar du ett köp.",
   "title": "Ångerrätt – så ångrar du ett köp · RumIQ"
  },
  "juridik-cookies": {
@@ -132,35 +132,27 @@
   "title": "Kassa · RumIQ"
  },
  "kategori-badrum-valmaende": {
-  "description": "Badrum & välmående hos RumIQ: Mjuka handdukar och lugna material för morgon och kväll. 2 produkter från 229 kr. Se allt i ditt eget rum innan du köper.",
   "title": "Badrum – handdukar, tvålpumpar och förvaring · RumIQ"
  },
  "kategori-belysning-atmosfar": {
-  "description": "Belysning & atmosfär hos RumIQ: Lampor, levande ljus och ljusstakar för dag, kväll och allt däremellan. 5 produkter från 349 kr. Se allt i ditt eget rum…",
   "title": "Belysning – bordslampor, doftljus och ljusstakar · RumIQ"
  },
  "kategori-forvaring-organisering": {
-  "description": "Förvaring & organisering hos RumIQ: En plats för allt som annars blir liggande. 3 produkter från 199 kr. Se allt i ditt eget rum innan du köper.",
   "title": "Förvaring – korgar, lådor och burkar för hemmet · RumIQ"
  },
  "kategori-hem-inredning": {
-  "description": "Hem & inredning hos RumIQ: Gardiner, mattor, vaser och detaljer som gör rummet färdigt. 4 produkter från 249 kr. Se allt i ditt eget rum innan du köper.",
   "title": "Heminredning – gardiner, mattor, vaser och kuddar · RumIQ"
  },
  "kategori-kok-matplats": {
-  "description": "Kök & matplats hos RumIQ: Saker du använder varje dag, gjorda för att stå framme. 2 produkter från 349 kr. Se allt i ditt eget rum innan du köper.",
   "title": "Kök & matplats – skärbrädor och förvaringsburkar · RumIQ"
  },
  "kategori-sovrum-komfort": {
-  "description": "Sovrum & komfort hos RumIQ: Textil och ljus som hjälper dig att varva ner. 2 produkter från 799 kr. Se allt i ditt eget rum innan du köper.",
   "title": "Sovrum – påslakanset i lin och plädar · RumIQ"
  },
  "kategori-tavlor-vaggar": {
-  "description": "Tavlor & väggar hos RumIQ: Affischer i ekram som gör väggen till en del av rummet. 2 produkter från 549 kr. Se allt i ditt eget rum innan du köper.",
   "title": "Tavlor och affischer med ram i ek · RumIQ"
  },
  "kategori-uteliv": {
-  "description": "Uteliv hos RumIQ: För balkongen, trappan och de ljusa kvällarna. 1 produkt från 329 kr. Se allt i ditt eget rum innan du köper.",
   "title": "Uteliv – krukor och inredning för balkongen · RumIQ"
  },
  "kollektion-det-organiserade-hemmet": {
@@ -304,39 +296,32 @@
   "title": "Vila påslakanset i tvättat lin, 150 × 210 cm · RumIQ"
  },
  "returer": {
-  "description": "30 dagars öppet köp hos RumIQ. Så ångrar du ett köp, skickar tillbaka varan och får pengarna tillbaka inom 14 dagar.",
-  "title": "Returer och återbetalning – 30 dagars öppet köp · RumIQ"
+  "description": "{openDays} dagars öppet köp hos RumIQ. Så ångrar du ett köp, skickar tillbaka varan och får pengarna tillbaka inom 14 dagar.",
+  "title": "Returer och återbetalning – {openDays} dagars öppet köp · RumIQ"
  },
  "rum": {
   "description": "Handla efter rum: vardagsrum, sovrum, kök, badrum, hall, hemmakontor och uteliv. Tryck på prickarna i bilden för att se vad som finns i rummet.",
   "title": "Handla inredning efter rum – vardagsrum, sovrum, kök · RumIQ"
  },
  "rum-badrum": {
-  "description": "Badrum: Lugna ytor och mjuka handdukar för morgon och kväll. 5 produkter från 229 kr. Tryck på prickarna i bilden och handla rummet.",
   "title": "Inredning till badrum – handdukar, tvålpump, korgar · RumIQ"
  },
  "rum-hall": {
-  "description": "Hall: Ett första intryck som gör det lätt att komma hem. 7 produkter från 199 kr. Tryck på prickarna i bilden och handla rummet.",
   "title": "Inredning till hall – tavlor, lampor och förvaring · RumIQ"
  },
  "rum-hemmakontor": {
-  "description": "Hemmakontor: Färre sladdar, bättre ljus och plats att tänka. 3 produkter från 199 kr. Tryck på prickarna i bilden och handla rummet.",
   "title": "Inredning till hemmakontor – ordning och bra ljus · RumIQ"
  },
  "rum-kok": {
-  "description": "Kök: Det du använder varje dag, nära till hands och fint att ha framme. 7 produkter från 229 kr. Tryck på prickarna i bilden och handla rummet.",
   "title": "Inredning till kök – skärbrädor, burkar och detaljer · RumIQ"
  },
  "rum-sovrum": {
-  "description": "Sovrum: Mjuka material, dämpat ljus och ingenting som stör. 12 produkter från 199 kr. Tryck på prickarna i bilden och handla rummet.",
   "title": "Inredning till sovrum – sängkläder, lampor, plädar · RumIQ"
  },
  "rum-uteliv": {
-  "description": "Uteliv: Balkongen, trappan och de ljusa kvällarna. 2 produkter från 329 kr. Tryck på prickarna i bilden och handla rummet.",
   "title": "Inredning till balkong och uteplats · RumIQ"
  },
  "rum-vardagsrum": {
-  "description": "Vardagsrum: Stillsamma former, varmt ljus och plats att umgås. 14 produkter från 249 kr. Tryck på prickarna i bilden och handla rummet.",
   "title": "Inredning till vardagsrum – lampor, plädar, tavlor · RumIQ"
  },
  "sa-fungerar-det": {

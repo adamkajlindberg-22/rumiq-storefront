@@ -28,14 +28,14 @@ Butiken är en förhandsversion. Produkterna är exempel som visar hur butiken k
 - [Kontakt](https://adamkajlindberg-22.github.io/rumiq-storefront/kontakt/)
 
 ## Kategorier
-- [Hem & inredning](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-hem-inredning/): Gardiner, mattor, vaser och detaljer som gör rummet färdigt.
-- [Kök & matplats](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-kok-matplats/): Saker du använder varje dag, gjorda för att stå framme.
-- [Badrum & välmående](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-badrum-valmaende/): Mjuka handdukar och lugna material för morgon och kväll.
-- [Förvaring & organisering](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-forvaring-organisering/): En plats för allt som annars blir liggande.
-- [Belysning & atmosfär](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-belysning-atmosfar/): Lampor, levande ljus och ljusstakar för dag, kväll och allt däremellan.
-- [Tavlor & väggar](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-tavlor-vaggar/): Affischer i ekram som gör väggen till en del av rummet.
-- [Sovrum & komfort](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-sovrum-komfort/): Textil och ljus som hjälper dig att varva ner.
-- [Uteliv](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-uteliv/): För balkongen, trappan och de ljusa kvällarna.
+- [Hem & inredning](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-hem-inredning/): Gardiner, mattor, vaser och detaljer som gör rummet färdigt. Här finns linnegardiner som släpper in ljuset, en handvävd jutematta, kuddfodral i lin och en vas i keramik, i lugna naturtoner som går att blanda fritt.
+- [Kök & matplats](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-kok-matplats/): Saker du använder varje dag, gjorda för att stå framme. En skärbräda i ek som också fungerar för servering och förvaringsburkar i glas med lock i ek håller ordning på bänken och är fina att se på.
+- [Badrum & välmående](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-badrum-valmaende/): Mjuka handdukar och lugna material för morgon och kväll. Våffelvävda handdukar i bomull och en tvålpump i stengods gör handfatet lugnare, utan att badrummet behöver göras om.
+- [Förvaring & organisering](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-forvaring-organisering/): En plats för allt som annars blir liggande. Flätade korgar, förvaringslådor i filt och en skrivbordsorganisatör i ek: förvaring som är fin nog att stå framme i hallen, sovrummet och på skrivbordet.
+- [Belysning & atmosfär](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-belysning-atmosfar/): Lampor, levande ljus och ljusstakar för dag, kväll och allt däremellan. Bordslampor i opalglas och keramik, en sladdlös lampa att flytta dit ljuset behövs, doftljus och ljusstakar i mässing ger ett varmt, dämpat ljus i flera nivåer.
+- [Tavlor & väggar](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-tavlor-vaggar/): Affischer i ekram som gör väggen till en del av rummet. Grafiska motiv i varma jordtoner, 50 × 70 cm, tryckta i Sverige och med ram i ek.
+- [Sovrum & komfort](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-sovrum-komfort/): Textil och ljus som hjälper dig att varva ner. Ett påslakanset i tvättat lin som andas och en mjuk pläd i ullblandning gör sängen till rummets lugnaste plats.
+- [Uteliv](https://adamkajlindberg-22.github.io/rumiq-storefront/kategori-uteliv/): För balkongen, trappan och de ljusa kvällarna. En räfflad kruka i terrakotta är början, och sortimentet för uteplatsen växer.
 
 ## Produkter
 - [Glob bordslampa opalglas](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-glob-bordslampa-opalglas/): Bordslampa med klotformad skärm i opalglas på en fot i ljust trä. Sprider ett mjukt, jämnt ljus. 899 kr. Kategori: Belysning & atmosfär.
