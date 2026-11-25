@@ -42,10 +42,47 @@
         break;
       }
     });
+    // the dock counts while it is slid away on scrolling: it comes back while the toast is still up
+    const d = $("#dock"); if (d && d.offsetHeight && getComputedStyle(d).visibility !== "hidden" && !$("#cart.open")) top = Math.min(top, d.offsetTop);
     return Math.max(0, Math.round(H - top));
   };
+  /* where the toast goes: above the bars at the bottom, unless that covers what the customer needs next: the control just used
+     and the card, form or sheet it sits in, or any form field. Then: the space above an open sheet, just under the header, or (on
+     a wide screen) a bottom corner. An open sheet or drawer at the side keeps the toast beside it. Mitt rum places its own (CSS). */
+  let toastBy = null, toastByAt = 0;
+  const by = (e) => { toastBy = e.target; toastByAt = Date.now(); };
+  document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
+  const FIELD = "input:not([type=hidden]),select,textarea,form button";
+  const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
+  const toastPlace = (t) => {
+    ["top", "bottom", "left", "right"].forEach((k) => t.style.removeProperty(k));
+    if (document.getElementById("rmStage")) return;
+    const W = innerWidth, H = innerHeight, tw = t.offsetWidth, th = t.offsetHeight, m = 12;
+    const panelEl = $$(".sheet.open .sheet-in, .sheet.open .sheet-card, #cart.open").find((e) => e.getBoundingClientRect().height), panel = panelEl ? panelEl.getBoundingClientRect() : null;
+    const side = panel && panel.left > W * 0.3 && panel.top < H * 0.2 ? panel.left : W; // free width left of a side panel
+    const trig = toastBy && Date.now() - toastByAt < 4000 && document.contains(toastBy) ? toastBy : null;
+    const zone = panelEl || (trig && [".card", ".sh-act", "form", ".look", "li"].map((q) => trig.closest(q)).find((z) => z && z.getBoundingClientRect().height < H * 0.7)) || null;
+    const tr = trig && trig.getBoundingClientRect(), band = tr ? [tr.top - 40, tr.bottom + 170] : null; // the control just used and what comes right after it
+    const nav = $("#nav"), navB = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
+    const cx = (side - tw) / 2, bottomY = H - toastLift() - m - 2 - th;
+    const spots = [[cx, bottomY]];
+    if (panel && side === W) spots.push([cx, Math.max(6, Math.min((panel.top - th) / 2, panel.top - th - 6))]); // above a sheet from below, over the dimmed page
+    if (!panel) spots.push([cx, navB + m]);
+    if (W >= 1100) spots.push([24, bottomY], [side - tw - 24, bottomY]);
+    const hits = ([x, y]) => { let n = 0;
+      for (const fx of [0.06, 0.5, 0.94]) for (const fy of [0.15, 0.85]) {
+        const py = y + th * fy, el = (document.elementsFromPoint(x + tw * fx, py) || []).find((e) => e !== t && !t.contains(e));
+        if (!el || el.closest(".sheet-scrim")) continue;
+        const need = el.closest(NEED);
+        if ((trig && (el === trig || trig.contains(el) || el.contains(trig))) || el.closest(FIELD) || (need && ((zone && zone.contains(el)) || (band && !panelEl && py > band[0] && py < band[1])))) n++; }
+      return n; };
+    let best = spots[0], bn = Infinity;
+    for (const sp of spots) { if (sp[1] < 0 || sp[1] + th > H || sp[0] < 0) continue; const n = hits(sp); if (n < bn) { best = sp; bn = n; } if (!n) break; }
+    if (best === spots[0] && side === W) return; // the usual place: the stylesheet's own centring and safe-area margin
+    t.style.top = Math.round(best[1]) + "px"; t.style.bottom = "auto"; t.style.left = Math.round(best[0]) + "px"; t.style.right = "auto";
+  };
   RQ.toast = (html, ms) => {
-    const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); t.classList.add("show");
+    const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); toastPlace(t); t.classList.add("show");
     // a toast with a link stays 6 s, and waits while the pointer or the focus is on it (2.2.1)
     const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":hover, :focus-within")) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); };
     clearTimeout(toastT); toastT = setTimeout(hide, wait);

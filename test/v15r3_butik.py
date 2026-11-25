@@ -196,6 +196,28 @@ with sync_playwright() as p:
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
         ctx.close()
 
+    # M7 + D22: a toast never covers what the customer needs next: the open quick view's buttons, the dock, the product's buy row
+    OVER = """(qs) => { const t = document.getElementById('toast'); if (!t.classList.contains('show')) return ['no toast'];
+      const r = t.getBoundingClientRect(); return [...document.querySelectorAll(qs)].filter((e) => e.offsetParent || getComputedStyle(e).position === 'fixed').filter((e) => { const q = e.getBoundingClientRect();
+        return q.width && q.left < r.right && q.right > r.left && q.top < r.bottom && q.bottom > r.top; }).map((e) => e.id || e.className); }"""
+    for W, Hh, mobile in SIZES:
+        tag = f"[toast {W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(300)
+        pg.evaluate("RQ.sheet.open('lysa-keramiklampa')"); pg.wait_for_timeout(700)
+        pg.click("#shAdd"); pg.wait_for_timeout(500)
+        ok(pg.evaluate(OVER, "#sheet .sh-act button, #sheet .sh-room, #sheet .sheet-x, #sheet .sh-price, #sheet h2") == [], f"{tag} after adding in the quick view the toast covers none of its buttons")
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(500)
+        pg.evaluate("scrollTo(0, 400)"); pg.wait_for_timeout(300)
+        pg.locator("#results .card .fav").nth(1).click(); pg.wait_for_timeout(500)
+        card = "#results .card:nth-child(2) .ct, #results .card:nth-child(2) .fav"
+        ok(pg.evaluate(OVER, card + ", #dock") == [], f"{tag} the Sparad toast covers neither the card you saved nor the dock")
+        pg.goto(BASE + "produkt-sand-keramikvas/", wait_until="load"); pg.wait_for_timeout(300)
+        pg.click("#add"); pg.wait_for_timeout(500)
+        ok(pg.evaluate(OVER, "#add, .buy button, #buyNow, .pinfo h1, .nav a, .nav button") == [], f"{tag} the added toast covers neither the buy row, the way to the checkout nor the header")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"
