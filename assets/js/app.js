@@ -920,7 +920,8 @@
       if (swap) { const v = document.getElementById("view"); if (v.animate) v.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, easing: "ease-out" }); }
       return;
     }
-    const t = document.startViewTransition(() => render(raw));
+    // only the new page keeps the name: a search card that carried it stays in the (closing) search layer and would be a second "pimg"
+    const t = document.startViewTransition(() => { $$("[style*=view-transition-name]").forEach((el) => { if (!el.closest("#view")) el.style.viewTransitionName = ""; }); render(raw); });
     t.ready.catch(() => {}); t.updateCallbackDone.catch(() => {});
     t.finished.catch(() => {}).finally(() => $$("[style*=view-transition-name]").forEach((el) => { if (!el.closest(".pg-grid")) el.style.viewTransitionName = ""; }));
   };
