@@ -183,7 +183,7 @@ with sync_playwright() as p:
         card = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'); return c && [c.querySelector('h3').innerText, c.querySelectorAll('.hem-prop-items li').length, c.querySelector('.hem-promise').innerText]; })()")
         ok(card and card[0].startswith("Ditt vardagsrum i ") and card[1] >= 3 and card[2] == "Se ditt hem innan du köper.", f"{tag} the Svep result ends in a ready room proposal: {card}")
         vis = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop a, .svep-result .hem-prop button, .svep-result .hem-prop input')].filter((e) => e.offsetParent && e.getBoundingClientRect().height > 0).map((e) => e.textContent.trim())")
-        ok(vis == ["Se det i ditt rum", "Köp allt"], f"{tag} the card in Svep is calm: two actions, the rest behind 'Ändra rum och budget': {vis}")
+        ok(vis == ["Se det i ditt rum"], f"{tag} the card in Svep is one clear card with one main button, the rest behind 'Ändra rum och budget': {vis}")
         shot(pg, f"flow-{W}-svep")
         # the budget: a lower one keeps the set inside it and says what is left
         pg.evaluate("(() => { const r = document.querySelector('.svep-result [data-hem-budget]'); r.value = r.min * 1 + 500; r.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(500)
@@ -192,7 +192,7 @@ with sync_playwright() as p:
         pg.evaluate("document.querySelector('.svep-result [data-hem-type=sovrum]').click()"); pg.wait_for_timeout(300)
         ok(pg.evaluate("document.querySelector('.svep-result .hem-prop h3').innerText").startswith("Ditt sovrum"), f"{tag} another room type in one tap")
         pg.evaluate("(() => { const r = document.querySelector('.svep-result [data-hem-budget]'); r.value = r.max; r.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(500)
-        want = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop-items [data-sheet]')].map((b) => b.dataset.sheet).sort()")
+        want = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop-items li[data-h]')].map((b) => b.dataset.h).sort()")
         ok(len(want) >= 3, f"{tag} the whole room's set at the full budget: {want}")
         pg.evaluate("document.querySelector('.svep-result [data-hem-see]').click()"); pg.wait_for_timeout(2600)
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and sorted(pg.evaluate("RQ.room.scene().map((i) => i.h)")) == want and pg.evaluate("RQ.room.get().map") == "sovrum", f"{tag} Se det i ditt rum: the sample bedroom with exactly the proposal's products")

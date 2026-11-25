@@ -54,7 +54,8 @@
         ${looks.length ? `<div class="mylooks">${RQ.savedLooksHtml()}</div>` : bs.length ? "" : none("Inga looks än.", "Spara en färdig look, eller gör en moodboard av det du gillar.", "#looks", "Se alla looks")}</div>`],
       ["art", arts.length > 0, `<a href="#mh-art">Artiklar (${arts.length})</a>`, `<div id="mh-art"><div class="sec-head"><h2 class="h3">Sparade artiklar</h2></div>${arts.length ? `<div class="mag-grid">${arts.map(RQ.magCard).join("")}</div>` : none("Inga sparade artiklar.", "Spara en artikel i magasinet, så hamnar den här.", "#magasin", "Till magasinet")}</div>`],
     ];
-    const order = [...parts.filter((x) => x[0] === "rum" && rooms.length), ...parts.filter((x) => x[0] === "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && x[0] !== "bilder" && x[1]), ...parts.filter((x) => x[0] === "rum" && !rooms.length), ...parts.filter((x) => x[0] !== "rum" && !x[1])];
+    // the overview first (the room cards, or "Skapa ditt första rum"), then Alla bilder and the parts that hold something, the empty ones last
+    const order = [...parts.filter((x) => x[0] === "rum"), ...parts.filter((x) => x[0] === "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && x[0] !== "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && !x[1])];
     return {
       title: "Sparat · RumIQ",
       html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Sparat"]])}<span class="eyebrow">Ditt hem</span><h1 class="h1">Sparat</h1><p class="lead">Dina rum, bilderna, det du gillar och din stil, samlat så att du kan fortsätta där du slutade. Allt du sparar här är privat.</p>

@@ -2873,9 +2873,8 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-prop-items b{font-weight:560;font-variant-numeric:tabular-nums}
 .hem-left{color:var(--ink2)}
 .hem-prop-im{width:2.75rem;height:2.75rem;border-radius:8px;background:var(--img-bg);padding:.2rem;display:grid;place-items:center}
-.hem-more{display:grid;gap:.7rem}
 .hem-more > summary{cursor:pointer;min-height:2.75rem;display:flex;align-items:center;font-weight:500;color:var(--ink2);width:max-content}
-.hem-more[open]{display:grid;gap:.8rem}
+.hem-more-in{display:grid;gap:.8rem;padding-top:.4rem}
 .hem-budget{display:grid;gap:.3rem;font-size:.92rem}
 .hem-budget input{width:100%;accent-color:var(--accent);min-height:2.75rem}
 .hem-prop-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.6rem}

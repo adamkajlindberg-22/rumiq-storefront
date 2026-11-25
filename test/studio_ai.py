@@ -201,7 +201,8 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.getElementById('aiAuto').checked && document.getElementById('aiAuto').getAttribute('role') === 'switch'"), f"{tag} 'Spara mina AI-bilder automatiskt' is a switch, on by default")
         ok(pg.evaluate("document.querySelector('.ai-lcard [data-lib-buy]').innerText.replace(/[\\u00a0\\u202f]/g, ' ')") == "Köp allt · 2 737 kr", f"{tag} the card's Köp allt says the total: {pg.evaluate('document.querySelector(\".ai-lcard [data-lib-buy]\").innerText')}")
         order = pg.evaluate("[[...document.querySelectorAll('.mh > [id]')].map((e) => e.id), [...document.querySelectorAll('.jump-nav a')].map((a) => a.getAttribute('href'))]")
-        ok(order[0][0] == "mh-bilder" and order[1][0].endswith("mh-bilder") and "mh-fav" in order[0], f"{tag} with pictures, Mina rumsbilder comes first in Sparat and in its menu, the empty parts after: {order}")
+        # studio2: the overview (Mina rum) comes first, then Mina rumsbilder (Alla bilder), easy to reach in the jump menu
+        ok(order[0][:2] == ["mh-rum", "mh-bilder"] and order[1][1].endswith("mh-bilder"), f"{tag} the overview first, then Mina rumsbilder in Sparat and in its menu, the empty parts after: {order}")
         # studio2: Rumsprojekt is merged into Mina rum (one place); the old part is gone
         ok(pg.evaluate("!document.querySelector('.mh-why') && document.querySelector('#mh-rum h2').innerText") == "Mina rum", f"{tag} one place for rooms: Mina rum (Rumsprojekt merged into it)")
         small = pg.evaluate("[...document.querySelectorAll('.ai-lcard .small-row .tlink, .ai-lcard .chip, .ai-auto')].map((e) => [e.textContent.trim(), Math.round(e.getBoundingClientRect().height)]).filter((x) => x[1] < 44)")
