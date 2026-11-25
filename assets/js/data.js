@@ -101,7 +101,7 @@
       collections: ["skandinaviskt-hemmaliv"], featured: true, added: 6 },
     { handle: "lin-kuddfodral", name: "Lin kuddfodral", en: "Linen cushion cover", price: 249, cat: "hem-inredning",
       rooms: ["vardagsrum", "sovrum"], material: "Lin", care: ["lin"], variants: ["Havre", "Salvia"], tone: ["#D9CBB3", "#A9B39A"], styles: ["skandinavisk", "mjuk"], needs: ["detaljer"], gift: ["van"], occ: ["fodelsedag", "tack"],
-      short: "Kuddfodral i lin.",
+      short: "Kuddfodral i lin, i havre eller salvia. Ytan blir mjukare för varje tvätt.",
       story: "Lin har en levande yta som blir mjukare för varje tvätt. Havre är den lugna basen, salvia ger en stillsam färgklick. Två eller tre kuddar räcker för att ändra hur soffan känns.",
       use: ["Blanda havre och salvia för ett avslappnat uttryck.", "Skrynklorna hör till, lin ska inte strykas.", "Byt fodral med säsongen i stället för att köpa nya kuddar."],
       collections: ["skandinaviskt-hemmaliv"], added: 7 },

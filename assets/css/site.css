@@ -2124,7 +2124,7 @@ body.on-checkout .tools{grid-column:3}
 /* the taster on the home page */
 .svh{background:var(--paper);border-block:1px solid var(--line2)}
 .svh-in{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(2rem,6vw,6rem);align-items:center}
-.svh-tx{display:grid;gap:1.1rem;justify-items:start}
+.svh-tx{display:grid;gap:1.1rem;justify-items:start;align-self:start;margin-top:clamp(0rem,3vw,2.6rem)} /* the words start near the top of the cards, not half a deck down (no extra band above them) */
 .svh .display{font-size:clamp(2.6rem,5.4vw,5.2rem)}
 .svh .lead{max-width:32rem}
 .svh-how{list-style:none;display:flex;gap:1.2rem;flex-wrap:wrap;color:var(--ink2);font-size:.95rem}
