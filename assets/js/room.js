@@ -42,7 +42,7 @@
      horizon h and the slope k. Rugs and curtains are [x, y, width, squash]. sun = the side the light comes from. */
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
-      surface: [[78, 68.8, 25], [73.4, 68.4, 25], [82.6, 68, 25]],
+      surface: [[78, 68.8, 25], [73.4, 68.4, 25], [81.6, 68, 25]], // the side table ends at about 82.4
       cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[62.4, 72.6, 17], [80, 72, 17]], bedding: [],
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
@@ -115,9 +115,10 @@
       if (kd === "rug" || kd === "window") { const sp = spots[0]; return { x: sp[0], y: sp[1], w: sp[2], sy: sp[3] }; }
       const width = (sp) => clamp(cm * (sp[2] || floorScale(sp[1], M)) / 100 * k, 2.5, 70);
       const free = spots.find((sp) => !taken(sp[0], sp[1], width(sp), kd)); if (free) return { x: free[0], y: free[1], w: +width(free).toFixed(1) };
-      // every mapped spot is taken: beside one of them, as long as that is still on the same surface
-      for (const sp of spots) { const w = width(sp), row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]), lo = Math.min(...row) - (M ? 1.5 : 30), hi = Math.max(...row) + (M ? 1.5 : 30);
-        for (let n = 1; n <= 6; n++) { const x = sp[0] + (n % 2 ? 1 : -1) * Math.ceil(n / 2) * (w + 1.5); if (x >= Math.max(3, lo) && x <= Math.min(97, hi) && !taken(x, sp[1], w, kd)) return { x: +x.toFixed(1), y: sp[1], w: +w.toFixed(1) }; } }
+      // every mapped spot is taken: the free place on the same surface nearest to one of them (a second lamp goes to the
+      // other end of the side table, not to the floor), as long as that is still on the surface
+      for (const sp of spots) { const w = width(sp), row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]), lo = Math.max(3, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), hi = Math.min(97, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30)); // its foot stays on the surface
+        for (let d = 0.5; d <= hi - lo; d += 0.5) for (const x of [sp[0] + d, sp[0] - d]) if (x >= lo && x <= hi && !taken(x, sp[1], w, kd)) return { x: +x.toFixed(1), y: sp[1], w: +w.toFixed(1) }; }
       return null;
     };
     let sp = place(kind), moved = false;
@@ -534,6 +535,7 @@
         const fresh0 = (RQ.ss && RQ.ss.get("rumiq-room-new")) || "";
         let sel = fresh0 && R.inScene(fresh0) ? fresh0 : null;
         if (fresh0) setTimeout(() => RQ.ss.set("rumiq-room-new", ""), 1600); // kept a moment: the view may be drawn twice on the way in
+        if (fresh0 && R.lastMoved === fresh0 && R.inScene(fresh0)) { R.lastMoved = null; ls.set("rumiq-room-landed", true); setTimeout(() => RQ.toast(`Där var det fullt, så ${esc(RQ.byHandle(fresh0).name)} står på golvet. Dra den dit du vill.`), 700); } // it came from a product page: say why it is not on the table
         const fits = () => { const t = room.type; const list = RQ.PRODUCTS.map((p) => ({ p, m: (match(p) || 0) + (t && p.rooms.includes(t) ? 100 : 0) })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };
         /* things land softly the first time they are put in the room */
         const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
