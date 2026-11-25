@@ -353,6 +353,11 @@ main{min-height:60vh}
 .pinfo .priceline{display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap}
 .pinfo .pprice{font-size:1.35rem;font-weight:560;letter-spacing:-.02em}
 .pinfo .vat{font-size:.86rem;color:var(--muted)}
+.pinroom{display:none}
+@media (max-width:640px){
+  .pinfo .pinroom{display:inline-flex;align-items:baseline;gap:.4rem;margin:-.5rem 0 -.5rem auto;padding:.75rem .1rem;border:0;background:none;color:var(--ink);font:inherit;font-size:.9rem;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);cursor:pointer}
+  .pinfo .pinroom svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.6;flex:none;align-self:center}
+}
 .pinfo .short{font-size:1.06rem;color:var(--ink2);margin:1.3rem 0 0;max-width:34rem}
 .opt{margin:1.6rem 0 0}
 .opt label,.opt .lbl{display:block;font-size:.88rem;font-weight:500;color:var(--muted);margin-bottom:.6rem}

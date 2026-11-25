@@ -358,6 +358,10 @@
       offers: { "@type": "Offer", priceCurrency: "SEK", price: p.price, availability: "https://schema.org/PreOrder" } };
     const look = [p, ...pairs.slice(0, 3)];
     const shown = gal.filter((g) => g.k !== "off");
+    /* phones: the room moment on the first screen, next to the price (the big card below says the same further down).
+       With a room it shows the in-room picture in the gallery, or opens Mitt rum; without one it starts the room setup */
+    const hasRoom = RQ.room && RQ.room.has(), roomSlide = hasRoom && RQ.suits(p);
+    const pinroom = `<${hasRoom && !roomSlide ? `a href="#mitt-rum-${p.handle}"` : `button type="button" ${roomSlide ? "data-pinroom" : `data-room-setup="#mitt-rum-${p.handle}"`}`} class="pinroom">${RQ.roomIco}<span>Se den i ditt rum</span></${hasRoom && !roomSlide ? "a" : "button"}>`;
     return {
       title: `${p.name} · RumIQ`,
       html: `<section class="wrap pcr">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
@@ -370,7 +374,7 @@
           <div class="pinfo">
             <a class="eyebrow" href="#kategori-${c.id}">${esc(c.name)}</a>
             <h1>${esc(p.name)}</h1>
-            <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span></div>${RQ.shipNote(p)}
+            <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span>${pinroom}</div>${RQ.shipNote(p)}
             <p class="short">${esc(p.short)}</p>
             ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div><p class="small vnote" id="vnote" hidden><span>Bilderna visar färgen</span> <b>${esc(vs[0].title)}</b>.</p></div>` : ""}
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
@@ -425,6 +429,8 @@
         const items = () => $$(".pg-item:not(.inroomtile):not(.pg-film)", grid);
         const lbList = () => items().map((b) => { const g = gal[+b.dataset.gi]; const im = $("img", b); return { src: im.currentSrc || im.src, thumb: g.thumb, alt: im.alt, cut: !!g.cut }; });
         // open the lightbox on click, loupe on hover (fine pointers only)
+        const pin = $("[data-pinroom]", root); if (pin) pin.addEventListener("click", () => { const t = $(".inroomtile", grid); if (!t) { location.hash = "#mitt-rum-" + p.handle; return; }
+          if (grid.scrollWidth > grid.clientWidth + 4) grid.scrollTo({ left: t.offsetLeft - grid.offsetLeft, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); else t.scrollIntoView({ block: "nearest" }); });
         grid.addEventListener("click", (e) => { const t = e.target.closest(".inroomtile"); if (t) { location.hash = "#mitt-rum-" + p.handle; return; } const b = e.target.closest(".pg-item:not(.pg-film)"); if (!b) return; RQ.lightbox.open(lbList(), items().indexOf(b), p.name); });
         const fine = matchMedia("(hover:hover) and (pointer:fine)").matches && innerWidth > 900;
         if (fine) {
