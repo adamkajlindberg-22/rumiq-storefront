@@ -34,7 +34,7 @@
     },
     html() {
       const rooms = this.list();
-      return `<div id="mh-matt"><div class="sec-head"><h3 class="h3">Mått för dina rum</h3></div>
+      return `<div id="mh-matt"><h3 class="h3 hr-h">Mått för dina rum</h3>
         <p class="small" style="max-width:40rem">Lägg in några mått en gång. Sedan säger varje produktsida om den passar och ryms hos dig.</p>
         <div class="hr-list" id="hrList">${rooms.map((r) => `<div class="hr-card"><span class="hr-ic" aria-hidden="true">${RQ.roomIco}</span><div><b>${esc(this.label(r))}</b><small>${this.dims(r) || "Inga mått än"}</small></div>
           <button class="tlink" type="button" data-hr-edit="${r.id}">Ändra</button><button class="tlink" type="button" data-hr-del="${r.id}">Ta bort</button></div>`).join("")}</div>

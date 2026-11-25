@@ -182,6 +182,8 @@ with sync_playwright() as p:
         pg.wait_for_timeout(1800)
         card = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'); return c && [c.querySelector('h3').innerText, c.querySelectorAll('.hem-prop-items li').length, c.querySelector('.hem-promise').innerText]; })()")
         ok(card and card[0].startswith("Ditt vardagsrum i ") and card[1] >= 3 and card[2] == "Se ditt hem innan du köper.", f"{tag} the Svep result ends in a ready room proposal: {card}")
+        vis = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop a, .svep-result .hem-prop button, .svep-result .hem-prop input')].filter((e) => e.offsetParent && e.getBoundingClientRect().height > 0).map((e) => e.textContent.trim())")
+        ok(vis == ["Se det i ditt rum", "Köp allt"], f"{tag} the card in Svep is calm: two actions, the rest behind 'Ändra rum och budget': {vis}")
         shot(pg, f"flow-{W}-svep")
         # the budget: a lower one keeps the set inside it and says what is left
         pg.evaluate("(() => { const r = document.querySelector('.svep-result [data-hem-budget]'); r.value = r.min * 1 + 500; r.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(500)

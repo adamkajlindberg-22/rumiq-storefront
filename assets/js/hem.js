@@ -62,6 +62,7 @@
   H.restore = (r) => { if (r) H.save(r); };
   H.activeId = () => { const id = S.store.get(ACTIVE, ""); return id && H.room(id) ? id : null; };
   H.setActive = (id) => { vault.set(ACTIVE, id || ""); fire(); };
+  H.picture = (r) => { const id = r && r.saved && r.saved.project, pr = id && S.projects().find((x) => x.id === id); return pr && /^data:image\//.test(pr.img || "") ? pr.img : null; };
   H.name = (r) => (r ? r.label || typeName(r.type) : "");
   H.items = (r) => (r && Array.isArray(r.items) ? r.items.filter((it) => it && RQ.byHandle(it.h)) : []);
   const vPrice = (it) => { const x = S.variantById(it.h + "::" + (it.v || 0)); return x && x.variant ? x.variant.price : RQ.byHandle(it.h).price; };
@@ -78,6 +79,23 @@
     return { parts, next };
   };
 
+  /* Rumsprojekt and Mitt hem are one: "Spara" in Mitt rum saves into the room it belongs to (the active one when it is
+     this photo, else a new room named after the room type), and older Rumsprojekt become rooms once */
+  const baseSaveProject = S.saveProject;
+  S.saveProject = (p) => {
+    const ok = baseSaveProject(p); if (ok && S.projects()[0]) p = { ...p, id: S.projects()[0].id };
+    if (!ok || !RQ.room || !RQ.room.has()) return ok;
+    const key = RQ.ai ? RQ.ai.projectKey() : null, act = H.activeId() && H.room(H.activeId());
+    const scene = RQ.room.scene(), items = (p.handles || scene.map((it) => it.h)).filter((h) => RQ.byHandle(h)).map((h) => ({ h, v: 0 }));
+    const r = act && (!act.pkey || act.pkey === key) ? act : H.rooms().find((x) => x.pkey && x.pkey === key) || H.create({ label: typeName(RQ.room.get().type || "vardagsrum"), type: RQ.room.get().type || "vardagsrum" });
+    H.patch(r.id, { items, scene, pkey: key, saved: { project: p.id, at: now() } }); H.setActive(r.id); return ok;
+  };
+  const migrate = () => { const old = S.projects().filter((p) => !p.hem); if (!old.length) return;
+    old.slice().reverse().forEach((p) => { const items = (p.handles || []).filter((h) => RQ.byHandle(h)).map((h) => ({ h, v: 0 })); const t = (RQ.byHandle((items[0] || {}).h) || { rooms: ["vardagsrum"] }).rooms[0];
+      const r = H.create({ label: String(p.title || "").replace(/^(Mitt rum|AI-bild) med .*/, "") || typeName(t), type: t, items }); H.patch(r.id, { notes: p.note || "", pkey: p.studio || null, saved: { project: p.id, at: p.at } }); });
+    S.store.set("rumiq-projects", S.projects().map((p) => ({ ...p, hem: true }))); };
+  try { migrate(); } catch (e) {}
+
   /* Mitt rum keeps the active room up to date: what stands in the room photo it was opened with is its chosen set */
   document.addEventListener("rq-room", (e) => {
     if (e.detail !== "scene") return; const id = H.activeId(), r = id && H.room(id); if (!r || !RQ.ai || !r.pkey || RQ.ai.projectKey() !== r.pkey) return;
@@ -86,10 +104,10 @@
   });
 
   /* ------------------------------------------------------------------ a ready room proposal from the range */
-  H.propose = ({ type, style, budget, avoid = [] } = {}) => {
+  H.propose = ({ type, style, budget, avoid = [], prefer = [] } = {}) => {
     const t = RQ.roomById(type) ? type : "vardagsrum", R0 = RQ.roomById(t), st = RQ.STYLES[style] ? style : null;
     const taste = RQ.taste && RQ.taste.get ? RQ.taste.get() : null;
-    const score = (p) => (st && p.styles.includes(st) ? 4 : 0) + (taste && taste.saved && taste.saved.includes && taste.saved.includes(p.handle) ? 1 : 0) - (avoid.includes(p.handle) ? 9 : 0) + (p.rooms[0] === t ? 1 : 0);
+    const score = (p) => (prefer.includes(p.handle) ? 6 : 0) + (st && p.styles.includes(st) ? 4 : 0) + (taste && taste.saved && taste.saved.includes && taste.saved.includes(p.handle) ? 1 : 0) - (avoid.includes(p.handle) ? 9 : 0) + (p.rooms[0] === t ? 1 : 0);
     const pool = RQ.PRODUCTS.filter((p) => p.rooms.includes(t) && (!st || p.styles.includes(st) || !RQ.PRODUCTS.some((q) => q.rooms.includes(t) && q.cat === p.cat && q.styles.includes(st))));
     const order = [...(R0.cats || []), ...new Set(pool.map((p) => p.cat))];
     const best = []; [...new Set(order)].forEach((c) => { const ps = pool.filter((p) => p.cat === c).sort((a, b) => score(b) - score(a) || a.price - b.price); ps.slice(0, c === order[0] ? 2 : 1).forEach((p) => best.push(p)); });
@@ -113,16 +131,20 @@
     const types = ["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor"];
     return `<div class="hem-prop-h"><span class="eyebrow">${s.from === "room" ? "Förslag för rummet" : "Ett färdigt rumsförslag"}</span><h3 class="h3">${esc(H.title(pr))}</h3>
         <p class="small hem-promise">${PROMISE}</p></div>
-      ${s.from === "room" ? "" : `<div class="chips hem-prop-types" role="group" aria-label="Vilket rum?">${types.map((t) => `<button type="button" class="chip" data-hem-type="${t}" aria-pressed="${pr.type === t}">${esc(typeName(t))}</button>`).join("")}</div>`}
+      ${s.compact ? "" : typeChips(s, pr, types)}
       ${pr.colours.length ? `<div class="hem-cols" role="img" aria-label="Färgerna i förslaget">${pr.colours.map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</div>` : ""}
-      <ul class="hem-prop-items">${its.map((p) => `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><span>${esc(p.name)}</span><b>${kr(p.price)}</b></li>`).join("")}</ul>
+      <ul class="hem-prop-items">${its.map((p) => `<li>${s.compact ? `<span class="hem-prop-im"><img src="${RQ.cut(p)}" alt=""></span>` : `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button>`}<span>${esc(p.name)}</span><b>${kr(p.price)}</b></li>`).join("")}</ul>
       ${pr.left.length ? `<p class="small hem-left">Budgeten räcker till ${its.length} av ${its.length + pr.left.length}. Kvar: ${pr.left.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
-      <label class="hem-budget"><span>Budget <b>${kr(s.budget || pr.fullTotal)}</b></span><input type="range" data-hem-budget min="${Math.max(100, Math.floor(pr.min / 100) * 100)}" max="${Math.ceil(pr.fullTotal / 100) * 100}" step="100" value="${s.budget || Math.ceil(pr.fullTotal / 100) * 100}" aria-label="Budget i kronor" aria-valuetext="${esc(kr(s.budget || pr.fullTotal))}"></label>
+      ${s.compact ? `<details class="hem-more"${s.open ? " open" : ""}><summary>Ändra rum och budget</summary>${typeChips(s, pr, types)}` : ""}<label class="hem-budget"><span>Budget <b>${kr(s.budget || pr.fullTotal)}</b></span><input type="range" data-hem-budget min="${Math.max(100, Math.floor(pr.min / 100) * 100)}" max="${Math.ceil(pr.fullTotal / 100) * 100}" step="100" value="${s.budget || Math.ceil(pr.fullTotal / 100) * 100}" aria-label="Budget i kronor" aria-valuetext="${esc(kr(s.budget || pr.fullTotal))}"></label>
+      ${s.compact ? `<div class="ai-row small-row"><button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button><button class="tlink" type="button" data-hem-ask>Vad tycker du?</button></div></details>` : ""}
       <div class="hem-prop-sum"><span>${its.length} ${its.length === 1 ? "produkt" : "produkter"}</span><b>${kr(pr.total)}</b></div>
       <div class="ai-row"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-hem-buy>Köp allt</button></div>
-      <div class="ai-row small-row"><button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button>${room ? "" : `<button class="tlink" type="button" data-hem-keep>Spara i Mitt hem</button>`}<button class="tlink" type="button" data-hem-ask>Vad tycker du?</button></div>
+      ${s.compact ? "" : `<div class="ai-row small-row"><button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button>${room ? "" : `<button class="tlink" type="button" data-hem-keep>Spara i Mitt hem</button>`}<button class="tlink" type="button" data-hem-ask>Vad tycker du?</button></div>`}
       <p class="small" role="status" data-hem-msg>${room ? `Hör till ${esc(H.name(room))}.` : ""}</p>`;
   };
+  const typeChips = (s, pr, types) => s.from === "room" ? "" : `<div class="chips hem-prop-types" role="group" aria-label="Vilket rum?">${types.map((t) => `<button type="button" class="chip" data-hem-type="${t}" aria-pressed="${pr.type === t}">${esc(typeName(t))}</button>`).join("")}</div>`;
+  // the details stay open while you change the room or the budget inside them
+  document.addEventListener("toggle", (e) => { const d = e.target; if (!d.matches || !d.matches(".hem-more")) return; const box = d.closest("[data-hem-prop]"), st = box && cardState.get(box.dataset.hemProp); if (st) st.open = d.open; }, true);
   const repaint = (box, focusSel) => { box.innerHTML = cardInner(box.dataset.hemProp); if (focusSel) { const f = $(focusSel, box); if (f) f.focus({ preventScroll: true }); } };
   // the room this proposal belongs to: the one it came from, else a new one named after the room type
   const ensureRoom = (s) => { if (s.room && H.room(s.room)) return H.room(s.room); const r = H.create({ label: typeName(s.pr.type), type: s.pr.type, style: s.pr.style, budget: s.budget, items: s.pr.items }); s.room = r.id; return r; };

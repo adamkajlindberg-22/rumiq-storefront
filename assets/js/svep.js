@@ -375,7 +375,7 @@
       <h2 class="h2">${top.length ? styleTitle(top) : "Vi lär oss fortfarande"}</h2>
       <p class="lead">${top.length ? esc(RQ.STYLES[top[0].id].text) : "Spara några saker du gillar, så kan butiken sortera efter dig."}</p>
       ${allDone}
-      ${top.length && RQ.hem ? RQ.hem.slot({ type: scope || "vardagsrum", style: top[0].id, from: "svep" }) : ""}
+      ${top.length && RQ.hem ? RQ.hem.slot({ type: scope || "vardagsrum", style: top[0].id, from: "svep", compact: true, prefer: saved.map((p) => p.handle) }) : ""}
       ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
         ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
       ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved)}

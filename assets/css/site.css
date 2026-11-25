@@ -2835,7 +2835,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
    Mitt hem (Sparat): rooms, the room proposal, the room sheet, the moodboard (hem.js, hemsida.js)
    ===================================================================================== */
 .hem-promise{color:var(--accent);font-weight:560;margin:0}
-.hem-prop{display:grid;gap:.9rem;padding:1.3rem;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);max-width:44rem}
+.hem-prop{text-align:left;margin-inline:auto;width:100%;display:grid;gap:.9rem;padding:1.3rem;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);max-width:44rem}
 .hem-prop-h{display:grid;gap:.25rem}
 .hem-prop-h .h3{font-size:clamp(1.25rem,2.6vw,1.6rem);letter-spacing:-.02em}
 .hem-prop-types{display:flex;flex-wrap:wrap;gap:.35rem}
@@ -2848,6 +2848,10 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-prop-items img{max-width:100%;max-height:100%;object-fit:contain}
 .hem-prop-items b{font-weight:560;font-variant-numeric:tabular-nums}
 .hem-left{color:var(--ink2)}
+.hem-prop-im{width:2.75rem;height:2.75rem;border-radius:8px;background:var(--img-bg);padding:.2rem;display:grid;place-items:center}
+.hem-more{display:grid;gap:.7rem}
+.hem-more > summary{cursor:pointer;min-height:2.75rem;display:flex;align-items:center;font-weight:500;color:var(--ink2);width:max-content}
+.hem-more[open]{display:grid;gap:.8rem}
 .hem-budget{display:grid;gap:.3rem;font-size:.92rem}
 .hem-budget input{width:100%;accent-color:var(--accent);min-height:2.75rem}
 .hem-prop-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.6rem}
@@ -2862,7 +2866,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-first-f label,.hem-room-f label{display:grid;gap:.3rem;font-weight:500;font-size:.94rem}
 .hem-first-f fieldset,.hem-room-f fieldset{border:0;padding:0;margin:0;display:grid;gap:.4rem}
 .hem-first-f legend,.hem-room-f legend{font-weight:500;font-size:.94rem;padding:0;margin-bottom:.35rem}
-.hem-first-f legend small{color:var(--muted);font-weight:400}
+.hem-first-f legend small{color:var(--ink2);font-weight:400}
 .hem-first-f .chips,.hem-room-f .chips{display:flex;flex-wrap:wrap;gap:.35rem}
 .hem-bens{list-style:none;padding:0;margin:1.2rem 0 0;display:grid;gap:.8rem}
 @media (min-width:700px){.hem-bens{grid-template-columns:repeat(3,1fr)}}
@@ -2870,7 +2874,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-bens span{color:var(--ink2);font-size:.9rem}
 .hem-rooms{display:grid;gap:1.2rem}
 .hem-cards{display:grid;gap:1.2rem}
-@media (min-width:700px){.hem-cards{grid-template-columns:repeat(auto-fill,minmax(18rem,1fr))}.hem-cards.small{grid-template-columns:repeat(auto-fill,minmax(14rem,1fr))}}
+@media (min-width:700px){.hem-cards{grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}.hem-cards > .hem-card:only-child{max-width:44rem}.hem-cards.small{grid-template-columns:repeat(auto-fill,minmax(14rem,1fr))}}
 .hem-card{display:grid;border-radius:var(--r);overflow:hidden;background:var(--paper);border:1px solid var(--line)}
 .hem-card-im{border:0;padding:0;margin:0;display:block;aspect-ratio:16 / 10;background:var(--img-bg);cursor:pointer;overflow:hidden}
 .hem-card-im img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.75) brightness(1.02);transition:transform .5s var(--ease)}
@@ -2926,7 +2930,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 @media (min-width:900px){.mb-wrap{padding:2rem}}
 .mb-head{display:grid;gap:.3rem;padding-right:3rem}
 .mb-name input{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:560;letter-spacing:-.02em;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);padding:.2rem 0;width:100%;border-radius:0}
-.mb-board{position:relative;aspect-ratio:4 / 3;background:#F4F2EE;border-radius:var(--r);overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 1px var(--line)}
+.mb-board{position:relative;aspect-ratio:4 / 3;width:min(100%,calc(58vh * 4 / 3));margin-inline:auto;background:#F4F2EE;border-radius:var(--r);overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 1px var(--line)}
 @media (max-width:600px){.mb-board{aspect-ratio:1}}
 .mb-it{position:absolute;transform:translate(-50%,-50%);border:0;background:none;padding:0;cursor:grab;touch-action:none;border-radius:6px}
 .mb-it img{display:block;width:100%;height:auto;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(30,30,30,.12))}

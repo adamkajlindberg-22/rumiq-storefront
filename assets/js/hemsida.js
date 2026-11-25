@@ -15,7 +15,7 @@
   /* ------------------------------------------------------------------ the page */
   const styleChips = (cur, attr) => Object.entries(RQ.STYLES).map(([k, s]) => `<button type="button" class="chip" ${attr}="${k}" aria-pressed="${cur === k}">${esc(s.name)}</button>`).join("");
   const typeOpts = (cur) => ["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor", "uteliv"].map((t) => `<option value="${t}"${t === cur ? " selected" : ""}>${esc(typeName(t))}</option>`).join("");
-  const firstRoom = () => `<div class="hem-first" id="hemFirst"><span class="eyebrow">Börja här</span><h3 class="h2">Skapa ditt första rum</h3>
+  const firstRoom = () => `<div class="hem-first" id="hemFirst"><span class="eyebrow">Börja här</span><h3 class="h3">Skapa ditt första rum</h3>
       <p class="lead">Ge rummet ett namn och välj vilket slags rum det är. Allt du gör sedan, bilder, produkter och listor, hamnar där.</p>
       <form class="hem-first-f" id="hemFirstF" novalidate>
         <label>Rummets namn<input name="label" maxlength="40" placeholder="Vardagsrum" autocomplete="off"></label>
@@ -28,7 +28,7 @@
       <li><b>Lista och budget per rum</b><span>Se vad som är kvar att köpa och vad det kostar.</span></li>
       <li><b>Med dig mellan enheter</b><span>När kontot är aktivt. I dag sparas allt i den här webbläsaren.</span></li></ul>`;
   const roomCard = (r, big) => { const its = H.items(r), m = H.money(r);
-    return `<article class="hem-card${big ? " big" : ""}" data-room-card="${esc(r.id)}"><button type="button" class="hem-card-im" data-hem-open="${esc(r.id)}" aria-label="Öppna ${esc(H.name(r))}"><img src="${sampleImg(r.type)}" alt="" data-room-pic="${esc(r.id)}" loading="lazy"></button>
+    return `<article class="hem-card${big ? " big" : ""}" data-room-card="${esc(r.id)}"><button type="button" class="hem-card-im" data-hem-open="${esc(r.id)}" aria-label="Öppna ${esc(H.name(r))}"><img src="${esc(H.picture(r) || sampleImg(r.type))}" alt="" data-room-pic="${esc(r.id)}" loading="lazy"></button>
       <div class="hem-card-tx"><h3 class="h3"><button type="button" class="hem-card-name" data-hem-open="${esc(r.id)}">${esc(H.name(r))}</button></h3>
         <p class="hem-prog" data-room-prog="${esc(r.id)}">${progHtml(r, 0)}</p>
         <p class="small">${its.length ? `${its.length} ${its.length === 1 ? "produkt" : "produkter"} · ${kr(m.total)}${r.budget ? ` · budget ${kr(r.budget)}` : ""}` : typeName(r.type)}</p>
@@ -188,7 +188,7 @@
   board.addEventListener("click", (e) => { if (e.target.closest("[data-mb-close]")) mclose(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && board.classList.contains("open")) { e.stopPropagation(); mclose(); } }, true);
   // neat start: a loose grid, larger things first
-  const autoLayout = (items) => { const n = items.length, cols = n <= 1 ? 1 : n <= 4 ? 2 : 3, rows = Math.ceil(n / cols), w = Math.min(30, (cols === 1 ? 40 : cols === 2 ? 26 : 19) * (rows > 2 ? 0.8 : 1));
+  const autoLayout = (items) => { const n = items.length, cols = n <= 1 ? 1 : n <= 4 ? 2 : 3, rows = Math.ceil(n / cols), w = Math.min(28, (cols === 1 ? 34 : cols === 2 ? 20 : 16) * (rows > 2 ? 0.8 : 1)); // tall cut-outs stay inside their cell
     return items.map((it, i) => ({ ...it, x: Math.round((100 / cols) * ((i % cols) + 0.5)), y: Math.round((100 / rows) * (Math.floor(i / cols) + 0.5)), w, z: i })); };
   const tones = () => [...new Set(B.items.map((it) => { const p = RQ.byHandle(it.h); return p && (p.tone[it.v || 0] || p.tone[0]); }).filter(Boolean))].slice(0, 6);
   const mbItems = () => B.items.filter((it) => RQ.byHandle(it.h)).map((it, i) => { const p = RQ.byHandle(it.h); return `<button type="button" class="mb-it${sel === i ? " on" : ""}" data-mb-i="${i}" style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${it.z || 0}" aria-label="${esc(p.name)}" aria-pressed="${sel === i}"><img src="${RQ.cut(p)}" alt="" draggable="false"></button>`; }).join("");
