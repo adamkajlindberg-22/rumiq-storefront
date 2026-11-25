@@ -266,7 +266,7 @@ with sync_playwright() as p:
         if mobile:
             pg.tap("#toggleFilters"); pg.wait_for_timeout(400); pg.tap("#fForm input[name=room][value=vardagsrum]"); pg.wait_for_timeout(200); pg.tap("#fShow"); pg.wait_for_timeout(400)
         pg.evaluate("scrollTo(0, 900)"); pg.wait_for_timeout(400)
-        h = pg.evaluate("[...document.querySelectorAll('#results .card')].find((c) => c.getBoundingClientRect().top > 70).querySelector('h3 a').getAttribute('href')")
+        h = pg.evaluate("[...document.querySelectorAll('#results .card')].find((c) => { const r = c.querySelector('h3 a').getBoundingClientRect(); return r.top > 70 && r.bottom < innerHeight - 90; }).querySelector('h3 a').getAttribute('href')")
         (pg.tap if mobile else pg.click)(f"#results h3 a[href='{h}']"); pg.wait_for_timeout(900)
         pg.go_back(); pg.wait_for_timeout(1200)
         ok(abs(pg.evaluate("scrollY") - 900) < 4, f"{tag} Back from a product returns to 900 px: {pg.evaluate('scrollY')}")
