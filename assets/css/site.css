@@ -688,12 +688,22 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 /* the field and the close button stay at the top while the hits scroll under them */
 .search .sbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:1rem;padding:clamp(1rem,4vh,3.4rem) 0 0;background:var(--bg)}
 .search .sbar::after{content:"";position:absolute;left:0;right:0;top:100%;height:1.2rem;background:linear-gradient(var(--bg),transparent);pointer-events:none}
+/* the bar's ground runs edge to edge, so no lighter strip shows beside it on wide screens */
+.search .sbar{box-shadow:0 0 0 50vw var(--bg);clip-path:inset(0 -50vw -1.2rem)}
+.search .sbar::after{left:-50vw;right:-50vw}
 .search .sfield{flex:1;min-width:0;display:flex;align-items:center;gap:.9rem;border-bottom:1px solid var(--ink);padding-bottom:.4rem}
 .search.has-q .hint{display:none}
 .s-fix{margin:0 0 1.2rem;color:var(--ink2)}
 .s-fix b{color:var(--ink);font-weight:600}
 .search .sfield svg{width:1.7rem;height:1.7rem;fill:none;stroke:var(--muted);stroke-width:1.5;flex:none}
 .search input{font-size:clamp(1.7rem,4.2vw,3.2rem);font-weight:500;letter-spacing:-.035em;border:0!important;border-radius:0;background:transparent!important;padding:.4rem 0;box-shadow:none!important}
+/* the field is an underline: focus makes it a thicker green line (no box inside the line) */
+.search .sfield{transition:border-color .2s}
+.search .sfield:focus-within{border-bottom:3px solid var(--accent);padding-bottom:calc(.4rem - 2px)}
+.search input:focus-visible{outline:0}
+/* the hit that Enter opens */
+.search .card.s-pick h3 a{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:.3em}
+.search a.chip.s-pick{border-color:var(--accent)}
 input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
 .search .close{flex:none;background:var(--sunk)}
 .search input::-webkit-search-cancel-button{display:none}

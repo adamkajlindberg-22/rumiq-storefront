@@ -621,13 +621,13 @@
     const chip = (hex, name, extra = "") => { const rgb = typeof hex === "string" ? hex2rgb(hex) : hex, on = st.tone && dist(st.tone, rgb) < 1; return `<button type="button" class="chip tone${on ? " on" : ""}" data-tone="${rgb.join(",")}" data-tone-name="${esc(name)}" aria-pressed="${!!on}"${extra}><i style="background:rgb(${rgb.join(",")})"></i>${esc(name)}</button>`; };
     const toRgb = (c) => hex2rgb(c.hex || c);
     return `<div class="tone-row"><p class="eyebrow">Sök på färg</p><div class="chips">${RQ.TONES.map((t) => chip(t.hex, t.name)).join("")}</div>
-      ${pal.length ? `<p class="eyebrow" style="margin-top:1rem">Färger från mitt rum</p><div class="chips">${pal.map((c, k) => chip(toRgb(c), `Rumsfärg ${k + 1}`, ' data-room-tone')).join("")}</div>` : ""}</div>`;
+      ${pal.length ? `<p class="eyebrow" style="margin-top:1rem">Färger från mitt rum</p><div class="chips">${pal.map((c, k, all) => chip(toRgb(c), RQ.toneNames(all.map((x) => x.hex || x))[k], ' data-room-tone')).join("")}</div>` : ""}</div>`;
   };
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-tone]");
     if (t) { const rgb = t.dataset.tone.split(",").map(Number), st = RQ.searchState; if (st.tone && dist(st.tone, rgb) < 1) { st.tone = null; st.toneName = ""; } else { st.tone = rgb; st.toneName = t.dataset.toneName; } RQ.doSearch && RQ.doSearch(); return; }
     const r = e.target.closest("[data-tone-room]");
-    if (r) { const R = RQ.room; if (R && R.has() && R.get().pal && R.get().pal.length) { const c = R.get().pal[0]; RQ.searchState.tone = hex2rgb(c.hex || c); RQ.searchState.toneName = "Rumsfärg 1"; } setTimeout(() => RQ.doSearch && RQ.doSearch(), 80); }
+    if (r) { const R = RQ.room; if (R && R.has() && R.get().pal && R.get().pal.length) { const c = R.get().pal[0]; RQ.searchState.tone = hex2rgb(c.hex || c); RQ.searchState.toneName = RQ.toneName(c.hex || c); } setTimeout(() => RQ.doSearch && RQ.doSearch(), 80); }
   }, true);
 
   /* ------------------------------------------------------------------ header compaction */

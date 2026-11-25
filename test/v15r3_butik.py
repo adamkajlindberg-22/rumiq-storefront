@@ -126,6 +126,35 @@ with sync_playwright() as p:
                 ok(btns == ["fav", "rbtn", "qv", "qadd"], f"{tag} card buttons in reading order (heart, room, Snabbtitt, Lägg till): {btns}")
             ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
             ctx.close()
+    # M10, D13, D14: search with a room: best colour match first, names for the room's colours, a green underline on focus,
+    # Enter opens the marked first hit with a mouse and keyboard (on a phone it puts the keyboard away), typographic quotes
+    for W, Hh, mobile in SIZES:
+        for evening in (False, True):
+            tag = f"[search {W}{' kväll' if evening else ''}]"
+            ctx = context(b, W, Hh, mobile, evening); pg = page(ctx)
+            pg.goto(BASE, wait_until="load"); pg.evaluate(SAMPLE, "vardagsrum")
+            pg.evaluate("RQ.openSearch()"); pg.wait_for_timeout(500)
+            st = pg.evaluate("() => { const f = getComputedStyle(document.querySelector('#search .sfield')), i = getComputedStyle(document.getElementById('searchInput')); return [document.activeElement.id, f.borderBottomWidth, f.borderBottomColor === getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || f.borderBottomColor, i.outlineStyle]; }")
+            ok(st[0] == "searchInput" and st[1] == "3px" and st[3] == "none", f"{tag} the focused field is a thicker underline, no box: {st}")
+            names = pg.evaluate("[...document.querySelectorAll('#searchRes [data-room-tone]')].map((e) => e.dataset.toneName)")
+            ok(len(names) == 5 and len(set(names)) == 5 and not any("Rumsfärg" in x for x in names), f"{tag} the room's colours have names: {names}")
+            pg.keyboard.type("lampa"); pg.wait_for_timeout(500)
+            m = pg.evaluate("[...document.querySelectorAll('#searchRes .card .fm')].map((e) => parseInt(e.textContent))")
+            ok(len(m) >= 3 and m == sorted(m, reverse=True), f"{tag} lamps sorted by colour match: {m}")
+            fine = W >= 1280
+            ok(pg.evaluate("document.querySelectorAll('#searchRes .s-pick').length") == (1 if fine else 0), f"{tag} the hit Enter opens is marked (mouse and keyboard only)")
+            pg.keyboard.press("Enter"); pg.wait_for_timeout(600)
+            got = pg.evaluate("[location.pathname, document.getElementById('search').classList.contains('open')]")
+            if fine:
+                ok(got[0].endswith("/produkt-lysa-keramiklampa/") and not got[1], f"{tag} Enter opens the first hit: {got}")
+                pg.evaluate("RQ.openSearch()"); pg.wait_for_timeout(400)
+            else:
+                ok(got[1] and pg.evaluate("document.activeElement.id") != "searchInput", f"{tag} on a touch screen Enter puts the keyboard away and keeps the hits: {got}")
+            pg.fill("#searchInput", "xqzv"); pg.wait_for_timeout(450)
+            ok(pg.evaluate("document.querySelector('#searchRes .empty h3').textContent") == "Inga träffar på ”xqzv”", f"{tag} typographic quotes in the empty state")
+            ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
+            ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"
