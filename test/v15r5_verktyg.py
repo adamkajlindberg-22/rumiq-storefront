@@ -192,6 +192,26 @@ with sync_playwright() as p:
         ok(not errs, f"svep result {tag}: no script errors {errs[:2]}")
         ctx.close()
 
+    # ------------------------------------------------------------ Upptäck at 430 without empty bands, Hitta rätt's stylist line aligned (P11, P12)
+    ctx, pg, errs = new(b, True, w=430, h=932)
+    go(pg, "upptack", 1200)
+    r = pg.evaluate("""(() => { const R = (s) => document.querySelector(s).getBoundingClientRect(); const c = R('.svt-cards'), h = R('.svt-tx h3'), card = R('.svt');
+      const cap = R('.jr-cap-after'), looks = document.querySelector('.jr-cap-after + .sec .sec-head').getBoundingClientRect(), last = [...document.querySelectorAll('.jr-room')].pop().querySelector('.jr-row').getBoundingClientRect();
+      const vote = document.querySelector('.jr-cap-after + .sec + section').getBoundingClientRect(), mag = document.querySelector('.jr-cap-after + .sec + section + .sec .sec-head').getBoundingClientRect();
+      return { beside: h.left > c.right - 2 && h.top < c.bottom, empty: card.right - Math.max(h.right, c.right), capGap: cap.top - (document.querySelector('.journey').getBoundingClientRect().bottom), toLooks: looks.top - cap.bottom, toMag: mag.top - vote.bottom }; })()""")
+    ok(r["beside"], f"upptäck 430: the Svep card puts the cards beside the heading: {r}")
+    ok(r["toLooks"] < 110 and r["toMag"] < 110 and r["capGap"] < 0, f"upptäck 430: no empty bands around the picture note and between Önska and Magasin: {r}")
+    go(pg, "hitta-ratt", 900)
+    x = pg.evaluate("[document.querySelector('.fr-ai').getBoundingClientRect().left, document.querySelector('.fr-tabs .chip').getBoundingClientRect().left]")
+    ok(abs(x[0] - x[1]) < 1, f"hitta rätt 430: 'Hellre prata? Fråga stylisten' starts at the same edge as the tabs: {x}")
+    ok(not errs, f"upptäck 430: no script errors {errs[:2]}")
+    ctx.close()
+    ctx, pg, errs = new(b, True, en=True)
+    go(pg, "looks", 1000)
+    t = pg.evaluate("document.body.innerText")
+    ok("in one evening" in t and "in an evening" not in t, "english: the hall look says 'in one evening'")
+    ctx.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
