@@ -8,8 +8,10 @@
   const RQ = window.RQ, S = RQ.shop, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc, kr = S.kr;
   const KEY = "rumiq-myroom", SCENE = "rumiq-scene", MODE = "rumiq-roommode";
   const ls = S.store;
-  // the size slider is read as a share of its own range ("Storlek 40 %"), not as a bare number like 7.6
-  const sizeText = (sz) => { const a = +sz.min, b = +sz.max, v = +sz.value; sz.setAttribute("aria-valuetext", `Storlek ${b > a ? Math.round(((v - a) / (b - a)) * 100) : 100} %`); }; // the shop's one typed reader (commerce.js)
+  // the size slider is read relative to the size the thing was put in at ("Storlek 100 %" at first, "Storlek 150 %" when made
+  // half again as big), never as a bare number like 7.6, and in English when the site is
+  const sizeWord = (pct) => { const t = `Storlek ${pct} %`; return (window.RQ_t && window.RQ_t(t)) || t; };
+  const sizeText = (sz) => sz.setAttribute("aria-valuetext", sizeWord(Math.round(+sz.value / (+sz.dataset.base || +sz.value || 1) * 100)));
   let room = ls.get(KEY, null), blobUrl = null, hist = [], lastTag = "", lastAt = 0;
   const emit = (what) => document.dispatchEvent(new CustomEvent("rq-room", { detail: what }));
   // only a picture kept in this browser counts as a room; anything else in the storage is ignored
@@ -209,7 +211,7 @@
       room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; // a new photo: the old steps belonged to the old room
       ls.del(LEARN); ls.set(MODE, true);
       // what stood in the old room is put where it belongs in the new one
-      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved); moved.push({ h: it.h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 }); });
+      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved); moved.push({ h: it.h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 }); });
       if (moved.length) ls.set(SCENE, moved);
       emit("room"); return true;
     },
@@ -233,7 +235,7 @@
       const p = RQ.byHandle(h); if (!p) return false; RQ.track && RQ.track("studio_place", { item_id: h });
       const list = R.scene(); if (list.some((it) => it.h === h)) return false;
       const sp = spotFor(p, list);
-      list.push({ h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
+      list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
       if (!R.saveScene(list)) { RQ.toast(FULL); return false; }
       R.lastMoved = sp.moved ? h : null;
       if (!quiet && sp.moved) RQ.toast(`Där var det fullt, så ${esc(p.name)} står på golvet. Dra den dit du vill.`);
@@ -610,7 +612,7 @@
           if (!it) return;
           const p = RQ.byHandle(it.h);
           $("#rmSelImg", root).src = RQ.img(p, 600); $("#rmSelName", root).textContent = p.name; $("#rmSelPrice", root).textContent = kr(p.price);
-          $("#rmSelLink", root).href = "#produkt-" + p.handle; { const sz = $("#rmSize", root), [a, b] = span(it.h); sz.min = a.toFixed(1); sz.max = b.toFixed(1); sz.value = it.w; sizeText(sz);
+          $("#rmSelLink", root).href = "#produkt-" + p.handle; { const sz = $("#rmSize", root), [a, b] = span(it.h); sz.min = a.toFixed(1); sz.max = b.toFixed(1); sz.value = it.w; sz.dataset.base = it.w0 || spotFor(p, [], true).w; sizeText(sz);
             $('[data-act="bigger"]', root).setAttribute("aria-disabled", it.w >= b - 0.05); $('[data-act="smaller"]', root).setAttribute("aria-disabled", it.w <= a + 0.05); } $("#rmLight", root).value = it.light;
           $("#rmActOrder", root).textContent = it.back ? "Lägg framför" : "Lägg bakom";
         };
@@ -682,7 +684,7 @@
           const m = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, -d], ArrowDown: [0, d] }[e.key];
           if (m) { e.preventDefault(); sel = it.h; const [x, y] = inside(it.x + m[0], it.y + m[1], it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }, "key:" + it.h); refocus(it.h); said("Flyttad."); }
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(it.h); }
-          if (e.key === "+" || e.key === "-") { e.preventDefault(); sel = it.h; const w = +fit(it.h, it.w * (e.key === "+" ? 1.08 : 1 / 1.08)).toFixed(1); resize(it.h, w, "size:" + it.h); refocus(it.h); said(w === it.w ? (e.key === "+" ? "Största storleken." : "Minsta storleken.") : `Storlek ${Math.round(w)} %.`); }
+          if (e.key === "+" || e.key === "-") { e.preventDefault(); sel = it.h; const w = +fit(it.h, it.w * (e.key === "+" ? 1.08 : 1 / 1.08)).toFixed(1); resize(it.h, w, "size:" + it.h); refocus(it.h); said(w === it.w ? (e.key === "+" ? "Största storleken." : "Minsta storleken.") : `Storlek ${Math.round(w / (it.w0 || spotFor(RQ.byHandle(it.h), [], true).w) * 100)} %.`); }
           if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); const l = R.ordered().map((x) => x.h), i = l.indexOf(it.h), nm = (RQ.byHandle(it.h) || {}).name || ""; removeIt(it.h); refocus(l[i + 1] || l[i - 1]); said(`${nm} är borttagen.`); } });
         // what the keys and the arrow buttons did, read out (the room itself is a picture)
         const said = (t) => { const s = $("#rmSaid", root); if (s) { s.textContent = ""; setTimeout(() => { s.textContent = t; }, 30); } };
