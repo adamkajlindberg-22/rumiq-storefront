@@ -258,6 +258,25 @@ with sync_playwright() as p:
         ok(got[0] == f"Mitt rum, {got[1]} {'sak' if got[1] == 1 else 'saker'} i rummet" and "Mitt rum" in got[2], f"{tag} the header's Mitt rum link is named: {got}")
         ctx.close()
 
+    # M19: Back to the shop lands where you were, also when the product was a full page load, and with filters kept
+    for W, Hh, mobile in ((390, 844, True), (1440, 900, False)):
+        tag = f"[back {W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(400)
+        if mobile:
+            pg.tap("#toggleFilters"); pg.wait_for_timeout(400); pg.tap("#fForm input[name=room][value=vardagsrum]"); pg.wait_for_timeout(200); pg.tap("#fShow"); pg.wait_for_timeout(400)
+        pg.evaluate("scrollTo(0, 900)"); pg.wait_for_timeout(400)
+        h = pg.evaluate("[...document.querySelectorAll('#results .card')].find((c) => c.getBoundingClientRect().top > 70).querySelector('h3 a').getAttribute('href')")
+        (pg.tap if mobile else pg.click)(f"#results h3 a[href='{h}']"); pg.wait_for_timeout(900)
+        pg.go_back(); pg.wait_for_timeout(1200)
+        ok(abs(pg.evaluate("scrollY") - 900) < 4, f"{tag} Back from a product returns to 900 px: {pg.evaluate('scrollY')}")
+        pg.goto(BASE + "produkt-sand-keramikvas/", wait_until="load"); pg.wait_for_timeout(600)
+        pg.go_back(); pg.wait_for_timeout(1600)
+        ok(abs(pg.evaluate("scrollY") - 900) < 4, f"{tag} Back after a full page load also returns to 900 px: {pg.evaluate('scrollY')}")
+        if mobile:
+            ok(pg.evaluate("document.getElementById('fN').textContent") == "1", f"{tag} the filter is kept")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"

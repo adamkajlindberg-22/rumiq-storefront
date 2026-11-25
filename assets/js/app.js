@@ -646,11 +646,16 @@
     const stop = () => { settle++; };
     ["wheel", "touchstart", "keydown", "pointerdown"].forEach((t) => window.addEventListener(t, stop, { once: true, passive: true }));
     // the page may still grow above this point (a toolbar, pictures): hold the place for a second, until the customer moves
-    const step = () => { if (id !== settle) return; if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); if (n++ < 14) setTimeout(step, 70); };
+    // a second pass: when the page is still shorter than the place (pictures above not laid out yet), keep holding until it is reached
+    const step = () => { if (id !== settle) return; if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); n++; if (n < 14 || (n < 40 && Math.abs(window.scrollY - y) > 1)) setTimeout(step, 70); };
     step();
+    if (document.readyState !== "complete") window.addEventListener("load", () => { if (id === settle && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); }, { once: true });
   };
 
-  window.addEventListener("pagehide", () => { if (current != null) RQ.ss.set("rumiq-scroll", JSON.stringify([current, Math.round(window.scrollY)])); });
+  // a full page load (Back from another site, Back after a reload, a reload) finds the place again: one place per page, kept for the visit
+  const savedScrolls = () => { try { const v = JSON.parse(RQ.ss.get("rumiq-scroll") || "{}"); return v && !Array.isArray(v) && typeof v === "object" ? v : {}; } catch (e) { return {}; } };
+  window.addEventListener("pagehide", () => { if (current == null) return; const all = savedScrolls(); scrolls.forEach((y, r) => { all[r] = Math.round(y); }); all[current] = Math.round(window.scrollY);
+    const keys = Object.keys(all); keys.slice(0, Math.max(0, keys.length - 30)).forEach((k) => delete all[k]); RQ.ss.set("rumiq-scroll", JSON.stringify(all)); });
 
   /* One polite voice for route changes: screen readers hear the new page's name, and the keyboard starts at its top. */
   const live = document.createElement("p");
@@ -747,7 +752,7 @@
     paintHead(raw, view, root, found && !view.crashed);
     let backTo = moved && popNav ? scrolls.get(raw) || 0 : 0;
     if (first) { // a reload, or Back from another site, lands where the customer was
-      try { const nav = performance.getEntriesByType("navigation")[0], was = JSON.parse(RQ.ss.get("rumiq-scroll") || "null"); if (nav && /reload|back_forward/.test(nav.type) && Array.isArray(was) && was[0] === raw && was[1] > 0) backTo = was[1]; } catch (e) {}
+      try { const nav = performance.getEntriesByType("navigation")[0], was = savedScrolls(); if (nav && /reload|back_forward/.test(nav.type) && was[raw] > 0) backTo = was[raw]; } catch (e) {}
     }
     if (moved) { settle++; if (!backTo) window.scrollTo(0, 0); }
     popNav = false;
