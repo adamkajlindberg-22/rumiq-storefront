@@ -1742,7 +1742,8 @@ html.sheet-lock{overflow:hidden}
 .ai-prods em{font-style:normal}
 .ai-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.6rem}
 .ai-card{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.9rem 1rem;border-radius:var(--r);background:color-mix(in srgb,var(--accent) 10%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);margin-bottom:1.2rem}
-.ai-card div{display:grid}
+.ai-card div{display:grid;flex:1 1 10rem;min-width:0}
+.ai-card .btn{flex:none} /* buttons may wrap (a11y), but this short one keeps one line beside its text in the narrow Mitt rum column */
 .ai-card span{font-size:.84rem;color:var(--muted)}
 .rm-tool.rm-ai{color:var(--accent)}
 .ai-acct{display:grid;gap:1rem}
