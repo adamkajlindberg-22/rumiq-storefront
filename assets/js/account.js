@@ -208,10 +208,10 @@
     const fld = (name, label, attrs, cls = "") => `<label${cls ? ` class="${cls}"` : ""}>${label}<input name="${name}" ${attrs}><span class="ferr" id="coe-${name}" hidden></span></label>`;
     return {
       title: "Kassa · RumIQ",
-      html: `<header class="page-head wrap" style="padding-bottom:1rem">${RQ.crumbs([["Hem", "hem"], ["Varukorg"], ["Kassa"]]).replace("<li>Varukorg</li>", '<li><button type="button" class="crumb-btn" data-open-cart>Varukorg</button></li>')}<h1 class="h1">Kassa</h1>
-          <div class="example-note" style="margin-top:1.4rem;max-width:46rem"><span>●</span><span><b>Testläge.</b> Varukorgen innehåller exempelprodukter. Du kan gå igenom hela kassan, men inget betalas och inget skickas. När butiken öppnar sker betalningen i Shopifys säkra kassa.</span></div></header>
+      html: `<header class="page-head wrap" style="padding-bottom:1rem">${RQ.crumbs([["Hem", "hem"], ["Varukorg"], ["Kassa"]]).replace("<li>Varukorg</li>", '<li><button type="button" class="crumb-btn" data-open-cart>Varukorg</button></li>')}<h1 class="h1">Kassa</h1></header>
         <section class="wrap split co-split" style="padding-bottom:5rem;align-items:start">
           <form id="co" novalidate>
+            <div class="example-note co-note"><span>●</span><span><b>Testläge.</b> Varukorgen innehåller exempelprodukter. Du kan gå igenom hela kassan, men inget betalas och inget skickas. När butiken öppnar sker betalningen i Shopifys säkra kassa.</span></div>
             <div class="panel"><h2 class="h3">1. Kontakt</h2><div class="form-grid" style="margin-top:1rem">${fld("email", "E-post", `type="email" autocomplete="email" autocapitalize="off" spellcheck="false" value="${esc(c.email || "")}" required`, "full")}${fld("phone", "Telefon (valfritt, för avisering)", `type="tel" autocomplete="tel" value="${esc(c.phone || "")}"`, "full")}</div>${c.email ? "" : `<p class="small" style="margin-top:.8rem">Har du ett konto? <a href="#konto" data-after="kassa">Logga in</a> så fylls uppgifterna i. Annars handlar du som gäst.</p>`}</div>
             <div class="panel"><h2 class="h3">2. Leveransadress</h2><div class="form-grid" style="margin-top:1rem">${fld("first", "Förnamn", `autocomplete="given-name" value="${esc(first)}" required`, "half")}${fld("last", "Efternamn", `autocomplete="family-name" value="${esc(last)}" required`, "half")}${fld("street", "Gatuadress", `autocomplete="street-address" value="${esc((c.address || {}).street || "")}" required`, "full")}${fld("zip", "Postnummer", `autocomplete="postal-code" inputmode="numeric" maxlength="7" value="${esc((c.address || {}).zip || "")}" required`, "half")}${fld("city", "Ort", `autocomplete="address-level2" value="${esc((c.address || {}).city || "")}" required`, "half")}<label class="full">Land<select name="country" autocomplete="country-name"><option>Sverige</option></select></label></div></div>
             <div class="panel"><h2 class="h3" id="coShipH">3. Leveranssätt</h2><div role="radiogroup" aria-labelledby="coShipH" style="display:grid;gap:.6rem;margin-top:1rem">${S.SHIPPING.map((s, i) => `<label class="check ship-opt"><span class="so-l"><input type="radio" name="ship" value="${s.id}" ${i === 0 ? "checked" : ""}> <span><b>${s.title}</b><span class="small">${s.eta ? `Målet är ${s.eta}` : "Leveranstiden visas innan du betalar"}${s.note ? `<br>${s.note}` : ""}</span></span></span><span class="so-p" data-ship-price="${s.id}">${shipPrice(S.shippingCost(s.id))}</span></label>`).join("")}</div><p class="small" style="margin-top:.8rem">Leveranssätt och priser är exempel tills leverantörerna är bekräftade.</p><label class="check" style="margin-top:1.1rem"><input type="checkbox" name="gift" id="coGift"> Det är en present</label><div class="gift-box" id="coGiftBox" hidden><p class="small">Priserna syns inte på följesedeln. Skriv en hälsning, så lägger vi den på ett kort i paketet.</p><label class="full">Hälsning (frivillig)<textarea name="giftNote" rows="3" maxlength="240" placeholder="Grattis på nya hemmet!"></textarea></label></div></div>
@@ -239,12 +239,15 @@
         const mark = (el, box, msg) => { box.textContent = msg; box.hidden = !msg; if (msg) { el.setAttribute("aria-invalid", "true"); el.setAttribute("aria-describedby", box.id); } else { el.removeAttribute("aria-invalid"); if (el.name !== "terms") el.removeAttribute("aria-describedby"); } };
         const check = (name) => { const el = f[name], msg = name === "terms" ? (el.checked ? "" : "Kryssa i rutan för att godkänna köpvillkoren.") : CO_RULES[name](el.value.trim()); mark(el, $("#coe-" + name, f), msg); return !msg; };
         const NAMES = [...Object.keys(CO_RULES), "terms"];
-        NAMES.forEach((n) => { const el = f[n]; el.addEventListener(n === "terms" ? "change" : "input", () => { if (el.getAttribute("aria-invalid")) { check(n); if (!$$("[aria-invalid=true]", f).length) $("#coStatus", root).textContent = ""; } });
-          if (n !== "terms") el.addEventListener("blur", () => { if (n === "zip" && digits(el.value).length === 5 && /^[\d\s]+$/.test(el.value)) el.value = digits(el.value).replace(/^(\d{3})(\d{2})$/, "$1 $2"); if (el.value.trim() || el.getAttribute("aria-invalid")) check(n); }); });
+        const said = (n) => (!n ? "" : n === 1 ? "En sak behöver rättas innan du kan beställa." : `${n} saker behöver rättas innan du kan beställa.`);
+        // after a try, the count under the button follows every fix (changed only when the number changes, so it is not read out at every key)
+        const recount = () => { const st = $("#coStatus", root); if (!st.textContent) return; const t = said($$("[aria-invalid=true]", f).length); if (t !== st.textContent) st.textContent = t; };
+        NAMES.forEach((n) => { const el = f[n]; el.addEventListener(n === "terms" ? "change" : "input", () => { if (el.getAttribute("aria-invalid")) { check(n); recount(); } });
+          if (n !== "terms") el.addEventListener("blur", () => { if (n === "zip" && digits(el.value).length === 5 && /^[\d\s]+$/.test(el.value)) el.value = digits(el.value).replace(/^(\d{3})(\d{2})$/, "$1 $2"); if (el.value.trim() || el.getAttribute("aria-invalid")) { check(n); recount(); } }); });
         f.addEventListener("submit", (e) => {
           e.preventDefault(); if (placing) return; const st = $("#coStatus", root);
           const bad = NAMES.filter((n) => !check(n));
-          if (bad.length) { st.textContent = bad.length === 1 ? "En sak behöver rättas innan du kan beställa." : `${bad.length} saker behöver rättas innan du kan beställa.`; const el = f[bad[0]]; (el.closest("label") || el).scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); el.focus({ preventScroll: true }); return; }
+          if (bad.length) { st.textContent = said(bad.length); const el = f[bad[0]]; (el.closest("label") || el).scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); el.focus({ preventScroll: true }); return; }
           st.textContent = ""; placing = true;
           const zip = digits(f.zip.value).replace(/^(\d{3})(\d{2})$/, "$1 $2");
           const o = S.placeTestOrder({ contact: { email: f.email.value.trim(), phone: f.phone.value.trim() }, address: { first: f.first.value.trim(), last: f.last.value.trim(), street: f.street.value.trim(), zip, city: f.city.value.trim(), country: f.country.value }, shippingId: f.ship.value, gift: f.gift && f.gift.checked ? { note: f.giftNote.value.trim().slice(0, 240) } : null });
@@ -275,23 +278,28 @@
     `<form id="trForm" class="form-grid" novalidate><label>Ordernummer<input name="num" placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label><label>E-post<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Visa status</button><p class="status full" id="trStatus" role="alert"></p></form><div id="trOut"></div>
      <h2>Om du har en riktig beställning</h2><p>Använd länken till orderstatus i orderbekräftelsen. Spårning från fraktbolaget visas när leverantören eller fraktbolaget skickar den. Varor från olika leverantörer kan komma i separata paket.</p>`,
     (root) => {
-      const f = $("#trForm", root); const pre = RQ.ss.get("rumiq-prefill"); if (pre) { f.num.value = pre; const o = S.findOrder(pre); if (o) f.email.value = o.contact.email; }
-      f.addEventListener("submit", (e) => {
-        e.preventDefault(); const st = $("#trStatus", root);
-        if (!f.num.value.trim()) return RQ.badField(f.num, st, "Skriv ordernumret, till exempel TEST-1001.");
-        if (!emailOk(f.email.value)) return RQ.badField(f.email, st, "Skriv e-postadressen du använde vid köpet.");
+      const f = $("#trForm", root), out = $("#trOut", root); const pre = RQ.ss.get("rumiq-prefill"), preO = pre && S.findOrder(pre); if (pre) { f.num.value = pre; if (preO) f.email.value = preO.contact.email; }
+      // errors under the field they belong to, in red, as in the checkout; the first one gets the focus
+      [f.num, f.email].forEach((el) => el.addEventListener("input", () => { if (el.getAttribute("aria-invalid")) RQ.fieldErr(el, ""); }));
+      const show = (e) => {
+        if (e) e.preventDefault(); const st = $("#trStatus", root);
+        const e1 = f.num.value.trim() ? "" : "Skriv ordernumret, till exempel TEST-1001.", e2 = emailOk(f.email.value) ? "" : "Skriv e-postadressen du använde vid köpet.";
+        RQ.fieldErr(f.num, e1); RQ.fieldErr(f.email, e2);
+        if (e1 || e2) { st.textContent = ""; out.innerHTML = ""; (e1 ? f.num : f.email).focus(); return; }
         const o = S.findOrder(f.num.value, f.email.value);
-        if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna i den här webbläsaren. Kontrollera ordernumret och e-posten."; $("#trOut", root).innerHTML = ""; return; }
+        if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna i den här webbläsaren. Kontrollera ordernumret och e-posten."; out.innerHTML = ""; return; }
         st.textContent = "";
         const dc = RQ.delivery ? RQ.delivery.cfg() : {}, eta = RQ.delivery ? RQ.delivery.range(dc, o.createdAt) : "", ship = (S.SHIPPING.find((x) => x.id === o.shippingId) || {}).title || "";
-        $("#trOut", root).innerHTML = `<div class="panel" style="margin-top:1.6rem">${orderCard(o, true)}
+        out.innerHTML = `<div class="tr-res">${orderCard(o, true)}
           ${o.withdrawn ? "" : `<div class="tr-eta"><span class="eyebrow">Beräknad leverans</span><b>${eta || "Bekräftas innan vi öppnar"}</b>${ship ? `<small>${esc(ship)}${dc.fromCountry ? ` · ${esc(dc.fromCountry)}` : ""}</small>` : ""}</div>`}
           <ol class="timeline"><li class="done"><div><b>Mottagen</b><small>${date(o.createdAt)}</small></div></li>
           <li class="${o.withdrawn ? "done" : ""}"><div><b>${o.withdrawn ? "Köpet ångrat" : "Packas"}</b><small>${o.withdrawn ? date(o.withdrawnAt) : "Testorder, skickas inte"}</small></div></li>
           ${o.withdrawn ? "" : `<li><div><b>Lämnar lagret</b><small>Du får ett mejl när paketet har lämnat lagret</small></div></li>
           <li><div><b>På väg</b><small>Spårningsnummer och fraktbolagets länk visas här</small></div></li>
           <li><div><b>${o.shippingId === "hem" ? "Levererad" : "Redo att hämta"}</b><small>${o.shippingId === "skap" ? "Du får en kod till paketskåpet" : o.shippingId === "ombud" ? "Ta med legitimation till ombudet" : "Fraktbolaget meddelar när det kommer"}</small></div></li>`}</ol></div>`;
-      });
+      };
+      f.addEventListener("submit", show);
+      if (preO) show(); // came from the order: its status straight away
     });
 
   /* ---------------- Ångra avtalet här */

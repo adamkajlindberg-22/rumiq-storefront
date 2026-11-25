@@ -43,6 +43,7 @@ spara-order
 angra
 onskelista
 jamfor
+varukorg
 ideer
 produkt-glob-bordslampa-opalglas
 produkt-lysa-keramiklampa

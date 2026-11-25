@@ -54,7 +54,7 @@
   document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";
   const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
-  const KEEP = ".lk"; // read right after adding (the product page's Leveranskoll): never under the toast
+  const KEEP = ".lk, .lp-buy"; // read right after adding (the product page's Leveranskoll, a look's buy block with Visa varukorgen): never under the toast
   const toastPlace = (t) => {
     ["top", "bottom", "left", "right"].forEach((k) => t.style.removeProperty(k));
     if (document.getElementById("rmStage")) return;
@@ -76,6 +76,8 @@
         if (!el || el.closest(".sheet-scrim")) continue;
         const need = el.closest(NEED);
         if ((trig && (el === trig || trig.contains(el))) || el.closest(FIELD) || el.closest(KEEP) || (need && ((zone && zone.contains(el)) || (band && !panelEl && py > band[0] && py < band[1])))) n++; }
+      // what must stay readable is kept clear by its whole box, with a little air (a sampled point can miss a corner)
+      if (!panelEl) $$(KEEP).forEach((k) => { const r = k.getBoundingClientRect(); if (r.height && x < r.right + 8 && x + tw > r.left - 8 && y < r.bottom + 8 && y + th > r.top - 8) n += 3; });
       return n; };
     let best = spots[0], bn = Infinity;
     for (const sp of spots) { if (sp[1] < 0 || sp[1] + th > H || sp[0] < 0) continue; const n = hits(sp); if (n < bn) { best = sp; bn = n; } if (!n) break; }
@@ -104,6 +106,7 @@
   /* first: "eager" or "high" for the cards at the top of a list (the pictures a visitor sees first are fetched at once, "high" with priority) */
   /* does the product belong in the customer's room? (a room of unknown type takes everything; a cutting board never lands on the living-room table) */
   RQ.suits = (p) => { const r = RQ.room && RQ.room.get(), t = r && r.type; return !t || p.rooms.includes(t); };
+  // "% färgmatch" is said only where it is good news (60 % or more); below that the card shows its colours as usual (the order still follows the match)
   RQ.card = (p, first) => {
     const R = RQ.room, on = R && R.mode() && RQ.suits(p), m = on ? R.match(p) : null;
     const print = RQ.isPrint && RQ.isPrint(p);
@@ -121,7 +124,7 @@
       <button class="qv" type="button" data-sheet="${p.handle}" tabindex="-1" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
-      <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
+      <p class="sub">${m >= 60 ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
   };
   RQ.grid = (list, cls = "", top = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
@@ -445,12 +448,11 @@
         // drop images that do not exist yet (lazy images never fire an error off screen)
         items().slice(1).forEach((b) => { const t = new Image(); t.onerror = () => { b.remove(); paintDots(); }; t.src = $("img", b).getAttribute("src"); });
         // phones: dots follow the carousel
-        const dots = $("#pgDots", root);
-        const paintDots = () => { const n = $$(".pg-item", grid).length; if (dots.children.length !== n) dots.innerHTML = Array.from({ length: n }, () => "<i></i>").join(""); const i = Math.round(grid.scrollLeft / Math.max(1, grid.clientWidth)); [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i)); };
+        const dots = $("#pgDots", root), sw = $("#lightSw", root);
+        const paintDots = () => { const n = $$(".pg-item", grid).length; if (dots.children.length !== n) dots.innerHTML = Array.from({ length: n }, () => "<i></i>").join(""); const i = Math.round(grid.scrollLeft / Math.max(1, grid.clientWidth)); [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i)); if (sw) sw.classList.toggle("away", i !== 0); };
         grid.addEventListener("scroll", () => requestAnimationFrame(paintDots), { passive: true });
         setTimeout(paintDots, 300); setTimeout(paintDots, 1500);
         // lamps: switch the light on the first image
-        const sw = $("#lightSw", root);
         if (sw) {
           const off = gal.find((g) => g.k === "off"), main = gal.find((g) => g.k === "main");
           const pre = new Image(); pre.onload = () => (sw.hidden = false); pre.src = off.src;
@@ -459,7 +461,6 @@
             sw.setAttribute("aria-pressed", on); $("span", sw).textContent = on ? "Lampan är tänd" : "Lampan är släckt";
             const im = $(".pg-item img", grid); im.style.opacity = 0;
             setTimeout(() => { im.src = on ? main.src : off.src; im.alt = on ? main.alt : off.alt; im.style.opacity = 1; }, 220);
-            grid.scrollTo({ left: 0, behavior: "smooth" });
           });
         }
         $$("[data-v]", $(".pinfo", root)).forEach((b) => b.addEventListener("click", () => {
@@ -467,7 +468,7 @@
           const vt = S.variantById(variant).variant.title;
           $("#vname", root).textContent = vt;
           /* there is one set of photos: say which colour they show, and carry the choice to the buy bar */
-          $("#vnote", root).hidden = variant === vs[0].id; $("#bbVar", root).textContent = " · " + vt;
+          $("#vnote", root).hidden = variant === vs[0].id; $("#bbVar", root).textContent = " · " + vt; paintBar();
         }));
         const q = $("#qty", root), qNote = $("#qtyNote", root), MAXQ = 99;
         /* the field always shows what will be added: whole numbers from 1 to 99, corrected in the field itself */
@@ -478,7 +479,11 @@
         const put = () => { putDone = true; const want = qty(), line = S.cartLines().find((l) => l.id === variant), room = MAXQ - (line ? line.quantity : 0), n = Math.min(want, room);
           if (n < 1) { qNote.textContent = `Du har redan ${MAXQ} i varukorgen. Det är max per produkt.`; return 0; }
           S.addToCart(variant, n); q.value = 1; qNote.textContent = n < want ? `Max ${MAXQ} per produkt. Vi lade till ${n}.` : ""; return n; };
-        const add = (btn) => { if (btn.classList.contains("done")) return; if (put()) RQ.confirmAdd(btn, p.name); };
+        /* the buy bar follows the cart: once this colour lies there, it shows the way to the cart instead of adding a second one unasked */
+        const bar2 = $("#add2", root);
+        const paintBar = () => { if (bar2.classList.contains("done")) return; const inC = S.cartLines().some((l) => l.id === variant);
+          bar2.toggleAttribute("data-open-cart", inC); bar2.classList.toggle("ghost", inC); bar2.textContent = inC ? "I varukorgen · Visa" : "Lägg i varukorgen"; };
+        const add = (btn) => { if (btn.classList.contains("done") || btn.hasAttribute("data-open-cart")) return; if (put()) { RQ.confirmAdd(btn, p.name); clearTimeout(bar2._pb); bar2._pb = setTimeout(paintBar, 1850); } };
         $("#add", root).addEventListener("click", (e) => add(e.currentTarget)); $("#add2", root).addEventListener("click", (e) => add(e.currentTarget));
         $("#buyNow", root).addEventListener("click", () => { if (!putDone) put(); location.hash = "#kassa"; }); // already added on this page: go, do not add it again
         /* share: the phone's own share sheet where there is one, otherwise the address is copied */
@@ -495,17 +500,22 @@
         panel.addEventListener("click", (e) => { const b = e.target.closest("[data-newlist]"); if (!b) return; const l = S.createList(b.dataset.newlist); S.toggleInList(l.id, p.handle); RQ.toast(`Sparad i ${esc(l.name)}.`); repaint(); });
         panel.addEventListener("submit", (e) => { e.preventDefault(); const v = $("#nl", root).value.trim(); if (!v) return; const l = S.createList(v); S.toggleInList(l.id, p.handle); RQ.toast(`Sparad i ${esc(l.name)}.`); repaint(); });
         // complete the look
-        const lt = $("#lookTotal", root);
+        const lt = $("#lookTotal", root); let lookOff = null;
         if (lt) {
-          const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)); lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); const b = $("#lookAdd", root); b.textContent = sel.length ? `Lägg ${sel.length} ${sel.length === 1 ? "produkt" : "produkter"} i varukorgen` : "Välj minst en produkt"; b.disabled = !sel.length; };
+          // the button counts only what is not in the cart yet; once all of the chosen lies there, it shows the cart
+          const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)), b = $("#lookAdd", root); if (!b || !b.isConnected) return; lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); if (b.classList.contains("done")) return; // the page may have gone meanwhile
+            const n = sel.filter((x) => !S.cartLines().some((l) => l.product.handle === x.handle)).length, all = sel.length && !n; b.toggleAttribute("data-open-cart", !!all); b.classList.toggle("ghost", !!all);
+            b.textContent = !sel.length ? "Välj minst en produkt" : all ? "Visa varukorgen" : `Lägg ${n} ${n === 1 ? "produkt" : "produkter"} i varukorgen`; b.disabled = !sel.length; };
           root.addEventListener("change", (e) => { if (e.target.matches("[data-look]")) upd(); });
-          $("#lookAdd", root).addEventListener("click", () => { const sel = $$("[data-look]:checked", root).map((x) => x.dataset.look); sel.forEach((h) => S.addToCart(h + "::0", 1)); RQ.toast(`${sel.length} produkter i varukorgen. <a href="#" data-open-cart>Visa</a>`); });
+          $("#lookAdd", root).addEventListener("click", (e) => { const b = e.currentTarget; if (b.hasAttribute("data-open-cart")) return; const sel = $$("[data-look]:checked", root).map((x) => (x.dataset.look === p.handle ? variant : x.dataset.look)); RQ.addMany(sel, b); }); // this product in the colour chosen above; nothing already in the cart twice
+          upd(); let lookT = null; lookOff = S.onChange((w) => { if (w === "cart") { setTimeout(upd); clearTimeout(lookT); lookT = setTimeout(upd, 1700); } }); // again once the button has said "added"
         }
         // sticky buy bar once the buy button scrolls away (desktop); always on phones
         const bar = $("#buybar", root), buy = $(".buy", root);
         const io2 = new IntersectionObserver(([e]) => bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || matchMedia("(max-width:900px)").matches)), { threshold: [0, 0.9] });
         io2.observe($("#add", root));
-        return () => io2.disconnect();
+        paintBar(); const offCart = S.onChange((w) => { if (w === "cart") setTimeout(paintBar); }); // after the tap that added it has run its course
+        return () => { io2.disconnect(); offCart(); clearTimeout(bar2._pb); if (lookOff) lookOff(); };
       },
     };
   };
@@ -629,6 +639,8 @@
   };
   // fetch them quietly once the page is idle, so the next tap is instant
   window.addEventListener("load", () => setTimeout(() => (window.requestIdleCallback || setTimeout)(() => RQ.loadTools().catch(() => {})), 2500));
+  // "/varukorg" (typed, shared or opened in a new tab): the shop with the cart open on top
+  V.cartLink = () => { const v = V.butik(); return { ...v, mount(root) { const un = v.mount ? v.mount(root) : null, t = setTimeout(() => RQ.openCart(), 80); return () => { clearTimeout(t); if (typeof un === "function") un(); }; } }; };
   V.studio = () => V.myRoom(); // Studio is no longer its own place: the tools live in Mitt rum, Svep, Hitta rätt and Looks
 
   /* ---------------------------------------------------------------- router */
@@ -646,7 +658,7 @@
     [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^delad(?:-(.+))?$/, (m) => V.shared(m[1])], [/^presentkort$/, () => V.giftCard()], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^(?:rosta|onska)$/, () => V.onska()],
     [/^studio-plus$/, () => V.studioPlus(false)], [/^studio-plus-tack$/, () => V.studioPlus(true)],
     [/^presentguiden$/, () => V.findRight("present")], [/^mitt-hem$/, () => V.myHome()],
-    [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
+    [/^varukorg$/, () => V.cartLink()], [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
   ];
   let current = null, cleanup = null, firstRun = true, drawn = 0;
   let routing = null; // the route being drawn, until render() has run: popstate and hashchange both report one navigation
@@ -864,7 +876,7 @@
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const a = e.target.closest("a[href]"); if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
     const h = a.getAttribute("href"); if (h === "#" || h === "") return;
-    if (a.closest("#sheet")) return; // the quick-view sheet steps its own history entry back first (flow.js)
+    if (a.closest("#sheet") || a.hasAttribute("data-open-cart")) return; // the quick-view sheet steps its own history entry back first (flow.js); a cart link opens the drawer
     const raw = rawOf(a);
     if (raw != null) {
       e.preventDefault();
@@ -1134,7 +1146,7 @@
       const qp = t.classList.contains("qadd") && RQ.byHandle(t.dataset.add.split("::")[0]);
       if (qp && qp.variants && qp.variants.length > 1 && RQ.sheet) { RQ.sheet.open(qp.handle, { from: t, ask: true }); return; }
       S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
-    if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
+    if (t.matches("[data-open-cart]")) { e.preventDefault(); if (t.closest("#mnav")) closeAll(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }
     if (t.matches("[data-q]") && t.closest("#searchRes")) { sInput.value = t.dataset.q; doSearch(); return; }
     if (t.matches("[data-rm]")) { // nothing leaves the cart for good by one tap: the toast offers to put it back
@@ -1190,7 +1202,7 @@
     // a link inside a layer: the new page takes the layer's place in the history (no dead step on the way back)
     window.addEventListener("click", (e) => {
       if (!onTop() || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const a = e.target.closest && e.target.closest("a[href]"); if (!a || !a.closest("#cart,#search,#mnav") || (a.target && a.target !== "_self")) return;
+      const a = e.target.closest && e.target.closest("a[href]"); if (!a || !a.closest("#cart,#search,#mnav") || a.hasAttribute("data-open-cart") || (a.target && a.target !== "_self")) return;
       const h = a.getAttribute("href"); let raw = null;
       if (h[0] === "#") raw = h.length > 1 ? decodeURIComponent(h.slice(1)) : null;
       else { try { const u = new URL(a.href), base = new URL(".", document.baseURI); if (u.origin === location.origin && u.pathname.startsWith(base.pathname) && !u.hash) raw = decodeURIComponent(u.pathname.slice(base.pathname.length).replace(/index\.html$/, "").replace(/\/+$/, "")) || "hem"; } catch (x) {} }

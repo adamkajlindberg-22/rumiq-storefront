@@ -71,11 +71,22 @@
   };
   const baseConfirm = RQ.confirmAdd;
   RQ.confirmAdd = (btn, name) => { baseConfirm(btn, name); RQ.fly(flySource(btn)); };
-  const addMany = (handles, btn, label, said) => {
+  /* several things into the cart at once (a list, a round of Svep, a look, the AI picture, Passar ihop). What already lies in the cart
+     stays as it is (never a second one unasked), a colour given as "handle::i" comes along, a product with several colours and none
+     given asks first (as Mitt rum and a card's + do), and the toast says what really happened */
+  const addMany = (entries, btn, label, said) => {
     if (btn && btn.classList && btn.classList.contains("done")) return 0; // the same button again within a moment: a double tap, not a second order
-    handles.forEach((h) => S.addToCart(h + "::0", 1));
-    const n = handles.length;
-    RQ.toast(`${said || `${label ? esc(label) + ": " : ""}${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen.`} <a href="#" data-open-cart>Visa</a>`);
+    const have = new Set(S.cartLines().map((l) => l.product.handle)), seen = new Set(); let skip = 0;
+    const todo = entries.map(String).filter((e) => { const h = e.split("::")[0]; if (seen.has(h) || !RQ.byHandle(h)) return false; seen.add(h); if (have.has(h)) { skip++; return false; } return true; });
+    if (!todo.length) { RQ.toast('<span>Allt ligger redan i varukorgen.</span> <a href="#" data-open-cart>Visa</a>'); return 0; }
+    const ask = todo.filter((e) => !e.includes("::") && (RQ.byHandle(e).variants || []).length > 1);
+    if (ask.length && RQ.room && RQ.room.openVariants) { RQ.room.openVariants(ask, (pick) => putMany(todo.map((e) => (e.includes("::") ? e : e + "::" + (pick[e] || 0))), btn, label, said, skip), ask.length === 1 ? "Den finns i flera färger. Välj den du vill ha." : "De finns i flera färger. Välj den du vill ha på var och en."); return 0; }
+    return putMany(todo.map((e) => (e.includes("::") ? e : e + "::0")), btn, label, said, skip);
+  };
+  const putMany = (ids, btn, label, said, skip) => {
+    ids.forEach((id) => S.addToCart(id, 1));
+    const n = ids.length, lead = label ? `<span>${esc(label)}</span>: ` : "";
+    RQ.toast(`${said || `<span>${lead}<span>${skip ? `${n} ${n === 1 ? "ny" : "nya"} i varukorgen.` : `${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen.`}</span>${skip ? ` <span>${skip} låg redan där.</span>` : ""}</span>`} <a href="#" data-open-cart>Visa</a>`);
     if (btn && btn.classList) { btn.classList.add("done"); clearTimeout(btn._t); btn._t = setTimeout(() => btn.classList.remove("done"), 1600); }
     return n;
   };
@@ -394,7 +405,7 @@
     // a ready-made look: the whole look is now in the cart, and what it saves (not "1 produkt", which reads as if only one thing were there)
     const off = look ? lookTotal(look) - lookNet(look) : 0;
     const said = look ? `<span><span>${esc(look.name)}</span> <span>ligger i varukorgen.</span>${off ? ` <span>Du sparar</span> ${kr(off)}.` : ""}</span>` : ""; // one outer span: the toast is a flex row
-    return addMany(miss, btn, label, said) ? miss : [];
+    return addMany(miss.map((h) => h + "::0"), btn, label, said) ? miss : []; // a look is one tap: in the colours its picture shows
   };
   // a ready-made look whose things these are (a saved look keeps its discount and its name)
   const lookOf = (handles) => RQ.LOOKS.find((l) => l.items.length === handles.length && l.items.every((h) => handles.includes(h)));
@@ -453,6 +464,9 @@
       root.addEventListener("click", del); return () => root.removeEventListener("click", del);
     },
   }; };
+  // a row of the look: + while the thing is not in the cart, a quiet tick and "I varukorgen" once it is
+  const lpAct = (h) => { const p = RQ.byHandle(h); return inCart(h) ? `<span class="lp-have"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I varukorgen</span>`
+    : `<button class="iconbtn qadd" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button>`; };
   V.look = (id) => {
     const l = lookById(id); if (!l) return null; const room = RQ.roomById(l.room);
     const inPhoto = RQ.hotspots.handles(l.room);
@@ -479,7 +493,7 @@
         <div class="lp-grid">
           <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage", only: l.items, layer: comp && comp.layer, spots: comp && comp.spots, focus })}<p class="hs-cap" id="lpCap">${inPic ? CAP_DOTS : CAP_NONE}</p></div>
           <div class="lp-tx"><span class="eyebrow">Look · <span>${esc(room.name)}</span></span><h1 class="h1">${esc(l.name)}</h1><p class="lead">${esc(l.lead)}</p>
-            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item" data-h="${h}"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn qadd" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
+            <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item" data-h="${h}"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div>${lpAct(h)}</li>`; }).join("")}</ul>
             <div class="lp-sum"><span>Hela looken${off ? ` <small><span>Du sparar</span> ${kr(off)}</small>` : ""}</span><b>${off ? `<s>${kr(total)}</s> ` : ""}${kr(net)}</b></div>
             <div class="lp-buy" id="lpBuy">${buy()}</div>
             <p class="small" style="margin-top:1rem">Produkterna är exempel tills butiken öppnar.</p></div>
@@ -491,7 +505,9 @@
         const cap = () => { const c = $("#lpCap", root); if (c) c.textContent = $$(".lp-stage .hs", root).some((h) => !h.hidden) ? CAP_DOTS : CAP_NONE; };
         cap(); setTimeout(cap, 400); addEventListener("resize", cap);
         // the block is drawn again in place: the page stays where it is (no jump when the pressed button is replaced)
-        const offCart = S.onChange((w) => { const el = $("#lpBuy", root); if (el && (w === "cart" || w === "all" || w === "looks")) { const had = el.contains(document.activeElement), y = scrollY; el.innerHTML = buy(); if (had) { const b = $(".btn", el); b && b.focus({ preventScroll: true }); } if (Math.abs(scrollY - y) > 1) scrollTo(scrollX, y); } });
+        const rows = () => $$(".lp-item", root).forEach((li) => { const a = li.lastElementChild, t = document.createElement("template"); t.innerHTML = lpAct(li.dataset.h); const nw = t.content.firstChild;
+          if (a.className.split(" ").includes("lp-have") === nw.classList.contains("lp-have")) return; const had = a.contains(document.activeElement); a.replaceWith(nw); if (had) $("button", li).focus({ preventScroll: true }); });
+        const offCart = S.onChange((w) => { const el = $("#lpBuy", root); if (el && (w === "cart" || w === "all" || w === "looks")) { const had = el.contains(document.activeElement), y = scrollY; el.innerHTML = buy(); rows(); if (had) { const b = $(".btn", el); b && b.focus({ preventScroll: true }); } if (Math.abs(scrollY - y) > 1) scrollTo(scrollX, y); } });
         return () => { offHs && offHs(); offCart && offCart(); removeEventListener("resize", cap); };
       },
     };

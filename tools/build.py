@@ -46,7 +46,8 @@ ESBUILD = os.environ.get("ESBUILD", "npx --yes esbuild").split()
 # address at that page and are never listed for search engines
 ALIAS = {"studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", "studio": "mitt-rum", "kollektioner": "looks",
          "studio-sok": "hitta-ratt", "studio-hemurval": "hitta-ratt", "hitta-ratt-ord": "hitta-ratt", "presentguiden": "hitta-ratt-present",
-         "rosta": "onska", "ideer": "onska", "studio-stil": "svep", "jamfor": "mitt-hem"}
+         "rosta": "onska", "ideer": "onska", "studio-stil": "svep", "jamfor": "mitt-hem",
+         "varukorg": "butik"}
 ALIAS_PREFIX = {"mitt-rum-": "mitt-rum", "svep-rum-": "svep"}  # one near-identical page per product or room
 # pages that stay hidden from search engines for good: personal, part of a purchase, or empty for now
 NOINDEX = {"kassa", "konto", "skapa-konto", "mitt-hem", "onskelista", "delad", "spara-order", "angra", "for-dig",

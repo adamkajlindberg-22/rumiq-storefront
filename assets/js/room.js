@@ -340,7 +340,7 @@
       if (!room) return "";
       const [kind, , r] = meta(p), sp = spotFor(p, []), ar = room.w / room.h;
       const cover = 125 * ar; // the photo's width in % of a 4:5 card when it just fills the card's height
-      const want = { rug: 88, window: 34, wall: 46, floor: 44, throw: 56, cushion: 58, bedding: 50 }[kind] || (r > 1.4 ? 30 : 42);
+      const want = { rug: 170, window: 34, wall: 46, floor: 44, throw: 56, cushion: 58, bedding: 50 }[kind] || (r > 1.4 ? 30 : 42);
       const bw = clamp(want * 100 / sp.w, cover, cover * 3.6), bh = bw / ar / 1.25;
       const ih = sp.w * r * (sp.sy || 1) * ar; // the product's height in % of the photo's height
       const bl = clamp(50 - sp.x / 100 * bw, 100 - bw, 0), bt = clamp((kind === "wall" ? 60 : 72) - (sp.y - ih * 0.1) / 100 * bh, 100 - bh, 0);
@@ -862,7 +862,7 @@
   document.body.appendChild(vsheet);
   let varThen = null, varBack = null;
   const closeVar = () => { vsheet.classList.remove("open"); document.documentElement.style.overflow = ""; if (varBack && varBack.focus && document.contains(varBack)) varBack.focus({ preventScroll: true }); };
-  R.openVariants = (handles, then) => { varThen = then; varBack = document.activeElement;
+  R.openVariants = (handles, then, lead) => { varThen = then; varBack = document.activeElement; $(".lead", vsheet).textContent = lead || "Bilden i rummet visar en av färgerna. Välj den du vill köpa."; // lead: when the things come from elsewhere than the room picture
     $("#varList", vsheet).innerHTML = handles.map((h) => { const p = RQ.byHandle(h); return `<div class="var-row" data-h="${h}"><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b><div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${p.variants.map((v, i) => `<button type="button" class="chip" data-v="${i}" aria-pressed="${i === 0}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div></div></div>`; }).join("");
     vsheet.classList.add("open"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".sheet-x", vsheet).focus(), 60); };
   vsheet.addEventListener("click", (e) => { if (e.target.closest("[data-var-close]")) return closeVar();
