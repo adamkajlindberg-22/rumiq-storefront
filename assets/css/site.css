@@ -1819,6 +1819,7 @@ html.sheet-lock{overflow:hidden}
 .ai-prods b{font-weight:560}
 .ai-prods span{color:var(--muted);font-size:.84rem}
 .ai-prods em{font-style:normal}
+@media (min-width:900px) and (max-height:760px){.ai-pad{padding-top:1.6rem;padding-bottom:1.6rem;gap:.75rem}.ai-prods{gap:.2rem}.ai-prods li{grid-template-columns:2.75rem minmax(0,1fr)}} /* a low laptop screen: six things and the buttons fit without scrolling the dialog */
 .ai-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.6rem}
 .ai-card{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.9rem 1rem;border-radius:var(--r);background:color-mix(in srgb,var(--accent) 10%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);margin-bottom:1.2rem}
 .ai-card div{display:grid;flex:1 1 10rem;min-width:0}
