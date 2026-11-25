@@ -500,18 +500,22 @@
         panel.addEventListener("click", (e) => { const b = e.target.closest("[data-newlist]"); if (!b) return; const l = S.createList(b.dataset.newlist); S.toggleInList(l.id, p.handle); RQ.toast(`Sparad i ${esc(l.name)}.`); repaint(); });
         panel.addEventListener("submit", (e) => { e.preventDefault(); const v = $("#nl", root).value.trim(); if (!v) return; const l = S.createList(v); S.toggleInList(l.id, p.handle); RQ.toast(`Sparad i ${esc(l.name)}.`); repaint(); });
         // complete the look
-        const lt = $("#lookTotal", root);
+        const lt = $("#lookTotal", root); let lookOff = null;
         if (lt) {
-          const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)); lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); const b = $("#lookAdd", root); b.textContent = sel.length ? `Lägg ${sel.length} ${sel.length === 1 ? "produkt" : "produkter"} i varukorgen` : "Välj minst en produkt"; b.disabled = !sel.length; };
+          // the button counts only what is not in the cart yet; once all of the chosen lies there, it shows the cart
+          const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)), b = $("#lookAdd", root); lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); if (b.classList.contains("done")) return;
+            const n = sel.filter((x) => !S.cartLines().some((l) => l.product.handle === x.handle)).length, all = sel.length && !n; b.toggleAttribute("data-open-cart", !!all); b.classList.toggle("ghost", !!all);
+            b.textContent = !sel.length ? "Välj minst en produkt" : all ? "Visa varukorgen" : `Lägg ${n} ${n === 1 ? "produkt" : "produkter"} i varukorgen`; b.disabled = !sel.length; };
           root.addEventListener("change", (e) => { if (e.target.matches("[data-look]")) upd(); });
-          $("#lookAdd", root).addEventListener("click", (e) => { const sel = $$("[data-look]:checked", root).map((x) => (x.dataset.look === p.handle ? variant : x.dataset.look)); RQ.addMany(sel, e.currentTarget); }); // this product in the colour chosen above; nothing already in the cart twice
+          $("#lookAdd", root).addEventListener("click", (e) => { const b = e.currentTarget; if (b.hasAttribute("data-open-cart")) return; const sel = $$("[data-look]:checked", root).map((x) => (x.dataset.look === p.handle ? variant : x.dataset.look)); RQ.addMany(sel, b); }); // this product in the colour chosen above; nothing already in the cart twice
+          upd(); let lookT = null; lookOff = S.onChange((w) => { if (w === "cart") { setTimeout(upd); clearTimeout(lookT); lookT = setTimeout(upd, 1700); } }); // again once the button has said "added"
         }
         // sticky buy bar once the buy button scrolls away (desktop); always on phones
         const bar = $("#buybar", root), buy = $(".buy", root);
         const io2 = new IntersectionObserver(([e]) => bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || matchMedia("(max-width:900px)").matches)), { threshold: [0, 0.9] });
         io2.observe($("#add", root));
         paintBar(); const offCart = S.onChange((w) => { if (w === "cart") setTimeout(paintBar); }); // after the tap that added it has run its course
-        return () => { io2.disconnect(); offCart(); clearTimeout(bar2._pb); };
+        return () => { io2.disconnect(); offCart(); clearTimeout(bar2._pb); if (lookOff) lookOff(); };
       },
     };
   };

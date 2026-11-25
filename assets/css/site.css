@@ -431,6 +431,7 @@ html:has(.cookie.show) .buybar.show:not(.rm-bar){transform:translateY(110%);visi
 .look-item .nm{font-weight:560;line-height:1.25;margin-top:.4rem}
 .look-item .pr{color:var(--muted);font-size:.9rem}
 .look-sum{position:sticky;top:calc(var(--nav-h) + 1rem);background:var(--paper);border:1px solid var(--line2);border-radius:var(--r);padding:1.3rem;display:grid;gap:1rem}
+.look-sum .sum.total{border-top:0;padding-top:0} /* the total opens the card: no rule with nothing above it */
 
 /* lightbox */
 .lb{position:fixed;inset:0;z-index:400;background:#0E0F0E;color:#F3F2EE;display:grid;grid-template-rows:auto 1fr auto;opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility 0s .35s;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -611,6 +612,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 #co .check input{width:1.25rem;height:1.25rem;margin-top:.15rem}
 .panel{background:var(--paper);border:1px solid var(--line2);border-radius:var(--r);padding:clamp(1.3rem,3vw,2.2rem)}
 .panel+.panel{margin-top:1.2rem}
+.co-note{margin:0 0 1.2rem} /* the checkout's Testläge note: in the form column, as wide as the steps under it */
 .contact{display:grid;grid-template-columns:1.6fr 1fr;gap:3rem}
 .contact-side h3{font-weight:560;font-size:var(--t-h3);margin:1.2rem 0 .3rem}
 .contact-side a{color:var(--ink)}
@@ -763,6 +765,7 @@ footer.site .news .status{margin-top:.5rem;min-height:0;font-size:.88rem}
 footer.site .news .status.err{color:var(--danger)}
 footer.site .bottom{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;border-top:1px solid var(--line2);margin-top:3rem;padding-top:1.5rem;font-size:.86rem;color:var(--muted)}
 footer.site .bottom button{background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:.2em;font-size:.86rem}
+footer.site .bottom .lang{padding-inline:0;border-radius:0;font-weight:inherit}footer.site .bottom .lang:hover{background:none} /* "English" is a link like its neighbours: it ends where the column ends */
 footer.site .ai{margin-top:1.4rem;font-size:.85rem;color:var(--muted);max-width:44rem}
 footer.site .co{margin-top:1.4rem;font-size:.85rem;color:var(--muted)}
 footer.site .co + .ai{margin-top:.4rem}
