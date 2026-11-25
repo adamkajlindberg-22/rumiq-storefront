@@ -323,9 +323,22 @@
   });
 
   // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
+  // only what belongs in this kind of room goes in, four at a time, so the room does not fill with soap pumps and desk trays;
+  // the rest stays under Sparat, and the toast says so
+  RQ.placeFitting = (hs) => {
+    const R = RQ.room, type = R.get() && R.get().type, MAX = 4;
+    const fit = hs.filter((h) => { const p = RQ.byHandle(h); return p && (!type || p.rooms.includes(type)); });
+    const placed = [], already = fit.filter((h) => R.inScene(h));
+    fit.filter((h) => !already.includes(h)).forEach((h) => { if (placed.length < MAX && R.add(h, true)) placed.push(h); });
+    const notFit = hs.length - fit.length, over = fit.length - already.length - placed.length, rest = notFit + over;
+    const lead = placed.length ? `${placed.length} ${placed.length === 1 ? "sak står" : "saker står"} nu i rummet.` : already.length ? "De som passar står redan i rummet." : "Inget av det passar i det här rummet.";
+    const tail = !rest ? "" : notFit === hs.length ? " Det ligger kvar under Sparat." : notFit && !over ? ` De andra ${notFit} passar bättre i andra rum och ligger kvar under Sparat.` : !notFit ? ` ${over} till ligger kvar under Sparat, så att rummet inte blir för fullt.` : ` De andra ${rest} ligger kvar under Sparat. Några passar bättre i andra rum.`;
+    return { placed, already, rest, text: lead + tail };
+  };
+  // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
   const toRoom = (hs) => {
     const R = RQ.room; if (!R) return;
-    const put = () => { hs.forEach((h) => R.add(h, true)); location.hash = "#mitt-rum"; };
+    const put = () => { const r = RQ.placeFitting(hs); if (r.placed.length || r.already.length) { location.hash = "#mitt-rum"; setTimeout(() => RQ.toast(r.text), 400); } else RQ.toast(`${r.text} <a href="#mitt-hem">Se Sparat</a>`); };
     if (R.has()) put(); else R.openSetup(put);
   };
 

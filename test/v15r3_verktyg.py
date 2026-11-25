@@ -59,6 +59,19 @@ def go(pg, route, wait=700):
     pg.wait_for_timeout(200)
 
 
+SAMPLE = """async (r) => { const im = new Image(); await new Promise((ok) => { im.onload = ok; im.src = 'assets/img/rum/' + r + '-1600.webp'; });
+  await RQ.room.saveImage(im, { sample: true, map: r, type: r, name: r }); }"""
+
+
+def finish_round(pg, pattern="Y"):
+    k = 0
+    while pg.evaluate("!!document.querySelector('#svDeck .sv-card')") and k < 30:
+        pg.evaluate("document.getElementById('%s').click()" % ("svYes" if pattern[k % len(pattern)] == "Y" else "svNo"))
+        pg.wait_for_timeout(280)
+        k += 1
+    pg.wait_for_timeout(400)
+
+
 DATA = None
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -94,6 +107,22 @@ with sync_playwright() as p:
             ok(not pg.evaluate("[...document.querySelectorAll('#log .mini a span')].some(s => s.scrollHeight > s.clientHeight + 1)"), f"{tag} stylist: product names are not cut")
         ok(pg.evaluate("document.getElementById('chatClear').classList.contains('btn')"), f"{tag} stylist: 'Rensa samtalet' is a button")
         ok(not errs, f"{tag} stylist: no script errors {errs[:2]}")
+        ctx.close()
+
+    # ------------------------------------------------------------ Svep "Se dem i ditt rum" places only what fits the room (M2)
+    for mobile in (True, False):
+        tag = "phone" if mobile else "desktop"
+        ctx, pg, errs = new(b, mobile)
+        go(pg, "svep", 900)
+        pg.evaluate(SAMPLE, "sovrum"); pg.wait_for_timeout(300)
+        finish_round(pg)
+        saved = pg.evaluate("document.querySelectorAll('.sv-liked button').length")
+        pg.click("#svRoomAll"); pg.wait_for_timeout(1400)
+        scene = [x["h"] for x in pg.evaluate("RQ.room.scene()")]
+        toast = pg.evaluate("document.getElementById('toast').innerText")
+        ok(saved >= 6 and 1 <= len(scene) <= 4 and all("sovrum" in DATA[h]["rooms"] for h in scene), f"{tag} Svep to room: only bedroom things, at most four: {saved} saved, {scene}")
+        ok("/mitt-rum" in pg.evaluate("location.pathname + location.hash") and f"{len(scene)} saker står nu i rummet" in toast and "Sparat" in toast, f"{tag} Svep to room: an honest toast in Mitt rum: {toast!r}")
+        ok(not errs, f"{tag} Svep to room: no script errors {errs[:2]}")
         ctx.close()
     b.close()
 

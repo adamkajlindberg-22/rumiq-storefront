@@ -144,5 +144,14 @@
  "Vårt gröna heter salvia. Salvia går fint ihop med havre, vitt och ek. Terrakotta ger en varm kontrast.": "Our green is called sage. Sage goes well with oat, white and oak. Terracotta gives a warm contrast.",
  "Vårt svarta heter grafit. Grafit lyfts av ljusa naturtoner som havre, vitt och ek.": "Our black is called graphite. Graphite is lifted by light natural tones like oat, white and oak.",
  "Leveranstiden visas innan du betalar.": "The delivery time is shown before you pay.",
- "Skriv din fråga": "Type your question"
+ "Skriv din fråga": "Type your question",
+ "{0} sak står nu i rummet.": "{0} item is now in the room.",
+ "{0} saker står nu i rummet.": "{0} items are now in the room.",
+ "De som passar står redan i rummet.": "The ones that fit are already in the room.",
+ "Inget av det passar i det här rummet.": "None of it fits this room.",
+ "Det ligger kvar under Sparat.": "It stays in Saved.",
+ "De andra {0} passar bättre i andra rum och ligger kvar under Sparat.": "The other {0} suit other rooms better and stay in Saved.",
+ "{0} till ligger kvar under Sparat, så att rummet inte blir för fullt.": "{0} more stay in Saved, so the room does not get too full.",
+ "De andra {0} ligger kvar under Sparat. Några passar bättre i andra rum.": "The other {0} stay in Saved. Some suit other rooms better.",
+ "Se Sparat": "See Saved"
 }
