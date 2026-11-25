@@ -1933,7 +1933,7 @@ footer.site .bottom .bottom-link{color:var(--muted);text-decoration:underline;te
 .empty-cart :is(h2,h3){font-size:var(--t-h3);font-weight:560}
 .empty-cart > p{color:var(--ink2)}
 .ec-looks{display:grid;gap:.6rem;margin-top:.6rem}
-.ec-look{display:flex;align-items:center;gap:1rem;padding:.7rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper)}
+.ec-look{display:flex;align-items:center;gap:1rem;padding:.7rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper);text-decoration:none;color:var(--ink)}
 .ec-look:hover{border-color:var(--ink)}
 .ec-imgs{display:flex;gap:.25rem}
 .ec-imgs img{width:2.8rem;height:2.8rem;object-fit:contain;background:var(--img-bg);border-radius:8px}
