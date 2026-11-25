@@ -2031,6 +2031,7 @@ body.on-checkout .tools{grid-column:3}
   .svep:not(:has(.svep-result)) .sv-after{display:block;color:var(--muted);margin-top:.9rem}
 }
 /* the key hints only where there is a keyboard and a mouse, not on touch tablets */
+.sv-wrap.compact .sv-prog{display:none} /* the home taster: one progress sign ("1 av 3"), not a bar above it too */
 .sv-ti,.sv-tc{display:none}
 @media (hover:none),(pointer:coarse){.sv-keys,.sv-legend li.sv-tip,.sv-legend kbd{display:none}
   .sv-legend .sv-ti{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink)}

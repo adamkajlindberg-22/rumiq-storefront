@@ -194,6 +194,13 @@ with sync_playwright() as p:
         ok(not errs, f"hitta rätt {tag}: no script errors {errs[:2]}")
         ctx.close()
 
+    # ------------------------------------------------------------ the home Svep taster: one progress sign
+    ctx, pg, errs = new(b, True)
+    go(pg, "", 1000)
+    shown = pg.evaluate("[...document.querySelectorAll('#svep-hem .sv-prog, #svep-hem .sv-meta')].filter(e => getComputedStyle(e).display !== 'none' && e.offsetHeight > 0).map(e => e.className)")
+    ok(shown == ["sv-meta"], f"home svep: one progress sign ('1 av 3'), no bar above it: {shown}")
+    ctx.close()
+
     # ------------------------------------------------------------ Sparat headings, Önska rows, konto counts
     ctx, pg, errs = new(b, True)
     go(pg, "mitt-hem", 900)
