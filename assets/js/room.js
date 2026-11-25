@@ -8,7 +8,7 @@
   const RQ = window.RQ, S = RQ.shop, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc, kr = S.kr;
   const KEY = "rumiq-myroom", SCENE = "rumiq-scene", MODE = "rumiq-roommode";
   const ls = S.store; // the shop's one typed reader (commerce.js)
-  let room = ls.get(KEY, null), blobUrl = null, prev = null;
+  let room = ls.get(KEY, null), blobUrl = null, hist = [], lastTag = "", lastAt = 0;
   const emit = (what) => document.dispatchEvent(new CustomEvent("rq-room", { detail: what }));
   // only a picture kept in this browser counts as a room; anything else in the storage is ignored
   if (!room || typeof room !== "object" || typeof room.img !== "string" || !/^data:image\//.test(room.img) || !(+room.w > 0) || !(+room.h > 0)) room = null;
@@ -179,7 +179,7 @@
       let ok = ls.set(KEY, next);
       if (!ok) { data = cv.toDataURL("image/jpeg", 0.62); next.img = data; ok = ls.set(KEY, next); }
       if (!ok) { R.lastError = "Bilden fick inte plats i webbläsarens lagring. Ta bort gamla projekt i Mitt hem och försök igen."; if (!sheet.classList.contains("open")) RQ.toast(R.lastError); return false; }
-      room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null;
+      room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; // a new photo: the old steps belonged to the old room
       ls.del(LEARN); ls.set(MODE, true);
       // what stood in the old room is put where it belongs in the new one
       const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved); moved.push({ h: it.h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 }); });
@@ -188,14 +188,19 @@
     },
     setType(t) { if (!room) return; room.type = t; ls.set(KEY, room); emit("type"); },
     /* forget the room: the photo, what stands in it and everything the editor remembers */
-    clear() { [KEY, SCENE, MODE, LEARN, "rumiq-room-night", "rumiq-room-landed", "rumiq-room-view"].forEach((k) => ls.del(k)); room = null; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; prev = null; emit("room"); emit("scene"); },
+    clear() { [KEY, SCENE, MODE, LEARN, "rumiq-room-night", "rumiq-room-landed", "rumiq-room-view"].forEach((k) => ls.del(k)); room = null; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; emit("room"); emit("scene"); },
     /* scene */
     scene: () => { const l = ls.get(SCENE, []); return (Array.isArray(l) ? l : []).filter((it) => it && typeof it.h === "string" && RQ.byHandle(it.h) && isFinite(it.x) && isFinite(it.y) && it.w > 0); },
-    /* false = the browser's storage is full and nothing was saved */
-    saveScene(list, keep) { const before = ls.get(SCENE, []); const ok = ls.set(SCENE, list) !== false; if (ok && !keep) prev = before; emit("scene"); return ok; },
-    /* take back the last change (a removed thing, a move, "Inred åt mig") */
-    canUndo: () => Array.isArray(prev),
-    undo() { if (!Array.isArray(prev)) return false; const p = prev; prev = null; ls.set(SCENE, p); emit("scene"); return true; },
+    /* false = the browser's storage is full and nothing was saved. Every change is a step that can be taken back;
+       changes with the same tag in quick succession (a held arrow key, the wheel) are one step. */
+    saveScene(list, keep, tag) { const before = ls.get(SCENE, []); const ok = ls.set(SCENE, list) !== false;
+      if (ok && !keep) { const now = Date.now(); if (!(tag && tag === lastTag && now - lastAt < 1200)) { hist.push(before); if (hist.length > 30) hist.shift(); } lastTag = tag || ""; lastAt = now; }
+      emit("scene"); return ok; },
+    /* take back the last change (a removed thing, a move, a new size, "Inred åt mig"), one step at a time */
+    canUndo: () => hist.length > 0,
+    undo() { if (!hist.length) return false; const p = hist.pop(); lastTag = ""; ls.set(SCENE, p); emit("scene"); return true; },
+    /* several changes as one step */
+    group(fn) { const n = hist.length, before = ls.get(SCENE, []), out = fn(); if (hist.length > n) { hist.length = n; hist.push(before); } lastTag = ""; return out; },
     inScene: (h) => R.scene().some((it) => it.h === h),
     add(h, quiet) {
       const p = RQ.byHandle(h); if (!p) return false; RQ.track && RQ.track("studio_place", { item_id: h });
@@ -210,10 +215,9 @@
     },
     remove(h) { R.saveScene(R.scene().filter((it) => it.h !== h)); },
     toggle(h) { if (R.inScene(h)) { R.remove(h); return false; } R.add(h); return true; },
-    update(h, patch) { R.saveScene(R.scene().map((it) => (it.h === h ? { ...it, ...patch } : it))); },
+    update(h, patch, tag) { R.saveScene(R.scene().map((it) => (it.h === h ? { ...it, ...patch } : it)), false, tag); },
     toFront(h) { const l = R.scene(); const i = l.findIndex((it) => it.h === h); if (i < 0) return; const it = l.splice(i, 1)[0]; it.top = true; delete it.back; l.push(it); R.saveScene(l); },
     toBack(h) { const l = R.scene(); const i = l.findIndex((it) => it.h === h); if (i < 0) return; const it = l.splice(i, 1)[0]; it.back = true; delete it.top; l.unshift(it); R.saveScene(l); },
-    undoPoint(list) { prev = list; },
     /* everything in the room into the cart, once: what already lies there is left as it is. Products with colours ask first. */
     cartAll(btn, chosen) {
       const list = R.scene(); if (!list.length) return;
@@ -384,6 +388,7 @@
     check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
     back: '<svg viewBox="0 0 24 24"><rect x="5" y="5" width="11" height="11" rx="1"/><path d="M19 9v10H9"/></svg>',
     fit: '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    undo: '<svg viewBox="0 0 24 24"><path d="M9 14L4.5 9.5 9 5"/><path d="M4.5 9.5h10a5 5 0 0 1 0 10H11"/></svg>',
   };
   const setupBlock = (want) => `<div class="rm-empty">
       <div class="rm-empty-in">
@@ -410,6 +415,7 @@
               <p class="sr" id="rmSaid" role="status"></p><div class="rm-canvas" id="rmCanvas"><img class="rm-bg" src="${R.url()}" alt="Ditt rum" draggable="false"><div class="rm-items" id="rmItems"></div></div>
               <button type="button" class="rm-hold" id="rmHold" aria-label="Håll för före, så ser du rummet utan produkterna">${ICO.eye}<span>Håll för före</span></button>
               <button type="button" class="rm-zoom" id="rmZoom" hidden>${ICO.fit}<span>Hela rummet</span></button>
+              <button type="button" class="rm-undo" id="rmUndo" aria-keyshortcuts="Control+Z" hidden>${ICO.undo}<span>Ångra</span></button>
               <span class="rm-pos" id="rmPos" aria-hidden="true" hidden><i></i></span>
               <div class="rm-emptyhint" id="rmHint" hidden><p>Rummet är tomt.</p><button class="btn sm light" type="button" id="rmSuggest0">${ICO.wand}Inred åt mig</button></div>
               <p class="rm-first" id="rmFirst" role="status" hidden></p>
@@ -430,12 +436,12 @@
               <button type="button" data-act="smaller">${ICO.minus}<span>Mindre</span></button>
               <button type="button" data-act="bigger">${ICO.plus}<span>Större</span></button>
               <button type="button" data-act="flip">${ICO.flip}<span>Vänd</span></button>
-              <button type="button" data-act="order">${ICO.front}<span id="rmActOrder">Bakåt</span></button>
+              <button type="button" data-act="order">${ICO.front}<span id="rmActOrder">Lägg bakom</span></button>
               <button type="button" data-act="del">${ICO.trash}<span>Ta bort</span></button>
               <button type="button" data-act="done" class="on">${ICO.check}<span>Klar</span></button>
             </div>
             ${!room.sample && !room.type ? `<div class="rm-ask" id="rmAsk"><span>Vilket rum är det?</span><div class="chips">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div></div>` : ""}
-            <p class="caption">Storleken är ungefärlig tills produkternas mått är bekräftade. Ljuset på produkterna anpassas efter ditt foto. <span class="rm-keys">Med tangentbordet: piltangenterna flyttar, plus och minus ändrar storlek.</span></p>
+            <p class="caption">Storleken är ungefärlig tills produkternas mått är bekräftade. Ljuset på produkterna anpassas efter ditt foto. <span class="rm-keys">Med tangentbordet: piltangenterna flyttar, plus och minus ändrar storlek och ${/Mac|iPhone|iPad/.test(navigator.platform || "") ? "⌘Z" : "Ctrl+Z"} ångrar.</span></p>
             ${more}
           </div>
           <aside class="rm-side">
@@ -542,7 +548,7 @@
           $("#rmCart", root).disabled = $("#rmCart2", root).disabled = !list.length;
           const hm = R.harmony(); $("#rmHarm", root).hidden = !hm; $("#rmLook", root).hidden = list.length < 2;
           if (hm) { $("#rmHm", root).style.width = hm.score + "%"; $("#rmHmv", root).textContent = hm.word; $("#rmHmt", root).textContent = hm.tip; }
-          paintSel();
+          paintSel(); paintUndo();
         };
         const paintSel = () => {
           const it = R.scene().find((x) => x.h === sel); const panel = $("#rmSel", root); panel.hidden = !it;
@@ -551,7 +557,7 @@
           const p = RQ.byHandle(it.h);
           $("#rmSelImg", root).src = RQ.img(p, 600); $("#rmSelName", root).textContent = p.name; $("#rmSelPrice", root).textContent = kr(p.price);
           $("#rmSelLink", root).href = "#produkt-" + p.handle; $("#rmSize", root).value = it.w; $("#rmLight", root).value = it.light;
-          $("#rmActOrder", root).textContent = it.back ? "Framåt" : "Bakåt";
+          $("#rmActOrder", root).textContent = it.back ? "Lägg framför" : "Lägg bakom";
         };
         const select = (h) => { sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); };
         const live = (h, patch) => { const el = $(`.rm-item[data-h="${h}"]`, wrap); if (!el) return; if (patch.x != null) el.style.left = patch.x + "%"; if (patch.y != null) el.style.top = patch.y + "%"; if (patch.w != null) el.style.width = patch.w + "%"; };
@@ -560,7 +566,7 @@
           L[kind] = { x: +it.x.toFixed(1), y: +it.y.toFixed(1), s: +(it.w / cm * 100).toFixed(2), w: +it.w.toFixed(1), sy: it.sy };
           if (kind !== "rug" && kind !== "window" && base > 0) L.k = +clamp(it.w / base, 0.4, 3).toFixed(2);
           ls.set(LEARN, L); };
-        const resize = (h, w) => { const it = R.scene().find((x) => x.h === h); if (!it) return; w = +clamp(w, 2.5, 96).toFixed(1); R.update(h, { w }); learn(h, { ...it, w }); };
+        const resize = (h, w, tag) => { const it = R.scene().find((x) => x.h === h); if (!it) return; w = +clamp(w, 2.5, 96).toFixed(1); R.update(h, { w }, tag); learn(h, { ...it, w }); };
         const removeIt = (h) => { const p = RQ.byHandle(h); if (sel === h) sel = null; R.remove(h); RQ.toast(`${esc(p.name)} är borttagen. <a href="#" data-room-undo>Ångra</a>`); };
 
         // gestures: one finger on a thing moves it, one finger on the room pans it sideways (up and down scrolls the page),
@@ -569,7 +575,7 @@
         const far = (a, e) => Math.hypot(e.clientX - a.sx, e.clientY - a.sy) > 6;
         stage.addEventListener("pointerdown", (e) => {
           const el = e.target.closest(".rm-item");
-          if (e.target.closest(".rm-hold,.rm-emptyhint,.rm-zoom")) return;
+          if (e.target.closest(".rm-hold,.rm-emptyhint,.rm-zoom,.rm-undo")) return;
           if (e.isPrimary) { pts.clear(); pinch = drag = pan = null; } // a first finger starts afresh, whatever an interrupted gesture left behind
           pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
           try { stage.setPointerCapture(e.pointerId); } catch (x) {}
@@ -611,20 +617,25 @@
         };
         stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
         // the wheel changes the size only when you mean it: over the selected thing, or with Ctrl held. Otherwise the page scrolls.
-        stage.addEventListener("wheel", (e) => { if (!sel) return; const over = e.target.closest(".rm-item"); if (!e.ctrlKey && !(over && over.dataset.h === sel)) return; e.preventDefault(); const it = R.scene().find((x) => x.h === sel); resize(sel, it.w * (e.deltaY < 0 ? 1.06 : 1 / 1.06)); }, { passive: false });
+        stage.addEventListener("wheel", (e) => { if (!sel) return; const over = e.target.closest(".rm-item"); if (!e.ctrlKey && !(over && over.dataset.h === sel)) return; e.preventDefault(); const it = R.scene().find((x) => x.h === sel); resize(sel, it.w * (e.deltaY < 0 ? 1.06 : 1 / 1.06), "size:" + sel); }, { passive: false });
         const refocus = (h) => setTimeout(() => { const el = h && $(`.rm-item[data-h="${h}"]`, wrap); (el || $("#rmAdd", root)).focus({ preventScroll: true }); }, 0);
         stage.addEventListener("keydown", (e) => { const el = e.target.closest(".rm-item"); if (!el) return; const it = R.scene().find((x) => x.h === el.dataset.h); if (!it) return; const d = e.shiftKey ? 4 : 1;
           const m = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, -d], ArrowDown: [0, d] }[e.key];
-          if (m) { e.preventDefault(); sel = it.h; const [x, y] = inside(it.x + m[0], it.y + m[1], it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }); refocus(it.h); said("Flyttad."); }
+          if (m) { e.preventDefault(); sel = it.h; const [x, y] = inside(it.x + m[0], it.y + m[1], it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }, "key:" + it.h); refocus(it.h); said("Flyttad."); }
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(it.h); }
-          if (e.key === "+" || e.key === "-") { e.preventDefault(); sel = it.h; resize(it.h, it.w + (e.key === "+" ? 1 : -1)); refocus(it.h); said(`Storlek ${Math.round(it.w + (e.key === "+" ? 1 : -1))} %.`); }
+          if (e.key === "+" || e.key === "-") { e.preventDefault(); sel = it.h; resize(it.h, it.w + (e.key === "+" ? 1 : -1), "size:" + it.h); refocus(it.h); said(`Storlek ${Math.round(it.w + (e.key === "+" ? 1 : -1))} %.`); }
           if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); const l = R.ordered().map((x) => x.h), i = l.indexOf(it.h), nm = (RQ.byHandle(it.h) || {}).name || ""; removeIt(it.h); refocus(l[i + 1] || l[i - 1]); said(`${nm} är borttagen.`); } });
         // what the keys and the arrow buttons did, read out (the room itself is a picture)
         const said = (t) => { const s = $("#rmSaid", root); if (s) { s.textContent = ""; setTimeout(() => { s.textContent = t; }, 30); } };
         // moving without dragging (2.5.7): the arrows in the panel nudge the chosen thing, like the arrow keys
         $("#rmSel", root).addEventListener("click", (e) => { const b = e.target.closest("[data-mv]"); if (!b || !sel) return; const it = R.scene().find((x) => x.h === sel), el = it && $(`.rm-item[data-h="${it.h}"]`, wrap); if (!el) return;
-          const [dx, dy] = b.dataset.mv.split(",").map(Number), [x, y] = inside(it.x + dx, it.y + dy, it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }); said("Flyttad."); });
-        const undoKey = (e) => { if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z" && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || "")) && R.canUndo()) { e.preventDefault(); R.undo(); RQ.toast("Ångrat."); } };
+          const [dx, dy] = b.dataset.mv.split(",").map(Number), [x, y] = inside(it.x + dx, it.y + dy, it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }, "key:" + it.h); said("Flyttad."); });
+        // Ctrl+Z (⌘Z): everywhere on the page except in a text field, where it undoes the typing. The sliders count as the room.
+        const undoKey = (e) => { const t = e.target || {}; if ((e.ctrlKey || e.metaKey) && !e.shiftKey && (e.key || "").toLowerCase() === "z" && !/^(TEXTAREA|SELECT)$/.test(t.tagName || "") && !(t.tagName === "INPUT" && t.type !== "range") && !t.isContentEditable && R.canUndo()) { e.preventDefault(); R.undo(); RQ.toast("Ångrat."); } };
+        // the Ångra button on the room: there as soon as something has changed here, gone when there is nothing left to take back
+        let touched = false; const undoBtn = $("#rmUndo", root);
+        const paintUndo = () => { const on = touched && R.canUndo(); if (!on && document.activeElement === undoBtn) $("#rmAdd", root).focus({ preventScroll: true }); undoBtn.hidden = !on; };
+        undoBtn.addEventListener("click", () => { if (R.undo()) said("Ångrat."); });
         document.addEventListener("keydown", undoKey);
         $("#rmZoom", root).addEventListener("click", () => { if (view.z > 1.01 && !view.whole) { view.z = 1; paintView(true); return; } view.whole = !view.whole; ls.set("rumiq-room-view", view.whole ? "whole" : "near"); stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); });
         let lw = innerWidth; const onResize = () => { if (innerWidth === lw && view.on) return; lw = innerWidth; layout(); }; // a phone's address bar comes and goes: only a new width is a new layout
@@ -654,9 +665,9 @@
         document.addEventListener("pointerdown", away);
         // controls
         $("#rmSize", root).addEventListener("input", (e) => { if (sel) live(sel, { w: +e.target.value }); });
-        $("#rmSize", root).addEventListener("change", (e) => { if (sel) resize(sel, +e.target.value); });
+        $("#rmSize", root).addEventListener("change", (e) => { if (sel) resize(sel, +e.target.value, "size:" + sel); });
         $("#rmLight", root).addEventListener("input", (e) => { if (!sel) return; const im = $(`.rm-item[data-h="${sel}"] img`, wrap); if (im) im.style.filter = lightFilter(+e.target.value); });
-        $("#rmLight", root).addEventListener("change", (e) => { if (sel) R.update(sel, { light: +e.target.value }); });
+        $("#rmLight", root).addEventListener("change", (e) => { if (sel) R.update(sel, { light: +e.target.value }, "light:" + sel); });
         const flip = () => { const it = R.scene().find((x) => x.h === sel); if (it) R.update(sel, { flip: !it.flip }); };
         $("#rmFlip", root).addEventListener("click", flip);
         $("#rmFront", root).addEventListener("click", () => { if (sel) R.toFront(sel); });
@@ -673,9 +684,8 @@
         const suggest = () => {
           const before = R.scene(), picks = R.suggest(Math.max(1, 4 - before.length) + (before.length >= 4 ? 1 : 0));
           if (!picks.length) { RQ.toast("Nu står allt som passar här i rummet. Lägg till fler själv."); return; }
-          const n = picks.filter((p) => R.add(p.handle, true)).length; if (!n) return;
-          R.undoPoint(before);
-          RQ.toast(`${n} förslag efter rummets färger${room.type ? " och rumstyp" : ""}. Flytta och byt fritt.${mapOf() ? "" : " Dra en sak dit den ska stå, så hamnar nästa bredvid."}`);
+          const n = R.group(() => picks.filter((p) => R.add(p.handle, true)).length); if (!n) return; // one step: Ångra takes all of them back
+          RQ.toast(`${n} förslag efter rummets färger${room.type ? " och rumstyp" : ""}. Flytta och byt fritt.${mapOf() ? "" : " Dra en sak dit den ska stå, så hamnar nästa bredvid."} <a href="#" data-room-undo="Ångrat. Förslagen är borttagna.">Ångra</a>`);
         };
         $("#rmSuggest", root).addEventListener("click", suggest); $("#rmSuggest0", root).addEventListener("click", suggest);
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });
@@ -712,7 +722,7 @@
             RQ.toast('Sparat i Mitt hem. <a href="#mitt-hem">Öppna</a>');
           } catch (e) { RQ.toast("Bilden gick inte att spara i den här webbläsaren."); }
         });
-        const onRoom = (e) => { if (e.detail === "scene") { if (sel && !R.inScene(sel)) sel = null; draw(); }
+        const onRoom = (e) => { if (e.detail === "scene") { touched = true; if (sel && !R.inScene(sel)) sel = null; draw(); }
           if (e.detail === "picker" && view.on) { stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); } }; // the room makes space for the drawer, and takes it back
         document.addEventListener("rq-room", onRoom);
         layout(); draw(); fits();
@@ -721,7 +731,7 @@
       },
     };
   };
-  document.addEventListener("click", (e) => { const a = e.target.closest("[data-room-undo]"); if (!a) return; e.preventDefault(); RQ.toast(R.undo() ? "Ångrat. Den står kvar." : "Det finns inget att ångra."); });
+  document.addEventListener("click", (e) => { const a = e.target.closest("[data-room-undo]"); if (!a) return; e.preventDefault(); RQ.toast(R.undo() ? a.dataset.roomUndo || "Ångrat. Den står kvar." : "Det finns inget att ångra."); });
   document.addEventListener("click", async (e) => { const a = e.target.closest("[data-share-room]"); if (!a || !R._share) return; e.preventDefault(); try { await navigator.share({ files: [R._share], title: "Mitt rum" }); } catch (x) {} });
 
   /* ---------------------------------------------------------------- product picker
