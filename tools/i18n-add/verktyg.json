@@ -227,5 +227,9 @@
  "Under {0} kr hittar jag inget i just den färgen. Här är det bästa i andra färger.": "Under {0} kr I find nothing in that colour. Here is the best in other colours.",
  "Just det har vi inte än. Här är det som ligger närmast.": "We do not have exactly that yet. Here is the closest match.",
  "Närmast": "Closest",
- "Under {0} kr, annan färg": "Under {0} kr, other colour"
+ "Under {0} kr, annan färg": "Under {0} kr, other colour",
+ "Svep åt höger.": "Swipe right.",
+ "Svep åt vänster.": "Swipe left.",
+ "Svep uppåt.": "Swipe up.",
+ "Tryck på bildens kanter för fler bilder, eller mitt på bilden för att läsa mer.": "Tap the edges of the picture for more pictures, or the middle to read more."
 }
