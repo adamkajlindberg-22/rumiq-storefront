@@ -201,6 +201,24 @@ with sync_playwright() as p:
         ok(18 <= it[2] <= 28 and 66 <= it[1] <= 72, f"[duvet {W}] it lies across the bed, about as wide as a folded duvet: {it}")
         ok(not pg.errs, f"[duvet {W}] no script errors: {pg.errs[:2]}")
         c.close()
+    # ---------------------------------------------------------------- C9: no product name cut by the before/after line (home demo, empty Mitt rum)
+    CUT = """(() => { const f = document.querySelector('.bav'), st = f.querySelector('.rh-stage'), r0 = st.getBoundingClientRect(), x = parseFloat(getComputedStyle(f).getPropertyValue('--ba')) / 100 * st.clientWidth + r0.left;
+      return [...f.querySelectorAll('.rh-tag > span')].filter((t) => { const r = t.getBoundingClientRect(); return r.width && +getComputedStyle(t).opacity > 0.5 && x > r.left + 1 && x < r.right - 1; }).length; })()"""
+    for W, Hh, mob in ((820, 1180, True), (1024, 768, True), (1280, 720, False), (1440, 900, False), (1920, 1080, False)):
+        for url in ("", "mitt-rum/"):
+            c = ctx_for(b, W, Hh, mob); pg = new_page(c)
+            pg.goto(BASE + url); pg.wait_for_timeout(600)
+            if not pg.evaluate("!!document.querySelector('.bav .rh-tag')"):
+                c.close(); continue
+            pg.evaluate("document.querySelector('.bav').scrollIntoView({ block: 'center' })")
+            cut = 0
+            for _ in range(16):
+                pg.wait_for_timeout(150); cut += pg.evaluate(CUT)
+            pg.evaluate("(() => { const r = document.querySelector('.bav .ba-range'); for (const v of [20, 35, 50, 62, 75, 88]) { r.value = v; r.dispatchEvent(new Event('input')); } })()"); pg.wait_for_timeout(300)
+            for v in (30, 45, 55, 66, 80):
+                pg.evaluate(f"(() => {{ const r = document.querySelector('.bav .ba-range'); r.value = {v}; r.dispatchEvent(new Event('input')); }})()"); pg.wait_for_timeout(260); cut += pg.evaluate(CUT)
+            ok(cut == 0, f"[C9 {W} /{url}] the line never shows a product name cut in half, in the demo or when dragged")
+            c.close()
 #CHECKS
     b.close()
 

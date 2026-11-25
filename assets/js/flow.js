@@ -594,7 +594,9 @@
       // before on the left, after on the right; a label steps aside while the line passes over it
       const st = $(".rh-stage", fig) || fig, lb = $(".ba-before", fig), la = $(".ba-now", fig), s0 = +r.value;
       const set = (v) => { fig.style.setProperty("--ba", v + "%"); const x = v / 100 * st.clientWidth;
-        if (lb) lb.classList.toggle("off", x < lb.offsetLeft + lb.offsetWidth + 10); if (la) la.classList.toggle("off", x > la.offsetLeft - 10); };
+        if (lb) lb.classList.toggle("off", x < lb.offsetLeft + lb.offsetWidth + 10); if (la) la.classList.toggle("off", x > la.offsetLeft - 10);
+        // a product's name steps aside too while the line runs through it, so no name is ever shown cut in half
+        const s0r = st.getBoundingClientRect(); $$(".rh-tag > span", fig).forEach((t) => { const tr = t.getBoundingClientRect(); if (tr.width) t.classList.toggle("off", x > tr.left - s0r.left - 6 && x < tr.right - s0r.left + 6); }); };
       set(s0);
       const onIn = () => { fig.classList.add("touched"); set(r.value); };
       r.addEventListener("input", onIn); offs.push(() => r.removeEventListener("input", onIn));
