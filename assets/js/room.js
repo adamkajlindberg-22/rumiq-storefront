@@ -19,19 +19,21 @@
 
   /* Where things belong. A lamp stands on a table, a throw lies on the sofa, a print hangs on the wall and a
      rug lies on the floor. kind = where it goes, cm = the real width of what the cut-out shows, r = the
-     cut-out's height / width. Widths are approximate until the suppliers' measurements are confirmed. */
+     cut-out's height / width. Widths are approximate until the suppliers' measurements are confirmed. A fourth value names a
+     picture made for the room (the duvet set lies folded on the bed, not as the shop's stacked pile). */
   const KIND = {
     "glob-bordslampa-opalglas": ["surface", 20, 1.62], "lysa-keramiklampa": ["surface", 30.5, 1.11], "svamp-uppladdningsbar-lampa": ["surface", 17, 1.77],
     "skarbrada-ek-med-handtag": ["surface", 22, 1.84], "forradsburkar-glas-ek-3-pack": ["surface", 36, 0.74], "sand-keramikvas": ["surface", 17, 1.85],
     "tvalpump-stengods": ["surface", 26, 0.9], "glod-doftljus-keramik": ["surface", 9, 1.25], "stilla-ljusstake-massing-2-pack": ["surface", 12, 2.93],
     "skrivbordsorganisator-ek": ["surface", 30, 0.86], "vaffelhandduk-bomull": ["surface", 39, 0.64],
-    "plad-ullblandning-havre": ["throw", 80, 0.84], "lin-kuddfodral": ["cushion", 88, 0.58], "vila-paslakanset-linne": ["bedding", 42, 0.53],
+    "plad-ullblandning-havre": ["throw", 80, 0.84], "lin-kuddfodral": ["cushion", 88, 0.58], "vila-paslakanset-linne": ["bedding", 120, 0.231, "rum"],
     "affisch-linje-ekram": ["wall", 53, 1.3], "affisch-horisont-ekram": ["wall", 53, 1.3],
     "forvaringslada-filt": ["floor", 42, 0.81], "flatad-forvaringskorg": ["floor", 40, 1.19], "terrakottakruka-rafflad": ["floor", 36, 1.92],
     "strand-jutematta": ["rug", 230, 0.37], "dagsljus-linnegardin-2-pack": ["window", 60, 2.63],
   };
   const meta = (p) => KIND[p.handle] || [p.wall ? "wall" : "surface", p.wall ? 50 : 20, 1.2];
   const kindOf = (p) => meta(p)[0];
+  const cutIn = (p) => (meta(p)[3] ? RQ.cut(p).replace(/\.webp$/, `-${meta(p)[3]}.webp`) : RQ.cut(p)); // the picture that stands in the room
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   /* The sample rooms are mapped by hand. A spot is [x, y, s]: x/y in % of the photo (y is where the thing
      stands) and s = how many % of the photo's width one metre is at that depth. Floor spots get s from the
@@ -45,7 +47,7 @@
       rug: [[45, 96, 50, 0.42]], window: [[92, 83, 15, 1.13]] },
     sovrum: { h: 55, k: 0.95, sun: 1,
       surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]],
-      cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[47, 67, 19], [60, 66, 19]],
+      cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[47, 69.5, 19], [60, 69, 19]],
       wall: [[50, 43, 15], [62, 43, 15], [40, 43, 15]],
       floor: [[87, 89], [77, 96], [45, 98], [60, 96]],
       rug: [[63, 99, 52, 0.4]], window: [[80.6, 74, 13.5, 1.12]] },
@@ -186,7 +188,7 @@
 
   /* ---------------------------------------------------------------- public API */
   const R = (RQ.room = {
-    PLACE, placeFor, kindOf, mapOf, match, lightFilter, analyse,
+    PLACE, placeFor, kindOf, cutIn, mapOf, match, lightFilter, analyse,
     has: () => !!room,
     get: () => room,
     url() { if (!room) return null; if (!blobUrl) blobUrl = toBlobUrl(room.img); return blobUrl; },
@@ -266,7 +268,7 @@
       handles.forEach((h) => { const p = RQ.byHandle(h); if (!p) return; const sp = spotFor(p, list, true, M); list.push({ h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}) }); });
       if (!list.length) return null;
       const items = orderOf(list).map((it, i) => { const p = RQ.byHandle(it.h), r = meta(p)[2];
-        return `<div class="rm-item k-${kindOf(p)}${p.cat === "belysning-atmosfar" ? " lamp" : ""}" style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}"><img src="${RQ.cut(p)}" alt="" decoding="async" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}"></div>`; }).join("");
+        return `<div class="rm-item k-${kindOf(p)}${p.cat === "belysning-atmosfar" ? " lamp" : ""}" style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}"><img src="${cutIn(p)}" alt="" decoding="async" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}"></div>`; }).join("");
       const hOf = (it) => it.w * meta(RQ.byHandle(it.h))[2] * (it.sy || 1) * ar; // height in % of the photo's height
       // each dot on its own thing: the middle of it, a lamp's dot on its body, and never on something standing in front of it.
       // [h, x, y, own, top, bottom, width] in % of the photo; a thing too small to carry a dot gets it on its top edge (hotspots.layout)
@@ -335,7 +337,7 @@
       const bl = clamp(50 - sp.x / 100 * bw, 100 - bw, 0), bt = clamp((kind === "wall" ? 60 : 72) - (sp.y - ih * 0.1) / 100 * bh, 100 - bh, 0);
       const st = `left:${(bl + sp.x / 100 * bw).toFixed(1)}%;top:${(bt + sp.y / 100 * bh).toFixed(1)}%;width:${(sp.w / 100 * bw).toFixed(1)}%`;
       const sq = sp.sy && sp.sy !== 1 ? `aspect-ratio:1 / ${(r * sp.sy).toFixed(3)};` : "";
-      return `<span class="inr"><img class="inr-bg" src="${R.url()}" alt="" decoding="async" style="left:${bl.toFixed(1)}%;top:${bt.toFixed(1)}%;width:${bw.toFixed(1)}%;height:${bh.toFixed(1)}%"><span class="inr-p k-${kind}" style="${st}"><img src="${RQ.cut(p)}" alt="" decoding="async" style="${sq}filter:${lightFilter()}"></span></span>`;
+      return `<span class="inr"><img class="inr-bg" src="${R.url()}" alt="" decoding="async" style="left:${bl.toFixed(1)}%;top:${bt.toFixed(1)}%;width:${bw.toFixed(1)}%;height:${bh.toFixed(1)}%"><span class="inr-p k-${kind}" style="${st}"><img src="${cutIn(p)}" alt="" decoding="async" style="${sq}filter:${lightFilter()}"></span></span>`;
     },
     thumb: () => (room ? `<img src="${R.url()}" alt="">` : ""),
   });
@@ -585,7 +587,7 @@
           const list = R.scene(), order = R.ordered(); let fresh = 0; const news = [];
           { const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h; }
           wrap.innerHTML = order.map((it, i) => { const p = RQ.byHandle(it.h), kind = kindOf(p), isNew = !seen.has(it.h), r = meta(p)[2]; if (isNew) news.push(it);
-            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${fresh++}` : ""}"><img src="${RQ.cut(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
+            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${fresh++}` : ""}"><img src="${cutIn(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
           const teach = news.length && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length; // own photo, nothing shown yet
           if (news.length) { wrap.style.setProperty("--pre", lookAt(news) ? "360ms" : "90ms");
             const f = $("#rmFirst", root);
@@ -770,7 +772,7 @@
             const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
             const before = document.createElement("canvas"); before.width = 480; before.height = Math.round(480 * H / W); before.getContext("2d").drawImage(bg, 0, 0, before.width, before.height);
             for (const it of R.ordered()) {
-              const p = RQ.byHandle(it.h); const im = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = RQ.cut(p); });
+              const p = RQ.byHandle(it.h); const im = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = cutIn(p); });
               const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h;
               if (["surface", "floor"].includes(kindOf(p))) { const g = cx.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.45); g.addColorStop(0, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.save(); cx.translate(0, y + h); cx.scale(1, 0.18); cx.translate(0, -(y + h)); cx.fillStyle = g; cx.fillRect(x - w * 0.1, y + h - w * 0.5, w * 1.2, w); cx.restore(); }
               cx.save(); cx.filter = lightFilter(it.light); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(im, 0, 0, w, h); } else cx.drawImage(im, x, y, w, h); cx.restore();

@@ -192,6 +192,15 @@ with sync_playwright() as p:
         dup = [h for h in picks if h in shown]
         ok(len(picks) >= 2 and (not dup or len(picks) - len(dup) < 2), f"[suggest {r}] Inred åt mig gives at least two things and doubles what the photo shows only when nothing else suits: {picks}")
     c.close()
+    # ---------------------------------------------------------------- the duvet set lies folded on the bed in the room, not as the shop's stacked pile
+    for W, Hh, mob in ((390, 844, True), (1440, 900, False)):
+        c, pg = room_page(b, W, Hh, mob, room="sovrum", items=("vila-paslakanset-linne",))
+        src = pg.evaluate("document.querySelector('.rm-item[data-h=\"vila-paslakanset-linne\"] img').src")
+        ok(src.endswith("vila-paslakanset-linne-rum.webp") and pg.evaluate("document.querySelector('.rm-item[data-h=\"vila-paslakanset-linne\"] img').naturalWidth") > 0, f"[duvet {W}] the room shows the duvet laid on the bed: {src.split('/')[-1]}")
+        it = pg.evaluate(SPOT, "vila-paslakanset-linne")
+        ok(18 <= it[2] <= 28 and 66 <= it[1] <= 72, f"[duvet {W}] it lies across the bed, about as wide as a folded duvet: {it}")
+        ok(not pg.errs, f"[duvet {W}] no script errors: {pg.errs[:2]}")
+        c.close()
 #CHECKS
     b.close()
 
