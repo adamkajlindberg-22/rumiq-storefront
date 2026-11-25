@@ -79,9 +79,10 @@
       rug: [[50, 100, 60, 0.35]], window: [[97, 100, 8, 1.6]] },
   };
   /* A room we have not seen before: sensible spots for each kind, until the customer shows where things stand. */
+  // a photo from the doorway: tables and sofa seats are about mid-height, the wall above them; the first things land there, large enough to grab
   const GENERIC = { h: 48, k: 0.9, sun: 1,
-    surface: [[30, 72, 21], [70, 72, 21], [50, 72, 21]], cushion: [[50, 74, 19], [36, 74, 19]], throw: [[60, 77, 19], [40, 77, 19]], bedding: [[50, 75, 19]],
-    wall: [[50, 44, 16], [30, 44, 16], [70, 44, 16]], floor: [[22, 92], [78, 92], [50, 94], [36, 90], [64, 90]],
+    surface: [[50, 63, 30], [32, 63, 30], [68, 63, 30]], cushion: [[50, 68, 24], [36, 68, 24]], throw: [[60, 71, 24], [40, 71, 24]], bedding: [[50, 70, 24]],
+    wall: [[50, 40, 22], [30, 40, 22], [70, 40, 22]], floor: [[22, 92], [78, 92], [50, 94], [36, 90], [64, 90]],
     rug: [[50, 98, 56, 0.45]], window: [[86, 84, 15, 1]] };
   const FALLBACK = { cushion: ["throw", "floor"], throw: ["cushion", "floor"], bedding: ["throw", "cushion", "floor"], surface: ["floor"], wall: [], floor: [] };
   const LEARN = "rumiq-roomlearn";
@@ -676,8 +677,13 @@
         undoBtn.addEventListener("click", () => { if (R.undo()) said("Ångrat."); });
         document.addEventListener("keydown", undoKey);
         $("#rmZoom", root).addEventListener("click", () => { if (view.z > 1.01 && !view.whole) { view.z = 1; paintView(true); return; } view.whole = !view.whole; ls.set("rumiq-room-view", view.whole ? "whole" : "near"); stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); });
-        let lw = innerWidth; const onResize = () => { if (innerWidth === lw && view.on) return; lw = innerWidth; layout(); }; // a phone's address bar comes and goes: only a new width is a new layout
+        let lw = innerWidth; const onResize = () => { toastAt(); if (innerWidth === lw && view.on) return; lw = innerWidth; layout(); }; // a phone's address bar comes and goes: only a new width is a new layout
         addEventListener("resize", onResize);
+        // messages come in over the top edge of the room picture (site.css), so they cover neither the title nor the controls
+        const rootS = document.documentElement.style; let tRaf = 0;
+        const toastAt = () => { tRaf = 0; const r = stage.getBoundingClientRect(); rootS.setProperty("--rm-toast-top", Math.round(Math.min(innerHeight * 0.5, r.top + 12)) + "px"); const hb = $("#rmHold", root).getBoundingClientRect(); rootS.setProperty("--rm-toast-l", Math.round(Math.max(0, (hb.width ? hb.right : r.left) + 8)) + "px"); /* beside Håll för före, not over it */ rootS.setProperty("--rm-toast-r", Math.round(Math.max(0, innerWidth - r.right + 8)) + "px"); };
+        const onScroll = () => { if (!tRaf) tRaf = requestAnimationFrame(toastAt); };
+        addEventListener("scroll", onScroll, { passive: true });
         // see the room as it is: hold the button on the photo, or switch it on in the menu
         const before = $("#rmBefore", root);
         const show = (on) => { stage.classList.toggle("before", on); $("#rmHold", root).classList.toggle("on", on); before.setAttribute("aria-checked", on); };
@@ -763,9 +769,9 @@
         const onRoom = (e) => { if (e.detail === "scene") { touched = true; if (sel && !R.inScene(sel)) sel = null; draw(); }
           if (e.detail === "picker" && view.on) { stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); } }; // the room makes space for the drawer, and takes it back
         document.addEventListener("rq-room", onRoom);
-        layout(); draw(); fits();
+        layout(); draw(); fits(); toastAt();
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
-        return () => { document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
+        return () => { document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
       },
     };
   };
