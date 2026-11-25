@@ -221,7 +221,7 @@
       <div class="ai-pad"><span class="eyebrow">${r.demo ? "Förhandsvisning" : "Klar"}</span><h2 id="aiTitle" class="ai-h">${r.demo ? "Så här fungerar det." : "Ditt rum, med sakerna på plats."}</h2>
         ${r.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p>` : `<p class="small">Bilden är skapad med AI. Färg och storlek kan skilja sig något från verkligheten.</p>`}
         ${productsList(r.scene)}
-        <div class="ai-row"><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiSave">Spara i Mitt hem</button></div>
+        <div class="ai-row"><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiSave">Spara bilden</button></div>
         <div class="ai-row small-row"><button class="tlink" type="button" id="aiAgain">Skapa igen</button>${!r.demo && r.id && st.quality_left > 0 ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${r.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div></div></div>`);
     const ba = $("#aiBa", body), range = $("input", ba);
     range.addEventListener("input", () => ba.style.setProperty("--x", range.value + "%"));
@@ -231,7 +231,7 @@
       try {
         const img = r.demo ? r.url : await toDataUrl(r.url);
         const ok = S.saveProject({ title: (r.demo ? "Mitt rum" : "AI-bild") + " med " + r.scene.map((it) => RQ.byHandle(it.h).name.split(" ")[0]).join(", "), img, before: r.before, handles: r.scene.map((it) => it.h) });
-        RQ.toast(ok ? 'Sparat i Mitt hem. <a href="#mitt-hem" data-ai-close>Öppna</a>' : "Webbläsarens lagring är full. Ta bort ett gammalt projekt i Mitt hem.");
+        RQ.toast(ok ? 'Bilden är sparad. <a href="#mitt-hem" data-ai-close>Se Sparat</a>' : "Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat.");
       } catch (x) { RQ.toast("Bilden kunde inte sparas. Försök igen."); b.disabled = false; }
     });
     $("#aiAgain", body).addEventListener("click", viewCompose);

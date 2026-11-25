@@ -240,7 +240,7 @@ with sync_playwright() as p:
         pg.goto(BASE + "#access_token=abc&type=x"); pg.wait_for_timeout(400)
         ok(pg.evaluate("location.hash") == "#access_token=abc&type=x", f"{tag} a sign-in answer after '#' is left for the sign-in code")
         pg.goto(BASE + "jamfor/"); pg.wait_for_timeout(900)
-        ok(pg.evaluate("document.querySelector('#view h1').textContent.trim()") == "Mitt hem" and pg.evaluate("document.querySelector('link[rel=canonical]').href").endswith("/mitt-hem/"), f"{tag} the old compare address opens Mitt hem")
+        ok(pg.evaluate("document.querySelector('#view h1').textContent.trim()") == "Sparat" and pg.evaluate("document.querySelector('link[rel=canonical]').href").endswith("/mitt-hem/"), f"{tag} the old compare address opens Sparat (v15 r3: one name for the saved-items place)")
         ok(pg.evaluate("!RQ.shop.toggleCompare && !RQ.views.jamfor && !RQ.views.ideer"), f"{tag} the compare tool and the old ideas view are gone")
         ok(not errs, f"{tag} no script errors: {errs[:2]}")
         ctx.close()

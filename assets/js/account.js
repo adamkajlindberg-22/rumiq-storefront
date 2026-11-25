@@ -101,6 +101,28 @@
   }
   V.signup = () => (S.customer() ? V.account() : authView("skapa"));
 
+  /* a jump menu that follows the page: the part you are reading is marked (class on, aria-current), on phones it is
+     scrolled into view sideways. Used by Mitt konto and Sparat. Returns a clean-up function. */
+  RQ.jumpSpy = (nav, root) => {
+    if (!nav) return () => {};
+    const links = $$("a[href^='#']", nav).map((a) => [a, document.getElementById(a.getAttribute("href").slice(1))]).filter((x) => x[1]);
+    let raf = 0, cur = null, lock = 0;
+    const mark = (a) => {
+      if (a === cur) return; cur = a;
+      links.forEach(([x]) => { x.classList.toggle("on", x === a); if (x === a) x.setAttribute("aria-current", "true"); else x.removeAttribute("aria-current"); });
+      if (a && nav.scrollWidth > nav.clientWidth + 2) { const l = a.offsetLeft - nav.offsetLeft, r = l + a.offsetWidth; if (l < nav.scrollLeft || r > nav.scrollLeft + nav.clientWidth) nav.scrollTo({ left: Math.max(0, l - 24), behavior: "smooth" }); }
+    };
+    const check = () => { raf = 0; if (Date.now() < lock) return; const line = innerHeight * 0.3; let on = links[0];
+      links.forEach((x) => { if (x[1].getBoundingClientRect().top <= line) on = x; });
+      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) on = links[links.length - 1]; // the last part can never reach the line
+      mark(on && on[0]); };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    nav.addEventListener("click", (e) => { const a = e.target.closest("a[href^='#']"); if (!a) return; const t = document.getElementById(a.getAttribute("href").slice(1)); if (!t) return;
+      e.preventDefault(); lock = Date.now() + 900; mark(a); t.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); });
+    addEventListener("scroll", onScroll, { passive: true }); check();
+    return () => removeEventListener("scroll", onScroll);
+  };
+
   V.account = () => {
     const c = S.customer();
     if (!c) return authView("logga");
@@ -109,10 +131,10 @@
     const addr = c.address || {};
     return {
       title: "Mitt konto · RumIQ",
-      html: `<header class="page-head wrap" style="padding-bottom:1.5rem">${RQ.crumbs([["Hem", "hem"], ["Mitt konto"]])}<h1 class="h1">Hej${c.name ? " " + esc(c.name) : ""}</h1>
+      html: `<header class="page-head wrap" style="padding-bottom:1.5rem">${RQ.crumbs([["Hem", "hem"], ["Mitt konto"]])}<h1 class="h1">${c.name ? "Hej " + esc(c.name) : "Mitt konto"}</h1>
           <p class="lead">${prov ? `<span class="provider">${RQ.providerLogo(c.provider)} Inloggad med ${prov}</span> · ` : ""}${esc(c.email)}</p></header>
         <section class="wrap acct" style="padding-bottom:5rem">
-          <nav class="acct-nav" aria-label="Konto"><a href="#acc-oversikt" class="on">Översikt</a><a href="#acc-studio">Mitt rum</a><a href="#acc-order">Beställningar</a><a href="#acc-listor">Mina listor</a><a href="#acc-profil">Profil och adress</a><a href="#acc-installningar">Inställningar</a><a href="#mitt-hem">Mitt hem</a></nav>
+          <nav class="acct-nav" aria-label="Konto"><a href="#acc-oversikt" class="on" aria-current="true">Översikt</a><a href="#acc-studio">Mitt rum</a><a href="#acc-order">Beställningar</a><a href="#acc-listor">Mina listor</a><a href="#acc-profil">Profil och adress</a><a href="#acc-installningar">Inställningar</a><a href="#mitt-hem">Sparat</a></nav>
           <div style="display:grid;gap:3.2rem;min-width:0">
             <section id="acc-oversikt"><div class="stat-grid">
               <a class="stat" href="#acc-order"><b>${orders.length}</b><span>Beställningar</span></a>
@@ -149,8 +171,9 @@
           S.setProfile({ name: f.name.value.trim(), phone: f.phone.value.trim(), address: { street: f.street.value.trim(), zip, city: f.city.value.trim() } }); $("#profStatus", root).textContent = "Sparat. Kassan fylls i automatiskt nästa gång."; });
         root.addEventListener("click", (e) => {
           const t = e.target.closest("[data-track],[data-wd]"); if (t) RQ.ss.set("rumiq-prefill", t.dataset.track || t.dataset.wd);
-          const a = e.target.closest(".acct-nav a[href^='#acc-'], .stat[href^='#acc-']"); if (a) { e.preventDefault(); const el = document.getElementById(a.getAttribute("href").slice(1)); el.scrollIntoView({ behavior: "smooth", block: "start" }); $$(".acct-nav a", root).forEach((x) => x.classList.toggle("on", x === a)); }
+          const a = e.target.closest(".stat[href^='#acc-']"); if (a) { e.preventDefault(); const el = document.getElementById(a.getAttribute("href").slice(1)); el.scrollIntoView({ behavior: "smooth", block: "start" }); }
         });
+        return RQ.jumpSpy($(".acct-nav", root), root);
       },
     };
   };

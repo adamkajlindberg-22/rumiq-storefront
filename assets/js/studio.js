@@ -83,7 +83,7 @@
         const style = Object.entries(score).sort((a, b) => b[1] - a[1])[0][0];
         S.saveStyle({ style, room: ans.room, materials: ans.mat, feel: ans.feel, source: "quiz" });
         if (RQ.taste && RQ.taste.boost) RQ.taste.boost(style, 3);
-        $("#styleOut", root).innerHTML = RQ.styleResult(style, ans.room) + `<div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-hem">Sparad i Mitt hem</a><a class="btn ghost" href="#studio-stylist">Fråga stylisten</a></div>`;
+        $("#styleOut", root).innerHTML = RQ.styleResult(style, ans.room) + `<div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-hem">Din stil är sparad. Se Sparat</a><a class="btn ghost" href="#studio-stylist">Fråga stylisten</a></div>`;
         RQ.watch(root); $("#styleOut", root).scrollIntoView({ behavior: "smooth", block: "start" });
       });
     },
@@ -394,7 +394,7 @@
     },
   });
 
-  /* ---------------------------------------------------------------- Mitt hem */
+  /* ---------------------------------------------------------------- Sparat (address mitt-hem): everything you saved, in one place */
   V.myHome = () => {
     const projects = S.projects(), wish = S.wishlist(), looks = S.looks(), arts = S.savedArticles().map(RQ.articleBySlug).filter(Boolean);
     const st0 = S.style(), style = st0 && RQ.STYLES[st0.style] ? st0 : null; // a stored style we do not know is treated as none
@@ -402,25 +402,24 @@
     const none = (title, text, href, label) => `<div class="mh-none"><p><b>${title}</b> <span>${text}</span></p><a class="link" href="${href}">${label}</a></div>`;
     const safeImg = (u) => (/^(data:image\/|assets\/)/.test(String(u || "")) ? esc(u) : ""); // only our own pictures and saved room photos
     return {
-      title: "Mitt hem · RumIQ",
-      html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Mitt hem"]])}<span class="eyebrow">Ditt privata bibliotek</span><h1 class="h1">Mitt hem</h1><p class="lead">Det du har sparat, dina rum och mått, din stil och dina looks, samlat så att du kan fortsätta där du slutade.</p>
-          <div class="chips" style="margin-top:1.6rem"><a class="chip" href="#mh-fav">Sparat (${wish.length})</a><a class="chip" href="#mh-matt">Mina rum och mått (${RQ.homeRooms ? RQ.homeRooms.list().length : 0})</a><a class="chip" href="#mh-stil">Min stil</a><a class="chip" href="#mh-rum">Rumsprojekt (${projects.length})</a><a class="chip" href="#mh-looks">Looks (${looks.length})</a><a class="chip" href="#mh-art">Artiklar (${arts.length})</a></div></header>
+      title: "Sparat · RumIQ",
+      html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Sparat"]])}<span class="eyebrow">Ditt privata bibliotek</span><h1 class="h1">Sparat</h1><p class="lead">Det du har sparat, dina rum och mått, din stil och dina looks, samlat så att du kan fortsätta där du slutade.</p>
+          <nav class="jump-nav" aria-label="På sidan"><a href="#mh-fav">Produkter (${wish.length})</a><a href="#mh-matt">Mina rum och mått (${RQ.homeRooms ? RQ.homeRooms.list().length : 0})</a><a href="#mh-stil">Min stil</a><a href="#mh-rum">Rumsprojekt (${projects.length})</a><a href="#mh-looks">Looks (${looks.length})</a><a href="#mh-art">Artiklar (${arts.length})</a></nav></header>
         <section class="wrap mh" style="padding-bottom:5rem;display:grid;gap:3.2rem">
-          <div id="mh-fav"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Sparat</span></div>${wish.length ? `<span class="mh-favacts"><button class="btn ghost sm" type="button" data-share-wish><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6h14v-6"/></svg><span>Dela listan</span></button><a class="link" href="#onskelista">Listor per rum</a></span>` : ""}</div>${wish.length ? RQ.grid(wish) : ""}${wish.length && RQ.priceWatch ? RQ.priceWatch.html(wish.map((p) => p.handle), "mhw") : ""}${wish.length ? "" : `${none("Inget sparat än.", "Tryck på hjärtat på en produkt, så hamnar den här.", "#butik", "Till butiken")}${RQ.svepNudge ? RQ.svepNudge() : ""}`}</div>
+          <div id="mh-fav"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Produkter</span></div>${wish.length ? `<span class="mh-favacts"><button class="btn ghost sm" type="button" data-share-wish><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6h14v-6"/></svg><span>Dela listan</span></button><a class="link" href="#onskelista">Listor per rum</a></span>` : ""}</div>${wish.length ? RQ.grid(wish) : ""}${wish.length && RQ.priceWatch ? RQ.priceWatch.html(wish.map((p) => p.handle), "mhw") : ""}${wish.length ? "" : `${none("Inget sparat än.", "Tryck på hjärtat på en produkt, så hamnar den här.", "#butik", "Till butiken")}${RQ.svepNudge ? RQ.svepNudge() : ""}`}</div>
           ${RQ.homeRooms ? RQ.homeRooms.html() : ""}
           <div id="mh-stil"><div class="sec-head"><span class="eyebrow">Min stil</span></div>${style ? `<div class="result"><h2>${RQ.STYLES[style.style].name}</h2><p style="margin-top:.5rem">${RQ.STYLES[style.style].text}</p>${RQ.styleProfile && RQ.taste.get().n ? `<div class="sp-mix" style="max-width:30rem;margin-top:1rem">${RQ.styleProfile().mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>` : ""}<p class="small">Uppdaterad ${new Date(style.at).toLocaleDateString("sv-SE")}.</p><div class="ctrl-row"><a class="btn sm" href="#svep">Svep mer</a><a class="btn ghost sm" href="#studio-stil">Fyra snabba val</a></div></div>` : none("Ingen stil än.", "Svep tio kort, så får du din stilprofil.", "#svep", "Svep fram din stil")}</div>
           <div id="mh-rum"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Rumsprojekt</span></div>${projects.length > 1 ? `<button class="chip" type="button" id="cmpBtn">Jämför två sida vid sida</button>` : ""}</div>
             ${projects.length ? `<div class="cols3" id="projects">${projects.map((p) => `<article class="colcard" style="cursor:default"><div class="im" style="aspect-ratio:4/3"><img src="${safeImg(p.img)}" alt="${esc(p.title)}"></div><div class="tx"><label class="check" style="font-size:.85rem;margin-bottom:.6rem"><input type="checkbox" data-cmp="${esc(p.id)}"> Välj för jämförelse</label><h3 class="h3">${esc(p.title)}</h3><p class="small">${new Date(p.at).toLocaleDateString("sv-SE")}</p><label style="margin-top:.8rem">Anteckning<textarea rows="2" data-note="${esc(p.id)}">${esc(p.note || "")}</textarea></label><div class="ctrl-row"><button class="btn sm" type="button" data-look-buy="${esc((p.handles || []).join(","))}" data-look-name="Rummet">Lägg i varukorgen</button><button class="btn ghost sm" type="button" data-room-all="${esc((p.handles || []).join(","))}">Se i Mitt rum</button><button class="chip" type="button" data-del="${esc(p.id)}">Ta bort</button></div></div></article>`).join("")}</div><div id="cmpOut"></div>` : none("Inga rumsprojekt än.", "Ställ in saker i ett foto av ditt rum och spara resultatet.", "#mitt-rum", "Till Mitt rum")}</div>
           <div id="mh-looks"><div class="sec-head"><span class="eyebrow">Sparade looks</span></div>${looks.length ? `<div class="mylooks">${RQ.savedLooksHtml()}</div>` : none("Inga looks än.", "Spara en färdig look, eller bygg en egen i Mitt rum.", "#looks", "Se alla looks")}</div>
           <div id="mh-art"><div class="sec-head"><span class="eyebrow">Sparade artiklar</span></div>${arts.length ? `<div class="mag-grid">${arts.map(RQ.magCard).join("")}</div>` : none("Inga sparade artiklar.", "Spara en artikel i magasinet, så hamnar den här.", "#magasin", "Till magasinet")}</div>
-          <div class="panel"><h3 class="h3">Dina uppgifter</h3><p class="small" style="margin-top:.5rem">I förhandsversionen sparas allt i Mitt hem bara i den här webbläsaren. Inget skickas till oss. Du kan ta bort allt när du vill.</p><button class="btn ghost sm" type="button" id="clearAll" style="margin-top:1rem">Rensa allt sparat</button><p class="small" id="clearNote" role="status" style="margin-top:.6rem"></p></div>
+          <div class="panel"><h3 class="h3">Dina uppgifter</h3><p class="small" style="margin-top:.5rem">I förhandsversionen finns allt du sparat bara i den här webbläsaren. Inget skickas till oss. Du kan ta bort allt när du vill.</p><button class="btn ghost sm" type="button" id="clearAll" style="margin-top:1rem">Rensa allt sparat</button><p class="small" id="clearNote" role="status" style="margin-top:.6rem"></p></div>
         </section>`,
       mount(root) {
         RQ.homeRooms && RQ.homeRooms.mount(root);
         root.addEventListener("click", (e) => {
           const d = e.target.closest("[data-del]"); if (d) { S.deleteProject(d.dataset.del); RQ.router(); return; }
           const dl = e.target.closest("[data-dellook]"); if (dl) { S.deleteLook(dl.dataset.dellook); RQ.router(); return; }
-          const a = e.target.closest("a[href^='#mh-']"); if (a) { e.preventDefault(); document.getElementById(a.getAttribute("href").slice(1)).scrollIntoView({ behavior: "smooth" }); }
         });
         $$("[data-note]", root).forEach((t) => t.addEventListener("change", () => S.updateProject(t.dataset.note, { note: t.value })));
         const cb = $("#cmpBtn", root);
@@ -440,6 +439,7 @@
           ["rumiq-chat", "rumiq-svep-result", "rumiq-svep-two", "rumiq-svep-carry", "rumiq-guide", "rumiq-gift", "rumiq-ord", "rumiq-list"].forEach((k) => { try { sessionStorage.removeItem(k); } catch (er) {} });
           RQ.toast("Allt sparat är borttaget."); RQ.router(); scrollTo(0, 0);
         });
+        return RQ.jumpSpy($(".jump-nav", root), root);
       },
     };
   };

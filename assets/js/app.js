@@ -440,8 +440,8 @@
     const cur = active === "fav" ? { id: "fav", name: "Allt sparat", handles: S._wish } : lists.find((l) => l.id === active);
     const items = cur.handles.map(RQ.byHandle).filter(Boolean);
     const total = items.reduce((s, p) => s + p.price, 0);
-    return { title: "Sparat · RumIQ",
-      html: `${head(crumbs([["Hem", "hem"], ["Mitt hem", "mitt-hem"], ["Sparat"]]), "Sparat", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
+    return { title: "Mina listor · RumIQ",
+      html: `${head(crumbs([["Hem", "hem"], ["Sparat", "mitt-hem"], ["Mina listor"]]), "Mina listor", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
       <section class="wrap" style="padding-bottom:6rem">
         <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Allt sparat (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="min-height:var(--field-h-s);padding-block:0;width:11rem"><button class="chip" type="submit">Skapa</button></form></div>
@@ -469,12 +469,12 @@
     const saved = S.savedArticles().includes(slug);
     return { title: `${a.title} · RumIQ Magasin`,
       html: `<header class="page-head wrap" style="padding-bottom:0">${crumbs([["Hem", "hem"], ["Magasin", "magasin"], ["Artikel"]])}<h1 class="h1" style="max-width:22ch">${esc(a.title)}</h1><p class="lead">${esc(a.lead)}</p>
-        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${readMin(a)} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad i Mitt hem" : "Spara artikeln"}</button></div></header>
+        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${readMin(a)} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad under Sparat" : "Spara artikeln"}</button></div></header>
         <div class="wrap"><div class="article-hero reveal"><img src="${a.img.replace("-1200", "-1600")}" onerror="this.src='${a.img}'" alt=""></div></div>
         <div class="wrap"><article class="prose" style="padding-bottom:4rem">${a.body}</article></div>
         <section class="sec tight kalk"><div class="wrap"><div class="sec-head"><span class="eyebrow">Från artikeln</span><h2 class="h2">Saker som passar</h2></div>${RQ.grid(a.picks.map(RQ.byHandle).filter(Boolean))}</div></section>
         <section class="sec tight"><div class="wrap"><div class="sec-head"><span class="eyebrow">Läs mer</span></div><div class="mag-grid">${RQ.ARTICLES.filter((x) => x.slug !== slug).slice(0, 3).map(RQ.magCard).join("")}</div></div></section>`,
-      mount(root) { $("#saveArt", root).addEventListener("click", (e) => { const on = S.toggleArticle(slug); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Sparad i Mitt hem" : "Spara artikeln"; }); },
+      mount(root) { $("#saveArt", root).addEventListener("click", (e) => { const on = S.toggleArticle(slug); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Sparad under Sparat" : "Spara artikeln"; }); },
     };
   };
   V.inspiration = () => ({ html: `${head(crumbs([["Hem", "hem"], ["Rumsinspiration"]]), "Rumsinspiration", "Rum att drömma sig bort i, och idéer att ta med hem. Bilderna är illustrationer.")}
@@ -560,7 +560,7 @@
     [/^butik$/, () => V.butik()], [/^nyheter$/, () => V.nyheter()], [/^favoriter$/, () => V.favoriter()], [/^erbjudanden$/, () => V.erbjudanden()],
     [/^kategori-(.+)$/, (m) => V.kategori(m[1])], [/^rum$/, () => V.rumindex()], [/^rum-(.+)$/, (m) => V.rum(m[1])],
     [/^kollektioner$/, () => V.looks()], [/^kollektion-(.+)$/, (m) => V.kollektion(m[1])],
-    [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.myHome()], // the compare tool is gone: its old address opens Mitt hem
+    [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.myHome()], // the compare tool is gone: its old address opens Sparat
     [/^magasin$/, () => V.magasin()], [/^artikel-(.+)$/, (m) => V.artikel(m[1])], [/^inspiration$/, () => V.inspiration()],
     [/^juridik-(.+)$/, (m) => V.juridik(m[1])], [/^ideer$/, () => V.onska()],
     [/^(kontakt|faq|frakt|returer|betalning|om|sa-fungerar-det)$/, (m) => V[m[1]]()],
@@ -844,7 +844,7 @@
     $$("[data-count=cartline]").forEach((b) => { const n = S.cartCount(); b.textContent = n ? `${n} ${n === 1 ? "produkt" : "produkter"}` : ""; });
     $$("[data-count=wish]").forEach((b) => { const n = S._wish.length; b.textContent = n || ""; b.dataset.n = n; });
     const named = (q, base, n, one, many) => $$(q).forEach((el) => el.setAttribute("aria-label", n ? `${base}, ${n} ${n === 1 ? one : many}` : base));
-    named(".tools [data-open-cart]", "Varukorg", S.cartCount(), "vara", "varor"); named(".tools .wishlink", "Sparat i Mitt hem", S._wish.length, "sak", "saker");
+    named(".tools [data-open-cart]", "Varukorg", S.cartCount(), "vara", "varor"); named(".tools .wishlink", "Sparat", S._wish.length, "sak", "saker");
     const c = S.customer(); const acc = $("#accLink"); if (acc) acc.setAttribute("aria-label", c ? "Mitt konto" : "Logga in");
   };
   const drawer = $("#cart"), scrimAll = $("#scrimAll");
@@ -1034,7 +1034,7 @@
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-wish],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-undo-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
-    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
+    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad. <a href="#mitt-hem">Se Sparat</a>' : "Borttagen ur Sparat"); return; }
     if (t.matches("[data-add]")) { S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
     if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }

@@ -394,7 +394,7 @@
     if (b) { const l = lookById(b.dataset.lookAdd); const added = addMissing(l.items, b, l.name); const host = b.closest(".lc, .look-page"); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
     const mb = e.target.closest("[data-look-buy]"); if (mb) { addMissing(mb.dataset.lookBuy.split(",").filter(Boolean), mb, mb.dataset.lookName || "Looken"); return; }
     const s = e.target.closest("[data-look-save]");
-    if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad i Mitt hem"; RQ.toast(`Looken sparades. <a href="#mitt-hem">Visa i Mitt hem</a>`); }
+    if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad"; RQ.toast(`Looken är sparad. <a href="#mitt-hem">Se Sparat</a>`); }
   });
   V.looks = () => {
     const mine = S.looks(), pct = Math.round(lookRate() * 100);
@@ -418,7 +418,7 @@
     // the buy block follows the cart: nothing in it, some of the look in it, all of it in it
     const buy = () => {
       const miss = l.items.filter((h) => !inCart(h)), have = l.items.length - miss.length, saved = S.looks().some((x) => x.name === l.name);
-      const save = `<button class="btn ghost" type="button" data-look-save="${l.id}"${saved ? " disabled" : ""}>${saved ? "Sparad i Mitt hem" : "Spara looken"}</button>`;
+      const save = `<button class="btn ghost" type="button" data-look-save="${l.id}"${saved ? " disabled" : ""}>${saved ? "Sparad" : "Spara looken"}</button>`;
       if (!miss.length) return `<p class="lp-in" role="status"><span>Hela looken ligger i varukorgen.</span>${off ? ` <span>Rabatten är avdragen:</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-open-cart>Visa varukorgen</button>${save}</div>`;
       if (have) { const rest = miss.reduce((s, h) => s + RQ.byHandle(h).price, 0) - off;
         return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>finns i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}"><span>Lägg till resten</span> · ${kr(Math.max(0, rest))}</button>${save}</div>`; }
@@ -451,12 +451,14 @@
   /* ------------------------------------------------------------------ Rösta */
   const MAXV = 3;
   /* Önska: vote for the next product and share your own ideas, on one page (was Rösta and Dela en idé) */
+  // a vote is its own thing, not "saved": a plus that turns into a tick and the word Röstad
+  const VOTE_ICO = '<svg class="v-off" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg><svg class="v-on" viewBox="0 0 24 24"><path d="M5.5 12.5l4 4 9-9.5"/></svg>';
   V.onska = () => ({
     title: "Önska · RumIQ",
     html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Önska"]]), "Önska", "Vi har inget eget lager, så vi kan lyssna först. Rösta fram nästa produkt eller föreslå något helt eget.")}
       <section class="wrap onska" style="padding-bottom:3rem"><h2 class="h3" id="rosta">Rösta fram nästa produkt</h2><p class="small" style="margin:.4rem 0 1.2rem">Välj upp till tre saker du vill att vi tar in.</p>
         <p class="vote-left" id="voteLeft" aria-live="polite"></p>
-        <div class="vote-grid">${RQ.CANDIDATES.map((c) => `<button type="button" class="vote" data-vote="${c.id}" aria-pressed="false">${c.img ? `<img class="vote-img" src="${c.img}" alt="" loading="lazy" width="400" height="400">` : `<span class="sw" style="background:${c.tone}"></span>`}<b>${esc(c.name)}</b><span>${esc(c.line)}</span><i aria-hidden="true">${ICO.heart}</i></button>`).join("")}</div>
+        <div class="vote-grid">${RQ.CANDIDATES.map((c) => `<button type="button" class="vote" data-vote="${c.id}" aria-pressed="false">${c.img ? `<img class="vote-img" src="${c.img}" alt="" loading="lazy" width="400" height="400">` : `<span class="sw" style="background:${c.tone}"></span>`}<b>${esc(c.name)}</b><span>${esc(c.line)}</span><i aria-hidden="true">${VOTE_ICO}<em class="v-off">Rösta</em><em class="v-on">Röstad</em></i></button>`).join("")}</div>
         <p class="small" style="margin-top:1.4rem">Vi räknar rösterna när butiken öppnar. Din röst sparas i den här webbläsaren.</p>
         <form class="vote-mail" id="voteMail" novalidate><label for="voteEmail">Vill du veta vad som vann?</label><div class="field"><input id="voteEmail" type="email" autocomplete="email" placeholder="Din e-post"><button class="btn sm" type="submit">Mejla mig</button></div><p class="nt-err" role="alert"></p><p class="nt-ok" role="status">Tack. Ett mejl när resultatet är klart. Inget annat.</p></form>
       </section>
