@@ -1266,7 +1266,9 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
   .sheet-grip{display:block;width:2.6rem;height:4px;border-radius:4px;background:var(--line);margin:-.4rem auto 1rem}
   .sheet-acts{flex-direction:column}
   .sheet-acts .btn{width:100%}
-  .sheet-samples{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sheet-samples{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:40%;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gutter);margin:0 calc(-1*var(--gutter));padding:0 var(--gutter) .3rem;scrollbar-width:none} /* seven rooms: a row to swipe through */
+  .sheet-samples::-webkit-scrollbar{display:none}
+  .sheet-samples button{scroll-snap-align:start}
   .pickfoot{margin:1.2rem calc(-1*var(--gutter)) calc(-1.4rem - env(safe-area-inset-bottom));padding:1rem var(--gutter) calc(1.4rem + env(safe-area-inset-bottom))}
 }
 @media (max-width:640px){

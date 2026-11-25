@@ -217,6 +217,9 @@
     { id: "sovrum", name: "Sovrum", img: "assets/img/rum/sovrum-1600.webp" },
     { id: "kok", name: "Kök", img: "assets/img/rum/kok-1600.webp" },
     { id: "hall", name: "Hall", img: "assets/img/rum/hall-1600.webp" },
+    { id: "badrum", name: "Badrum", img: "assets/img/rum/badrum-1600.webp" },
+    { id: "hemmakontor", name: "Hemmakontor", img: "assets/img/rum/hemmakontor-1600.webp" },
+    { id: "uteliv", name: "Uteliv", img: "assets/img/rum/uteliv-1600.webp" },
   ];
 
   RQ.byHandle = (h) => RQ.PRODUCTS.find((p) => p.handle === h) || null;

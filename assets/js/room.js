@@ -62,9 +62,9 @@
     badrum: { h: 45, k: 0.69, sun: 1, // the vanity beside the basin, the shelf and the window sill; the floor between the stool and the basket
       surface: [[37.6, 58.8, 34], [48.5, 33, 30], [79.5, 54, 28]],
       cushion: [], throw: [], bedding: [],
-      wall: [[56, 72, 30]],
+      wall: [[56, 64, 24]],
       floor: [[50, 97], [41, 98.5], [57, 99.5]],
-      rug: [[50, 100, 40, 0.35]], window: [[77, 62, 12, 0.75]] },
+      rug: [[50, 100, 40, 0.35]], window: [[76.5, 55, 11, 1.06]] },
     hemmakontor: { h: 45, k: 0.55, sun: 1, // the desk around what already stands there, the empty wall, the strip of floor
       surface: [[60.5, 62.5, 27], [77.5, 62.5, 27], [64, 67, 28]],
       cushion: [], throw: [], bedding: [],
@@ -73,7 +73,7 @@
       rug: [[28, 100, 50, 0.3]], window: [[94.5, 100, 11, 1.6]] },
     uteliv: { h: 40, k: 0.64, sun: 1, // the bench's bare end, the side table, the seat; the deck in front of the bench
       surface: [[38, 62, 27], [65.5, 61, 27], [42.5, 62, 27]],
-      cushion: [[55, 59.5, 27]], throw: [[50, 63, 27]], bedding: [],
+      cushion: [[55, 59.5, 27]], throw: [[84, 64, 26]], bedding: [],
       wall: [[39, 56, 25]],
       floor: [[38, 92], [52, 94], [24, 97]],
       rug: [[50, 100, 60, 0.35]], window: [[97, 100, 8, 1.6]] },
