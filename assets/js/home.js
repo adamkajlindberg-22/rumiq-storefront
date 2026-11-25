@@ -115,7 +115,7 @@
     return `<figure class="rh-fig bav" style="--ba:${start}%">${stage}
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
       <input class="ba-range" type="range" min="0" max="100" value="${start}" aria-label="Jämför rummet före och efter. Dra åt vänster för att visa fler produkter."></div>
-      <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total)}</span></span><a class="btn sm" href="${mine ? "#mitt-rum" : "#butik"}">${mine ? "Fortsätt" : "Till butiken"}</a></figcaption></figure>`;
+      <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total).replace(/ (?=kr$)/, "\u00a0")}</span></span><a class="btn sm" href="${mine ? "#mitt-rum" : "#butik"}">${mine ? "Fortsätt" : "Till butiken"}</a></figcaption></figure>`;
   }
 
   /* Why RumIQ: four reasons to trust a new shop, every figure read from RQ_CONFIG */
