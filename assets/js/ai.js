@@ -178,11 +178,16 @@
         await tx("readwrite", (P, R) => { P.delete(id); if (room) R.delete(room.key); });
         return { pic, room };
       },
+      async update(ids, patch) { const { pics } = await this.list(); const hit = pics.filter((p) => ids.includes(p.id)); if (hit.length) await tx("readwrite", (P) => { hit.forEach((p) => P.put({ ...p, ...patch })); }); return hit.length; },
       async restore(u) { if (u && u.pic) await tx("readwrite", (P, R) => { P.put(u.pic); if (u.room) R.put(u.room); }); },
       async clear() { await tx("readwrite", (P, R) => { P.clear(); R.clear(); }); },
     };
   })();
   const autosave = () => S.store.get("rumiq-ai-autosave", true) !== false;
+  // how many pictures the library holds, kept beside it so Sparat can put Mina rumsbilder first without waiting for IndexedDB
+  const libCount = () => { const n = S.store.get("rumiq-ai-n", 0); return n > 0 ? Math.floor(n) : 0; };
+  const setCount = (n) => (n > 0 ? S.store.set("rumiq-ai-n", n) : S.store.del("rumiq-ai-n")); // nothing kept when the library is empty ("Rensa allt" leaves no trace)
+  const recount = () => Lib.list().then((r) => { setCount(r.pics.length); return r.pics.length; }).catch(() => 0);
   const remoteLib = () => !!((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary && live() && !!S.customer();
 
   /* the room project: one per room photo. Versions (every picture made in the same room) belong to it, and so does a
@@ -209,7 +214,7 @@
     const left = other ? `Version ${other.n}` : "Före";
     const right = other ? `Version ${v.n} · ${v.demo ? "Demo" : "AI-bild"}` : (v.demo ? "Demo" : "RumIQ · AI-bild");
     const src2 = other ? other.url : v.before;
-    return `<figure class="ai-ba${x <= 18 ? " lo" : ""}${x >= 82 ? " hi" : ""}" data-ba style="--x:${x}%;--ar:${v.w} / ${v.h}">
+    return `<figure class="ai-ba${x <= 22 ? " lo" : ""}${x >= 78 ? " hi" : ""}" data-ba style="--x:${x}%;--ar:${v.w} / ${v.h}">
       <img class="after" src="${esc(v.url)}" alt="${v.demo ? "Din uppställning i rummet" : `AI-bild av ditt rum med produkterna${many ? `, version ${v.n}` : ""}`}" width="${v.w}" height="${v.h}">
       ${src2 ? `<img class="before" src="${esc(src2)}" alt="${other ? `Version ${other.n}` : "Rummet före"}">` : ""}
       <span class="ai-tag ai-tag-b" aria-hidden="true">${left}</span><span class="ai-tag ai-tag-a">${right}</span>
@@ -218,7 +223,7 @@
   const baText = (x, other) => `${other ? `Version ${other.n}` : "Före"} ${Math.round(x)} %`;
   const baWire = (fig, other, onTouch) => {
     const range = $("input", fig); if (!range) return { set() {} };
-    const set = (x) => { x = Math.max(0, Math.min(100, x)); fig.style.setProperty("--x", x + "%"); fig.classList.toggle("lo", x <= 18); fig.classList.toggle("hi", x >= 82); range.value = String(Math.round(x)); range.setAttribute("aria-valuetext", baText(x, other)); };
+    const set = (x) => { x = Math.max(0, Math.min(100, x)); fig.style.setProperty("--x", x + "%"); fig.classList.toggle("lo", x <= 22); fig.classList.toggle("hi", x >= 78); range.value = String(Math.round(x)); range.setAttribute("aria-valuetext", baText(x, other)); };
     range.addEventListener("input", () => { fig._stop = true; fig.classList.add("touched"); set(+range.value); if (onTouch) onTouch(+range.value); });
     return { set };
   };
@@ -290,7 +295,7 @@
   document.addEventListener("click", (e) => { if (isOpen && !busy && e.target.closest && e.target.closest("[data-open-cart]")) close(); }, true);
   document.addEventListener("keydown", (e) => { if (isOpen && e.key === "Escape") { e.stopPropagation(); close(); } }, true);
 
-  const balanceLine = (st) => st.demo ? `Förhandsvisning: ${FREE_IMAGES} bilder i månaden när sajten är live` : `${st.balance} ${st.balance === 1 ? "bild" : "bilder"} kvar${st.plan === "plus" ? " i Studio Plus" : " den här månaden"}`;
+  const balanceLine = (st) => st.demo ? `Förhandsvisning: ${FREE_IMAGES} AI-bilder gratis i månaden med konto, när sajten är live` : `${st.balance} ${st.balance === 1 ? "bild" : "bilder"} kvar${st.plan === "plus" ? " i Studio Plus" : " den här månaden"}`;
   // the picture shows a product's first colour; when the cart holds it in another, the row says both, so the cart is not doubted
   const colourNote = (p, v = 0) => { const shown = p.variants[v] || p.variants[0], inC = [...new Set(S.cartLines().filter((l) => l.product.handle === p.handle).map((l) => l.variant && l.variant.title).filter(Boolean))];
     return inC.length && !inC.includes(shown) ? `I varukorgen: ${inC[0]} · bilden visar ${shown}` : `Bilden visar färgen ${shown}`; };
@@ -298,7 +303,7 @@
       <div class="ai-sum"><span>Det här finns i bilden</span><b>${kr(itemsTotal(items))}</b></div>`;
 
   // how long pictures are kept: with the account library on (RQ_CONFIG.studio.serverLibrary) the before picture is kept beside the AI picture
-  const keepText = (cap) => { const t = ((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary ? "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem." : "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto tills du tar bort dem."; return cap ? t[0].toUpperCase() + t.slice(1) : t; };
+  const keepText = (cap) => { const t = ((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary ? "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem." : "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto, och i Mina rumsbilder på den här enheten, tills du tar bort dem."; return cap ? t[0].toUpperCase() + t.slice(1) : t; };
   const viewSignin = () => show(`<div class="ai-pad"><span class="eyebrow">AI-bild av ditt rum</span><h2 id="aiTitle" class="ai-h">Logga in för att skapa bilden.</h2>
       <p class="ai-lead">Bilderna sparas i ditt konto. Du får ${FREE_IMAGES} bilder gratis varje månad.</p>
       <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-after data-ai-close>Skapa konto</a></div></div>`, true);
@@ -366,7 +371,7 @@
     const items = scene.map((it) => ({ ...it, v: 0 }));
     const key = AI.projectKey(), rm = RQ.room.get();
     busy = true;
-    show(`<div class="ai-pad ai-wait"><div class="ai-spin" aria-hidden="true"></div><h2 id="aiTitle" class="ai-h">Skapar din bild…</h2><p class="ai-lead" role="status">Det brukar ta 15–40 sekunder. Ha sidan öppen så länge.</p><figure class="ai-fig shimmer"><img src="${before}" alt=""></figure><button class="btn ghost sm" type="button" id="aiStop">Avbryt</button></div>`, false, true);
+    show(`<div class="ai-pad ai-wait"><div class="ai-spin" aria-hidden="true"></div><h2 id="aiTitle" class="ai-h">${st.demo ? "Gör i ordning förhandsvisningen…" : "Skapar din bild…"}</h2><p class="ai-lead" role="status">${st.demo ? "Här visar vi din uppställning som den är. På den riktiga sajten tar AI-bilden 15–40 sekunder." : "Det brukar ta 15–40 sekunder. Ha sidan öppen så länge."}</p><figure class="ai-fig shimmer"><img src="${before}" alt=""></figure><button class="btn ghost sm" type="button" id="aiStop">Avbryt</button></div>`, false, true);
     $("#aiStop", body).addEventListener("click", () => AI.stop());
     // the server says its first picture failed the quality check and it makes one more (the customer pays for one)
     const onStage = (stage) => { if (stage !== "retry" || !busy) return; const h = $("#aiTitle", body), p = $(".ai-wait .ai-lead", body); box.classList.add("ai-retrying"); if (h) h.textContent = "Vi gör ett nytt försök…"; if (p) p.textContent = "Det första förslaget höll inte måttet, så vi gör om det. Det kostar ingen extra bild."; };
@@ -416,12 +421,12 @@
   }
   // into Mina rumsbilder; "ok", "full" (the device has no room) or "fail"
   async function keep(ver, rm, key, photo) {
-    const { url, before, saved, ...pic } = ver;
-    try { await Lib.save(pic, { key, photo, w: rm.w, h: rm.h, at: new Date().toISOString(), meta: { type: rm.type || null, name: rm.name || "", sample: !!rm.sample, map: rm.map || null } }); return "ok"; }
+    const { url, before, saved, ...pic } = ver; if (!pic.roomId && RQ.hem && RQ.hem.activeId()) pic.roomId = RQ.hem.activeId(); // the room in Mitt hem it was made for
+    try { await Lib.save(pic, { key, photo, w: rm.w, h: rm.h, at: new Date().toISOString(), meta: { type: rm.type || null, name: rm.name || "", sample: !!rm.sample, map: rm.map || null } }); recount(); return "ok"; }
     catch (e) { return e && e.message === "full" ? "full" : "fail"; }
   }
 
-  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Sparad i <a href="#mitt-hem" data-ai-lib data-ai-close>Mina rumsbilder</a>, bara på den här enheten.</span></p>`
+  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Sparad i <a href="#mitt-hem" data-ai-lib data-ai-close>Mina rumsbilder</a>, på den här enheten.</span></p>`
     : v.saved === "full" ? `<p class="ai-warn small" role="alert">Det finns inte plats på enheten, så bilden sparades inte. Ladda ner den, eller ta bort några gamla bilder i <a href="#mitt-hem" data-ai-lib data-ai-close>Mina rumsbilder</a>.</p>`
     : v.saved === "fail" ? `<p class="small ai-saved" role="status"><span>Bilden kunde inte sparas här.</span> <button class="tlink" type="button" id="aiSave">Försök igen</button></p>`
     : `<p class="small ai-saved" role="status"><button class="tlink" type="button" id="aiSave">Spara i Mina rumsbilder</button></p>`;
@@ -432,10 +437,10 @@
     show(`<div class="ai-grid ai-result">
       <div class="ai-stage">${baHtml(v, other, fresh ? 100 : 30, many).replace("<figure ", '<figure id="aiBa" ')}${versHtml(list, view.cur, view.cmp)}</div>
       <div class="ai-pad"><span class="eyebrow">${v.demo ? "Förhandsvisning" : many ? `Version ${v.n} av ${list.length}` : "Klar"}</span><h2 id="aiTitle" class="ai-h">${v.demo ? "Så här fungerar det." : "Ditt rum, med sakerna på plats."}</h2>
-        ${v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
+        ${v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p><p class="small">När AI:n är igång kan du skapa nya versioner av samma rum och jämföra dem.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
         <div class="ai-row ai-buybar"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Visa någon</span></button></div>
+        <div class="ai-row small-row">${v.demo ? "" : `<button class="tlink" type="button" id="aiAgain">Skapa igen<span class="ai-cost"> · 1 bild</span></button>`}<button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
         ${productsList(items)}
-        <div class="ai-row small-row"><button class="tlink" type="button" id="aiAgain">Skapa igen${v.demo ? "" : `<span class="ai-cost"> · 1 bild</span>`}</button><button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
         ${savedLine(v)}</div></div>`, false, true);
     const fig = $("[data-ba]", body), ctl = baWire(fig, other);
     if (fresh) reveal(fig, ctl, 30);
@@ -446,10 +451,10 @@
     const buy = $("#aiBuy", body), have = () => items.filter((it) => S.cartLines().some((l) => l.product.handle === it.h)).length;
     const paintBuy = () => { if (!buy.isConnected || buy.classList.contains("done")) return; const n = have(), all = n === items.length; buy.toggleAttribute("data-open-cart", all); buy.classList.toggle("ghost", all); buy.textContent = all ? "Visa varukorgen" : n ? "Lägg till resten" : "Köp allt"; };
     paintBuy();
-    buy.addEventListener("click", () => { if (buy.hasAttribute("data-open-cart")) return; if (RQ.addMany(items.map((it) => it.h + "::" + (it.v || 0)), buy, "Ditt rum")) setTimeout(paintBuy, 1650); });
+    buy.addEventListener("click", () => { if (buy.hasAttribute("data-open-cart")) return; if (RQ.addMany(items.map((it) => it.h + "::" + (it.v || 0)), buy, "Ditt rum")) { setTimeout(paintBuy, 1650); toastOverBar(); } });
     $("#aiShare", body).addEventListener("click", (e) => share(v, e.currentTarget));
     $("#aiDown", body).addEventListener("click", () => download(v));
-    $("#aiAgain", body).addEventListener("click", () => { const s = AI.peek() || st; if (!s.demo && s.balance != null && s.balance <= 0) return viewOut(s); run(s); });
+    const again = $("#aiAgain", body); if (again) again.addEventListener("click", () => { const s = AI.peek() || st; if (!s.demo && s.balance != null && s.balance <= 0) return viewOut(s); run(s); });
     const sv = $("#aiSave", body);
     if (sv) sv.addEventListener("click", async () => { sv.disabled = true; const rm = RQ.room.get(); v.saved = rm ? await keep(v, rm, view.key, await photoBlob(view.key, rm).catch(() => null)) : "fail"; (session[view.key] || []).forEach((x) => { if (x.id === v.id) x.saved = v.saved; }); viewResult(); focusBack(".ai-saved a, .ai-warn a, #aiSave"); });
     const bad = $("#aiBad", body);
@@ -460,6 +465,8 @@
     });
   }
   document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-down-now]") && view) { $("#toast").classList.remove("show"); const v = view.list[view.cur]; if (v) download(v); } });
+  // on a phone the toast after Köp allt sits just above the buy bar, clear of the picture and the sheet's close button
+  const toastOverBar = () => { const bar = $(".ai-buybar", body), t = $("#toast"); if (!bar || !t || innerWidth >= 900 || getComputedStyle(bar).position !== "sticky") return; const r = bar.getBoundingClientRect(); t.style.top = Math.max(8, Math.round(r.top - t.offsetHeight - 10)) + "px"; t.style.bottom = "auto"; t.style.left = Math.round((innerWidth - t.offsetWidth) / 2) + "px"; t.style.right = "auto"; };
   const focusBack = (sel) => { const b = $(sel, body); if (b) b.focus({ preventScroll: true }); };
 
   function viewOut(st) {
@@ -487,41 +494,47 @@
     const { pics, rooms } = await Lib.list();
     return group(pics.map((p) => verOf(p, rooms[p.project])), rooms);
   }
+  const hemOf = (g) => g.list.map((v) => v.roomId).find(Boolean) || ""; // the Mitt hem room these pictures belong to
+  const shown = () => libState.groups.filter((g) => !libState.filter || (libState.filter === "-" ? !hemOf(g) || !(RQ.hem && RQ.hem.room(hemOf(g))) : hemOf(g) === libState.filter));
   const group = (vers, rooms) => {
     const by = new Map(); vers.forEach((v) => { if (!by.has(v.project)) by.set(v.project, []); by.get(v.project).push(v); });
     return [...by.entries()].map(([key, list]) => { list.sort((a, b) => (a.n || 0) - (b.n || 0)); return { key, list, room: rooms[key] || null, at: list.reduce((m, v) => (v.at > m ? v.at : m), ""), cur: list.length - 1, cmp: -1 }; })
       .sort((a, b) => (a.at < b.at ? 1 : -1));
   };
-  const libState = { groups: [], undo: null, host: null };
-  const libNote = () => remoteLib() ? "Bilderna sparas privat i ditt konto. Ingen annan kan se dem." : "Just nu sparas bilderna bara i den här webbläsaren, på den här enheten. Ingen annan kan se dem.";
+  const libState = { groups: [], undo: null, host: null, filter: "" };
+  const libNote = () => remoteLib() ? "AI-bilderna du har skapat i Mitt rum, med bilden före. De sparas privat i ditt konto, och ingen annan kan se dem." : "AI-bilderna du har skapat i Mitt rum, med bilden före. De sparas på den här enheten, och ingen annan kan se dem.";
   const libCard = (g, i) => {
     const v = g.list[g.cur], other = g.cmp >= 0 ? g.list[g.cmp] : null, many = g.list.length > 1, items = liveItems(v.items);
     return `<article class="ai-lcard" data-lib="${i}" aria-labelledby="aiLibH${i}">
       <div class="ai-stage">${baHtml(v, other, 50, many)}${versHtml(g.list, g.cur, g.cmp)}</div>
-      <div class="ai-lcard-tx"><div class="ai-lcard-h"><h3 class="h3" id="aiLibH${i}">${esc(roomName(g.room))}${many ? `, version ${v.n}` : ""}</h3><span class="small">${esc(dateText(v.at))} · ${items.length} ${items.length === 1 ? "produkt" : "produkter"}</span></div>
+      <div class="ai-lcard-tx"><div class="ai-lcard-h"><h3 class="h3" id="aiLibH${i}">${esc(hemName(g) || roomName(g.room))}${many ? `, version ${v.n}` : ""}</h3><span class="small">${esc(dateText(v.at))} · ${items.length} ${items.length === 1 ? "produkt" : "produkter"}</span></div>
         ${items.length ? `<ul class="ai-lib-items">${items.map((it) => { const p = RQ.byHandle(it.h); return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button></li>`; }).join("")}</ul>` : ""}
         <div class="ai-row">${items.length ? `<button class="btn sm" type="button" data-lib-buy>Köp allt</button>` : ""}<button class="btn ghost sm" type="button" data-lib-share>${ICON_SHARE}<span>Visa någon</span></button></div>
-        <div class="ai-row small-row"><button class="tlink" type="button" data-lib-down>Ladda ner</button>${g.room || v.before ? `<button class="tlink" type="button" data-lib-cont>Fortsätt i Mitt rum</button>` : ""}<button class="tlink" type="button" data-lib-del>Ta bort</button></div></div></article>`;
+        <div class="ai-row small-row">${g.room || v.before ? `<button class="tlink" type="button" data-lib-cont>Prova igen i Studio</button>` : ""}<button class="tlink" type="button" data-lib-down>Ladda ner</button><button class="tlink" type="button" data-lib-del>Ta bort</button></div>
+        ${RQ.hem && RQ.hem.rooms().length && !v.remote ? `<label class="ai-move"><span>Flytta till rum</span><select data-lib-move>${[["", "Inget rum"], ...RQ.hem.rooms().map((r) => [r.id, RQ.hem.name(r)])].map(([id, nm]) => `<option value="${esc(id)}"${id === hemOf(g) ? " selected" : ""}>${esc(nm)}</option>`).join("")}</select></label>` : ""}</div></article>`;
   };
+  const hemName = (g) => { const id = hemOf(g), r = id && RQ.hem && RQ.hem.room(id); return r ? RQ.hem.name(r) : ""; };
   const libPaint = (focusSel) => {
     const host = libState.host; if (!host || !host.isConnected) return;
-    const gs = libState.groups, n = gs.reduce((s, g) => s + g.list.length, 0);
+    const all = libState.groups, n = all.reduce((s, g) => s + g.list.length, 0), gs = shown();
+    if (!remoteLib()) setCount(n);
     host.removeAttribute("aria-busy");
-    host.innerHTML = gs.length ? gs.map(libCard).join("") : `<div class="mh-none"><p><b>Inga rumsbilder än.</b> <span>Varje AI-bild du skapar i Mitt rum hamnar här, med bilden före.</span></p><a class="link" href="#mitt-rum">Till Mitt rum</a></div>`;
+    host.innerHTML = gs.length ? gs.map((g) => libCard(g, all.indexOf(g))).join("") : libState.filter && all.length ? `<p class="small">Inga bilder i det här rummet än.</p>` : `<div class="mh-none"><p><b>Inga rumsbilder än.</b> <span>Varje AI-bild du skapar i Mitt rum hamnar här, med bilden före.</span></p><a class="link" href="#mitt-rum">Till Mitt rum</a></div>`;
     $$("[data-ai-count]").forEach((c) => (c.textContent = `Mina rumsbilder (${n})`));
     $$("[data-ai-proj]").forEach((c) => { const g = gs.find((x) => x.key === c.dataset.aiProj); c.innerHTML = g ? `<a class="link" href="#mh-bilder" data-ai-goto="${esc(g.key)}">${g.list.length === 1 ? "1 AI-bild" : `${g.list.length} AI-bilder`} av rummet</a>` : ""; c.hidden = !g; });
     $$(".ai-lcard", host).forEach((card) => {
-      const g = gs[+card.dataset.lib], v = g.list[g.cur], other = g.cmp >= 0 ? g.list[g.cmp] : null, items = liveItems(v.items);
+      const g = all[+card.dataset.lib], v = g.list[g.cur], other = g.cmp >= 0 ? g.list[g.cmp] : null, items = liveItems(v.items);
       baWire($("[data-ba]", card), other);
       const repaint = (sel) => { card.outerHTML = libCard(g, +card.dataset.lib); libPaint.one(+card.dataset.lib, sel); };
       $$("[data-ver]", card).forEach((b) => b.addEventListener("click", () => { g.cur = +b.dataset.ver; if (g.cmp === g.cur) g.cmp = -1; repaint(`[data-ver="${g.cur}"]`); }));
       $$("[data-cmp]", card).forEach((b) => b.addEventListener("click", () => { g.cmp = +b.dataset.cmp; repaint(`[data-cmp="${g.cmp}"]`); }));
       const buy = $("[data-lib-buy]", card), hs = () => items.map((it) => it.h + "::" + (it.v || 0));
-      if (buy) { RQ.addAllBtn(buy, hs, () => `Köp allt · ${kr(itemsTotal(items))}`); buy.addEventListener("click", () => { if (!buy.hasAttribute("data-open-cart")) RQ.addMany(hs(), buy, "Rumsbilden"); }); }
+      if (buy) { const paint = RQ.addAllBtn(buy, hs, () => `Köp allt · ${kr(itemsTotal(items))}`), say = () => { if (buy.hasAttribute("data-open-cart") && !buy.classList.contains("done")) { buy.textContent = "Visa varukorgen"; buy._apText = "Visa varukorgen"; } }; say(); S.onChange(() => setTimeout(say, 30)); buy.addEventListener("click", () => setTimeout(say, 1950)); void paint; buy.addEventListener("click", () => { if (!buy.hasAttribute("data-open-cart")) RQ.addMany(hs(), buy, "Rumsbilden"); }); }
       $("[data-lib-share]", card).addEventListener("click", (e) => share(v, e.currentTarget));
       $("[data-lib-down]", card).addEventListener("click", () => download(v));
       const cont = $("[data-lib-cont]", card); if (cont) cont.addEventListener("click", () => continueIn(g, v, cont));
       $("[data-lib-del]", card).addEventListener("click", () => removePic(g, v));
+      const mv = $("[data-lib-move]", card); if (mv) mv.addEventListener("change", async () => { await Lib.update(g.list.map((x) => x.id), { roomId: mv.value || null }); g.list.forEach((x) => (x.roomId = mv.value || null)); const r = mv.value && RQ.hem.room(mv.value); RQ.toast(r ? `Bilden hör nu till ${esc(RQ.hem.name(r))}.` : "Bilden hör inte till något rum nu."); document.dispatchEvent(new CustomEvent("rq-hem")); libPaint(); });
     });
     if (focusSel) { const f = $(focusSel, host) || $("#mh-bilder h2"); if (f) f.focus({ preventScroll: true }); }
   };
@@ -539,6 +552,7 @@
         keepKey(g.key);
       }
       RQ.room.saveScene(liveItems(v.items).map(({ v: _v, ...it }) => it));
+      if (RQ.hem && v.roomId && RQ.hem.room(v.roomId)) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); }
       RQ.go("mitt-rum");
     } catch (e) { RQ.toast("Rummet gick inte att öppna. Försök igen."); if (btn.isConnected) btn.disabled = false; }
   }
@@ -550,14 +564,14 @@
       if (v.remote) { u = { remote: v }; libState.groups.forEach((x) => (x.list = x.list.filter((y) => y.id !== v.id))); libState.groups = libState.groups.filter((x) => x.list.length); clearTimeout(libState.commit); const gone = v; libState.commit = setTimeout(() => fn("ai-library", { action: "delete", id: gone.gid }).catch(() => {}), 7000); }
       else { u = await Lib.remove(v.id); if (!u) return; libState.groups = await libGroups(); }
     } catch (e) { RQ.toast("Bilden gick inte att ta bort. Försök igen."); return; }
-    libState.undo = u;
+    libState.undo = u; if (!v.remote) recount();
     libPaint(".ai-lcard [data-lib-del]");
     RQ.toast(`${last ? "Bilden och bilden före är borttagna." : `Version ${v.n} är borttagen.`} <button type="button" class="tlink" data-ai-undo>Ångra</button>`, 7000);
   }
   document.addEventListener("click", async (e) => {
     if (e.target.closest("[data-ai-undo]")) {
       const u = libState.undo; libState.undo = null; $("#toast").classList.remove("show"); if (!u) return;
-      try { if (u.remote) clearTimeout(libState.commit); else await Lib.restore(u); } catch (x) { RQ.toast("Det gick inte att ångra."); return; }
+      try { if (u.remote) clearTimeout(libState.commit); else { await Lib.restore(u); recount(); } } catch (x) { RQ.toast("Det gick inte att ångra."); return; }
       await libLoad(); RQ.toast("Bilden är tillbaka.");
       return;
     }
@@ -573,23 +587,29 @@
         <label class="switch ai-auto"><input type="checkbox" role="switch" id="aiAuto" ${autosave() ? "checked" : ""}><span></span>Spara mina AI-bilder automatiskt</label></div>
       <p class="small ai-lib-note" id="aiLibNote">${esc(libNote())}${autosave() ? "" : " Nya AI-bilder sparas inte förrän du slår på det igen."}</p>
       <div class="ai-lib-list" id="aiLib" aria-busy="true"></div></div>`,
+    // a room's own pictures (the room sheet in Mitt hem); restore() gives the list back to the page
+    mountInto(host, roomId) { libState.prev = libState.prev || { host: libState.host, filter: libState.filter }; libState.host = host; libState.filter = roomId; libLoad(); },
+    restore() { if (!libState.prev) return; libState.host = libState.prev.host; libState.filter = libState.prev.filter; libState.prev = null; libLoad(); },
+    pics: async (roomId) => { try { const { pics } = await Lib.list(); return pics.filter((p) => !roomId || p.roomId === roomId).map((p) => ({ id: p.id, at: p.at, url: blobUrl(p.after), roomId: p.roomId || null, n: p.n, demo: p.demo })); } catch (e) { return []; } },
+    filter(id) { libState.filter = id || ""; libPaint(); },
     mount(root) {
-      libState.host = $("#aiLib", root); if (!libState.host) return;
+      libState.host = $("#aiLib", root); libState.prev = null; if (!libState.host) return;
       const sw = $("#aiAuto", root);
       sw.addEventListener("change", () => { S.store.set("rumiq-ai-autosave", sw.checked); $("#aiLibNote", root).textContent = libNote() + (sw.checked ? "" : " Nya AI-bilder sparas inte förrän du slår på det igen."); });
       libLoad().then(() => { if (RQ.ss.get("rumiq-ai-jump")) { RQ.ss.set("rumiq-ai-jump", ""); jump(); } });
     },
-    clear: () => Lib.clear().catch(() => {}),
+    clear: () => { setCount(0); return Lib.clear().then(recount).catch(() => {}); },
     groups: libGroups,
+    count: libCount,
   };
 
   /* ------------------------------------------------------------------ card in Mitt rum, balance chips */
-  AI.card = () => `<div class="ai-card"><div><b>Gör bilden verklig</b><span data-ai-balance>${FREE_IMAGES} AI-bilder gratis varje månad</span></div><button class="btn sm" type="button" data-ai-create>Skapa AI-bild</button></div>`;
+  AI.card = () => `<div class="ai-card"><div><b>Gör bilden verklig</b><span data-ai-balance>${FREE_IMAGES} AI-bilder gratis varje månad</span>${libCount() ? `<a class="link ai-card-lib" href="#mitt-hem" data-ai-lib>Mina rumsbilder (${libCount()})</a>` : ""}</div><button class="btn sm" type="button" data-ai-create>Skapa AI-bild</button></div>`;
   AI.hydrate = async () => {
     const chips = $$("[data-ai-balance]"), acct = $("[data-ai-account]:not([data-done])");
     if (!chips.length && !acct) return;
     const st = await AI.status();
-    chips.forEach((c) => (c.textContent = !st.signed_in ? `${FREE_IMAGES} AI-bilder gratis varje månad med konto` : balanceLine(st)));
+    chips.forEach((c) => (c.textContent = st.demo || st.signed_in ? balanceLine(st) : `${FREE_IMAGES} AI-bilder gratis varje månad med konto`)); // the preview says the same thing signed in or not
     if (acct) renderAccount(acct, st);
   };
   const baseShell = RQ.paintShell;

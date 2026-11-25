@@ -117,6 +117,12 @@ def create(pg, wait=3000):
     pg.evaluate("document.getElementById('aiGo').click()"); pg.wait_for_timeout(wait)
 
 
+def again(pg, wait=3800):
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+    pg.evaluate("(() => { const it = RQ.room.scene()[0]; RQ.room.update(it.h, { x: Math.max(8, it.x - 12) }); })()")
+    create(pg, wait)
+
+
 def shot(pg, name):
     SHOTS.mkdir(parents=True, exist_ok=True)
     pg.screenshot(path=str(SHOTS / f"{name}.png"))
@@ -133,7 +139,7 @@ with sync_playwright() as p:
         ctx, pg, errs = new(b, mob, W, Hh)
         room(pg, FOUR)
         create(pg, 900)
-        ok("Skapar din bild" in pg.evaluate("document.getElementById('aiTitle').innerText"), f"{tag} the wait says the picture is being made")
+        ok("Gör i ordning förhandsvisningen" in pg.evaluate("document.getElementById('aiTitle').innerText") and "På den riktiga sajten tar AI-bilden 15–40 sekunder" in pg.evaluate("document.querySelector('.ai-wait .ai-lead').innerText"), f"{tag} the preview's wait says what the preview does")
         pg.wait_for_timeout(1300)
         mid = pg.evaluate("+document.querySelector('.ai-result [data-ba] input').value")
         pg.wait_for_timeout(2200)
@@ -152,12 +158,17 @@ with sync_playwright() as p:
         else:  # the desktop: the picture far larger than the old 510 px, at the photo's shape
             wid = pg.evaluate("document.getElementById('aiBa').getBoundingClientRect().width")
             ok(wid >= 740, f"{tag} the picture is shown large on a desktop: {wid:.0f} px")
+        ok(not pg.evaluate("!!document.getElementById('aiAgain')") and "nya versioner" in pg.evaluate("document.querySelector('.ai-result .ai-pad').innerText"), f"{tag} the demo offers no Skapa igen (it would make the same picture) and says versions come with the AI")
+        small = pg.evaluate("[...document.querySelectorAll('.ai-result .small-row .tlink, .ai-result .ai-saved a, .ai-cmp .chip')].map((e) => [e.textContent.trim(), Math.round(e.getBoundingClientRect().height)]).filter((x) => x[1] < 44)")
+        ok(not small, f"{tag} the sheet's links are 44 px targets: {small}")
+        if mob:
+            ok(pg.evaluate("document.querySelector('#aiShare .ai-share-t').getBoundingClientRect().width > 40") and pg.evaluate("getComputedStyle(document.querySelector('.ai-result .ai-sum')).display") == "none", f"{tag} Visa någon has its words on a phone, and the total shows once (in the bar)")
         shot(pg, f"demo-{W}-result")
         # keyboard on the slider
         pg.evaluate("document.querySelector('.ai-result [data-ba] input').focus()"); pg.keyboard.press("ArrowRight"); pg.wait_for_timeout(100)
         ok(pg.evaluate("document.querySelector('.ai-result [data-ba]').style.getPropertyValue('--x')") == "31%" and "Före 31 %" == pg.evaluate("document.querySelector('.ai-result [data-ba] input').getAttribute('aria-valuetext')"), f"{tag} the arrow keys move the slider and it says where")
-        # Skapa igen: a second version beside the first
-        pg.evaluate("document.getElementById('aiAgain').click()"); pg.wait_for_timeout(3800)
+        # a second picture of the same room (after moving one thing): a second version beside the first
+        again(pg)
         ok(pg.evaluate("document.querySelectorAll('.ai-ver').length") == 2 and pg.evaluate("document.querySelector('.ai-ver[aria-pressed=true]').dataset.ver") == "1", f"{tag} Skapa igen: two versions, the new one shown")
         ok(len(pg.evaluate(PICS)) == 2 and sorted(x["n"] for x in pg.evaluate(PICS)) == [1, 2], f"{tag} both versions are saved, numbered 1 and 2")
         pg.evaluate("document.querySelector('[data-cmp=\"0\"]').click()"); pg.wait_for_timeout(300)
@@ -186,9 +197,14 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-hem" and pg.evaluate("Math.abs(document.getElementById('mh-bilder').getBoundingClientRect().top) < 140"), f"{tag} the sheet's link lands on Mina rumsbilder")
         ok(pg.evaluate("document.querySelectorAll('.ai-lcard').length") == 1 and pg.evaluate("document.querySelectorAll('.ai-lcard .ai-ver').length") == 2, f"{tag} one room card with its two versions")
         ok(pg.evaluate("document.querySelector('[data-ai-count]').innerText") == "Mina rumsbilder (2)", f"{tag} the jump menu counts the pictures")
-        ok("bara i den här webbläsaren" in pg.evaluate("document.getElementById('aiLibNote').innerText"), f"{tag} the page says honestly that the pictures are on this device only")
+        ok("på den här enheten" in pg.evaluate("document.getElementById('aiLibNote').innerText"), f"{tag} the page says honestly that the pictures are on this device only")
         ok(pg.evaluate("document.getElementById('aiAuto').checked && document.getElementById('aiAuto').getAttribute('role') === 'switch'"), f"{tag} 'Spara mina AI-bilder automatiskt' is a switch, on by default")
         ok(pg.evaluate("document.querySelector('.ai-lcard [data-lib-buy]').innerText.replace(/[\\u00a0\\u202f]/g, ' ')") == "Köp allt · 2 737 kr", f"{tag} the card's Köp allt says the total: {pg.evaluate('document.querySelector(\".ai-lcard [data-lib-buy]\").innerText')}")
+        order = pg.evaluate("[[...document.querySelectorAll('.mh > [id]')].map((e) => e.id), [...document.querySelectorAll('.jump-nav a')].map((a) => a.getAttribute('href'))]")
+        ok(order[0][0] == "mh-bilder" and order[1][0].endswith("mh-bilder") and order[0].index("mh-rum") > order[0].index("mh-fav"), f"{tag} with pictures, Mina rumsbilder comes first in Sparat and in its menu, the empty parts after: {order}")
+        ok("Mina rumsbilder" in pg.evaluate("document.querySelector('#mh-rum .mh-why').innerText"), f"{tag} Rumsprojekt says how it differs from Mina rumsbilder")
+        small = pg.evaluate("[...document.querySelectorAll('.ai-lcard .small-row .tlink, .ai-lcard .chip, .ai-auto')].map((e) => [e.textContent.trim(), Math.round(e.getBoundingClientRect().height)]).filter((x) => x[1] < 44)")
+        ok(not small, f"{tag} the library's links, chips and switch row are 44 px targets: {small}")
         shot(pg, f"demo-{W}-library")
         # Ta bort and Ångra: a version, then the last one with its before picture
         pg.evaluate("document.querySelector('.ai-lcard [data-lib-del]').click()"); pg.wait_for_timeout(500)
@@ -201,6 +217,12 @@ with sync_playwright() as p:
         ok("Inga rumsbilder än" in pg.evaluate("document.getElementById('aiLib').innerText"), f"{tag} the empty library says what will come there")
         pg.evaluate("document.querySelector('#toast [data-ai-undo]').click()"); pg.wait_for_timeout(500)
         ok(len(pg.evaluate(PICS)) == 1 and pg.evaluate(ROOMS) == 1, f"{tag} Ångra brings both back")
+        go(pg, "mitt-rum", 1300)
+        ok(pg.evaluate("(document.querySelector('.ai-card-lib') || {}).textContent") == "Mina rumsbilder (1)", f"{tag} Mitt rum's AI card leads to Mina rumsbilder: {pg.evaluate('(document.querySelector(\".ai-card-lib\") || {}).textContent')}")
+        pg.evaluate("localStorage.removeItem('rumiq-ai-consent'); RQ.openAI()"); pg.wait_for_timeout(2000)
+        ok("Mina rumsbilder på den här enheten" in pg.evaluate("document.querySelector('.ai-list').innerText"), f"{tag} the consent says the same as the library: on this device")
+        pg.evaluate("localStorage.setItem('rumiq-ai-consent', JSON.stringify('x'))"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+        go(pg, "mitt-hem", 1500)
         # Fortsätt i Mitt rum: another room in between, then back to this one, under the same project
         key0 = pg.evaluate("RQ.aiLib.store.list().then((r) => r.pics[0].project)")
         go(pg, "mitt-rum", 500); pg.evaluate(SAMPLE, "sovrum"); pg.evaluate("RQ.room.saveScene([])")
@@ -252,6 +274,9 @@ with sync_playwright() as p:
         pg.evaluate("RQ.room.remove('sand-keramikvas'); RQ.room.remove('lin-kuddfodral'); RQ.room.add('glod-doftljus-keramik', true)")
         pg.evaluate("RQ.shop.clearCart()"); pg.wait_for_timeout(200)
         pg.evaluate("document.getElementById('aiBuy').click()"); pg.wait_for_timeout(600)
+        if mob:
+            tb = pg.evaluate("(() => { const t = document.getElementById('toast').getBoundingClientRect(), x = document.querySelector('#aiSheet .sheet-x').getBoundingClientRect(), b = document.querySelector('.ai-buybar').getBoundingClientRect(); return [t.bottom <= b.top + 1, t.top > x.bottom || t.bottom < x.top]; })()")
+            ok(tb[0] and tb[1], f"{tag} the toast after Köp allt sits above the bar, clear of the close button: {tb}")
         ok(pg.evaluate(LINES) == ",".join(sorted(h + "::0" for h in FOUR)), f"{tag} Köp allt adds exactly the four pictured products in the pictured colours: {pg.evaluate(LINES)}")
         pg.evaluate("document.getElementById('aiBad').click()"); pg.wait_for_timeout(500)
         ok("tillbaka på ditt saldo" in pg.evaluate(TOAST) and not pg.evaluate("!!document.getElementById('aiBad')"), f"{tag} Produkten blev fel gives the picture back once")
@@ -322,7 +347,7 @@ with sync_playwright() as p:
                 continue  # day at 390 and 1440 is taken above
             ctx, pg, errs = new(b, mob, W, Hh, evening=eve)
             room(pg, FOUR); create(pg, 3600)
-            pg.evaluate("document.getElementById('aiAgain').click()"); pg.wait_for_timeout(3800)
+            again(pg)
             name = f"{W}{'-kvall' if eve else ''}"
             shot(pg, f"versions-{name}")
             over = pg.evaluate("(() => { const s = document.querySelector('#aiSheet .sheet-in'); return [...s.querySelectorAll('button, a, .ai-ba')].filter((e) => { const r = e.getBoundingClientRect(); return r.width && (r.right > innerWidth + 1 || r.left < -1); }).map((e) => e.id || e.className).slice(0, 3); })()")
@@ -343,7 +368,7 @@ with sync_playwright() as p:
             for eve in (False, True):
                 ctx, pg, errs = new(b, mob, W, Hh, evening=eve)
                 room(pg, FOUR); create(pg, 3600)
-                pg.evaluate("document.getElementById('aiAgain').click()"); pg.wait_for_timeout(3800)
+                again(pg)
                 pg.add_script_tag(content=src)
                 v = pg.evaluate(RUN, "#aiSheet")
                 ok(not v, f"[axe {W}{' evening' if eve else ''}] the result sheet with versions: {v[:3]}")

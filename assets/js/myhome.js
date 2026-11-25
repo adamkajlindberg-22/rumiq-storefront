@@ -34,8 +34,8 @@
     },
     html() {
       const rooms = this.list();
-      return `<div id="mh-matt"><div class="sec-head"><h2 class="h3">Mina rum och mått</h2></div>
-        <p class="lead" style="max-width:40rem">Lägg in dina rum och några mått en gång. Sedan säger varje produktsida om den passar och ryms hos dig.</p>
+      return `<div id="mh-matt"><div class="sec-head"><h3 class="h3">Mått för dina rum</h3></div>
+        <p class="small" style="max-width:40rem">Lägg in några mått en gång. Sedan säger varje produktsida om den passar och ryms hos dig.</p>
         <div class="hr-list" id="hrList">${rooms.map((r) => `<div class="hr-card"><span class="hr-ic" aria-hidden="true">${RQ.roomIco}</span><div><b>${esc(this.label(r))}</b><small>${this.dims(r) || "Inga mått än"}</small></div>
           <button class="tlink" type="button" data-hr-edit="${r.id}">Ändra</button><button class="tlink" type="button" data-hr-del="${r.id}">Ta bort</button></div>`).join("")}</div>
         <button class="btn ghost" type="button" id="hrOpen" aria-expanded="false" aria-controls="hrForm">${rooms.length ? "Lägg till ett rum" : "Lägg till ditt första rum"}</button>
@@ -66,7 +66,7 @@
         if (bad) { $("#hrStatus", root).textContent = "Skriv måtten i centimeter med siffror, till exempel 350."; $("#hrStatus", root).classList.add("err"); f[bad].setAttribute("aria-invalid", "true"); f[bad].focus(); return; }
         const r = { id: f.id.value || Math.random().toString(36).slice(2, 9), type: f.type.value, label: f.label.value.trim().slice(0, 30), floorW: num(f.floorW.value), floorD: num(f.floorD.value), wallW: num(f.wallW.value), windowW: num(f.windowW.value) };
         const rooms = this.list(), i = rooms.findIndex((x) => x.id === r.id);
-        if (i > -1) rooms[i] = r; else rooms.push(r);
+        if (i > -1) rooms[i] = { ...rooms[i], ...r }; else rooms.push(r); // a room project keeps its style, products and pictures when its measurements change
         this.save(rooms); RQ.toast(`${esc(this.label(r))} är sparat.`); RQ.router();
       });
       $("#hrCancel", root).addEventListener("click", reset);
