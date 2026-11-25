@@ -382,6 +382,7 @@
     // reading: the lamp whose own text says it is for where you read
     const readUse = (p) => [...p.use, p.short].find((u) => /läser|läsa/.test(u));
     const reader = lamp && raw.some((w) => /^(läs|read)/.test(w)) && RQ.PRODUCTS.find((p) => /lampa/.test(S.norm(p.name)) && readUse(p) && priceOk(p, q.max));
+    const lampOk = RQ.PRODUCTS.some((p) => /lampa/.test(S.norm(p.name)) && priceOk(p, q.max) && inRoom(p));
     const room0 = q.rooms[0], roomFirst = room0 && ROOM_ADVICE[room0] && !LIVING.includes(room0) && !lamp;
     if (base) parts.push(COLOR_GOES[base.k][0]);
     else if (colorAsk && !colors.length) parts.push("Välj en bas, en varm ton och en kontrast. Till exempel havre som bas, ek för värmen och salvia eller grafit som kontrast.");
@@ -397,7 +398,7 @@
     else if (q.occ.includes("inflyttning")) parts.push("Grattis till flytten! Börja med ljuset och en fast plats för det du använder varje dag, så känns det som hemma fortare.");
     else if (ROOM_WARM[room0] && q.needs.includes("detaljer")) parts.push(ROOM_WARM[room0]);
     else if (roomFirst) parts.push(ROOM_ADVICE[room0]);
-    else if (q.needs[0]) parts.push(ADVICE[q.needs[0]]);
+    else if (q.needs[0]) parts.push(ADVICE[lampOk || q.needs.length < 2 ? q.needs[0] : q.needs.find((n) => n !== "ljus")]); // lamp advice only when a lamp can be shown
     else if (room0 && ROOM_ADVICE[room0]) parts.push(ROOM_ADVICE[room0]);
     else if (q.styles.length) parts.push(RQ.STYLES[q.styles[0]].text);
     let ranked = fitting(q.max);
