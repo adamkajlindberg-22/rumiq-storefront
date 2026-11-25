@@ -503,9 +503,16 @@
         const lt = $("#lookTotal", root); let lookOff = null;
         if (lt) {
           // the button counts only what is not in the cart yet; once all of the chosen lies there, it shows the cart
-          const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)), b = $("#lookAdd", root); if (!b || !b.isConnected) return; lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); if (b.classList.contains("done")) return; // the page may have gone meanwhile
-            const n = sel.filter((x) => !S.cartLines().some((l) => l.product.handle === x.handle)).length, all = sel.length && !n; b.toggleAttribute("data-open-cart", !!all); b.classList.toggle("ghost", !!all);
-            b.textContent = !sel.length ? "Välj minst en produkt" : all ? "Visa varukorgen" : `Lägg ${n} ${n === 1 ? "produkt" : "produkter"} i varukorgen`; b.disabled = !sel.length; };
+          // what already lies in the cart is marked as the look rows do, has no box to tick and is not in the sum, which then says what is added
+          const upd = () => { const b = $("#lookAdd", root); if (!b || !b.isConnected) return; // the page may have gone meanwhile
+            const have = new Set(S.cartLines().map((l) => l.product.handle)), boxes = $$("[data-look]", root);
+            boxes.forEach((x) => { const c = have.has(x.dataset.look), it = x.closest(".look-item"); if (it.classList.contains("in") === c) return; it.classList.toggle("in", c); x.hidden = x.disabled = c; if (c) x.checked = true;
+              $(".pr", it).innerHTML = c ? `<span class="lp-have"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>I varukorgen</span>` : kr(RQ.byHandle(x.dataset.look).price); });
+            const sel = boxes.filter((x) => x.checked && !have.has(x.dataset.look)).map((x) => RQ.byHandle(x.dataset.look)), anyIn = boxes.some((x) => have.has(x.dataset.look)), allIn = boxes.every((x) => have.has(x.dataset.look));
+            lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); lt.previousElementSibling.textContent = anyIn ? "Att lägga till" : "Totalt";
+            if (b.classList.contains("done")) return;
+            const n = sel.length; b.toggleAttribute("data-open-cart", allIn); b.classList.toggle("ghost", allIn);
+            b.textContent = allIn ? "Visa varukorgen" : !n ? "Välj minst en produkt" : `Lägg ${n} ${n === 1 ? "produkt" : "produkter"} i varukorgen`; b.disabled = !allIn && !n; };
           root.addEventListener("change", (e) => { if (e.target.matches("[data-look]")) upd(); });
           $("#lookAdd", root).addEventListener("click", (e) => { const b = e.currentTarget; if (b.hasAttribute("data-open-cart")) return; const sel = $$("[data-look]:checked", root).map((x) => (x.dataset.look === p.handle ? variant : x.dataset.look)); RQ.addMany(sel, b); }); // this product in the colour chosen above; nothing already in the cart twice
           upd(); let lookT = null; lookOff = S.onChange((w) => { if (w === "cart") { setTimeout(upd); clearTimeout(lookT); lookT = setTimeout(upd, 1700); } }); // again once the button has said "added"
