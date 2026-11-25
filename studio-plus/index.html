@@ -30,7 +30,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=95435d03">
+<link rel="stylesheet" href="assets/css/site.min.css?v=e8c54252">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -100,7 +100,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <div id="spThanks" role="status"></div>
         <div class="sp-top"><div><span class="eyebrow">Mitt rum</span><h1 class="display">Se allt hemma hos dig, i en verklighetstrogen bild.</h1>
         <p class="lead">Ställ in produkterna i ditt eget rum och få en verklighetstrogen bild med rätt ljus och skuggor. Med Studio Plus kan du också prova väggfärg, golv, ljus och stil.</p></div>
-        <figure class="sp-pair"><div><img src="assets/img/rum/sovrum-fore-900.webp" alt="Ett sovrum med tomt nattduksbord och bar säng" width="900" height="504" decoding="async"><span>Ditt foto</span></div><div><img src="assets/img/rum/sovrum-efter-900.webp" alt="Samma sovrum med lampa, pläd och korg på plats" width="900" height="504" decoding="async"><span>Med sakerna på plats</span></div><figcaption>Exempel: samma rum före och efter.</figcaption></figure></div></section>
+        <figure class="sp-pair"><div><img src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w, assets/img/rum/sovrum-fore-2016.webp 2016w, assets/img/rum/sovrum-fore-2688.webp 2688w" sizes="(max-width: 700px) 46vw, 24rem" alt="Ett sovrum med tomt nattduksbord och bar säng" width="900" height="504" decoding="async"><span>Ditt foto</span></div><div><img src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w, assets/img/rum/sovrum-efter-2016.webp 2016w, assets/img/rum/sovrum-efter-2688.webp 2688w" sizes="(max-width: 700px) 46vw, 24rem" alt="Samma sovrum med lampa, pläd och korg på plats" width="900" height="504" decoding="async"><span>Med sakerna på plats</span></div><figcaption>Exempel: samma rum före och efter.</figcaption></figure></div></section>
       <section class="wrap sp-plans">
         <article class="sp-plan"><span class="eyebrow">Gratis</span><h2>0 kr</h2><ul><li>5 AI-bilder i månaden</li><li>Dina produkter så nära dina platser som möjligt</li><li>Kräver ett konto</li></ul><a class="btn ghost block" href="mitt-rum/">Börja i Mitt rum</a></article>
         <article class="sp-plan plus"><span class="eyebrow">Studio Plus</span><h2>99 kr <small>/ månad</small></h2><ul><li>100 AI-bilder i månaden</li><li>Prova fritt: väggfärg, golv, ljus och stil</li><li>Ingen bindningstid, säg upp när du vill</li><li>Pris inklusive moms</li></ul>
@@ -157,8 +157,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=4243ac09"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=198572a2"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=9910ad2a"></script>
-<script src="assets/js/site.min.js?v=bda62d7e"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=b0686c04"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9a212fad"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=4f1fcaa3"></script>
+<script src="assets/js/site.min.js?v=6ddf579b"></script>
 </body>
 </html>
