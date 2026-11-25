@@ -1446,6 +1446,7 @@ html.sheet-lock{overflow:hidden}
 .hs::before{content:"";position:absolute;inset:.7rem;border-radius:50%;border:1.5px solid rgba(247,247,244,.9);animation:hsPulse 2.4s var(--ease-soft) 2 forwards}
 @keyframes hsPulse{0%{transform:scale(1);opacity:.9}70%,100%{transform:scale(2.1);opacity:0}}
 .hs:hover i,.hs:focus-visible i{transform:scale(1.18)}
+.hs:hover,.hs:focus-visible{z-index:3} /* its name lies over the next dot, not under it */
 .hs-l{position:absolute;left:calc(100% - .2rem);top:50%;transform:translate(-4px,-50%);display:grid;gap:.05rem;white-space:nowrap;background:rgba(247,247,244,.96);color:#22252A;border-radius:10px;padding:.5rem .75rem;box-shadow:0 14px 30px -16px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease);text-align:left}
 .hs-l b{font-size:.88rem;font-weight:600;letter-spacing:-.01em}
 .hs-l em{font-style:normal;font-size:.76rem;color:#696B68}
