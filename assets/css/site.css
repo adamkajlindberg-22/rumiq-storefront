@@ -776,6 +776,7 @@ footer.site .co + .ai{margin-top:.4rem}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:var(--r-s);padding:.25rem;margin-bottom:1.5rem}
 .seg a{text-align:center;text-decoration:none;padding:.6rem;border-radius:6px;font-size:.94rem;font-weight:500;color:var(--muted);transition:background .3s,color .3s}
 .seg a[aria-selected=true]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+:root[data-light=kvall] .seg a[aria-selected=true]{background:color-mix(in srgb,var(--ink) 16%,var(--paper))} /* the chosen tab stands out also at night */
 .sso-list{display:grid;gap:.55rem}
 .sso{display:flex;align-items:center;justify-content:center;gap:.7rem;width:100%;border:1px solid var(--line);background:#fff;color:#1f1f1f;border-radius:var(--r-btn);min-height:3.1rem;padding:0 1rem;font-size:.97rem;font-weight:560;transition:border-color .3s}
 .sso:hover{border-color:#6c6e6b}
@@ -2191,6 +2192,8 @@ html[data-no-offers] [data-show=offers],html[data-no-news] [data-show=news]{disp
 .own-look b{display:block;font-weight:600}
 .own-look small{color:var(--muted)}
 .onska .vote-grid{margin-top:0}
+@media (min-width:1000px){.onska .vote-grid{grid-template-columns:repeat(4,minmax(0,1fr))}} /* eight ideas in full rows, not five and three */
+.vote{align-content:start} /* in a row of unequal cards the name stays under the picture, not floating mid-card */
 .idea-list{display:grid;gap:.8rem}
 .idea{display:flex;gap:1rem;align-items:flex-start}
 .idea .chip{flex:none}
