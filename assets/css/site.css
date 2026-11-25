@@ -1517,6 +1517,9 @@ html.sheet-lock{overflow:hidden}
 .mh-none{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;align-items:baseline;justify-content:space-between;padding:1rem 1.2rem;border:1px dashed var(--line);border-radius:var(--r)}
 .mh-none p{color:var(--muted)}
 .mh-none b{color:var(--ink);font-weight:560}
+.mh .sec-head{margin-bottom:1rem} /* each part of Sparat has a visible name (an eyebrow in .sec-head is hidden site-wide) */
+#mh-matt > .lead{font-size:1rem;color:var(--muted)}#mh-matt #hrOpen{margin-top:1rem} /* same quiet size as the other parts, and air above the button */
+.mh .sec-row{align-items:center;margin-bottom:1rem}.mh .sec-row .sec-head{margin-bottom:0}
 .mh .watch{margin:1.6rem 0 0}
 #hrOpen[hidden],.hr-form[hidden]{display:none}
 .mh .sv-nudge{margin-top:1rem}
