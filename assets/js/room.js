@@ -807,7 +807,12 @@
       if (room) put(); else R.openSetup(put); return;
     }
     if (b.matches("[data-room-setup]")) { R.openSetup(b.dataset.roomSetup ? () => (location.hash = b.dataset.roomSetup) : null); return; }
-    if (b.matches("[data-room-sample-now]")) { const im = new Image(); im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum i morgonljus" }).then((ok) => ok && (location.hash = b.dataset.roomSampleNow || "#butik")); im.src = "assets/img/rum/vardagsrum-1600.webp"; return; }
+    if (b.matches("[data-room-sample-now]")) { const to = b.dataset.roomSampleNow || "#butik", im = new Image(); b.setAttribute("aria-busy", "true");
+      im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum i morgonljus" }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
+        // already on that page (the empty Mitt rum): a new hash would change nothing, so the page is drawn again here
+        if (RQ.currentRoute && RQ.currentRoute() === to.replace(/^#/, "")) { RQ.router(); scrollTo(0, 0); RQ.toast("Klart. Här är ditt rum."); } else location.hash = to; });
+      im.onerror = () => { b.removeAttribute("aria-busy"); RQ.toast("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); };
+      im.src = "assets/img/rum/vardagsrum-1600.webp"; return; }
     if (b.matches("[data-room-mode]")) { if (!room) { R.openSetup(); return; } R.setMode(!R.mode()); return; }
     const h = b.dataset.roomBtn;
     const inPick = !!b.closest(".sheet.rmpick");
