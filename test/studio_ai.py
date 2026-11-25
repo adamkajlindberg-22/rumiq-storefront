@@ -268,6 +268,10 @@ with sync_playwright() as p:
         warn = pg.evaluate("(document.querySelector('.ai-result .ai-warn[role=alert]') || {}).innerText || ''")
         ok("inte plats på enheten" in warn and "Ladda ner" in warn, f"{tag} the device is full: said clearly, with a way out: {warn}")
         ok(pg.evaluate("!!document.querySelector('.ai-result img.after')"), f"{tag} ...and the picture is still shown")
+        ok("enheten är full" in pg.evaluate(TOAST) and pg.evaluate("!!document.querySelector('#toast [data-ai-down-now]')"), f"{tag} ...and a toast says it at once, with Ladda ner: {pg.evaluate(TOAST)}")
+        with pg.expect_download() as d:
+            pg.evaluate("document.querySelector('#toast [data-ai-down-now]').click()")
+        ok(d.value.suggested_filename.startswith("rumiq-ai-bild-"), f"{tag} the toast's Ladda ner downloads the picture")
         shot(pg, f"full-{W}")
         ok(not errs, f"{tag} no script errors: {errs[:3]}")
         ctx.close()

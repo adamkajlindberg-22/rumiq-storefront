@@ -399,6 +399,8 @@
     view = { key, list: await versionsOf(key), cur: 0, cmp: -1, fresh: true };
     view.cur = Math.max(0, view.list.findIndex((v) => v.id === ver.id));
     viewResult();
+    // the device is full: said at once too, since the line under the buttons can be below the fold on a phone
+    if (ver.saved === "full") RQ.toast('Bilden sparades inte, enheten är full. <button type="button" class="tlink" data-ai-down-now>Ladda ner</button>', 8000);
   }
 
   /* versions of one room project: this visit's pictures and the saved ones, oldest first */
@@ -457,6 +459,7 @@
       catch (x) { RQ.toast(esc(errText(x.message))); bad.disabled = false; }
     });
   }
+  document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-down-now]") && view) { $("#toast").classList.remove("show"); const v = view.list[view.cur]; if (v) download(v); } });
   const focusBack = (sel) => { const b = $(sel, body); if (b) b.focus({ preventScroll: true }); };
 
   function viewOut(st) {
