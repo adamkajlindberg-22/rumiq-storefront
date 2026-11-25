@@ -277,6 +277,21 @@ with sync_playwright() as p:
             ok(pg.evaluate("document.getElementById('fN').textContent") == "1", f"{tag} the filter is kept")
         ctx.close()
 
+    # D22: the order button in the checkout says the total, and follows the delivery choice
+    for W, Hh, mobile in ((360, 740, True), (1440, 900, False)):
+        tag = f"[kassa {W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE, wait_until="load"); pg.evaluate("RQ.shop.addToCart('sand-keramikvas::0', 1)")
+        pg.goto(BASE + "kassa/", wait_until="load"); pg.wait_for_timeout(400)
+        btn = lambda: pg.evaluate("document.querySelector('#co button[type=submit]').textContent.replace(/\\s+/g, ' ')")
+        tot = lambda: pg.evaluate("document.querySelector('.co-final [data-co=total]').textContent.replace(/\\s+/g, ' ')")
+        ok(btn() == f"Lägg testorder · {tot()}", f"{tag} the order button says the total: {btn()!r}")
+        radios = pg.evaluate("[...document.querySelectorAll('#co [name=ship]')].map((r) => r.value)")
+        if len(radios) > 1:
+            pg.evaluate("(v) => { const r = document.querySelector(`#co [name=ship][value='${v}']`); r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }", radios[-1]); pg.wait_for_timeout(200)
+            ok(btn() == f"Lägg testorder · {tot()}", f"{tag} and follows the delivery choice: {btn()!r}")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"
