@@ -852,7 +852,7 @@
   document.body.appendChild(vsheet);
   let varThen = null, varBack = null;
   const closeVar = () => { vsheet.classList.remove("open"); document.documentElement.style.overflow = ""; if (varBack && varBack.focus && document.contains(varBack)) varBack.focus({ preventScroll: true }); };
-  R.openVariants = (handles, then) => { varThen = then; varBack = document.activeElement;
+  R.openVariants = (handles, then, lead) => { varThen = then; varBack = document.activeElement; $(".lead", vsheet).textContent = lead || "Bilden i rummet visar en av färgerna. Välj den du vill köpa."; // lead: when the things come from elsewhere than the room picture
     $("#varList", vsheet).innerHTML = handles.map((h) => { const p = RQ.byHandle(h); return `<div class="var-row" data-h="${h}"><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b><div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${p.variants.map((v, i) => `<button type="button" class="chip" data-v="${i}" aria-pressed="${i === 0}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div></div></div>`; }).join("");
     vsheet.classList.add("open"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".sheet-x", vsheet).focus(), 60); };
   vsheet.addEventListener("click", (e) => { if (e.target.closest("[data-var-close]")) return closeVar();

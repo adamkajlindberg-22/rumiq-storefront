@@ -71,11 +71,22 @@
   };
   const baseConfirm = RQ.confirmAdd;
   RQ.confirmAdd = (btn, name) => { baseConfirm(btn, name); RQ.fly(flySource(btn)); };
-  const addMany = (handles, btn, label, said) => {
+  /* several things into the cart at once (a list, a round of Svep, a look, the AI picture, Passar ihop). What already lies in the cart
+     stays as it is (never a second one unasked), a colour given as "handle::i" comes along, a product with several colours and none
+     given asks first (as Mitt rum and a card's + do), and the toast says what really happened */
+  const addMany = (entries, btn, label, said) => {
     if (btn && btn.classList && btn.classList.contains("done")) return 0; // the same button again within a moment: a double tap, not a second order
-    handles.forEach((h) => S.addToCart(h + "::0", 1));
-    const n = handles.length;
-    RQ.toast(`${said || `${label ? esc(label) + ": " : ""}${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen.`} <a href="#" data-open-cart>Visa</a>`);
+    const have = new Set(S.cartLines().map((l) => l.product.handle)), seen = new Set(); let skip = 0;
+    const todo = entries.map(String).filter((e) => { const h = e.split("::")[0]; if (seen.has(h) || !RQ.byHandle(h)) return false; seen.add(h); if (have.has(h)) { skip++; return false; } return true; });
+    if (!todo.length) { RQ.toast('<span>Allt ligger redan i varukorgen.</span> <a href="#" data-open-cart>Visa</a>'); return 0; }
+    const ask = todo.filter((e) => !e.includes("::") && (RQ.byHandle(e).variants || []).length > 1);
+    if (ask.length && RQ.room && RQ.room.openVariants) { RQ.room.openVariants(ask, (pick) => putMany(todo.map((e) => (e.includes("::") ? e : e + "::" + (pick[e] || 0))), btn, label, said, skip), ask.length === 1 ? "Den finns i flera färger. Välj den du vill ha." : "De finns i flera färger. Välj den du vill ha på var och en."); return 0; }
+    return putMany(todo.map((e) => (e.includes("::") ? e : e + "::0")), btn, label, said, skip);
+  };
+  const putMany = (ids, btn, label, said, skip) => {
+    ids.forEach((id) => S.addToCart(id, 1));
+    const n = ids.length, lead = label ? `<span>${esc(label)}</span>: ` : "";
+    RQ.toast(`${said || `<span>${lead}<span>${skip ? `${n} ${n === 1 ? "ny" : "nya"} i varukorgen.` : `${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen.`}</span>${skip ? ` <span>${skip} låg redan där.</span>` : ""}</span>`} <a href="#" data-open-cart>Visa</a>`);
     if (btn && btn.classList) { btn.classList.add("done"); clearTimeout(btn._t); btn._t = setTimeout(() => btn.classList.remove("done"), 1600); }
     return n;
   };

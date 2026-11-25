@@ -503,7 +503,7 @@
         if (lt) {
           const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)); lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); const b = $("#lookAdd", root); b.textContent = sel.length ? `Lägg ${sel.length} ${sel.length === 1 ? "produkt" : "produkter"} i varukorgen` : "Välj minst en produkt"; b.disabled = !sel.length; };
           root.addEventListener("change", (e) => { if (e.target.matches("[data-look]")) upd(); });
-          $("#lookAdd", root).addEventListener("click", () => { const sel = $$("[data-look]:checked", root).map((x) => x.dataset.look); sel.forEach((h) => S.addToCart(h + "::0", 1)); RQ.toast(`${sel.length} produkter i varukorgen. <a href="#" data-open-cart>Visa</a>`); });
+          $("#lookAdd", root).addEventListener("click", (e) => { const sel = $$("[data-look]:checked", root).map((x) => (x.dataset.look === p.handle ? variant : x.dataset.look)); RQ.addMany(sel, e.currentTarget); }); // this product in the colour chosen above; nothing already in the cart twice
         }
         // sticky buy bar once the buy button scrolls away (desktop); always on phones
         const bar = $("#buybar", root), buy = $(".buy", root);

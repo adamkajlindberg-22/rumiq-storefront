@@ -121,6 +121,8 @@
   const close = () => { if (busy) { AI.stop(); return; } isOpen = false; el.classList.remove("open"); el.setAttribute("aria-hidden", "true"); el.inert = true; document.documentElement.classList.remove("sheet-lock"); if (ret && ret.focus && document.contains(ret)) ret.focus({ preventScroll: true }); AI.hydrate(); };
   const show = (html, narrow) => { body.innerHTML = html; el.classList.toggle("narrow", !!narrow); box.scrollTop = 0; open(); }; // narrow: a short message gets a dialog its own size
   el.addEventListener("click", (e) => { if (e.target.closest("[data-ai-close]")) close(); });
+  // the cart opens over the page, so the picture steps aside first (Visa varukorgen here, or Visa in the toast)
+  document.addEventListener("click", (e) => { if (isOpen && !busy && e.target.closest && e.target.closest("[data-open-cart]")) close(); }, true);
   document.addEventListener("keydown", (e) => { if (isOpen && e.key === "Escape") { e.stopPropagation(); close(); } }, true);
 
   const balanceLine = (st) => st.demo ? `Förhandsvisning: ${FREE_IMAGES} bilder i månaden när sajten är live` : `${st.balance} ${st.balance === 1 ? "bild" : "bilder"} kvar${st.plan === "plus" ? " i Studio Plus" : " den här månaden"}`;
@@ -226,7 +228,11 @@
         <div class="ai-row small-row"><button class="tlink" type="button" id="aiAgain">Skapa igen</button>${!r.demo && r.id && st.quality_left > 0 ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${r.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div></div></div>`);
     const ba = $("#aiBa", body), range = $("input", ba);
     if (range) range.addEventListener("input", () => ba.style.setProperty("--x", range.value + "%"));
-    $("#aiBuy", body).addEventListener("click", (e) => { RQ.addMany(r.scene.map((it) => it.h), e.currentTarget, "Ditt rum"); });
+    /* Köp allt adds what is not in the cart yet, in the colour the picture shows (the list says which); once all of it lies there the button shows the cart */
+    const buy = $("#aiBuy", body), have = () => r.scene.filter((it) => S.cartLines().some((l) => l.product.handle === it.h)).length;
+    const paintBuy = () => { if (!buy.isConnected || buy.classList.contains("done")) return; const n = have(), all = n === r.scene.length; buy.toggleAttribute("data-open-cart", all); buy.classList.toggle("ghost", all); buy.textContent = all ? "Visa varukorgen" : n ? "Lägg till resten" : "Köp allt"; };
+    paintBuy();
+    buy.addEventListener("click", (e) => { if (buy.hasAttribute("data-open-cart")) return; if (RQ.addMany(r.scene.map((it) => it.h + "::0"), buy, "Ditt rum")) setTimeout(paintBuy, 1650); });
     $("#aiSave", body).addEventListener("click", async (e) => {
       const b = e.currentTarget; b.disabled = true;
       try {
