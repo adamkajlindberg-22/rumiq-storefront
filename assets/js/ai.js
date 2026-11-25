@@ -86,7 +86,7 @@
     },
     peek: () => cache,
     async consent() { if (live()) await rpc("ai_give_consent"); else ls.set("rumiq-ai-consent", new Date().toISOString()); cache = null; },
-    async generate({ mode = "place", edit = null, idem, only = null, onStage = null }) {
+    async generate({ mode = "place", edit = null, idem, only = null, onStage = null, parent = null }) {
       const R = RQ.room, scene = R.scene().filter((it) => !only || only.includes(it.h));
       if (!scene.length) throw new Error("empty_scene");
       if (scene.length > MAXP) throw new Error("too_many_products");
@@ -94,7 +94,7 @@
       if (!live()) { if (!preview()) throw new Error("network"); const mine = (gen = { stopped: false, abort() { this.stopped = true; } }); await new Promise((ok) => setTimeout(ok, 1200)); if (gen === mine) gen = null; if (mine.stopped) throw new Error("cancelled"); return { demo: true, url: guide }; }
       const room = await AI.roomImage(1280);
       // v: the colour the picture shows (the cut-out is the first colour); the server answers at the room photo's size and shape
-      const rm = RQ.room.get(), res = await fn("generate", { idem, mode, edit, scene: scene.map((it) => ({ h: it.h, v: 0, x: it.x, y: it.y, w: it.w, flip: !!it.flip })), room, guide, size: { w: rm.w, h: rm.h } }, onStage);
+      const rm = RQ.room.get(), res = await fn("generate", { idem, mode, edit, scene: scene.map((it) => ({ h: it.h, v: 0, x: it.x, y: it.y, w: it.w, flip: !!it.flip })), room, guide, size: { w: rm.w, h: rm.h }, ...(parent ? { parent } : {}) }, onStage); // parent: the room's first picture, so the account keeps the versions together
       cache = null; return res;
     },
     async checkout() { const r = await fn("stripe-checkout", { consent: true }); location.href = r.url; },
@@ -297,6 +297,8 @@
   const productsList = (items) => `<ul class="ai-prods">${items.map((it) => { const p = RQ.byHandle(it.h), r = S.variantById(it.h + "::" + (it.v || 0)), price = r && r.variant ? r.variant.price : p.price; return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(price)}${p.variants ? ` · <em>${esc(colourNote(p, it.v || 0))}</em>` : ""}</span></div></li>`; }).join("")}</ul>
       <div class="ai-sum"><span>Det här finns i bilden</span><b>${kr(itemsTotal(items))}</b></div>`;
 
+  // how long pictures are kept: with the account library on (RQ_CONFIG.studio.serverLibrary) the before picture is kept beside the AI picture
+  const keepText = (cap) => { const t = ((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary ? "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem." : "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto tills du tar bort dem."; return cap ? t[0].toUpperCase() + t.slice(1) : t; };
   const viewSignin = () => show(`<div class="ai-pad"><span class="eyebrow">AI-bild av ditt rum</span><h2 id="aiTitle" class="ai-h">Logga in för att skapa bilden.</h2>
       <p class="ai-lead">Bilderna sparas i ditt konto. Du får ${FREE_IMAGES} bilder gratis varje månad.</p>
       <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-after data-ai-close>Skapa konto</a></div></div>`, true);
@@ -306,7 +308,7 @@
       <ul class="ai-list">
         <li><b>Det här skickas:</b> fotot av ditt rum och hur du har ställt produkterna.</li>
         <li><b>Hit:</b> RumIQ:s server i EU och bildtjänsten som skapar bilden.</li>
-        <li><b>Så länge:</b> rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto tills du tar bort dem.</li>
+        <li><b>Så länge:</b> ${keepText()}</li>
         <li><b>Aldrig:</b> vi använder inte dina bilder för att träna AI och visar dem inte för någon annan.</li>
       </ul>
       <label class="check ai-check"><input type="checkbox" id="aiOk"> Jag godkänner att bilden skickas för att skapa AI-bilder.</label>
@@ -370,7 +372,8 @@
     const onStage = (stage) => { if (stage !== "retry" || !busy) return; const h = $("#aiTitle", body), p = $(".ai-wait .ai-lead", body); box.classList.add("ai-retrying"); if (h) h.textContent = "Vi gör ett nytt försök…"; if (p) p.textContent = "Det första förslaget höll inte måttet, så vi gör om det. Det kostar ingen extra bild."; };
     let res, ver;
     try {
-      res = await AI.generate({ mode, edit: mode === "edit" ? edit : null, idem, only, onStage });
+      const first = (await versionsOf(key)).find((v) => v.gid);
+      res = await AI.generate({ mode, edit: mode === "edit" ? edit : null, idem, only, onStage, parent: first ? first.gid : null });
       // the picture at the room photo's shape, and the before picture (the photo itself) beside it
       const [after, photo] = await Promise.all([fitTo(res.url, rm.w, rm.h), photoBlob(key, rm)]);
       const list = await versionsOf(key);
@@ -627,7 +630,7 @@
         <details><summary>Hur många bilder kan jag göra?</summary><p>${FREE_IMAGES} i månaden utan kostnad, eller ${PLUS_IMAGES} i månaden med Studio Plus, högst ${LIM.dailyPlus} på ett dygn. En bild rymmer upp till ${MAXP} produkter.</p></details>
         <details><summary>Hur säger jag upp?</summary><p>Under Konto, med ett klick. Du behåller bilderna perioden ut.</p></details>
         <details><summary>Kan jag ångra köpet?</summary><p>Ja, inom 14 dagar. Abonnemanget avslutas direkt och du får tillbaka betalningen minus den del du har använt. Har du använt 10 av 100 bilder får du tillbaka 90 procent.</p></details>
-        <details><summary>Vad händer med mina bilder?</summary><p>Rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto tills du tar bort dem. Vi tränar ingen AI på dem.</p></details>
+        <details><summary>Vad händer med mina bilder?</summary><p>${keepText(true)} Vi tränar ingen AI på dem.</p></details>
         <details><summary>Sparas oanvända bilder?</summary><p>Nej, de förnyas varje period och sparas inte till nästa.</p></details>
       </section>`,
     async mount(root) {

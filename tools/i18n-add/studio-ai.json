@@ -53,5 +53,7 @@
  "version {0}": "version {0}",
  "Efter · RumIQ AI-bild": "After · RumIQ AI image",
  "Efter · RumIQ Demo": "After · RumIQ Demo",
- "RumIQ · Demo": "RumIQ · Demo"
+ "RumIQ · Demo": "RumIQ · Demo",
+ "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem.": "the room photo sent to the image service is deleted after 30 days. The AI images and the before image are kept privately in your account until you delete them.",
+ "Rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem.": "The room photo sent to the image service is deleted after 30 days. The AI images and the before image are kept privately in your account until you delete them."
 }
