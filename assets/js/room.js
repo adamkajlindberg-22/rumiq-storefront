@@ -106,7 +106,7 @@
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
-      while (taken(x, learned.y, w) && n < 6) { n++; x = learned.x + (n % 2 ? 1 : -1) * Math.ceil(n / 2) * (w + 2.5); }
+      while ((taken(x, learned.y, w) || (n > 0 && (x < 3 || x > 97))) && n < 8) { n++; x = learned.x + (n % 2 ? 1 : -1) * Math.ceil(n / 2) * (w + 2.5); } // beside it, on the side where the picture goes on
       return { x: +clamp(x, 3, 97).toFixed(1), y: learned.y, w: +w.toFixed(1), sy: learned.sy };
     }
     // your own photo: the size you gave the first thing sets the scale for the rest. Before that, a photo taken on its
