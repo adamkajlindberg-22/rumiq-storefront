@@ -561,10 +561,12 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .msg.ai{background:var(--bg);border:1px solid var(--line2);border-bottom-left-radius:4px}
 .msg.ai .mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin-top:.8rem}
 .msg.ai .mini a{text-decoration:none;font-size:.8rem;line-height:1.25;min-width:0;display:grid;align-content:start;gap:.1rem}
-.msg.ai .mini a span{overflow-wrap:anywhere;hyphens:auto;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.msg.ai .mini a span{overflow-wrap:break-word;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 .msg.ai p + p{margin-top:.6rem}
 .msg-help{font-weight:600;text-underline-offset:3px}
 .msg.ai .mini img{border-radius:var(--r-img);width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;margin-bottom:.3rem;background:var(--img-bg)}
+/* phones: the suggestions as rows (picture, name, price), so a long name is never cut mid-word */
+@media (max-width:640px){.msg.ai{max-width:100%}.msg.ai .mini{grid-template-columns:1fr;gap:.45rem}.msg.ai .mini a{grid-template-columns:3.4rem 1fr;column-gap:.8rem;align-items:center;font-size:.92rem}.msg.ai .mini img{grid-row:1/3;width:3.4rem;margin:0}.msg.ai .mini a span{-webkit-line-clamp:2;align-self:end}.msg.ai .mini a b{align-self:start}}
 .chat form{display:flex;gap:.5rem;padding:.8rem;border-top:1px solid var(--line)}
 .chat form input{flex:1}
 .typing{display:inline-flex;gap:.25rem}
