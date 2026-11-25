@@ -126,9 +126,12 @@
   document.addEventListener("keydown", (e) => { if (isOpen && e.key === "Escape") { e.stopPropagation(); close(); } }, true);
 
   const balanceLine = (st) => st.demo ? `Förhandsvisning: ${FREE_IMAGES} bilder i månaden när sajten är live` : `${st.balance} ${st.balance === 1 ? "bild" : "bilder"} kvar${st.plan === "plus" ? " i Studio Plus" : " den här månaden"}`;
+  // the picture shows a product's first colour; when the cart holds it in another, the row says both, so the cart is not doubted
+  const colourNote = (p) => { const inC = [...new Set(S.cartLines().filter((l) => l.product.handle === p.handle).map((l) => l.variant && l.variant.title).filter(Boolean))];
+    return inC.length && !inC.includes(p.variants[0]) ? `I varukorgen: ${inC[0]} · bilden visar ${p.variants[0]}` : `Bilden visar färgen ${p.variants[0]}`; };
   const productsList = (scene) => {
     const total = scene.reduce((s, it) => s + RQ.byHandle(it.h).price, 0);
-    return `<ul class="ai-prods">${scene.map((it) => { const p = RQ.byHandle(it.h); return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}${p.variants ? ` · <em>Bilden visar färgen ${esc(p.variants[0])}</em>` : ""}</span></div></li>`; }).join("")}</ul>
+    return `<ul class="ai-prods">${scene.map((it) => { const p = RQ.byHandle(it.h); return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}${p.variants ? ` · <em>${esc(colourNote(p))}</em>` : ""}</span></div></li>`; }).join("")}</ul>
       <div class="ai-sum"><span>Det här finns i bilden</span><b>${kr(total)}</b></div>`;
   };
 
