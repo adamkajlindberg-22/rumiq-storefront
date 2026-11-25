@@ -1888,7 +1888,7 @@ html.sheet-lock{overflow:hidden}
 .ai-tag{position:absolute;left:.7rem;top:.7rem;background:rgba(247,247,244,.92);color:#22252A;font-size:.76rem;font-weight:650;padding:.25rem .6rem;border-radius:999px;z-index:2;pointer-events:none;transition:opacity .25s}
 .ai-ba .ai-tag{top:auto;bottom:.7rem}.ai-ba .ai-tag-a{left:auto;right:.7rem} /* the corners at the bottom: the sheet's close button and grab handle sit at the top */
 .ai-ba.lo .ai-tag-b,.ai-ba.hi .ai-tag-a{opacity:0}
-.ai-ba-hint{position:absolute;left:var(--x);top:calc(50% + 1.8rem);transform:translateX(-50%);font-size:.76rem;color:#22252A;background:rgba(247,247,244,.85);padding:.2rem .6rem;border-radius:999px;pointer-events:none;z-index:2;white-space:nowrap;transition:opacity .3s}
+.ai-ba-hint{position:absolute;left:clamp(4.6rem,var(--x),calc(100% - 4.6rem));top:calc(50% + 1.8rem);transform:translateX(-50%);font-size:.76rem;color:#22252A;background:rgba(247,247,244,.85);padding:.2rem .6rem;border-radius:999px;pointer-events:none;z-index:2;white-space:nowrap;transition:opacity .3s}
 .ai-ba.touched .ai-ba-hint{opacity:0}
 .ai-stage{min-width:0}
 @media (min-width:900px){.ai-grid .ai-stage{margin:1.4rem 0 1.4rem 1.4rem}.ai-grid .ai-stage .ai-ba{margin:0 auto;border-radius:12px}}
@@ -1907,15 +1907,13 @@ html.sheet-lock{overflow:hidden}
 /* Köp allt with the total stays in reach on a phone: a bar at the foot of the sheet, under the picture, never over it */
 .ai-buysum{display:none}
 @media (max-width:899px){
-  .ai-result .ai-buybar{position:sticky;bottom:0;z-index:4;margin:.3rem calc(-1 * var(--gutter)) 0;padding:.7rem var(--gutter) .75rem;background:var(--paper);border-top:1px solid var(--line);box-shadow:0 -12px 24px -20px rgba(0,0,0,.3);flex-wrap:nowrap;gap:.6rem}
-  .ai-result .ai-buysum{display:grid;flex:1 1 auto;min-width:0;line-height:1.2}
-  .ai-buysum small{font-size:.78rem;color:var(--muted);white-space:nowrap}
+  .ai-result .ai-buybar{position:sticky;bottom:0;z-index:4;display:grid;grid-template-columns:1fr 1fr;gap:.5rem .6rem;margin:.3rem calc(-1 * var(--gutter)) 0;padding:.6rem var(--gutter) .75rem;background:var(--paper);border-top:1px solid var(--line);box-shadow:0 -12px 24px -20px rgba(0,0,0,.3)}
+  .ai-result .ai-buysum{grid-column:1 / -1;display:flex;justify-content:space-between;align-items:baseline;gap:1rem;line-height:1.2}
+  .ai-buysum small{font-size:.84rem;color:var(--muted);white-space:nowrap}
   .ai-buysum b{font-size:1.06rem;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
-  .ai-result .ai-buybar .btn{flex:none}
-}
-@media (max-width:480px){
-  .ai-result #aiShare{padding-left:.95rem;padding-right:.95rem}
-  .ai-result #aiShare .ai-share-t{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap} /* the icon on a small phone; the name stays for screen readers */
+  .ai-result .ai-buybar .btn{width:100%;justify-content:center;padding-left:.8rem;padding-right:.8rem}
+  .ai-result .ai-sum{display:none} /* the total is in the bar; once is enough */
+  .ai-sheet .ai-result .ai-stage{padding-top:1.5rem} /* the sheet's grab handle sits on paper, not on the picture */
 }
 /* desktop: the result dialog grows towards the window (about 1200 px) and the picture takes the room its height allows */
 @media (min-width:900px){
@@ -1925,8 +1923,16 @@ html.sheet-lock{overflow:hidden}
   .ai-sheet.wide .ai-stage:has(.ai-vers) .ai-ba{--bah:calc(90vh - 10rem)}
 }
 .ai-saved{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin:0}
+/* every control in the sheet and the library is a 44 px target */
+.ai-result .small-row .tlink,.ai-lcard .small-row .tlink{min-height:2.75rem;display:inline-flex;align-items:center}
+.ai-saved a,.ai-card-lib{display:inline-block;padding:.7rem 0;margin:-.7rem 0}
+.ai-cmp .chip{min-height:2.75rem}
+.ai-auto{min-height:2.75rem}
+.ai-card-lib{font-size:.84rem;justify-self:start;margin-top:-.45rem;margin-bottom:-.7rem}
 .ai-saved svg{width:1.05rem;height:1.05rem;flex:none;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ai-cost{color:var(--muted);font-weight:400}
+.ai-cost{color:var(--muted);font-weight:400;margin-left:.3em}
+.ai-result .ai-row.small-row,.ai-lcard .ai-row.small-row{row-gap:0}
+#mh-bilder h2:focus{outline:none} /* focus lands here when the sheet's link brings you; a heading is not a control */
 .ai-wait .ai-h,.ai-wait .ai-lead{transition:opacity .3s}
 .ai-retrying .ai-wait .ai-h{animation:aiIn .45s var(--ease)}
 @keyframes aiIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
