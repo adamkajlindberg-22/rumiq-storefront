@@ -250,8 +250,9 @@
   RQ.hotspots = {
     render(id, opts = {}) {
       const r = RQ.HOTSPOTS[id], room = RQ.roomById(id); if (!r) return "";
-      const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).map(([h, x, y]) => { const p = RQ.byHandle(h); return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}. Liknande i butiken."><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)} · Liknande i butiken</em></span></button>`; }).join("");
-      return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}" style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 180vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async"><div class="hs-layer">${spots}</div></div></div>`;
+      // opts.layer/opts.spots: products placed in the photo by the room engine (the look pages); their dots are the product itself, not a look-alike
+      const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).concat(opts.spots || []).map(([h, x, y, own]) => { const p = RQ.byHandle(h), like = own ? "" : " · Liknande i butiken"; return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}.${own ? "" : " Liknande i butiken."}"><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)}${like}</em></span></button>`; }).join("");
+      return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}"${opts.focus ? ` data-focus="${opts.focus.map((v) => v.toFixed(1)).join(",")}"` : ""} style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 180vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async">${opts.layer || ""}<div class="hs-layer">${spots}</div></div></div>`;
     },
     caption: () => `<p class="hs-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p>`,
     handles(id) { return [...new Set((RQ.HOTSPOTS[id] || { spots: [] }).spots.map((s) => s[0]))]; },
@@ -259,7 +260,16 @@
     layout(stage) {
       const W = stage.clientWidth, H = stage.clientHeight; if (!W || !H) return;
       const pos = (getComputedStyle(stage).getPropertyValue("--pos") || "50% 50%").trim().split(/\s+/).map((v) => parseFloat(v) / 100);
-      const s = Math.max(W / IW, H / IH), dw = IW * s, dh = IH * s, ox = (W - dw) * pos[0], oy = (H - dh) * pos[1];
+      let s = Math.max(W / IW, H / IH), dw = IW * s, dh = IH * s, ox = (W - dw) * pos[0], oy = (H - dh) * pos[1];
+      // data-focus (x1,y1,x2,y2 in % of the photo): the picture comes closer to that part, so a look's things are the picture
+      const f = stage.dataset.focus && stage.dataset.focus.split(",").map(Number), img = $(".hs-img", stage), layer = $(".rc-layer", stage);
+      if (f && f.length === 4 && img) {
+        const z = Math.max(1, Math.min(1.8, 0.8 * W / Math.max(1, (f[2] - f[0]) / 100 * dw), 0.8 * H / Math.max(1, (f[3] - f[1]) / 100 * dh)));
+        s *= z; dw = IW * s; dh = IH * s;
+        ox = Math.max(W - dw, Math.min(0, W / 2 - (f[0] + f[2]) / 200 * dw)); oy = Math.max(H - dh, Math.min(0, H / 2 - (f[1] + f[3]) / 200 * dh));
+        const geo = `inset:auto;left:${ox}px;top:${oy}px;width:${dw}px;height:${dh}px`; img.style.cssText = geo + ";max-width:none;max-height:none;object-fit:fill"; if (layer) layer.style.cssText = geo;
+        if (layer) $(".rc-box", stage).style.cssText = ""; }
+      else { const box = $(".rc-box", stage); if (box) box.style.cssText = `left:${ox}px;top:${oy}px;width:${dw}px;height:${dh}px`; } // placed products follow the photo's crop
       $$(".hs", stage).forEach((b) => {
         const x = ox + (+b.dataset.x / 100) * dw, y = oy + (+b.dataset.y / 100) * dh;
         const vis = x > 18 && x < W - 18 && y > 18 && y < H - 18;
@@ -412,7 +422,13 @@
   }; };
   V.look = (id) => {
     const l = lookById(id); if (!l) return null; const room = RQ.roomById(l.room);
-    const inPic = RQ.hotspots.handles(l.room).filter((h) => l.items.includes(h)).length;
+    const inPhoto = RQ.hotspots.handles(l.room);
+    // what the photo does not already show is placed in it by the Mitt rum engine, so the picture shows the whole look
+    const comp = RQ.room && RQ.room.compose ? RQ.room.compose(l.room, l.items.filter((h) => !inPhoto.includes(h))) : null;
+    const inPic = inPhoto.filter((h) => l.items.includes(h)).length + (comp ? comp.spots.length : 0);
+    // the part of the photo where the look's things are: the picture comes closer to it
+    const near = (RQ.HOTSPOTS[l.room] || { spots: [] }).spots.filter(([h]) => l.items.includes(h)).map(([, x, y]) => [x - 7, y - 12, x + 7, y + 6]).concat(comp ? [comp.box] : []);
+    const focus = near.length ? [Math.min(...near.map((b) => b[0])), Math.min(...near.map((b) => b[1])), Math.max(...near.map((b) => b[2])), Math.max(...near.map((b) => b[3]))] : null;
     const CAP_DOTS = "Bilden är en illustration. Prickarna visar saker ur looken.", CAP_NONE = "Bilden är en illustration av rummet. Sakerna i looken ser du i listan.";
     const total = lookTotal(l), net = lookNet(l), off = total - net;
     // the buy block follows the cart: nothing in it, some of the look in it, all of it in it
@@ -429,7 +445,7 @@
       html: `<section class="wrap look-page">
         ${RQ.crumbs([["Hem", "hem"], ["Looks", "looks"], [l.name]])}
         <div class="lp-grid">
-          <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage", only: l.items })}<p class="hs-cap" id="lpCap">${inPic ? CAP_DOTS : CAP_NONE}</p></div>
+          <div>${RQ.hotspots.render(l.room, { eager: true, cls: "lp-stage", only: l.items, layer: comp && comp.layer, spots: comp && comp.spots, focus })}<p class="hs-cap" id="lpCap">${inPic ? CAP_DOTS : CAP_NONE}</p></div>
           <div class="lp-tx"><span class="eyebrow">Look · <span>${esc(room.name)}</span></span><h1 class="h1">${esc(l.name)}</h1><p class="lead">${esc(l.lead)}</p>
             <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item" data-h="${h}"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><button class="iconbtn qadd" type="button" data-add="${h}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${RQ.plus}</button></li>`; }).join("")}</ul>
             <div class="lp-sum"><span>Hela looken${off ? ` <small><span>Du sparar</span> ${kr(off)}</small>` : ""}</span><b>${off ? `<s>${kr(total)}</s> ` : ""}${kr(net)}</b></div>

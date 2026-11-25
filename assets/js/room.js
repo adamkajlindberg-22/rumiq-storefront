@@ -23,7 +23,7 @@
     "skarbrada-ek-med-handtag": ["surface", 22, 1.84], "forradsburkar-glas-ek-3-pack": ["surface", 36, 0.74], "sand-keramikvas": ["surface", 17, 1.85],
     "tvalpump-stengods": ["surface", 26, 0.9], "glod-doftljus-keramik": ["surface", 9, 1.25], "stilla-ljusstake-massing-2-pack": ["surface", 12, 2.93],
     "skrivbordsorganisator-ek": ["surface", 30, 0.86], "vaffelhandduk-bomull": ["surface", 39, 0.64],
-    "plad-ullblandning-havre": ["throw", 80, 0.84], "lin-kuddfodral": ["cushion", 88, 0.58], "vila-paslakanset-linne": ["bedding", 60, 0.53],
+    "plad-ullblandning-havre": ["throw", 80, 0.84], "lin-kuddfodral": ["cushion", 88, 0.58], "vila-paslakanset-linne": ["bedding", 42, 0.53],
     "affisch-linje-ekram": ["wall", 53, 1.3], "affisch-horisont-ekram": ["wall", 53, 1.3],
     "forvaringslada-filt": ["floor", 42, 0.81], "flatad-forvaringskorg": ["floor", 40, 1.19], "terrakottakruka-rafflad": ["floor", 36, 1.92],
     "strand-jutematta": ["rug", 230, 0.37], "dagsljus-linnegardin-2-pack": ["window", 60, 2.63],
@@ -59,6 +59,24 @@
       wall: [[41, 47, 15.5], [27, 30, 15.5]],
       floor: [[24.5, 87], [47, 94], [66, 93], [33, 96]], // beside and in front of the bench, never through it
       rug: [[46, 98, 52, 0.4]], window: [[74.4, 83, 13, 1.27]] },
+    badrum: { h: 45, k: 0.69, sun: 1, // the vanity beside the basin, the shelf and the window sill; the floor between the stool and the basket
+      surface: [[37.6, 58.8, 34], [48.5, 33, 30], [79.5, 54, 28]],
+      cushion: [], throw: [], bedding: [],
+      wall: [[56, 72, 30]],
+      floor: [[50, 97], [41, 98.5], [57, 99.5]],
+      rug: [[50, 100, 40, 0.35]], window: [[77, 62, 12, 0.75]] },
+    hemmakontor: { h: 45, k: 0.55, sun: 1, // the desk around what already stands there, the empty wall, the strip of floor
+      surface: [[60.5, 62.5, 27], [77.5, 62.5, 27], [64, 67, 28]],
+      cushion: [], throw: [], bedding: [],
+      wall: [[28, 50, 25], [40, 50, 25], [16, 50, 25]],
+      floor: [[22, 97], [36, 97], [10, 98], [47, 97.5]],
+      rug: [[28, 100, 50, 0.3]], window: [[94.5, 100, 11, 1.6]] },
+    uteliv: { h: 40, k: 0.64, sun: 1, // the bench's bare end, the side table, the seat; the deck in front of the bench
+      surface: [[38, 62, 27], [65.5, 61, 27], [42.5, 62, 27]],
+      cushion: [[55, 59.5, 27]], throw: [[50, 63, 27]], bedding: [],
+      wall: [[39, 56, 25]],
+      floor: [[38, 92], [52, 94], [24, 97]],
+      rug: [[50, 100, 60, 0.35]], window: [[97, 100, 8, 1.6]] },
   };
   /* A room we have not seen before: sensible spots for each kind, until the customer shows where things stand. */
   const GENERIC = { h: 48, k: 0.9, sun: 1,
@@ -73,8 +91,8 @@
      Only things of the same sort are in each other's way (a candle does not push a throw off the sofa), and a
      mapped surface has an end: when the table is full the next thing is put on the floor, never in the air. */
   const SORT = { surface: "s", cushion: "t", throw: "t", bedding: "t", floor: "f", rug: "r", window: "w", wall: "a" };
-  const spotFor = (p, list, raw) => {
-    const [kind, cm] = meta(p), M = mapOf(), G = M || GENERIC;
+  const spotFor = (p, list, raw, MX) => { // MX: a sample room's map instead of the customer's room (the look pictures)
+    const [kind, cm] = meta(p), M = MX || mapOf(), G = M || GENERIC;
     const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && SORT[it.on || kindOf(q)] === SORT[k || kind] && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
@@ -101,6 +119,8 @@
   };
   /* what stands behind what: rugs lowest, then curtains, wall, floor, textiles, things on tables */
   const RANK = { rug: 0, window: 1, wall: 2, bedding: 4, throw: 4, cushion: 5, floor: 6, surface: 6 };
+  /* back to front: what lies on the floor is drawn before what stands on it */
+  const orderOf = (list) => list.map((it, i) => ({ it, i, z: it.top ? 190 + i : it.back ? -9 + i / 100 : RANK[kindOf(RQ.byHandle(it.h))] * 10 + (it.y + (kindOf(RQ.byHandle(it.h)) === "surface" && !it.on ? 12 : 0)) / 12 })).sort((a, b) => a.z - b.z || a.i - b.i).map((x) => x.it);
   const PLACE = KIND, placeFor = (p) => spotFor(p, []);
 
   /* ---------------------------------------------------------------- colour */
@@ -232,8 +252,21 @@
       RQ.toast(`${n === 1 ? "1 produkt från ditt rum ligger" : n + " produkter från ditt rum ligger"} i varukorgen${todo.length < list.length ? ", resten låg redan där" : ""}. <a href="#" data-open-cart>Visa</a>`);
     },
     total: () => R.scene().reduce((s, it) => s + RQ.byHandle(it.h).price, 0),
-    /* back to front: what lies on the floor is drawn before what stands on it */
-    ordered() { return R.scene().map((it, i) => ({ it, i, z: it.top ? 190 + i : it.back ? -9 + i / 100 : RANK[kindOf(RQ.byHandle(it.h))] * 10 + (it.y + (kindOf(RQ.byHandle(it.h)) === "surface" && !it.on ? 12 : 0)) / 12 })).sort((a, b) => a.z - b.z || a.i - b.i).map((x) => x.it); },
+    ordered() { return orderOf(R.scene()); },
+    /* a sample room with these things placed in it, the way Mitt rum would place them: for the look pictures.
+       layer = the things, to lie over the photo (in % of the photo); spots = where each one stands, for its dot */
+    compose(id, handles) {
+      const M = MAPS[id], ar = 1600 / 893; if (!M) return null; // every sample photo is 1600 x 893
+      const list = [];
+      handles.forEach((h) => { const p = RQ.byHandle(h); if (!p) return; const sp = spotFor(p, list, true, M); list.push({ h, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}) }); });
+      if (!list.length) return null;
+      const items = orderOf(list).map((it, i) => { const p = RQ.byHandle(it.h), r = meta(p)[2];
+        return `<div class="rm-item k-${kindOf(p)}${p.cat === "belysning-atmosfar" ? " lamp" : ""}" style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}"><img src="${RQ.cut(p)}" alt="" decoding="async" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}"></div>`; }).join("");
+      const hOf = (it) => it.w * meta(RQ.byHandle(it.h))[2] * (it.sy || 1) * ar; // height in % of the photo's height
+      const spots = list.map((it) => [it.h, it.x, +Math.max(4, it.y - hOf(it) - 2.5).toFixed(1), true]); // the dot just above the thing, so it never hides a small one
+      const box = [Math.min(...list.map((it) => it.x - it.w / 2)), Math.min(...list.map((it) => it.y - hOf(it))), Math.max(...list.map((it) => it.x + it.w / 2)), Math.max(...list.map((it) => it.y))];
+      return { box, layer: `<div class="rc-layer" aria-hidden="true"><div class="rc-box"><div class="rm-items">${items}</div></div></div>`, spots };
+    },
     /* how well the things in the room go together (style and colour), with one piece of advice */
     harmony() {
       const ps = R.scene().map((it) => RQ.byHandle(it.h)); if (ps.length < 2) return null;
