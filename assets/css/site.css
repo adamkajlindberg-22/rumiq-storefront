@@ -2423,6 +2423,13 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .rm-ask{margin-left:var(--gutter);margin-right:var(--gutter)}
   .rm-stagewrap .rm-more{margin:1rem 0 0;padding:0 var(--gutter)}
 }
+/* a computer with a room: a short heading, so the room and its toolbar fit the first screen (1280 x 720 too) */
+@media (min-width:901px){
+  .rm-top.has-room .lead{display:none}
+  .rm-top.has-room .rm-title{margin:.5rem 0 1rem}
+  .rm-top.has-room .rm-title .h1{font-size:var(--t-h1-tool)}
+  .rm-stage{width:min(100%,calc(78vh * var(--ar,1.6)),calc((100svh - var(--nav-h) - 13rem) * var(--ar,1.6)))}
+}
 @media (prefers-reduced-motion:reduce){.rm-canvas.glide,.rm-stage.resize,.rm-stage.resize .rm-canvas{transition:none}}
 /* the picker is a drawer that leaves the room in view: under it on a phone, beside it on a computer */
 .sheet.rmpick.open{pointer-events:none}
