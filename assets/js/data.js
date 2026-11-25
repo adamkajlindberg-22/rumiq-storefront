@@ -166,7 +166,7 @@
       use: ["Häng dem högt, nära taket, så ser fönstret större ut.", "Låt dem gå ända ner till golvet eller någon centimeter ovanför.", "Två längder per fönster ger fina, fylliga veck."],
       collections: ["skandinaviskt-hemmaliv"], featured: true, added: 20 },
     { handle: "vila-paslakanset-linne", name: "Vila påslakanset linne", en: "Vila linen duvet set", price: 1290, cat: "sovrum-komfort",
-      rooms: ["sovrum"], material: "Tvättat lin", care: ["lin"], variants: ["Havre", "Vit", "Salvia"], tone: ["#D8C6A8", "#EFE6D6"], styles: ["skandinavisk", "mjuk", "klassisk"], needs: ["detaljer", "rutiner"], gift: ["familj"], occ: ["inflyttning", "jul"],
+      rooms: ["sovrum"], material: "Tvättat lin", care: ["lin"], variants: ["Havre", "Vit", "Salvia"], tone: ["#D8C6A8", "#EFE6D6", "#A9B39A"], styles: ["skandinavisk", "mjuk", "klassisk"], needs: ["detaljer", "rutiner"], gift: ["familj"], occ: ["inflyttning", "jul"],
       short: "Påslakan 150 × 210 cm och örngott 50 × 60 cm i tvättat lin. Andas, värmer lagom och blir mjukare för varje tvätt.",
       story: "Lin är svalt på sommaren och varmt på vintern, och det blir bara finare med åren. Det tvättade linnet är mjukt redan från början och ska få vara skrynkligt, så slipper du stryka.",
       use: ["Tvätta setet före första användningen.", "Skaka ut påslakanet när det kommer ur maskinen och låt det torka på sängen.", "Ha två set och växla, så håller båda längre."],
