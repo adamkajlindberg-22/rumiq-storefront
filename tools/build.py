@@ -38,8 +38,8 @@ LAUNCH = False
 
 ROOT = Path(__file__).resolve().parent.parent
 JS = ROOT / "assets/js"
-SITE_FILES = ["data", "content", "commerce", "app", "room", "flow", "svep", "myhome", "auth", "account", "ai", "home", "seo"]
-TOOLS_FILES = ["studio"]
+SITE_FILES = ["data", "content", "commerce", "app", "room", "flow", "svep", "myhome", "auth", "account", "ai", "hem", "home", "seo"]
+TOOLS_FILES = ["studio", "hemsida"]
 ESBUILD = os.environ.get("ESBUILD", "npx --yes esbuild").split()
 
 # routes that show another page (tools that were merged, old names): they point their canonical

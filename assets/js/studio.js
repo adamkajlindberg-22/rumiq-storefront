@@ -618,7 +618,9 @@
       const follow = (a) => { const ps = prods(a); if (!ps.length) return "";
         return `<div class="follow"><button class="chip" type="button" data-inroom="${ps.map((p) => p.handle).join(",")}">Ställ in i Mitt rum</button>${a.cheaper ? `<button class="chip" type="button" data-cheaper="${+a.cheaper}" data-q="${esc(a.q || "")}">Billigare förslag</button>` : ""}</div>`; };
       const answerHtml = (a) => { const text = Array.isArray(a.text) ? a.text : [a.text];
-        return `${text.map((p) => `<p>${esc(p)}</p>`).join("")}${a.help ? `<p><a class="msg-help" href="#${esc(a.help.route)}">${esc(a.help.label)}</a></p>` : ""}${a.unknown || a.hi ? `<div class="follow">${starters.slice(0, 2).map((q) => `<button class="chip" type="button" data-try="${esc(q)}">${esc(q)}</button>`).join("")}${a.unknown ? '<a class="chip" href="#kontakt">Kontakta oss</a>' : ""}</div>` : ""}${mini(handles(a.picks), a.tags)}${follow(a)}`; };
+        return `${text.map((p) => `<p>${esc(p)}</p>`).join("")}${a.help ? `<p><a class="msg-help" href="#${esc(a.help.route)}">${esc(a.help.label)}</a></p>` : ""}${a.unknown || a.hi ? `<div class="follow">${starters.slice(0, 2).map((q) => `<button class="chip" type="button" data-try="${esc(q)}">${esc(q)}</button>`).join("")}${a.unknown ? '<a class="chip" href="#kontakt">Kontakta oss</a>' : ""}</div>` : ""}${mini(handles(a.picks), a.tags)}${follow(a)}${proposal(a)}`; };
+      // a question about a style ends in a ready room proposal (studio2 ai: hem.js)
+      const proposal = (a) => { if (!RQ.hem || !a.q) return ""; const q = RQ.parseNeed(a.q); return q.styles && q.styles.length ? RQ.hem.slot({ type: (q.rooms || [])[0] || "vardagsrum", style: q.styles[0], budget: q.max || null, from: "stylist" }) : ""; };
       // an answer to an English question is shown in English (the dictionary is loaded the first time it is needed)
       const toEn = (a) => a.en && window.RQ_LANG !== "en" && window.RQ_toEn;
       const show = (el, a, then) => { const html = answerHtml(a); if (!toEn(a)) { el.innerHTML = html; return then && then(); } const d = document.createElement("div"); d.innerHTML = html; window.RQ_toEn(d).then(() => { el.lang = "en"; el.innerHTML = d.innerHTML; }, () => { el.innerHTML = html; }).then(() => then && then()); };
@@ -775,6 +777,7 @@
 
   /* ---------------------------------------------------------------- Sparat (address mitt-hem): everything you saved, in one place */
   V.myHome = () => {
+    if (RQ.hemPage) return RQ.hemPage(); // Sparat as the customer's home: rooms first (hemsida.js)
     const projects = S.projects(), wish = S.wishlist(), looks = S.looks(), arts = S.savedArticles().map(RQ.articleBySlug).filter(Boolean);
     const st0 = S.style(), style = st0 && RQ.STYLES[st0.style] ? st0 : null; // a stored style we do not know is treated as none
     // an empty part is one quiet line with its way in, not a large empty box: a new visitor sees the whole page on two screens

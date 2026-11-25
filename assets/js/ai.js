@@ -178,6 +178,7 @@
         await tx("readwrite", (P, R) => { P.delete(id); if (room) R.delete(room.key); });
         return { pic, room };
       },
+      async update(ids, patch) { const { pics } = await this.list(); const hit = pics.filter((p) => ids.includes(p.id)); if (hit.length) await tx("readwrite", (P) => { hit.forEach((p) => P.put({ ...p, ...patch })); }); return hit.length; },
       async restore(u) { if (u && u.pic) await tx("readwrite", (P, R) => { P.put(u.pic); if (u.room) R.put(u.room); }); },
       async clear() { await tx("readwrite", (P, R) => { P.clear(); R.clear(); }); },
     };
@@ -420,7 +421,7 @@
   }
   // into Mina rumsbilder; "ok", "full" (the device has no room) or "fail"
   async function keep(ver, rm, key, photo) {
-    const { url, before, saved, ...pic } = ver;
+    const { url, before, saved, ...pic } = ver; if (!pic.roomId && RQ.hem && RQ.hem.activeId()) pic.roomId = RQ.hem.activeId(); // the room in Mitt hem it was made for
     try { await Lib.save(pic, { key, photo, w: rm.w, h: rm.h, at: new Date().toISOString(), meta: { type: rm.type || null, name: rm.name || "", sample: !!rm.sample, map: rm.map || null } }); recount(); return "ok"; }
     catch (e) { return e && e.message === "full" ? "full" : "fail"; }
   }
@@ -493,32 +494,36 @@
     const { pics, rooms } = await Lib.list();
     return group(pics.map((p) => verOf(p, rooms[p.project])), rooms);
   }
+  const hemOf = (g) => g.list.map((v) => v.roomId).find(Boolean) || ""; // the Mitt hem room these pictures belong to
+  const shown = () => libState.groups.filter((g) => !libState.filter || (libState.filter === "-" ? !hemOf(g) || !(RQ.hem && RQ.hem.room(hemOf(g))) : hemOf(g) === libState.filter));
   const group = (vers, rooms) => {
     const by = new Map(); vers.forEach((v) => { if (!by.has(v.project)) by.set(v.project, []); by.get(v.project).push(v); });
     return [...by.entries()].map(([key, list]) => { list.sort((a, b) => (a.n || 0) - (b.n || 0)); return { key, list, room: rooms[key] || null, at: list.reduce((m, v) => (v.at > m ? v.at : m), ""), cur: list.length - 1, cmp: -1 }; })
       .sort((a, b) => (a.at < b.at ? 1 : -1));
   };
-  const libState = { groups: [], undo: null, host: null };
+  const libState = { groups: [], undo: null, host: null, filter: "" };
   const libNote = () => remoteLib() ? "AI-bilderna du har skapat i Mitt rum, med bilden före. De sparas privat i ditt konto, och ingen annan kan se dem." : "AI-bilderna du har skapat i Mitt rum, med bilden före. De sparas på den här enheten, och ingen annan kan se dem.";
   const libCard = (g, i) => {
     const v = g.list[g.cur], other = g.cmp >= 0 ? g.list[g.cmp] : null, many = g.list.length > 1, items = liveItems(v.items);
     return `<article class="ai-lcard" data-lib="${i}" aria-labelledby="aiLibH${i}">
       <div class="ai-stage">${baHtml(v, other, 50, many)}${versHtml(g.list, g.cur, g.cmp)}</div>
-      <div class="ai-lcard-tx"><div class="ai-lcard-h"><h3 class="h3" id="aiLibH${i}">${esc(roomName(g.room))}${many ? `, version ${v.n}` : ""}</h3><span class="small">${esc(dateText(v.at))} · ${items.length} ${items.length === 1 ? "produkt" : "produkter"}</span></div>
+      <div class="ai-lcard-tx"><div class="ai-lcard-h"><h3 class="h3" id="aiLibH${i}">${esc(hemName(g) || roomName(g.room))}${many ? `, version ${v.n}` : ""}</h3><span class="small">${esc(dateText(v.at))} · ${items.length} ${items.length === 1 ? "produkt" : "produkter"}</span></div>
         ${items.length ? `<ul class="ai-lib-items">${items.map((it) => { const p = RQ.byHandle(it.h); return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button></li>`; }).join("")}</ul>` : ""}
         <div class="ai-row">${items.length ? `<button class="btn sm" type="button" data-lib-buy>Köp allt</button>` : ""}<button class="btn ghost sm" type="button" data-lib-share>${ICON_SHARE}<span>Visa någon</span></button></div>
-        <div class="ai-row small-row"><button class="tlink" type="button" data-lib-down>Ladda ner</button>${g.room || v.before ? `<button class="tlink" type="button" data-lib-cont>Fortsätt i Mitt rum</button>` : ""}<button class="tlink" type="button" data-lib-del>Ta bort</button></div></div></article>`;
+        <div class="ai-row small-row">${g.room || v.before ? `<button class="tlink" type="button" data-lib-cont>Prova igen i Studio</button>` : ""}<button class="tlink" type="button" data-lib-down>Ladda ner</button><button class="tlink" type="button" data-lib-del>Ta bort</button></div>
+        ${RQ.hem && RQ.hem.rooms().length && !v.remote ? `<label class="ai-move"><span>Flytta till rum</span><select data-lib-move>${[["", "Inget rum"], ...RQ.hem.rooms().map((r) => [r.id, RQ.hem.name(r)])].map(([id, nm]) => `<option value="${esc(id)}"${id === hemOf(g) ? " selected" : ""}>${esc(nm)}</option>`).join("")}</select></label>` : ""}</div></article>`;
   };
+  const hemName = (g) => { const id = hemOf(g), r = id && RQ.hem && RQ.hem.room(id); return r ? RQ.hem.name(r) : ""; };
   const libPaint = (focusSel) => {
     const host = libState.host; if (!host || !host.isConnected) return;
-    const gs = libState.groups, n = gs.reduce((s, g) => s + g.list.length, 0);
+    const all = libState.groups, n = all.reduce((s, g) => s + g.list.length, 0), gs = shown();
     if (!remoteLib()) setCount(n);
     host.removeAttribute("aria-busy");
-    host.innerHTML = gs.length ? gs.map(libCard).join("") : `<div class="mh-none"><p><b>Inga rumsbilder än.</b> <span>Varje AI-bild du skapar i Mitt rum hamnar här, med bilden före.</span></p><a class="link" href="#mitt-rum">Till Mitt rum</a></div>`;
+    host.innerHTML = gs.length ? gs.map((g) => libCard(g, all.indexOf(g))).join("") : libState.filter && all.length ? `<p class="small">Inga bilder i det här rummet än.</p>` : `<div class="mh-none"><p><b>Inga rumsbilder än.</b> <span>Varje AI-bild du skapar i Mitt rum hamnar här, med bilden före.</span></p><a class="link" href="#mitt-rum">Till Mitt rum</a></div>`;
     $$("[data-ai-count]").forEach((c) => (c.textContent = `Mina rumsbilder (${n})`));
     $$("[data-ai-proj]").forEach((c) => { const g = gs.find((x) => x.key === c.dataset.aiProj); c.innerHTML = g ? `<a class="link" href="#mh-bilder" data-ai-goto="${esc(g.key)}">${g.list.length === 1 ? "1 AI-bild" : `${g.list.length} AI-bilder`} av rummet</a>` : ""; c.hidden = !g; });
     $$(".ai-lcard", host).forEach((card) => {
-      const g = gs[+card.dataset.lib], v = g.list[g.cur], other = g.cmp >= 0 ? g.list[g.cmp] : null, items = liveItems(v.items);
+      const g = all[+card.dataset.lib], v = g.list[g.cur], other = g.cmp >= 0 ? g.list[g.cmp] : null, items = liveItems(v.items);
       baWire($("[data-ba]", card), other);
       const repaint = (sel) => { card.outerHTML = libCard(g, +card.dataset.lib); libPaint.one(+card.dataset.lib, sel); };
       $$("[data-ver]", card).forEach((b) => b.addEventListener("click", () => { g.cur = +b.dataset.ver; if (g.cmp === g.cur) g.cmp = -1; repaint(`[data-ver="${g.cur}"]`); }));
@@ -529,6 +534,7 @@
       $("[data-lib-down]", card).addEventListener("click", () => download(v));
       const cont = $("[data-lib-cont]", card); if (cont) cont.addEventListener("click", () => continueIn(g, v, cont));
       $("[data-lib-del]", card).addEventListener("click", () => removePic(g, v));
+      const mv = $("[data-lib-move]", card); if (mv) mv.addEventListener("change", async () => { await Lib.update(g.list.map((x) => x.id), { roomId: mv.value || null }); g.list.forEach((x) => (x.roomId = mv.value || null)); const r = mv.value && RQ.hem.room(mv.value); RQ.toast(r ? `Bilden hör nu till ${esc(RQ.hem.name(r))}.` : "Bilden hör inte till något rum nu."); document.dispatchEvent(new CustomEvent("rq-hem")); libPaint(); });
     });
     if (focusSel) { const f = $(focusSel, host) || $("#mh-bilder h2"); if (f) f.focus({ preventScroll: true }); }
   };
@@ -546,6 +552,7 @@
         keepKey(g.key);
       }
       RQ.room.saveScene(liveItems(v.items).map(({ v: _v, ...it }) => it));
+      if (RQ.hem && v.roomId && RQ.hem.room(v.roomId)) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); }
       RQ.go("mitt-rum");
     } catch (e) { RQ.toast("Rummet gick inte att öppna. Försök igen."); if (btn.isConnected) btn.disabled = false; }
   }
@@ -580,8 +587,13 @@
         <label class="switch ai-auto"><input type="checkbox" role="switch" id="aiAuto" ${autosave() ? "checked" : ""}><span></span>Spara mina AI-bilder automatiskt</label></div>
       <p class="small ai-lib-note" id="aiLibNote">${esc(libNote())}${autosave() ? "" : " Nya AI-bilder sparas inte förrän du slår på det igen."}</p>
       <div class="ai-lib-list" id="aiLib" aria-busy="true"></div></div>`,
+    // a room's own pictures (the room sheet in Mitt hem); restore() gives the list back to the page
+    mountInto(host, roomId) { libState.prev = libState.prev || { host: libState.host, filter: libState.filter }; libState.host = host; libState.filter = roomId; libLoad(); },
+    restore() { if (!libState.prev) return; libState.host = libState.prev.host; libState.filter = libState.prev.filter; libState.prev = null; libLoad(); },
+    pics: async (roomId) => { try { const { pics } = await Lib.list(); return pics.filter((p) => !roomId || p.roomId === roomId).map((p) => ({ id: p.id, at: p.at, url: blobUrl(p.after), roomId: p.roomId || null, n: p.n, demo: p.demo })); } catch (e) { return []; } },
+    filter(id) { libState.filter = id || ""; libPaint(); },
     mount(root) {
-      libState.host = $("#aiLib", root); if (!libState.host) return;
+      libState.host = $("#aiLib", root); libState.prev = null; if (!libState.host) return;
       const sw = $("#aiAuto", root);
       sw.addEventListener("change", () => { S.store.set("rumiq-ai-autosave", sw.checked); $("#aiLibNote", root).textContent = libNote() + (sw.checked ? "" : " Nya AI-bilder sparas inte förrän du slår på det igen."); });
       libLoad().then(() => { if (RQ.ss.get("rumiq-ai-jump")) { RQ.ss.set("rumiq-ai-jump", ""); jump(); } });

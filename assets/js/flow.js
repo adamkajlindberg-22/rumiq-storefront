@@ -514,6 +514,7 @@
             <ul class="lp-list">${l.items.map((h) => { const p = RQ.byHandle(h); return `<li class="lp-item" data-h="${h}"><button type="button" data-sheet="${h}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div>${lpAct(h)}</li>`; }).join("")}</ul>
             <div class="lp-sum"><span>Hela looken${off ? ` <small><span>Du sparar</span> ${kr(off)}</small>` : ""}</span><b>${off ? `<s>${kr(total)}</s> ` : ""}${kr(net)}</b></div>
             <div class="lp-buy" id="lpBuy">${buy()}</div>
+            ${RQ.hem ? `<div class="ai-row lp-studio"><button class="btn ghost sm" type="button" data-hem-look="${esc(l.id)}">${RQ.roomIco}<span>Se den i ditt rum</span></button><button class="tlink" type="button" data-board-new data-board-items="${esc(l.items.join(","))}" data-board-name="${esc(l.name)}">Gör en moodboard</button></div>` : ""}
             <p class="small" style="margin-top:1rem">Produkterna är exempel tills butiken öppnar.</p></div>
         </div></section>
         <section class="sec"><div class="wrap"><div class="sec-head"><h2 class="h2">Fler looks</h2></div><div class="looks-row">${RQ.LOOKS.filter((x) => x.id !== id).map(RQ.lookCard).join("")}</div></div></section>`,

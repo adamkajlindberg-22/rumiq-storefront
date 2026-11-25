@@ -71,6 +71,7 @@
       <section class="sec roomhero" id="ditt-rum">
         <div class="wrap rh">
           <div class="rh-copy">
+            <span class="eyebrow rh-promise">Se ditt hem innan du köper.</span>
             <h2 class="display">Hela butiken i ditt rum.</h2>
             <p class="lead">Ta en bild av ditt rum en gång. Sedan står varje produkt du tittar på i just ditt rum, i ditt eget ljus. Ställ in det du gillar, se vad hela rummet kostar och handla allt med en knapp.</p>
             <ol class="rh-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Bläddra i ditt rum</b><span>Butiken visar varje produkt hemma hos dig.</span></li><li><b>Handla looken</b><span>Allt du ställt in hamnar i varukorgen på en gång.</span></li></ol>
