@@ -467,7 +467,7 @@
           const vt = S.variantById(variant).variant.title;
           $("#vname", root).textContent = vt;
           /* there is one set of photos: say which colour they show, and carry the choice to the buy bar */
-          $("#vnote", root).hidden = variant === vs[0].id; $("#bbVar", root).textContent = " · " + vt;
+          $("#vnote", root).hidden = variant === vs[0].id; $("#bbVar", root).textContent = " · " + vt; paintBar();
         }));
         const q = $("#qty", root), qNote = $("#qtyNote", root), MAXQ = 99;
         /* the field always shows what will be added: whole numbers from 1 to 99, corrected in the field itself */
@@ -478,7 +478,11 @@
         const put = () => { putDone = true; const want = qty(), line = S.cartLines().find((l) => l.id === variant), room = MAXQ - (line ? line.quantity : 0), n = Math.min(want, room);
           if (n < 1) { qNote.textContent = `Du har redan ${MAXQ} i varukorgen. Det är max per produkt.`; return 0; }
           S.addToCart(variant, n); q.value = 1; qNote.textContent = n < want ? `Max ${MAXQ} per produkt. Vi lade till ${n}.` : ""; return n; };
-        const add = (btn) => { if (btn.classList.contains("done")) return; if (put()) RQ.confirmAdd(btn, p.name); };
+        /* the buy bar follows the cart: once this colour lies there, it shows the way to the cart instead of adding a second one unasked */
+        const bar2 = $("#add2", root);
+        const paintBar = () => { if (bar2.classList.contains("done")) return; const inC = S.cartLines().some((l) => l.id === variant);
+          bar2.toggleAttribute("data-open-cart", inC); bar2.classList.toggle("ghost", inC); bar2.textContent = inC ? "I varukorgen · Visa" : "Lägg i varukorgen"; };
+        const add = (btn) => { if (btn.classList.contains("done") || btn.hasAttribute("data-open-cart")) return; if (put()) { RQ.confirmAdd(btn, p.name); clearTimeout(bar2._pb); bar2._pb = setTimeout(paintBar, 1850); } };
         $("#add", root).addEventListener("click", (e) => add(e.currentTarget)); $("#add2", root).addEventListener("click", (e) => add(e.currentTarget));
         $("#buyNow", root).addEventListener("click", () => { if (!putDone) put(); location.hash = "#kassa"; }); // already added on this page: go, do not add it again
         /* share: the phone's own share sheet where there is one, otherwise the address is copied */
@@ -505,7 +509,8 @@
         const bar = $("#buybar", root), buy = $(".buy", root);
         const io2 = new IntersectionObserver(([e]) => bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || matchMedia("(max-width:900px)").matches)), { threshold: [0, 0.9] });
         io2.observe($("#add", root));
-        return () => io2.disconnect();
+        paintBar(); const offCart = S.onChange((w) => { if (w === "cart") setTimeout(paintBar); }); // after the tap that added it has run its course
+        return () => { io2.disconnect(); offCart(); clearTimeout(bar2._pb); };
       },
     };
   };
@@ -629,6 +634,8 @@
   };
   // fetch them quietly once the page is idle, so the next tap is instant
   window.addEventListener("load", () => setTimeout(() => (window.requestIdleCallback || setTimeout)(() => RQ.loadTools().catch(() => {})), 2500));
+  // "/varukorg" (typed, shared or opened in a new tab): the shop with the cart open on top
+  V.cartLink = () => { const v = V.butik(); return { ...v, mount(root) { const un = v.mount ? v.mount(root) : null, t = setTimeout(() => RQ.openCart(), 80); return () => { clearTimeout(t); if (typeof un === "function") un(); }; } }; };
   V.studio = () => V.myRoom(); // Studio is no longer its own place: the tools live in Mitt rum, Svep, Hitta rätt and Looks
 
   /* ---------------------------------------------------------------- router */
@@ -646,7 +653,7 @@
     [/^upptack$/, () => V.upptack()], [/^svep(?:-rum-(.+))?$/, (m) => V.svep(m[1])], [/^svep-ihop(?:-(.+))?$/, (m) => V.svepIhop(m[1])], [/^delad(?:-(.+))?$/, (m) => V.shared(m[1])], [/^presentkort$/, () => V.giftCard()], [/^for-dig$/, () => V.forDig()], [/^looks$/, () => V.looks()], [/^look-(.+)$/, (m) => V.look(m[1])], [/^(?:rosta|onska)$/, () => V.onska()],
     [/^studio-plus$/, () => V.studioPlus(false)], [/^studio-plus-tack$/, () => V.studioPlus(true)],
     [/^presentguiden$/, () => V.findRight("present")], [/^mitt-hem$/, () => V.myHome()],
-    [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
+    [/^varukorg$/, () => V.cartLink()], [/^konto$/, () => V.account()], [/^skapa-konto$/, () => V.signup()], [/^kassa$/, () => V.checkout()], [/^order-(.+)$/, (m) => V.orderDone(m[1])], [/^spara-order$/, () => V.track()], [/^angra$/, () => V.withdraw()],
   ];
   let current = null, cleanup = null, firstRun = true, drawn = 0;
   let routing = null; // the route being drawn, until render() has run: popstate and hashchange both report one navigation
@@ -864,7 +871,7 @@
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const a = e.target.closest("a[href]"); if (!a || (a.target && a.target !== "_self") || a.hasAttribute("download")) return;
     const h = a.getAttribute("href"); if (h === "#" || h === "") return;
-    if (a.closest("#sheet")) return; // the quick-view sheet steps its own history entry back first (flow.js)
+    if (a.closest("#sheet") || a.hasAttribute("data-open-cart")) return; // the quick-view sheet steps its own history entry back first (flow.js); a cart link opens the drawer
     const raw = rawOf(a);
     if (raw != null) {
       e.preventDefault();
@@ -1134,7 +1141,7 @@
       const qp = t.classList.contains("qadd") && RQ.byHandle(t.dataset.add.split("::")[0]);
       if (qp && qp.variants && qp.variants.length > 1 && RQ.sheet) { RQ.sheet.open(qp.handle, { from: t, ask: true }); return; }
       S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
-    if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
+    if (t.matches("[data-open-cart]")) { e.preventDefault(); if (t.closest("#mnav")) closeAll(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }
     if (t.matches("[data-q]") && t.closest("#searchRes")) { sInput.value = t.dataset.q; doSearch(); return; }
     if (t.matches("[data-rm]")) { // nothing leaves the cart for good by one tap: the toast offers to put it back
@@ -1190,7 +1197,7 @@
     // a link inside a layer: the new page takes the layer's place in the history (no dead step on the way back)
     window.addEventListener("click", (e) => {
       if (!onTop() || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const a = e.target.closest && e.target.closest("a[href]"); if (!a || !a.closest("#cart,#search,#mnav") || (a.target && a.target !== "_self")) return;
+      const a = e.target.closest && e.target.closest("a[href]"); if (!a || !a.closest("#cart,#search,#mnav") || a.hasAttribute("data-open-cart") || (a.target && a.target !== "_self")) return;
       const h = a.getAttribute("href"); let raw = null;
       if (h[0] === "#") raw = h.length > 1 ? decodeURIComponent(h.slice(1)) : null;
       else { try { const u = new URL(a.href), base = new URL(".", document.baseURI); if (u.origin === location.origin && u.pathname.startsWith(base.pathname) && !u.hash) raw = decodeURIComponent(u.pathname.slice(base.pathname.length).replace(/index\.html$/, "").replace(/\/+$/, "")) || "hem"; } catch (x) {} }
