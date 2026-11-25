@@ -270,7 +270,8 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.getElementById('aiSheet').classList.contains('open')"), f"{tag} back in Mitt rum after signing in, the AI sheet opens again")
         pg.evaluate("localStorage.setItem('rumiq-ai-consent', JSON.stringify('x')); RQ.openAI()"); pg.wait_for_timeout(1600)
         pg.evaluate("document.getElementById('aiGo').click()"); pg.wait_for_timeout(2600)
-        ok(not pg.evaluate("!!document.querySelector('.ai-ba-hint')") and not pg.evaluate("!!document.querySelector('#aiBa input')"), f"{tag} the demo offers no compare slider between two identical pictures")
+        # studio ai: the demo's before picture is now the room photo itself, so the slider compares two different pictures
+        ok(pg.evaluate("!!document.querySelector('#aiBa input') && document.querySelector('#aiBa img.before').src !== document.querySelector('#aiBa img.after').src"), f"{tag} the demo's slider compares the room photo with the arrangement, never two identical pictures")
         ok(pg.evaluate("getComputedStyle(document.querySelector('.ai-grid')).borderTopStyle") == "none", f"{tag} no card with a border inside the AI sheet")
         ba = pg.evaluate("(() => { const e = document.elementFromPoint(...(() => { const r = document.querySelector('#aiSheet .sheet-x').getBoundingClientRect(); return [r.right - 8, r.top + r.height / 2]; })()); return e && e.closest('.sheet-x') ? 1 : 0; })()")
         ok(ba == 1, f"{tag} nothing covers the close button")

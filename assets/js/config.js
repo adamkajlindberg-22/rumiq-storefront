@@ -56,4 +56,8 @@ window.RQ_CONFIG = {
   freeShippingFrom: 799,
   shipping: { pickup: 49, home: 89 }, // kr to pickup point/parcel locker and to the door (examples until the carrier is chosen)
   payments: [], // e.g. ["Kort", "Klarna", "Swish", "Apple Pay", "Google Pay"] once they are switched on in Shopify
+  // AI room pictures (Mitt rum). The founder's limits; the server enforces the same numbers in the plans table.
+  // serverLibrary: true once the edge function "ai-library" is deployed (see studio-server.md): "Mina rumsbilder" then
+  // comes from the private results bucket. Until then the pictures are kept on this device only, and the page says so.
+  studio: { freeImages: 5, plusImages: 100, plusPrice: 99, dailyFree: 5, dailyPlus: 30, purchaseBonus: 10, serverLibrary: false },
 };
