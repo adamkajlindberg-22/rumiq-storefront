@@ -2137,7 +2137,7 @@ html[data-no-offers] [data-show=offers],html[data-no-news] [data-show=news]{disp
 .rm-more .chip{padding:.38rem .75rem;font-size:.85rem}
 @media (max-width:900px){.rm-more{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:1rem calc(-1 * var(--gutter)) 0;padding:0 var(--gutter)}.rm-more .chip{flex:none}.rm-more::-webkit-scrollbar{display:none}}
 .rm-stage .rm-bg{transition:filter .9s var(--ease)}
-.rm-stage.night .rm-bg{filter:brightness(.4) saturate(.8) sepia(.22) hue-rotate(-6deg)}
+.rm-stage.night .rm-bg{filter:brightness(.4) saturate(.8) sepia(.22) hue-rotate(-6deg)!important} /* also in the site's evening mode, which dims photos */
 .rm-stage.night .rm-item img{transition:filter .9s var(--ease)}
 .rm-stage.night .rm-item:not(.lamp) img{filter:brightness(.52) saturate(.85) sepia(.15)!important}
 .rm-stage.night .rm-item.lamp img{filter:brightness(1.06) saturate(1.05)!important}
@@ -2400,6 +2400,12 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-undo svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .rm-undo:hover{background:#fff}
 @keyframes rmUndoIn{from{opacity:0;transform:translateY(.4rem)}to{opacity:1;transform:none}}
+/* while Kvällsljus is on: a small chip on the room that says so and turns it off */
+.rm-nightchip{position:absolute;right:.7rem;top:.8rem;z-index:3;display:inline-flex;align-items:center;gap:.4rem;height:2.5rem;padding:0 .75rem 0 .85rem;border:0;border-radius:999px;background:rgba(34,37,42,.78);color:#F3E3C4;font-size:.84rem;font-weight:600;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.rm-nightchip[hidden]{display:none}
+.rm-nightchip svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.rm-nightchip svg.x{width:.85rem;height:.85rem;opacity:.75}
+.rm-nightchip:hover svg.x{opacity:1}
 @media (prefers-reduced-motion:reduce){.rm-undo{animation:none}}
 /* what you can do with the thing you tapped: takes the toolbar's place on a phone, right under the room */
 .rm-act{display:none}

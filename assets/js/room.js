@@ -450,6 +450,7 @@
               <button type="button" class="rm-hold" id="rmHold" aria-label="Håll för före, så ser du rummet utan produkterna">${ICO.eye}<span>Håll för före</span></button>
               <button type="button" class="rm-zoom" id="rmZoom" hidden>${ICO.fit}<span>Hela rummet</span></button>
               <button type="button" class="rm-undo" id="rmUndo" aria-keyshortcuts="Control+Z" hidden>${ICO.undo}<span>Ångra</span></button>
+              <button type="button" class="rm-nightchip" id="rmNightChip" aria-label="Kvällsljus är på. Stäng av" hidden>${ICO.moon}<span>Kvällsljus</span><svg class="x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
               <span class="rm-pos" id="rmPos" aria-hidden="true" hidden><i></i></span>
               <div class="rm-emptyhint" id="rmHint" hidden><p>Rummet är tomt.</p><button class="btn sm light" type="button" id="rmSuggest0">${ICO.wand}Inred åt mig</button></div>
               <p class="rm-first" id="rmFirst" role="status" hidden></p>
@@ -614,7 +615,7 @@
         const far = (a, e) => Math.hypot(e.clientX - a.sx, e.clientY - a.sy) > 6;
         stage.addEventListener("pointerdown", (e) => {
           const el = e.target.closest(".rm-item");
-          if (e.target.closest(".rm-hold,.rm-emptyhint,.rm-zoom,.rm-undo")) return;
+          if (e.target.closest(".rm-hold,.rm-emptyhint,.rm-zoom,.rm-undo,.rm-nightchip")) return;
           if (e.isPrimary) { pts.clear(); pinch = drag = pan = null; } // a first finger starts afresh, whatever an interrupted gesture left behind
           pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
           try { stage.setPointerCapture(e.pointerId); } catch (x) {}
@@ -738,7 +739,8 @@
           S.saveLook(hs, "Mitt rum " + new Date().toLocaleDateString("sv-SE")); RQ.toast('Looken är sparad. <a href="#mitt-hem">Mitt hem</a>'); });
         $("#rmCart", root).addEventListener("click", (e) => R.cartAll(e.currentTarget)); $("#rmCart2", root).addEventListener("click", (e) => R.cartAll(e.currentTarget));
         // evening: the room dims and every lamp and candle you placed glows, so you see the light at home
-        const night = $("#rmNight", root), setNight = (on) => { stage.classList.toggle("night", on); night.setAttribute("aria-checked", on); try { localStorage.setItem("rumiq-room-night", on ? "1" : "0"); } catch (e) {} };
+        const night = $("#rmNight", root), nChip = $("#rmNightChip", root), setNight = (on) => { stage.classList.toggle("night", on); night.setAttribute("aria-checked", on); if (!on && document.activeElement === nChip) more.focus({ preventScroll: true }); nChip.hidden = !on; /* on the picture while it is on: it stays on between visits */ try { localStorage.setItem("rumiq-room-night", on ? "1" : "0"); } catch (e) {} };
+        nChip.addEventListener("click", () => setNight(false));
         night.addEventListener("click", () => { setNight(!stage.classList.contains("night")); RQ.track && RQ.track("room_night", { on: stage.classList.contains("night") }); });
         try { if (localStorage.getItem("rumiq-room-night") === "1") setNight(true); } catch (e) {}
         let lastSave = "";
