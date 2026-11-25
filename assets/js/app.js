@@ -54,7 +54,7 @@
   document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";
   const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
-  const KEEP = ".lk"; // read right after adding (the product page's Leveranskoll): never under the toast
+  const KEEP = ".lk, .lp-buy"; // read right after adding (the product page's Leveranskoll, a look's buy block with Visa varukorgen): never under the toast
   const toastPlace = (t) => {
     ["top", "bottom", "left", "right"].forEach((k) => t.style.removeProperty(k));
     if (document.getElementById("rmStage")) return;
@@ -76,6 +76,8 @@
         if (!el || el.closest(".sheet-scrim")) continue;
         const need = el.closest(NEED);
         if ((trig && (el === trig || trig.contains(el))) || el.closest(FIELD) || el.closest(KEEP) || (need && ((zone && zone.contains(el)) || (band && !panelEl && py > band[0] && py < band[1])))) n++; }
+      // what must stay readable is kept clear by its whole box, with a little air (a sampled point can miss a corner)
+      if (!panelEl) $$(KEEP).forEach((k) => { const r = k.getBoundingClientRect(); if (r.height && x < r.right + 8 && x + tw > r.left - 8 && y < r.bottom + 8 && y + th > r.top - 8) n += 3; });
       return n; };
     let best = spots[0], bn = Infinity;
     for (const sp of spots) { if (sp[1] < 0 || sp[1] + th > H || sp[0] < 0) continue; const n = hits(sp); if (n < bn) { best = sp; bn = n; } if (!n) break; }
