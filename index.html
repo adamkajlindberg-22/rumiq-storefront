@@ -4,21 +4,25 @@
 <meta charset="utf-8">
 <base href="./">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RumIQ · Skandinavisk inredning och smarta verktyg för hemmet</title>
-<meta name="description" content="Skandinavisk inredning du ser i ditt eget rum innan du köper. Lampor, textil och förvaring, noga utvalt. Svep fram din stil eller ta en färdig look.">
+<title>RumIQ – skandinavisk inredning du ser i ditt eget rum</title>
+<meta name="description" content="Skandinavisk inredning du ser i ditt eget rum innan du köper: lampor, textil, förvaring och tavlor. Fri frakt från 799 kr och 30 dagars öppet köp.">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#EDEDEA">
-<meta name="color-scheme" content="light dark">
+<link rel="canonical" href="https://adamkajlindberg-22.github.io/rumiq-storefront/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RumIQ">
-<meta property="og:title" content="RumIQ · Skandinavisk inredning och smarta verktyg för hemmet">
-<meta property="og:description" content="Skandinavisk inredning du ser i ditt eget rum innan du köper. Lampor, textil och förvaring, noga utvalt. Svep fram din stil eller ta en färdig look.">
+<meta property="og:locale" content="sv_SE">
+<meta property="og:title" content="RumIQ – skandinavisk inredning du ser i ditt eget rum">
+<meta property="og:description" content="Skandinavisk inredning du ser i ditt eget rum innan du köper: lampor, textil, förvaring och tavlor. Fri frakt från 799 kr och 30 dagars öppet köp.">
 <meta property="og:image" content="https://adamkajlindberg-22.github.io/rumiq-storefront/assets/img/og.jpg">
 <meta property="og:url" content="https://adamkajlindberg-22.github.io/rumiq-storefront/">
-<link rel="canonical" href="https://adamkajlindberg-22.github.io/rumiq-storefront/">
 <meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"OnlineStore","@id":"https://adamkajlindberg-22.github.io/rumiq-storefront/#organization","name":"RumIQ","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/","logo":{"@type":"ImageObject","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","width":480,"height":120},"email":"support@rumiq.se","areaServed":{"@type":"Country","name":"SE"},"contactPoint":{"@type":"ContactPoint","contactType":"customer service","email":"support@rumiq.se","availableLanguage":["sv","en"]},"hasMerchantReturnPolicy":{"@type":"MerchantReturnPolicy","applicableCountry":"SE","returnPolicyCategory":"https://schema.org/MerchantReturnFiniteReturnWindow","merchantReturnDays":30,"returnMethod":"https://schema.org/ReturnByMail","merchantReturnLink":"https://adamkajlindberg-22.github.io/rumiq-storefront/returer/"}}</script>
+<script type="application/ld+json" data-page>{"@context":"https://schema.org","@type":"WebSite","@id":"https://adamkajlindberg-22.github.io/rumiq-storefront/#website","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/","name":"RumIQ","alternateName":"RumIQ – skandinavisk inredning","inLanguage":"sv-SE","publisher":{"@id":"https://adamkajlindberg-22.github.io/rumiq-storefront/#organization"}}</script>
+<meta name="theme-color" content="#EDEDEA">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" type="image/png" href="assets/brand/favicon.png">
 <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preload" as="font" type="font/woff2" href="assets/fonts/familjen-grotesk-latin-wght-normal.woff2" crossorigin>
 <script>/* Light: the site is fog-white unless the visitor has chosen evening, or to follow the daylight (dims after sunset in Stockholm, never before 17:00). */
 (function(){var m="dag";try{m=localStorage.getItem("rumiq-ljus")||"dag"}catch(e){}
@@ -26,26 +30,43 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=f264cdd9">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"RumIQ","email":"support@rumiq.se","logo":"https://adamkajlindberg-22.github.io/rumiq-storefront/assets/brand/rumiq-grafit.webp","url":"https://adamkajlindberg-22.github.io/rumiq-storefront/"}</script>
+<link rel="stylesheet" href="assets/css/site.min.css?v=deefd8e0">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
+<div class="cookie" id="cookie" role="dialog" aria-label="Cookies">
+  <h2>Cookies</h2><p>Nödvändiga cookies får butiken att fungera. Statistik och marknadsföring bara om du vill. <a href="juridik-cookies/">Läs mer</a></p>
+  <div class="opts" hidden><label class="check"><input type="checkbox" checked disabled> Nödvändiga</label><label class="check"><input type="checkbox" id="ckStats"> Statistik</label><label class="check"><input type="checkbox" id="ckMkt"> Marknadsföring</label><button class="btn sm" type="button" id="ckSave">Spara val</button></div>
+  <div class="row"><button class="btn sm" type="button" id="ckNeed">Bara nödvändiga</button><button class="btn ghost sm" type="button" id="ckAll">Godkänn alla</button><button class="btn ghost sm" type="button" id="ckMore" aria-expanded="false">Välj själv</button></div>
+</div>
 
 
 <header class="nav" id="nav">
   <div class="nav-in">
-    <a class="nav-logo" href="./" aria-label="RumIQ, till startsidan"><img class="logo-day" src="assets/brand/rumiq-grafit.webp" alt="RumIQ" width="480" height="120"><img class="logo-night" src="assets/brand/rumiq-vit.webp" alt="" aria-hidden="true" width="480" height="120"></a>
-    <ul class="menu">
+    <a class="nav-logo" href="./" aria-label="RumIQ, till startsidan"><img class="logo-day" src="assets/brand/rumiq-grafit-288.webp" alt="RumIQ" width="288" height="72"><img class="logo-night" src="assets/brand/rumiq-vit-288.webp" alt="" aria-hidden="true" width="288" height="72" loading="lazy"></a>
+    <nav class="menu-nav" aria-label="Huvudmeny"><ul class="menu">
       <li><a href="upptack/">Upptäck</a></li>
-      <li><button type="button" data-mega="megaShop" aria-expanded="false" aria-controls="megaShop">Butik <svg viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg></button></li>
+      <li><button type="button" data-mega="megaShop" aria-expanded="false" aria-controls="megaShop">Butik <svg viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg></button>
+  <div class="mega" id="megaShop" role="region" aria-label="Butik">
+    <div class="mega-in">
+      <div><h4>Kategorier</h4><ul>
+        <li><a href="butik/">Alla produkter</a></li>
+        <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
+        <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
+      <div><h4>Mer i butiken</h4><ul><li><a href="favoriter/">Våra favoriter</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="looks/">Looks</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li><li><a href="presentkort/">Presentkort</a></li></ul>
+        <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
+        </div>
+      <div class="feature"><a href="kategori-belysning-atmosfar/"><img src="assets/img/p/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy"><span>Belysning & atmosfär</span></a><a href="kategori-sovrum-komfort/"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy"><span>Sovrum & komfort</span></a></div>
+    </div>
+  </div>
+      </li>
       <li><a href="looks/">Looks</a></li>
-    </ul>
+    </ul></nav>
     <div class="tools">
       <a class="roompill" href="mitt-rum/"><span class="rp-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span><span>Mitt rum</span><span class="badge" data-count="scene"></span></a>
       <button class="searchbtn" type="button" data-open-search><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Sök</span><kbd>/</kbd></button>
       <button class="iconbtn msearch" type="button" data-open-search aria-label="Sök"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg></button>
-      <button class="lang" type="button" translate="no" data-lang-short aria-label="In English" lang="en">EN</button>
+      <button class="lang" type="button" translate="no" data-lang-short aria-label="EN, in English" lang="en">EN</button>
       <div class="lampwrap"><button class="iconbtn lamp" type="button" id="lampBtn" aria-haspopup="true" aria-expanded="false" aria-controls="lightMenu" aria-label="Ljus på sajten"><svg viewBox="0 0 24 24"><path class="shade" d="M8 4h8l3 7H5z"/><path d="M12 11v8M8.5 20h7"/><path class="ray" d="M7 14l-1.5 2M17 14l1.5 2M12 14v2.5"/></svg></button>
         <div class="lightmenu" id="lightMenu" role="menu" aria-label="Ljus">
           <p>Sajten är ljus. Vill du ha den dämpad på kvällen? Välj här.</p>
@@ -54,60 +75,40 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
         </div></div>
       <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
-      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat i Mitt hem"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
+      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
       <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
       <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
-    </div>
-  </div>
-  <div class="mega" id="megaShop" role="region" aria-label="Butik">
-    <div class="mega-in">
-      <div><h4>Kategorier</h4><ul>
-        <li><a href="butik/">Alla produkter</a></li>
-        <li><a href="kategori-hem-inredning/">Hem & inredning</a></li><li><a href="kategori-kok-matplats/">Kök & matplats</a></li><li><a href="kategori-badrum-valmaende/">Badrum & välmående</a></li><li><a href="kategori-forvaring-organisering/">Förvaring & organisering</a></li>
-        <li><a href="kategori-belysning-atmosfar/">Belysning & atmosfär</a></li><li><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a></li><li><a href="kategori-sovrum-komfort/">Sovrum & komfort</a></li><li><a href="kategori-uteliv/">Uteliv</a></li></ul></div>
-      <div><h4>Mer i butiken</h4><ul><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li><li><a href="presentkort/">Presentkort</a></li></ul>
-        <h4 style="margin-top:1.6rem">Efter rum</h4><ul class="mega-rooms"><li><a href="rum-vardagsrum/">Vardagsrum</a></li><li><a href="rum-sovrum/">Sovrum</a></li><li><a href="rum-kok/">Kök</a></li><li><a href="rum-badrum/">Badrum</a></li><li><a href="rum-hall/">Hall</a></li><li><a href="rum-hemmakontor/">Hemmakontor</a></li><li><a href="rum-uteliv/">Uteliv</a></li></ul>
-        </div>
-      <div class="feature"><a href="kategori-belysning-atmosfar/"><img src="assets/img/p/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy"><span>Belysning & atmosfär</span></a><a href="kategori-sovrum-komfort/"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy"><span>Sovrum & komfort</span></a></div>
     </div>
   </div>
 </header>
 
 <nav class="mnav" id="mnav" aria-label="Meny">
-  <button class="iconbtn close" id="mnavClose" type="button" aria-label="Stäng meny"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <h4>Upptäck</h4><a href="upptack/">Allt att upptäcka</a><a href="looks/">Färdiga looks</a><a href="rum/">Rum att handla i</a><a href="svep/">Hitta din stil</a><a href="magasin/">Magasin</a>
-  <h4>Butik</h4><a href="butik/">Alla produkter</a><a href="for-dig/">För dig</a><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="presentkort/">Presentkort</a>
-  <h4>Mitt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat och mina rum</a><a href="hitta-ratt/">Hitta rätt</a><a href="studio-plus/">Studio Plus</a>
-  <h4>Konto och hjälp</h4><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Var är mitt paket?</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a>
-  <div><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Dag</span></button></div>
+  <div class="mnav-top"><a class="nav-logo" href="./" aria-label="RumIQ, till startsidan"><img class="logo-day" src="assets/brand/rumiq-grafit-288.webp" alt="RumIQ" width="288" height="72" loading="lazy"><img class="logo-night" src="assets/brand/rumiq-vit-288.webp" alt="" aria-hidden="true" width="288" height="72" loading="lazy"></a><button class="iconbtn close" id="mnavClose" type="button" aria-label="Stäng meny"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="mnav-set"><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Dag</span></button></div>
+  <h4>Butik</h4><a href="butik/">Alla produkter</a>
+  <div class="mnav-grid"><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a><a href="kategori-badrum-valmaende/">Badrum & välmående</a><a href="kategori-uteliv/">Uteliv</a><a href="for-dig/">För dig</a><a href="presentkort/">Presentkort</a></div>
+  <h4>Upptäck</h4><a href="looks/">Looks</a><a href="rum/">Handla efter rum</a><a href="svep/">Svep</a><a href="hitta-ratt/">Hitta rätt</a><a href="onska/">Önska</a><a href="magasin/">Magasin</a>
+  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat</a><a href="studio-plus/">Studio Plus</a>
+  <h4>Konto och hjälp</h4>
+  <div class="mnav-grid"><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Spåra min beställning</a><a href="frakt/">Frakt & leverans</a><a href="returer/">Returer</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a></div>
 </nav>
 
-<nav class="dock" id="dock" aria-label="Snabbmeny">
-  <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
-  <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
-  <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
-  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
-  <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
-</nav>
 
-<main id="view" class="view home" tabindex="-1">
+
+<noscript><p class="noscript">Butiken behöver JavaScript för varukorg, sök och Mitt rum. Slå på det i webbläsaren, så fungerar allt.</p></noscript>
+<main id="view" class="view home first" tabindex="-1">
       <section class="hero" id="hero" aria-label="Välkommen till RumIQ">
         <div class="stage">
-          <img class="still wide" src="assets/img/rum-1600.webp" srcset="assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w" sizes="100vw" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="2400" height="1340">
-          <img class="still start" src="assets/img/hero-start-1600.webp" alt="" aria-hidden="true" width="1600" height="900">
+          <picture><source media="(prefers-reduced-motion: reduce), (pointer: coarse) and (min-width: 821px) and (max-width: 1100px)" srcset="assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w" sizes="max(100vw, 180vh)"><source media="(max-width: 820px)" srcset="assets/img/hero-m-start.webp"><img class="still first" src="assets/img/hero-start-1600.webp" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="1600" height="900" fetchpriority="high" decoding="async"></picture>
+          <img class="still wide" alt="" aria-hidden="true" width="2400" height="1340" decoding="async" hidden="">
           <video id="heroVideo" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1"></video>
-          <video class="mloop" id="heroLoop" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1" poster="assets/img/hero-m-start.webp"></video>
+          <video class="mloop" id="heroLoop" muted="" playsinline="" preload="none" aria-hidden="true" tabindex="-1"></video>
           <canvas id="dust" aria-hidden="true"></canvas>
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
-            <div class="band" data-in="0" data-out=".19" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 54px));"><p class="big">Börja med en sak.</p></div>
-            <div class="band" data-in=".22" data-out=".44" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 40px));"><p class="big">Den rätta.</p></div>
-            <div class="band" data-in=".48" data-out=".70" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 25px));"><p class="big">Ett bättre hem kräver inte fler saker.</p></div>
-            <div class="band" data-in=".74" data-out=".89" style="opacity: 0; visibility: hidden; transform: translateY(calc(-50% - 11px));"><p class="big">Det kräver rätt saker.</p></div>
-            <div class="band settle" data-in=".92" data-out="9" style="opacity: 1; visibility: visible; transform: translateY(calc(-50% + 0px));"><h1>Rätt saker.<br>Ett lugnare hem.</h1><p class="sub">Noga utvald belysning, textil och förvaring, och verktyg som låter dig se allt i ditt eget rum innan du köper.</p>
+            <div class="band settle"><h1>Rätt saker.<br>Ett lugnare hem.</h1><p class="sub">Noga utvald belysning, textil och förvaring, och verktyg som låter dig se allt i ditt eget rum innan du köper.</p>
               <div class="row"><button class="btn" type="button" data-room-setup="#butik">Se butiken i ditt rum</button><a class="btn ghost" href="butik/">Upptäck butiken</a></div></div>
           </div>
-          <div class="loader" id="loader" aria-hidden="true"><svg viewBox="0 0 32 32"><circle class="track" cx="16" cy="16" r="13"></circle><circle class="bar" id="loaderBar" cx="16" cy="16" r="13" pathLength="1"></circle></svg><span id="loaderText">Laddar rummet</span></div>
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>
         </div>
       </section>
@@ -115,66 +116,84 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li><b>30 dagars öppet köp</b>, ångra med en knapp</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
 
       <section class="hrooms" aria-label="Handla efter rum"><div class="wrap hrooms-in">
-        <a class="hroom" href="rum-vardagsrum/"><span class="hroom-im"><img src="assets/img/rum/vardagsrum-600.webp" alt="" loading="lazy" decoding="async"></span><span>Vardagsrum</span></a><a class="hroom" href="rum-sovrum/"><span class="hroom-im"><img src="assets/img/rum/sovrum-600.webp" alt="" loading="lazy" decoding="async"></span><span>Sovrum</span></a><a class="hroom" href="rum-kok/"><span class="hroom-im"><img src="assets/img/rum/kok-600.webp" alt="" loading="lazy" decoding="async"></span><span>Kök</span></a><a class="hroom" href="rum-badrum/"><span class="hroom-im"><img src="assets/img/rum/badrum-600.webp" alt="" loading="lazy" decoding="async"></span><span>Badrum</span></a><a class="hroom" href="rum-hall/"><span class="hroom-im"><img src="assets/img/rum/hall-600.webp" alt="" loading="lazy" decoding="async"></span><span>Hall</span></a><a class="hroom" href="rum-hemmakontor/"><span class="hroom-im"><img src="assets/img/rum/hemmakontor-600.webp" alt="" loading="lazy" decoding="async"></span><span>Hemmakontor</span></a><a class="hroom" href="rum-uteliv/"><span class="hroom-im"><img src="assets/img/rum/uteliv-600.webp" alt="" loading="lazy" decoding="async"></span><span>Uteliv</span></a>
+        <a class="hroom" href="rum-vardagsrum/"><span class="hroom-im"><img src="assets/img/rum/vardagsrum-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Vardagsrum</span></a><a class="hroom" href="rum-sovrum/"><span class="hroom-im"><img src="assets/img/rum/sovrum-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Sovrum</span></a><a class="hroom" href="rum-kok/"><span class="hroom-im"><img src="assets/img/rum/kok-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Kök</span></a><a class="hroom" href="rum-badrum/"><span class="hroom-im"><img src="assets/img/rum/badrum-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Badrum</span></a><a class="hroom" href="rum-hall/"><span class="hroom-im"><img src="assets/img/rum/hall-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Hall</span></a><a class="hroom" href="rum-hemmakontor/"><span class="hroom-im"><img src="assets/img/rum/hemmakontor-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Hemmakontor</span></a><a class="hroom" href="rum-uteliv/"><span class="hroom-im"><img src="assets/img/rum/uteliv-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Uteliv</span></a>
         <a class="hroom all" href="butik/"><span class="hroom-im"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"></rect><rect x="13" y="4" width="7" height="7" rx="1"></rect><rect x="4" y="13" width="7" height="7" rx="1"></rect><rect x="13" y="13" width="7" height="7" rx="1"></rect></svg></span><span>Alla produkter</span></a>
       </div></section>
 
       <section class="sec" id="utvalt">
-        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Populärt just nu</h2><p>Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning.</p></div><a class="link" href="butik/">Alla produkter</a></div>
-          <div class="grid three">
+        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Våra favoriter just nu</h2><p>Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning.</p></div><a class="link" href="butik/">Alla produkter</a></div>
+          <div class="grid feat">
     <article class="card" style="--tone:#F1EDE622">
-      <a class="ph" href="produkt-glob-bordslampa-opalglas/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glob-bordslampa-opalglas-600.webp" srcset="assets/img/p/glob-bordslampa-opalglas-600.webp 600w, assets/img/p/glob-bordslampa-opalglas-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glob bordslampa opalglas" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade ok" src="assets/img/d/glob-bordslampa-opalglas-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
-      <button class="iconbtn fav" type="button" data-wish="glob-bordslampa-opalglas" aria-pressed="false" aria-label="Spara Glob bordslampa opalglas i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="glob-bordslampa-opalglas" aria-pressed="false" aria-label="Ställ in Glob bordslampa opalglas i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-      <button class="qadd" type="button" data-add="glob-bordslampa-opalglas::0" aria-label="Lägg Glob bordslampa opalglas i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <a class="ph" href="produkt-glob-bordslampa-opalglas/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glob-bordslampa-opalglas-600.webp" srcset="assets/img/p/glob-bordslampa-opalglas-600.webp 600w, assets/img/p/glob-bordslampa-opalglas-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glob bordslampa opalglas" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/glob-bordslampa-opalglas-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="glob-bordslampa-opalglas" aria-pressed="false" aria-label="Spara Glob bordslampa opalglas"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="glob-bordslampa-opalglas" aria-pressed="false" aria-label="Ställ in Glob bordslampa opalglas i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="glob-bordslampa-opalglas" aria-label="Snabbtitt på Glob bordslampa opalglas"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="glob-bordslampa-opalglas::0" aria-label="Lägg till Glob bordslampa opalglas i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-glob-bordslampa-opalglas/">Glob bordslampa opalglas</a></h3><span class="price">899 kr</span></div>
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#D9C7AE22">
-      <a class="ph" href="produkt-lysa-keramiklampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/lysa-keramiklampa-600.webp" srcset="assets/img/p/lysa-keramiklampa-600.webp 600w, assets/img/p/lysa-keramiklampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Lysa keramiklampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade ok" src="assets/img/d/lysa-keramiklampa-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
-      <button class="iconbtn fav" type="button" data-wish="lysa-keramiklampa" aria-pressed="false" aria-label="Spara Lysa keramiklampa i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="lysa-keramiklampa" aria-pressed="false" aria-label="Ställ in Lysa keramiklampa i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-      <button class="qadd" type="button" data-add="lysa-keramiklampa::0" aria-label="Lägg Lysa keramiklampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <a class="ph" href="produkt-lysa-keramiklampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/lysa-keramiklampa-600.webp" srcset="assets/img/p/lysa-keramiklampa-600.webp 600w, assets/img/p/lysa-keramiklampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Lysa keramiklampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/lysa-keramiklampa-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="lysa-keramiklampa" aria-pressed="false" aria-label="Spara Lysa keramiklampa"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="lysa-keramiklampa" aria-pressed="false" aria-label="Ställ in Lysa keramiklampa i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="lysa-keramiklampa" aria-label="Snabbtitt på Lysa keramiklampa"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="lysa-keramiklampa::0" aria-label="Lägg till Lysa keramiklampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-lysa-keramiklampa/">Lysa keramiklampa</a></h3><span class="price">1&nbsp;290 kr</span></div>
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#F4EFE722">
-      <a class="ph" href="produkt-svamp-uppladdningsbar-lampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/svamp-uppladdningsbar-lampa-600.webp" srcset="assets/img/p/svamp-uppladdningsbar-lampa-600.webp 600w, assets/img/p/svamp-uppladdningsbar-lampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Svamp uppladdningsbar lampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade ok" src="assets/img/d/svamp-uppladdningsbar-lampa-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
-      <button class="iconbtn fav" type="button" data-wish="svamp-uppladdningsbar-lampa" aria-pressed="false" aria-label="Spara Svamp uppladdningsbar lampa i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="svamp-uppladdningsbar-lampa" aria-pressed="false" aria-label="Ställ in Svamp uppladdningsbar lampa i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-      <button class="qadd" type="button" data-add="svamp-uppladdningsbar-lampa::0" aria-label="Lägg Svamp uppladdningsbar lampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <a class="ph" href="produkt-svamp-uppladdningsbar-lampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/svamp-uppladdningsbar-lampa-600.webp" srcset="assets/img/p/svamp-uppladdningsbar-lampa-600.webp 600w, assets/img/p/svamp-uppladdningsbar-lampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Svamp uppladdningsbar lampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/svamp-uppladdningsbar-lampa-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="svamp-uppladdningsbar-lampa" aria-pressed="false" aria-label="Spara Svamp uppladdningsbar lampa"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="svamp-uppladdningsbar-lampa" aria-pressed="false" aria-label="Ställ in Svamp uppladdningsbar lampa i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="svamp-uppladdningsbar-lampa" aria-label="Snabbtitt på Svamp uppladdningsbar lampa"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="svamp-uppladdningsbar-lampa::0" aria-label="Lägg till Svamp uppladdningsbar lampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-svamp-uppladdningsbar-lampa/">Svamp uppladdningsbar lampa</a></h3><span class="price">699 kr</span></div>
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#D8C6A822">
-      <a class="ph" href="produkt-plad-ullblandning-havre/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/plad-ullblandning-havre-600.webp" srcset="assets/img/p/plad-ullblandning-havre-600.webp 600w, assets/img/p/plad-ullblandning-havre-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Pläd ullblandning havre" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade ok" src="assets/img/d/plad-ullblandning-havre-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
-      <button class="iconbtn fav" type="button" data-wish="plad-ullblandning-havre" aria-pressed="false" aria-label="Spara Pläd ullblandning havre i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="plad-ullblandning-havre" aria-pressed="false" aria-label="Ställ in Pläd ullblandning havre i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-      <button class="qadd" type="button" data-add="plad-ullblandning-havre::0" aria-label="Lägg Pläd ullblandning havre i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <a class="ph" href="produkt-plad-ullblandning-havre/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/plad-ullblandning-havre-600.webp" srcset="assets/img/p/plad-ullblandning-havre-600.webp 600w, assets/img/p/plad-ullblandning-havre-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Pläd ullblandning havre" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/plad-ullblandning-havre-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="plad-ullblandning-havre" aria-pressed="false" aria-label="Spara Pläd ullblandning havre"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="plad-ullblandning-havre" aria-pressed="false" aria-label="Ställ in Pläd ullblandning havre i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="plad-ullblandning-havre" aria-label="Snabbtitt på Pläd ullblandning havre"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="plad-ullblandning-havre::0" aria-label="Lägg till Pläd ullblandning havre i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-plad-ullblandning-havre/">Pläd ullblandning havre</a></h3><span class="price">799 kr</span></div>
       <p class="sub"></p>
     </article>
     <article class="card" style="--tone:#F2EFE922">
-      <a class="ph" href="produkt-vaffelhandduk-bomull/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/vaffelhandduk-bomull-600.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Våffelhandduk bomull" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade ok" src="assets/img/d/vaffelhandduk-bomull-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
-      <button class="iconbtn fav" type="button" data-wish="vaffelhandduk-bomull" aria-pressed="false" aria-label="Spara Våffelhandduk bomull i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="vaffelhandduk-bomull" aria-pressed="false" aria-label="Ställ in Våffelhandduk bomull i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-      <button class="qadd" type="button" data-add="vaffelhandduk-bomull::0" aria-label="Lägg Våffelhandduk bomull i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <a class="ph" href="produkt-vaffelhandduk-bomull/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/vaffelhandduk-bomull-600.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Våffelhandduk bomull" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/vaffelhandduk-bomull-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="vaffelhandduk-bomull" aria-pressed="false" aria-label="Spara Våffelhandduk bomull"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="vaffelhandduk-bomull" aria-pressed="false" aria-label="Ställ in Våffelhandduk bomull i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="vaffelhandduk-bomull" aria-label="Snabbtitt på Våffelhandduk bomull"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="vaffelhandduk-bomull::0" aria-label="Lägg till Våffelhandduk bomull i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-vaffelhandduk-bomull/">Våffelhandduk bomull</a></h3><span class="price">299 kr</span></div>
       <p class="sub"><span class="swatches" role="img" aria-label="2 färger"><i style="background:#F2EFE9"></i><i style="background:#D9C7AA"></i></span></p>
     </article>
     <article class="card" style="--tone:#D9C4A322">
-      <a class="ph" href="produkt-glod-doftljus-keramik/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glod-doftljus-keramik-600.webp" srcset="assets/img/p/glod-doftljus-keramik-600.webp 600w, assets/img/p/glod-doftljus-keramik-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glöd doftljus i keramik" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade ok" src="assets/img/d/glod-doftljus-keramik-600.webp" alt="" loading="lazy" decoding="async" onerror="this.remove()"></a>
-      <button class="iconbtn fav" type="button" data-wish="glod-doftljus-keramik" aria-pressed="false" aria-label="Spara Glöd doftljus i keramik i önskelistan"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="glod-doftljus-keramik" aria-pressed="false" aria-label="Ställ in Glöd doftljus i keramik i mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-      <button class="qadd" type="button" data-add="glod-doftljus-keramik::0" aria-label="Lägg Glöd doftljus i keramik i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <a class="ph" href="produkt-glod-doftljus-keramik/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glod-doftljus-keramik-600.webp" srcset="assets/img/p/glod-doftljus-keramik-600.webp 600w, assets/img/p/glod-doftljus-keramik-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glöd doftljus i keramik" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/glod-doftljus-keramik-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="glod-doftljus-keramik" aria-pressed="false" aria-label="Spara Glöd doftljus i keramik"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="glod-doftljus-keramik" aria-pressed="false" aria-label="Ställ in Glöd doftljus i keramik i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="glod-doftljus-keramik" aria-label="Snabbtitt på Glöd doftljus i keramik"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="glod-doftljus-keramik::0" aria-label="Lägg till Glöd doftljus i keramik i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-glod-doftljus-keramik/">Glöd doftljus i keramik</a></h3><span class="price">349 kr</span></div>
       <p class="sub"></p>
+    </article>
+    <article class="card" style="--tone:#C9A36A22">
+      <a class="ph" href="produkt-stilla-ljusstake-massing-2-pack/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/stilla-ljusstake-massing-2-pack-600.webp" srcset="assets/img/p/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/p/stilla-ljusstake-massing-2-pack-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Stilla ljusstake mässing, 2‑pack" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/stilla-ljusstake-massing-2-pack-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="stilla-ljusstake-massing-2-pack" aria-pressed="false" aria-label="Spara Stilla ljusstake mässing, 2‑pack"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="stilla-ljusstake-massing-2-pack" aria-pressed="false" aria-label="Ställ in Stilla ljusstake mässing, 2‑pack i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
+      <button class="qv" type="button" data-sheet="stilla-ljusstake-massing-2-pack" aria-label="Snabbtitt på Stilla ljusstake mässing, 2‑pack"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="stilla-ljusstake-massing-2-pack::0" aria-label="Lägg till Stilla ljusstake mässing, 2‑pack i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <div class="ct"><h3><a href="produkt-stilla-ljusstake-massing-2-pack/">Stilla ljusstake mässing, 2‑pack</a></h3><span class="price">449 kr</span></div>
+      <p class="sub"></p>
+    </article>
+    <article class="card" style="--tone:#DCCBB022">
+      <a class="ph" href="produkt-dagsljus-linnegardin-2-pack/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/dagsljus-linnegardin-2-pack-600.webp" srcset="assets/img/p/dagsljus-linnegardin-2-pack-600.webp 600w, assets/img/p/dagsljus-linnegardin-2-pack-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Dagsljus linnegardin, 2‑pack" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/dagsljus-linnegardin-2-pack-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
+      <button class="iconbtn fav" type="button" data-wish="dagsljus-linnegardin-2-pack" aria-pressed="false" aria-label="Spara Dagsljus linnegardin, 2‑pack"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="dagsljus-linnegardin-2-pack" aria-pressed="false" aria-label="Ställ in Dagsljus linnegardin, 2‑pack i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
+      <button class="qv" type="button" data-sheet="dagsljus-linnegardin-2-pack" aria-label="Snabbtitt på Dagsljus linnegardin, 2‑pack"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="dagsljus-linnegardin-2-pack::0" aria-label="Lägg till Dagsljus linnegardin, 2‑pack i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
+      <div class="ct"><h3><a href="produkt-dagsljus-linnegardin-2-pack/">Dagsljus linnegardin, 2‑pack</a></h3><span class="price">899 kr</span></div>
+      <p class="sub"><span class="swatches" role="img" aria-label="2 färger"><i style="background:#DCCBB0"></i><i style="background:#F2EFE9"></i></span></p>
     </article></div></div>
       </section>
 
@@ -187,7 +206,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <div class="ctrl-row"><a class="btn" href="svep/">Börja svepa</a><a class="btn ghost" href="svep-ihop/"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="16.5" cy="9.5" r="2.4"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14.5 19a4.3 4.3 0 0 1 6.5-3.6"></path></svg><span>Svep tillsammans</span></a></div></div>
           <div class="svh-deck"><div class="sv-wrap compact">
       <div class="sv-prog" aria-hidden="true"><i id="svhBar" style="width: 0%;"></i></div>
-      <div class="sv-deck" id="svhDeck" aria-live="polite"><article class="sv-card" data-h="vaffelhandduk-bomull" data-img="0" style="--i:2" aria-hidden="true">
+      <p class="sv-meta"><span id="svhCount">1 av 3</span><span class="sv-chip" id="svhChip" hidden=""></span></p>
+      <div class="sv-deck" id="svhDeck" tabindex="0" role="group" aria-label="Kortet"><article class="sv-card" data-h="vaffelhandduk-bomull" data-img="0" style="--i:2" aria-hidden="true">
       <div class="sv-ims"><img class="on" src="assets/img/p/vaffelhandduk-bomull-900.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Våffelhandduk bomull" draggable="false" loading="lazy"><img class="" src="assets/img/d/vaffelhandduk-bomull-1200.webp" srcset="assets/img/d/vaffelhandduk-bomull-600.webp 600w, assets/img/d/vaffelhandduk-bomull-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Våffelhandduk bomull, detalj" draggable="false" loading="lazy"></div>
       
       
@@ -196,30 +216,30 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
       <div class="sv-info"><div><b>Våffelhandduk bomull</b><span>299 kr</span></div><small><span>Badrum</span> · <span>Kök</span></small></div>
     </article><article class="sv-card" data-h="stilla-ljusstake-massing-2-pack" data-img="0" style="--i:1" aria-hidden="true">
-      <div class="sv-ims"><img class="on" src="assets/img/p/stilla-ljusstake-massing-2-pack-900.webp" srcset="assets/img/p/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/p/stilla-ljusstake-massing-2-pack-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2-pack" draggable="false"><img class="" src="assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp" srcset="assets/img/d/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2-pack, detalj" draggable="false" loading="lazy"></div>
+      <div class="sv-ims"><img class="on" src="assets/img/p/stilla-ljusstake-massing-2-pack-900.webp" srcset="assets/img/p/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/p/stilla-ljusstake-massing-2-pack-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2‑pack" draggable="false"><img class="" src="assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp" srcset="assets/img/d/stilla-ljusstake-massing-2-pack-600.webp 600w, assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Stilla ljusstake mässing, 2‑pack, detalj" draggable="false" loading="lazy"></div>
       
       
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
       <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
-      <div class="sv-info"><div><b>Stilla ljusstake mässing, 2-pack</b><span>449 kr</span></div><small><span>Kök</span> · <span>Vardagsrum</span> · <span>Hall</span></small></div>
+      <div class="sv-info"><div><b>Stilla ljusstake mässing, 2‑pack</b><span>449 kr</span></div><small><span>Kök</span> · <span>Vardagsrum</span> · <span>Hall</span></small></div>
     </article><article class="sv-card" data-h="dagsljus-linnegardin-2-pack" data-img="0" style="--i:0" aria-hidden="false">
-      <div class="sv-ims"><img class="on" src="assets/img/p/dagsljus-linnegardin-2-pack-900.webp" srcset="assets/img/p/dagsljus-linnegardin-2-pack-600.webp 600w, assets/img/p/dagsljus-linnegardin-2-pack-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Dagsljus linnegardin, 2-pack" draggable="false"><img class="" src="assets/img/d/dagsljus-linnegardin-2-pack-1200.webp" srcset="assets/img/d/dagsljus-linnegardin-2-pack-600.webp 600w, assets/img/d/dagsljus-linnegardin-2-pack-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Dagsljus linnegardin, 2-pack, detalj" draggable="false" loading="lazy"></div>
+      <div class="sv-ims"><img class="on" src="assets/img/p/dagsljus-linnegardin-2-pack-900.webp" srcset="assets/img/p/dagsljus-linnegardin-2-pack-600.webp 600w, assets/img/p/dagsljus-linnegardin-2-pack-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Dagsljus linnegardin, 2‑pack" draggable="false"><img class="" src="assets/img/d/dagsljus-linnegardin-2-pack-1200.webp" srcset="assets/img/d/dagsljus-linnegardin-2-pack-600.webp 600w, assets/img/d/dagsljus-linnegardin-2-pack-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Dagsljus linnegardin, 2‑pack, detalj" draggable="false" loading="lazy"></div>
       
       
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
       <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
-      <div class="sv-info"><div><b>Dagsljus linnegardin, 2-pack</b><span>899 kr</span></div><small><span>Vardagsrum</span> · <span>Sovrum</span></small></div>
+      <div class="sv-info"><div><b>Dagsljus linnegardin, 2‑pack</b><span>899 kr</span></div><small><span>Vardagsrum</span> · <span>Sovrum</span></small></div>
     </article></div>
+      <p class="sr" id="svhSaid" role="status"></p>
       <div class="sv-ctrl" id="svhCtrl">
         
-        <button class="sv-b no" type="button" id="svhNo" aria-label="Nej tack"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        <button class="sv-b no" type="button" id="svhNo" aria-label="Nej tack" title="Nej tack"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
         
-        <button class="sv-b bag" type="button" id="svhBag" aria-label="Lägg i varukorgen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></button>
-        <button class="sv-b yes" type="button" id="svhYes" aria-label="Spara i favoriter"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+        <button class="sv-b bag" type="button" id="svhBag" aria-label="Lägg i varukorgen" title="Lägg i varukorgen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></button>
+        <button class="sv-b yes" type="button" id="svhYes" aria-label="Spara" title="Spara"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
       </div>
-      <p class="sv-meta"><span id="svhCount">1 av 3</span><span class="sv-chip" id="svhChip" hidden=""></span></p>
       
     </div></div>
         </div></section>
@@ -233,61 +253,61 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <div class="ctrl-row" style="margin-top:2rem"><button class="btn" type="button" data-room-setup="#butik">Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#butik">Prova med ett exempelrum</button></div>
             <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
           </div>
-          <figure class="rh-fig bav" style="--ba:58%"><div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg" src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w" sizes="(max-width: 900px) 100vw, 60vw" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async"><div class="ba-after"><img class="rh-bg" src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w" sizes="(max-width: 900px) 100vw, 60vw" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async"><span class="rh-tag" style="left:14%;top:47%"><i></i><span><b>Lysa keramiklampa</b> 1&nbsp;290 kr</span></span><span class="rh-tag" style="left:56%;top:57%"><i></i><span><b>Pläd ullblandning havre</b> 799 kr</span></span><span class="rh-tag" style="left:25%;top:74%"><i></i><span><b>Flätad förvaringskorg</b> 379 kr</span></span></div>
+          <figure class="rh-fig bav" style="--ba:31%"><div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w" sizes="(max-width: 900px) 100vw, 60vw" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async" width="1344" height="752"><div class="ba-after"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w" sizes="(max-width: 900px) 100vw, 60vw" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async" width="1344" height="752"><span class="rh-tag l" style="left:86%;top:47%"><i></i><span><b>Lysa keramiklampa</b> 1&nbsp;290 kr</span></span><span class="rh-tag" style="left:44%;top:57%"><i></i><span><b>Pläd ullblandning havre</b> 799 kr</span></span><span class="rh-tag l" style="left:75%;top:74%"><i></i><span><b>Flätad förvaringskorg</b> 379 kr</span></span></div>
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
-      <input class="ba-range" type="range" min="0" max="100" value="58" aria-label="Jämför rummet före och efter. Dra åt höger för att visa fler produkter."></div>
+      <input class="ba-range" type="range" min="0" max="100" value="31" aria-label="Jämför rummet före och efter. Dra åt vänster för att visa fler produkter."></div>
       <figcaption class="rh-card"><span><b>Hela rummet</b><span>3 produkter · 2&nbsp;468 kr</span></span><a class="btn sm" href="butik/">Till butiken</a></figcaption></figure>
         </div>
       </section>
 
 
       <section class="sec looks-sec" id="looks-hem">
-        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Färdiga looks</h2><p>Tre eller fyra saker som hör ihop. Ett tryck, så ligger allt i varukorgen.</p></div><a class="link" href="looks/">Alla looks</a></div>
-          <div class="looks-row"><article class="lc"><a class="lc-im" href="look-lugn-hall/"><img src="assets/img/rum/hall-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">Hall</span></a>
+        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Looks</h2><p>Tre eller fyra saker som hör ihop. Ett tryck, så ligger allt i varukorgen.</p></div><span class="sec-end"><span class="row-nav" data-row-nav="homeLooks"><button type="button" class="iconbtn" data-dir="-1" aria-label="Föregående looks" title="Föregående" disabled=""><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"></path></svg></button><button type="button" class="iconbtn" data-dir="1" aria-label="Nästa looks" title="Nästa"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"></path></svg></button></span><a class="link" href="looks/">Alla looks</a></span></div>
+          <div class="looks-row" id="homeLooks"><article class="lc"><a class="lc-im" href="look-lugn-hall/"><img src="assets/img/rum/hall-900.webp" srcset="assets/img/rum/hall-900.webp 900w, assets/img/rum/hall-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Hall</span></a>
       <div class="lc-line"><button type="button" data-sheet="affisch-horisont-ekram" aria-label="Affisch Horisont med ekram, 50 × 70"><img src="assets/img/cut/affisch-horisont-ekram.webp" alt="" loading="lazy"></button><button type="button" data-sheet="glob-bordslampa-opalglas" aria-label="Glob bordslampa opalglas"><img src="assets/img/cut/glob-bordslampa-opalglas.webp" alt="" loading="lazy"></button><button type="button" data-sheet="forvaringslada-filt" aria-label="Förvaringslåda filt"><img src="assets/img/cut/forvaringslada-filt.webp" alt="" loading="lazy"></button><button type="button" data-sheet="flatad-forvaringskorg" aria-label="Flätad förvaringskorg"><img src="assets/img/cut/flatad-forvaringskorg.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-lugn-hall/">Lugn hall</a></h3><p>En tavla, ljus och en plats för vantarna. Hallen blir lugn på en kväll.</p>
-        <div class="lc-row"><span class="price">4 saker</span><button class="btn sm" type="button" data-look-add="lugn-hall">Handla looken · 1&nbsp;823 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-mjuk-kvall/"><img src="assets/img/rum/vardagsrum-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">Vardagsrum</span></a>
+        <div class="lc-row"><span class="price">4 saker · <s>2&nbsp;026 kr</s></span><button class="btn sm" type="button" data-look-add="lugn-hall">Handla looken · 1&nbsp;823 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-mjuk-kvall/"><img src="assets/img/rum/vardagsrum-900.webp" srcset="assets/img/rum/vardagsrum-900.webp 900w, assets/img/rum/vardagsrum-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Vardagsrum</span></a>
       <div class="lc-line"><button type="button" data-sheet="lysa-keramiklampa" aria-label="Lysa keramiklampa"><img src="assets/img/cut/lysa-keramiklampa.webp" alt="" loading="lazy"></button><button type="button" data-sheet="plad-ullblandning-havre" aria-label="Pläd ullblandning havre"><img src="assets/img/cut/plad-ullblandning-havre.webp" alt="" loading="lazy"></button><button type="button" data-sheet="lin-kuddfodral" aria-label="Lin kuddfodral"><img src="assets/img/cut/lin-kuddfodral.webp" alt="" loading="lazy"></button><button type="button" data-sheet="glod-doftljus-keramik" aria-label="Glöd doftljus i keramik"><img src="assets/img/cut/glod-doftljus-keramik.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-mjuk-kvall/">Mjuk kväll</a></h3><p>Lågt ljus och mjuk textil för soffan när dagen är slut.</p>
-        <div class="lc-row"><span class="price">4 saker</span><button class="btn sm" type="button" data-look-add="mjuk-kvall">Handla looken · 2&nbsp;418 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-frukostbanken/"><img src="assets/img/rum/kok-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">Kök</span></a>
-      <div class="lc-line"><button type="button" data-sheet="forradsburkar-glas-ek-3-pack" aria-label="Förrådsburkar glas &amp; ek, 3-pack"><img src="assets/img/cut/forradsburkar-glas-ek-3-pack.webp" alt="" loading="lazy"></button><button type="button" data-sheet="skarbrada-ek-med-handtag" aria-label="Skärbräda ek med handtag"><img src="assets/img/cut/skarbrada-ek-med-handtag.webp" alt="" loading="lazy"></button><button type="button" data-sheet="tvalpump-stengods" aria-label="Tvålpump stengods"><img src="assets/img/cut/tvalpump-stengods.webp" alt="" loading="lazy"></button><button type="button" data-sheet="sand-keramikvas" aria-label="Sand keramikvas"><img src="assets/img/cut/sand-keramikvas.webp" alt="" loading="lazy"></button></div>
+        <div class="lc-row"><span class="price">4 saker · <s>2&nbsp;687 kr</s></span><button class="btn sm" type="button" data-look-add="mjuk-kvall">Handla looken · 2&nbsp;418 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-frukostbanken/"><img src="assets/img/rum/kok-900.webp" srcset="assets/img/rum/kok-900.webp 900w, assets/img/rum/kok-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Kök</span></a>
+      <div class="lc-line"><button type="button" data-sheet="forradsburkar-glas-ek-3-pack" aria-label="Förrådsburkar glas &amp; ek, 3‑pack"><img src="assets/img/cut/forradsburkar-glas-ek-3-pack.webp" alt="" loading="lazy"></button><button type="button" data-sheet="skarbrada-ek-med-handtag" aria-label="Skärbräda ek med handtag"><img src="assets/img/cut/skarbrada-ek-med-handtag.webp" alt="" loading="lazy"></button><button type="button" data-sheet="tvalpump-stengods" aria-label="Tvålpump stengods"><img src="assets/img/cut/tvalpump-stengods.webp" alt="" loading="lazy"></button><button type="button" data-sheet="sand-keramikvas" aria-label="Sand keramikvas"><img src="assets/img/cut/sand-keramikvas.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-frukostbanken/">Frukostbänken</a></h3><p>Det du använder varje morgon, fint nog att stå framme.</p>
-        <div class="lc-row"><span class="price">4 saker</span><button class="btn sm" type="button" data-look-add="frukostbanken">Handla looken · 1&nbsp;283 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-sov-gott/"><img src="assets/img/rum/sovrum-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">Sovrum</span></a>
-      <div class="lc-line"><button type="button" data-sheet="svamp-uppladdningsbar-lampa" aria-label="Svamp uppladdningsbar lampa"><img src="assets/img/cut/svamp-uppladdningsbar-lampa.webp" alt="" loading="lazy"></button><button type="button" data-sheet="vila-paslakanset-linne" aria-label="Vila påslakanset linne"><img src="assets/img/cut/vila-paslakanset-linne.webp" alt="" loading="lazy"></button><button type="button" data-sheet="plad-ullblandning-havre" aria-label="Pläd ullblandning havre"><img src="assets/img/cut/plad-ullblandning-havre.webp" alt="" loading="lazy"></button><button type="button" data-sheet="dagsljus-linnegardin-2-pack" aria-label="Dagsljus linnegardin, 2-pack"><img src="assets/img/cut/dagsljus-linnegardin-2-pack.webp" alt="" loading="lazy"></button></div>
+        <div class="lc-row"><span class="price">4 saker · <s>1&nbsp;426 kr</s></span><button class="btn sm" type="button" data-look-add="frukostbanken">Handla looken · 1&nbsp;283 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-sov-gott/"><img src="assets/img/rum/sovrum-900.webp" srcset="assets/img/rum/sovrum-900.webp 900w, assets/img/rum/sovrum-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Sovrum</span></a>
+      <div class="lc-line"><button type="button" data-sheet="svamp-uppladdningsbar-lampa" aria-label="Svamp uppladdningsbar lampa"><img src="assets/img/cut/svamp-uppladdningsbar-lampa.webp" alt="" loading="lazy"></button><button type="button" data-sheet="vila-paslakanset-linne" aria-label="Vila påslakanset linne"><img src="assets/img/cut/vila-paslakanset-linne.webp" alt="" loading="lazy"></button><button type="button" data-sheet="plad-ullblandning-havre" aria-label="Pläd ullblandning havre"><img src="assets/img/cut/plad-ullblandning-havre.webp" alt="" loading="lazy"></button><button type="button" data-sheet="dagsljus-linnegardin-2-pack" aria-label="Dagsljus linnegardin, 2‑pack"><img src="assets/img/cut/dagsljus-linnegardin-2-pack.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-sov-gott/">Sov gott</a></h3><p>Varmt ljus vid sängen, lin som andas och gardiner som mjukar upp morgonljuset.</p>
-        <div class="lc-row"><span class="price">4 saker</span><button class="btn sm" type="button" data-look-add="sov-gott">Handla looken · 3&nbsp;318 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-vardagsmiddag/"><img src="assets/img/rum/kok-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">Kök</span></a>
-      <div class="lc-line"><button type="button" data-sheet="stilla-ljusstake-massing-2-pack" aria-label="Stilla ljusstake mässing, 2-pack"><img src="assets/img/cut/stilla-ljusstake-massing-2-pack.webp" alt="" loading="lazy"></button><button type="button" data-sheet="skarbrada-ek-med-handtag" aria-label="Skärbräda ek med handtag"><img src="assets/img/cut/skarbrada-ek-med-handtag.webp" alt="" loading="lazy"></button><button type="button" data-sheet="sand-keramikvas" aria-label="Sand keramikvas"><img src="assets/img/cut/sand-keramikvas.webp" alt="" loading="lazy"></button><button type="button" data-sheet="glod-doftljus-keramik" aria-label="Glöd doftljus i keramik"><img src="assets/img/cut/glod-doftljus-keramik.webp" alt="" loading="lazy"></button></div>
+        <div class="lc-row"><span class="price">4 saker · <s>3&nbsp;687 kr</s></span><button class="btn sm" type="button" data-look-add="sov-gott">Handla looken · 3&nbsp;318 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-vardagsmiddag/"><img src="assets/img/rum/kok-900.webp" srcset="assets/img/rum/kok-900.webp 900w, assets/img/rum/kok-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Kök</span></a>
+      <div class="lc-line"><button type="button" data-sheet="stilla-ljusstake-massing-2-pack" aria-label="Stilla ljusstake mässing, 2‑pack"><img src="assets/img/cut/stilla-ljusstake-massing-2-pack.webp" alt="" loading="lazy"></button><button type="button" data-sheet="skarbrada-ek-med-handtag" aria-label="Skärbräda ek med handtag"><img src="assets/img/cut/skarbrada-ek-med-handtag.webp" alt="" loading="lazy"></button><button type="button" data-sheet="sand-keramikvas" aria-label="Sand keramikvas"><img src="assets/img/cut/sand-keramikvas.webp" alt="" loading="lazy"></button><button type="button" data-sheet="glod-doftljus-keramik" aria-label="Glöd doftljus i keramik"><img src="assets/img/cut/glod-doftljus-keramik.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-vardagsmiddag/">Vardagsmiddag</a></h3><p>Levande ljus, en bräda med bröd och en kvist i vasen. Middagen blir en stund.</p>
-        <div class="lc-row"><span class="price">4 saker</span><button class="btn sm" type="button" data-look-add="vardagsmiddag">Handla looken · 1&nbsp;481 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-spa-hemma/"><img src="assets/img/rum/badrum-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">Badrum</span></a>
+        <div class="lc-row"><span class="price">4 saker · <s>1&nbsp;646 kr</s></span><button class="btn sm" type="button" data-look-add="vardagsmiddag">Handla looken · 1&nbsp;481 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-spa-hemma/"><img src="assets/img/rum/badrum-900.webp" srcset="assets/img/rum/badrum-900.webp 900w, assets/img/rum/badrum-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Badrum</span></a>
       <div class="lc-line"><button type="button" data-sheet="vaffelhandduk-bomull" aria-label="Våffelhandduk bomull"><img src="assets/img/cut/vaffelhandduk-bomull.webp" alt="" loading="lazy"></button><button type="button" data-sheet="tvalpump-stengods" aria-label="Tvålpump stengods"><img src="assets/img/cut/tvalpump-stengods.webp" alt="" loading="lazy"></button><button type="button" data-sheet="flatad-forvaringskorg" aria-label="Flätad förvaringskorg"><img src="assets/img/cut/flatad-forvaringskorg.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-spa-hemma/">Spa hemma</a></h3><p>Mjuka handdukar och lugna ytor för morgon och kväll.</p>
-        <div class="lc-row"><span class="price">3 saker</span><button class="btn sm" type="button" data-look-add="spa-hemma">Handla looken · 816 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-fokus/"><img src="assets/img/rum/hemmakontor-900.webp" alt="" loading="lazy" decoding="async"><span class="lc-tag">Hemmakontor</span></a>
+        <div class="lc-row"><span class="price">3 saker · <s>907 kr</s></span><button class="btn sm" type="button" data-look-add="spa-hemma">Handla looken · 816 kr</button></div></div></article><article class="lc"><a class="lc-im" href="look-fokus/"><img src="assets/img/rum/hemmakontor-900.webp" srcset="assets/img/rum/hemmakontor-900.webp 900w, assets/img/rum/hemmakontor-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Hemmakontor</span></a>
       <div class="lc-line"><button type="button" data-sheet="skrivbordsorganisator-ek" aria-label="Skrivbordsorganisatör ek"><img src="assets/img/cut/skrivbordsorganisator-ek.webp" alt="" loading="lazy"></button><button type="button" data-sheet="lysa-keramiklampa" aria-label="Lysa keramiklampa"><img src="assets/img/cut/lysa-keramiklampa.webp" alt="" loading="lazy"></button><button type="button" data-sheet="affisch-linje-ekram" aria-label="Affisch Linje med ekram, 50 × 70"><img src="assets/img/cut/affisch-linje-ekram.webp" alt="" loading="lazy"></button><button type="button" data-sheet="forvaringslada-filt" aria-label="Förvaringslåda filt"><img src="assets/img/cut/forvaringslada-filt.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-fokus/">Fokus</a></h3><p>Bättre ljus, en fast plats för det som annars sprids ut och något fint att vila blicken på.</p>
-        <div class="lc-row"><span class="price">4 saker</span><button class="btn sm" type="button" data-look-add="fokus">Handla looken · 2&nbsp;148 kr</button></div></div></article></div></div>
+        <div class="lc-row"><span class="price">4 saker · <s>2&nbsp;387 kr</s></span><button class="btn sm" type="button" data-look-add="fokus">Handla looken · 2&nbsp;148 kr</button></div></div></article></div></div>
       </section>
 
       <section class="sec why" id="varfor" aria-labelledby="whyH"><div class="wrap">
         <div class="sec-head"><h2 class="h2" id="whyH">Därför RumIQ</h2><p>En ny butik ska vara lätt att lita på. Det här kan du räkna med.</p></div>
-        <ul class="why-grid"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><b>Se det hemma först</b><span>Ställ in produkterna i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><b>Hemma om 2–5 arbetsdagar</b><span>Lager i EU. Du ser leveransdatumet innan du beställer, och kan välja ombud, paketskåp eller hem.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 4v4h4"></path></svg><b>30 dagars öppet köp</b><span>Ångra med en knapp på sajten. Returen skickas till en adress i Sverige.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><b>Du är med och väljer</b><span>Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in.</span></li></ul>
+        <ul class="why-grid"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><b>Se det hemma först</b><span>Ställ in produkterna i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><b>Målet: hemma om 2–5 arbetsdagar</b><span>Lager i EU. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 4v4h4"></path></svg><b>30 dagars öppet köp</b><span>Ångra med en knapp på sajten. Returen skickas till en adress i Sverige.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><b>Du är med och väljer</b><span>Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in.</span></li></ul>
         <p class="why-foot">Frågor? Skriv till <a href="mailto:support@rumiq.se">support@rumiq.se</a>, eller läs mer <a href="om/">om oss</a> och <a href="sa-fungerar-det/">hur det fungerar</a>.</p>
       </div></section>
 
       <section class="sec cta-band" id="bli-forst">
                 <div class="wrap"><div><h2>Bli först när vi öppnar.</h2><p class="lead">Skriv upp dig så får du 10 % på första köpet när vi öppnar. Till dess kan du prova Mitt rum gratis och se produkterna i ditt eget rum.</p></div>
           <div class="signup" id="formBox"><form id="signup" novalidate=""><label for="email">Din e-post</label><div class="field"><input id="email" name="email" type="email" autocomplete="email" placeholder="namn@exempel.se" required=""><button class="btn" type="submit">Skriv upp mig</button></div><p class="status" id="formErr" role="alert"></p><p class="fine">Vi mejlar när vi öppnar och ibland med stylingtips. Vi delar aldrig din adress, och du kan avregistrera dig när du vill.</p></form>
-            <div class="ok" role="status" aria-live="polite"><h3>Tack. Du står på listan.</h3><p id="okText">Vi hör av oss med din rabattkod när RumIQ öppnar.</p><a class="btn ghost sm" href="mitt-rum/">Prova Studio under tiden</a></div></div></div>
+            <div class="ok" role="status" aria-live="polite"><h3>Tack. Du står på listan.</h3><p id="okText">Vi hör av oss med din rabattkod när RumIQ öppnar.</p><a class="btn ghost sm" href="mitt-rum/">Prova Mitt rum under tiden</a></div></div></div>
       </section></main>
 
 <footer class="site">
   <div class="wrap">
     <div class="cols">
-      <div class="brand"><img class="logo-day" src="assets/brand/rumiq-grafit.webp" alt="RumIQ" width="480" height="120"><img class="logo-night" src="assets/brand/rumiq-vit.webp" alt="" aria-hidden="true" width="480" height="120"><p>Färre, bättre saker för hemmet. Utvalda i Sverige.</p>
+      <div class="brand"><img class="logo-day" src="assets/brand/rumiq-grafit-288.webp" alt="RumIQ" width="288" height="72" loading="lazy"><img class="logo-night" src="assets/brand/rumiq-vit-288.webp" alt="" aria-hidden="true" width="288" height="72" loading="lazy"><p>Färre, bättre saker för hemmet. Utvalda i Sverige.</p>
         <form class="news" id="newsForm" novalidate><label for="newsEmail">Nyhetsbrev</label><div class="field"><input type="email" id="newsEmail" name="email" placeholder="Din e-post"><button class="btn sm" type="submit">Prenumerera</button></div></form></div>
-      <div><h4>Butik</h4><ul><li><a href="butik/">Alla produkter</a></li><li><a href="favoriter/">Populärt</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li><li><a href="presentkort/">Presentkort</a></li></ul></div>
-      <div><h4>Inspiration</h4><ul><li><a href="upptack/">Upptäck</a></li><li><a href="looks/">Färdiga looks</a></li><li><a href="rum/">Efter rum</a></li><li><a href="magasin/">Magasin</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><a href="onska/">Önska</a></li><li><a href="om/">Om RumIQ</a></li></ul></div>
-      <div><h4>Kundservice</h4><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Var är mitt paket?</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li></ul></div>
-      <div><h4>Juridisk information</h4><ul><li><a href="juridik-villkor/">Köpvillkor</a></li><li><a href="juridik-integritet/">Integritetspolicy</a></li><li><a href="juridik-cookies/">Cookiepolicy</a></li><li><a href="juridik-angerratt/">Ångerrätt</a></li><li><a href="juridik-garanti/">Reklamation & garanti</a></li><li><a href="juridik-produktsakerhet/">Produktsäkerhet</a></li><li><a href="juridik-sakerhet/">Säkerhet</a></li><li><a href="juridik-foretag/">Företagsinformation</a></li></ul></div>
+      <div><h2>Butik</h2><ul><li><a href="butik/">Alla produkter</a></li><li><a href="favoriter/">Våra favoriter</a></li><li data-show="news"><a href="nyheter/">Nyheter</a></li><li data-show="offers"><a href="erbjudanden/">Erbjudanden</a></li><li><a href="hitta-ratt/">Hitta rätt</a></li><li><a href="presentkort/">Presentkort</a></li></ul></div>
+      <div><h2>Inspiration</h2><ul><li><a href="upptack/">Upptäck</a></li><li><a href="looks/">Looks</a></li><li><a href="rum/">Handla efter rum</a></li><li><a href="magasin/">Magasin</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><a href="onska/">Önska</a></li><li><a href="om/">Om RumIQ</a></li></ul></div>
+      <div><h2>Kundservice</h2><ul><li><a href="kontakt/">Kontakt</a></li><li><a href="faq/">Vanliga frågor</a></li><li><a href="spara-order/">Spåra min beställning</a></li><li><a href="frakt/">Frakt & leverans</a></li><li><a href="returer/">Returer & återbetalning</a></li><li><a href="angra/">Ångra avtalet här</a></li><li><a href="betalning/">Betalning</a></li></ul></div>
+      <div><h2>Juridisk information</h2><ul><li><a href="juridik-villkor/">Köpvillkor</a></li><li><a href="juridik-integritet/">Integritetspolicy</a></li><li><a href="juridik-cookies/">Cookiepolicy</a></li><li><a href="juridik-angerratt/">Ångerrätt</a></li><li><a href="juridik-garanti/">Reklamation & garanti</a></li><li><a href="juridik-produktsakerhet/">Produktsäkerhet</a></li><li><a href="juridik-sakerhet/">Säkerhet</a></li><li><a href="juridik-foretag/">Företagsinformation</a></li></ul></div>
     </div>
     <p class="co" id="coInfo"></p>
     <p class="ai">Bilderna på produkter och rum är skapade med AI medan vi väntar på de första produkterna. Produkterna är exempel och går inte att köpa än.</p>
@@ -295,31 +315,34 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   </div>
 </footer>
 
+<nav class="dock" id="dock" aria-label="Snabbmeny">
+  <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
+  <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
+  <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
+  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
+</nav>
+
 
 <div class="scrim-all" id="scrimAll"></div>
-<aside class="drawer" id="cart" aria-label="Varukorg" aria-hidden="true">
-  <header><h2>Varukorg <small data-count="cartline"></small></h2><button class="iconbtn close" type="button" data-close aria-label="Stäng varukorgen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
-  <div class="body"></div><footer></footer>
-</aside>
+<section class="drawer" id="cart" aria-label="Varukorg" aria-hidden="true">
+  <header role="none"><h2>Varukorg <small data-count="cartline"></small></h2><button class="iconbtn close" type="button" data-close aria-label="Stäng varukorgen"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+  <div class="body"></div><footer role="none"></footer><p class="sr" id="cartSaid" role="status"></p>
+</section>
 
 <div class="search" id="search" role="dialog" aria-modal="true" aria-label="Sök">
-  <button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <div class="wrap"><label class="sr" for="searchInput">Sök</label><div class="sfield"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" enterkeyhint="search"></div>
+  <div class="wrap"><div class="sbar"><label class="sr" for="searchInput">Sök</label><div class="sfield"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div><button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <p class="hint">Sök på produkt, material, rum eller färg. Vill du hellre beskriva med egna ord? Prova <a href="hitta-ratt-ord/" data-close>Hitta rätt med egna ord</a> eller fråga <a href="studio-stylist/" data-close>stylisten</a>.</p>
-    <div class="res" id="searchRes"></div></div>
+    <p class="sr" id="searchSaid" role="status"></p><div class="res" id="searchRes"></div></div>
 </div>
 
-<div class="cookie" id="cookie" role="dialog" aria-label="Cookies">
-  <h3>Cookies</h3><p>Nödvändiga cookies får butiken att fungera. Statistik och marknadsföring bara om du vill. <a href="juridik-cookies/">Läs mer</a></p>
-  <div class="opts" hidden><label class="check"><input type="checkbox" checked disabled> Nödvändiga</label><label class="check"><input type="checkbox" id="ckStats"> Statistik</label><label class="check"><input type="checkbox" id="ckMkt"> Marknadsföring</label><button class="btn sm" type="button" id="ckSave">Spara val</button></div>
-  <div class="row"><button class="btn sm" type="button" id="ckNeed">Bara nödvändiga</button><button class="btn ghost sm" type="button" id="ckAll">Godkänn alla</button><button class="btn ghost sm" type="button" id="ckMore">Välj själv</button></div>
-</div>
+
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/config.js"></script>
-<script src="assets/js/i18n.js"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=f264cdd9";</script>
-<script src="assets/js/site.min.js?v=f264cdd9"></script>
+<script src="assets/js/config.js?v=21b82618"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0894abee"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bc99d8ff"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
+<script src="assets/js/i18n.min.js?v=d763c092"></script>
+<script src="assets/js/site.min.js?v=8dc067a8"></script>
 </body>
 </html>
