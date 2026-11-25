@@ -548,6 +548,7 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .imgopts button{border:0;padding:0;background:none;text-align:left;border-radius:var(--r-img);position:relative}
 .imgopts button img{aspect-ratio:4/5;object-fit:cover;width:100%;border-radius:var(--r-img);transition:filter .4s,box-shadow .3s;background:var(--img-bg)}
 .imgopts button span{display:block;font-size:.92rem;font-weight:500;margin-top:.5rem;color:var(--ink2)}
+.imgopts button{align-self:start} /* a two-line name ("Hemma-kontor") does not push its neighbours' names down */
 .imgopts button[aria-pressed=true] img{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
 .imgopts button[aria-pressed=false].dim img{filter:saturate(.4) opacity(.55)}
 .result{border-radius:var(--r);background:var(--paper);border:1px solid var(--line2);padding:clamp(1.5rem,4vw,2.6rem);margin-top:1rem}
@@ -2582,7 +2583,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .quiz .q-max{display:flex;flex-wrap:wrap;gap:1rem 1.2rem;align-items:flex-end}
 .quiz .q-max label{flex:0 1 20rem;min-width:0}
 .quiz .q-max .ctrl-row{margin:0}
-.q-out{scroll-margin-top:calc(var(--nav-h) + 1rem)}
+.q-out{scroll-margin-top:.4rem} /* html's scroll-padding already keeps it clear of the header; both together put the result 170 px down */
 .q-out:empty{display:none}
 .q-out [tabindex="-1"]:focus,#ssOut [tabindex="-1"]:focus{outline:none}
 .imgopts.pick button:focus-visible{outline:none;box-shadow:none}
@@ -2598,7 +2599,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .ss-form .field{display:flex;gap:.5rem}
 .ss-form input{flex:1;min-width:0}
 @media (max-width:640px){.ss-form .field{flex-direction:column}}
-#ssOut{scroll-margin-top:calc(var(--nav-h) + 1rem)}
+#ssOut{scroll-margin-top:.4rem} /* html's scroll-padding already keeps it clear of the header; both together put the result 170 px down */
 .ss-read{color:var(--ink2);margin-bottom:1.6rem}
 @media (max-width:640px){.imgopts.pick{grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}.imgopts.pick button span{font-size:.8rem;overflow-wrap:break-word}}
 /* 7. Stylist: questions to start from, and what to do with an answer */

@@ -23,8 +23,10 @@
   const keep = { get(k) { try { return JSON.parse(RQ.ss.get(k) || "null"); } catch (e) { return null; } }, set(k, v) { RQ.ss.set(k, JSON.stringify(v)); } };
   // after an answer the result is what you see: scrolled to under the header, with focus on its heading
   const showOut = (out) => { const h = out.querySelector("h2, h3, .eyebrow"); if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); } out.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); };
+  const toNext = (el) => { if (!el) return; const r = el.getBoundingClientRect(), top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 64; if (r.top < top || r.bottom > innerHeight - 90) el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" }); };
   const press = (root, q, v) => { const g = $(`[data-q="${q}"]`, root); if (g) $$("[data-v]", g).forEach((x) => x.setAttribute("aria-pressed", x.dataset.v === v)); };
   const maxOf = (el) => { const n = Math.floor(+String(el.value).replace(",", ".")); return n > 0 ? n : null; };
+  const byPrice = (list) => [...list].sort((a, b) => a.price - b.price);
   const cheapest = (list) => (list.length ? Math.min(...list.map((p) => p.price)) : 0);
   const toneName = (hex) => { const c = hex2rgb(hex); return RQ.TONES.reduce((b, x) => (dist(hex2rgb(x.hex), c) < dist(hex2rgb(b.hex), c) ? x : b)).name; };
 
@@ -56,7 +58,7 @@
     return `<div class="result reveal"><span class="eyebrow">Din stil</span><h2>${st.name}</h2><p class="lead" style="margin-top:.6rem">${st.text}</p>
       <div class="palette">${tones.map((t) => `<i style="background:${t}"><span>${esc(toneName(t))}</span></i>`).join("")}</div>
       <p class="small">Färgerna kommer från produkterna som passar stilen.</p></div>
-      <div class="sec-head" style="margin:2.4rem 0 1.4rem"><span class="eyebrow">Förslag ur sortimentet</span></div>${RQ.grid(picks, "three")}`;
+      <div class="list-more"><h3 class="h3">Förslag ur sortimentet</h3>${RQ.grid(picks)}</div>`;
   };
   V.studioStyle = () => ({
     title: "Snabbval · Svep · RumIQ",
@@ -123,7 +125,7 @@
     const hit = (list) => list.some((w) => (w.length <= 3 ? new RegExp(" " + w + "(?:en|et|ar|er|a|n|s)? ").test(t) : t.includes(" " + w) || (w.length >= 4 && t.includes(w))));
     const pick = (map) => Object.keys(map).filter((k) => hit(map[k]));
     const priceM = t.match(/(?:under|max|högst|mindre än|budget|below|less than|up to)\s*(\d[\d\s]{1,6})/) || t.match(/(\d[\d\s]{1,6})\s*(?:kr|kronor|:-|sek)/);
-    const named = words.filter((w) => w.length >= 3 && !SMALL.has(w) && !/\d/.test(w));
+    const named = words.filter((w) => w.length >= 3 && !SMALL.has(w) && !/\d/.test(w) && !/^(ljus|ljuset|light|lights)$/.test(w));
     const occ = Object.keys(OCC).filter((k) => hit(OCC[k]));
     return { rooms: pick(LEX.rooms), needs: pick(LEX.needs), cats: pick(LEX.cats), styles: pick(LEX.styles), colors: pick(LEX.colors), max: priceM ? parseInt(priceM[1].replace(/\s/g, ""), 10) : null, gift: hit(["present", "presenter", "ge bort", "inflyttning", "värdinna", "födelsedag", "julklapp", "julklappar", "gift", "gifts", "housewarming", "host", "birthday"]) || /(?:^| )ge (?:min|mitt|mina|till|henne|honom|dem|en|ett) /.test(t) || occ.includes("fodelsedag") || occ.includes("jul"), occ, named, fixed, words };
   };
@@ -369,13 +371,18 @@
       const run = (text, show) => {
         if (!text.trim()) { out.innerHTML = ""; inp.focus(); return; } // nothing asked: nothing to say "not found" about
         keep.set("rumiq-ord", text);
-        const q = RQ.parseNeed(text); const r = RQ.rank(q);
-        const understood = [...q.rooms.map((x) => RQ.roomById(x).name), ...q.cats.map((x) => RQ.catById(x).name), ...q.needs.map((x) => RQ.NEEDS[x]), ...q.styles.map((x) => RQ.STYLES[x].name), ...(q.max ? ["Högst " + kr(q.max)] : []), ...(q.gift ? ["Present"] : [])];
+        const q = RQ.parseNeed(text); let r = RQ.rank(q);
+        // the thing you named but not at that price ("grön matta under 200 kr"): the nearest of that thing, not a box that only shares the colour
+        const named = (x) => x.why.includes("det du nämnde"), namedAll = RQ.rank({ ...q, max: null }).filter(named);
+        const underNamed = q.max && namedAll.length && !r.some(named);
+        if (underNamed) r = [];
+        const understood = [...q.rooms.map((x) => RQ.roomById(x).name), ...q.cats.map((x) => RQ.catById(x).name), ...q.needs.map((x) => RQ.NEEDS[x]), ...q.styles.map((x) => RQ.STYLES[x].name), ...q.colors.map((h) => toneName(h)), ...(q.max ? ["Högst " + kr(q.max)] : []), ...(q.gift ? ["Present"] : [])];
         const read = q.fixed.length ? `<p class="small ss-read">${q.fixed.map(([a, b]) => `<span>Vi läste</span> ”${esc(a)}” <span>som</span> ”${esc(b)}”.`).join(" ")}</p>` : "";
         const under = q.max && !r.length && RQ.rank({ ...q, max: null }).length; // something fits, but nothing that cheap
+        const nearest = underNamed ? namedAll.map((x) => x.p) : RQ.rank({ ...q, max: null }).map((x) => x.p);
         out.innerHTML = `${understood.length ? `<p class="eyebrow" style="margin-bottom:.8rem">Det här förstod vi</p><div class="chips" style="margin-bottom:${read ? ".8rem" : "2rem"}">${understood.map((u) => `<span class="chip on">${esc(u)}</span>`).join("")}</div>` : ""}${read}
-          ${r.length ? `<div class="grid three">${r.slice(0, 9).map((x) => RQ.card(x.p).replace("</article>", `<p class="small" style="margin-top:.3rem">Matchar: ${esc(x.why.slice(0, 3).join(", "))}</p></article>`)).join("")}</div>`
-            : under ? `<div class="empty"><h3><span>Inget under</span> ${kr(q.max)}</h3><p><span>Det billigaste som passar kostar</span> ${kr(cheapest(RQ.rank({ ...q, max: null }).map((x) => x.p)))}.</p><button class="btn ghost" type="button" id="ssNoMax">Visa utan maxpris</button></div>`
+          ${r.length ? `<div class="grid">${r.slice(0, 8).map((x) => RQ.card(x.p).replace("</article>", `<p class="small" style="margin-top:.3rem">Matchar: ${esc(x.why.slice(0, 3).join(", "))}</p></article>`)).join("")}</div>`
+            : under ? `<p class="eyebrow" style="margin-bottom:1.4rem"><span>Inget under</span> ${kr(q.max)}<span>. Det här ligger närmast i pris:</span></p>${RQ.grid(byPrice(nearest).slice(0, 4))}<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="ssNoMax">Visa utan maxpris</button></div>`
             : `<div class="empty"><h3>Vi hittade inget som matchar</h3><p>Prova att nämna ett rum, en sak eller vad du vill uppnå. Eller fråga stylisten.</p><a class="btn ghost" href="#studio-stylist">Fråga stylisten</a></div>`}`;
         const nm = $("#ssNoMax", out); if (nm) nm.addEventListener("click", () => { const t = text.replace(/(?:under|max|högst|mindre än)\s*\d[\d\s]*(?:kr|kronor|:-)?/i, "").replace(/\d[\d\s]*(?:kr|kronor|:-)/i, "").trim(); inp.value = t; run(t, true); });
         RQ.watch(root); RQ.markImages && RQ.markImages(out);
@@ -408,11 +415,12 @@
         const head = (text) => `<div class="result"><span class="eyebrow"><span>${esc(r.name)}</span> · <span>${RQ.NEEDS[a.need]}</span></span><h2 style="margin-top:.4rem">Ditt hemurval</h2><p style="margin-top:.6rem">${text}</p></div>`;
         const noMax = `<button class="btn ghost" type="button" id="gNoMax" style="margin-top:1.2rem">Visa utan maxpris</button>`;
         out.innerHTML = list.length
-          ? `${head(esc(ADVICE[a.need]))}<div style="margin-top:2rem">${RQ.grid(list, "three")}</div>${extra.length ? `<div class="sec-head" style="margin:3rem 0 1.4rem"><span class="eyebrow"><span>Mer för</span> <span>${esc(rn)}</span></span></div>${RQ.grid(extra.slice(0, 3), "three")}` : ""}`
+          ? `${head(esc(ADVICE[a.need]))}<div style="margin-top:2rem">${RQ.grid(list)}</div>${extra.length ? `<div class="list-more"><h3 class="h3"><span>Mer för</span> <span>${esc(rn)}</span></h3>${RQ.grid(extra.slice(0, 4))}</div>` : ""}`
           // nothing for exactly this: say so, instead of advice about one thing above products for another
-          : fits.length ? `${head(`<span>Inget under</span> ${kr(max)} <span>här. Det billigaste som passar kostar</span> ${kr(cheapest(fits))}.`)}${noMax}`
-          : extra.length ? `${head(`<span>Vi har inget för just</span> <span>${esc(nn)}</span> <span>i</span> <span>${esc(rn)}</span> <span>än. Det här passar i rummet:</span>`)}<div style="margin-top:2rem">${RQ.grid(extra.slice(0, 6), "three")}</div>`
-          : `${head(max && inRoom.length ? `<span>Inget under</span> ${kr(max)} <span>här. Det billigaste som passar kostar</span> ${kr(cheapest(inRoom))}.` : `<span>Vi har inget för</span> <span>${esc(rn)}</span> <span>än.</span>`)}${max && inRoom.length ? noMax : `<a class="btn ghost" href="#butik" style="margin-top:1.2rem">Se allt i butiken</a>`}`;
+          : fits.length ? `${head(`<span>Inget under</span> ${kr(max)} <span>här. Det här ligger närmast i pris:</span>`)}<div style="margin-top:2rem">${RQ.grid(byPrice(fits).slice(0, 4))}</div>${noMax}`
+          : extra.length ? `${head(`<span>Vi har inget för just</span> <span>${esc(nn)}</span> <span>i</span> <span>${esc(rn)}</span> <span>än. Det här passar i rummet:</span>`)}<div style="margin-top:2rem">${RQ.grid(extra.slice(0, 8))}</div>`
+          : max && inRoom.length ? `${head(`<span>Inget under</span> ${kr(max)} <span>här. Det här ligger närmast i pris:</span>`)}<div style="margin-top:2rem">${RQ.grid(byPrice(inRoom).slice(0, 4))}</div>${noMax}`
+          : `${head(`<span>Vi har inget för</span> <span>${esc(rn)}</span> <span>än.</span>`)}<a class="btn ghost" href="#butik" style="margin-top:1.2rem">Se allt i butiken</a>`;
         const nm = $("#gNoMax", out); if (nm) nm.addEventListener("click", () => { gmax.value = ""; run(true); });
         RQ.watch(root); RQ.markImages && RQ.markImages(out);
         if (show) showOut(out);
@@ -421,7 +429,7 @@
         const b = e.target.closest("[data-v]"); if (!b) return; const off = b.getAttribute("aria-pressed") === "true";
         $$("[data-v]", g).forEach((x) => x.setAttribute("aria-pressed", !off && x === b)); a[g.dataset.q] = off ? null : b.dataset.v;
         // one answer leads to the next thing: the second question, then the result
-        if (a.room && a.need) run(true); else if (!off && g.dataset.q === "room") $("#gQ2", root).scrollIntoView({ behavior: "smooth", block: "center" });
+        if (a.room && a.need) run(true); else if (!off && g.dataset.q === "room") toNext($("#gQ2", root));
       }));
       $("#gGo", root).addEventListener("click", () => run(true));
       gmax.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); run(true); } });
@@ -437,7 +445,7 @@
       <section class="wrap quiz" style="padding-bottom:5rem">
         <div class="q" id="gfQ1"><h2><span class="q-n">1</span>Vem är presenten till?</h2>${picOpts("for", Object.entries(RQ.GIFT_FOR).map(([k, v]) => [k, v, pimg(FOR_IMG[k])]), "Vem är presenten till?")}</div>
         <div class="q" id="gfQ2"><h2><span class="q-n">2</span>Tillfället</h2>${picOpts("occ", Object.entries(RQ.OCCASIONS).map(([k, v]) => [k, v, pimg(OCC_IMG[k])]), "Tillfället")}</div>
-        <div class="q"><h2><span class="q-n">3</span>Mottagarens stil <small>Hoppa över om du inte vet</small></h2>${picOpts("style", ["skandinavisk", "minimalistisk", "klassisk", "mjuk"].map((k) => [k, RQ.STYLES[k].name, STYLE_IMG[k]]), "Mottagarens stil")}</div>
+        <div class="q" id="gfQ3"><h2><span class="q-n">3</span>Mottagarens stil <small>Hoppa över om du inte vet</small></h2>${picOpts("style", ["skandinavisk", "minimalistisk", "klassisk", "mjuk"].map((k) => [k, RQ.STYLES[k].name, STYLE_IMG[k]]), "Mottagarens stil")}</div>
         <div class="q q-max"><label>Högsta presentpris (kr)<input type="number" id="gfMax" min="1" step="50" inputmode="numeric" value="800"></label><div class="ctrl-row"><button class="btn" type="button" id="gfGo">Hitta en present</button><a class="btn ghost" href="#presentkort">Hellre ett presentkort</a></div></div>
         <div id="gfOut" class="q-out"></div></section>`,
     mount(root) {
@@ -448,16 +456,18 @@
         keep.set("rumiq-gift", { for: a.for || null, occ: a.occ || null, style: a.style || null, max });
         const score = (p) => (a.for && p.gift.includes(a.for) ? 3 : 0) + (a.occ && p.occ.includes(a.occ) ? 3 : 0) + (a.style && p.styles.includes(a.style) ? 2 : 0) + (p.gift.length ? 1 : 0);
         const fits = RQ.PRODUCTS.map((p) => ({ p, s: score(p) })).filter((x) => x.s > 1).sort((x, y) => y.s - x.s), scored = fits.filter((x) => priceOk(x.p, max));
-        const n = all ? scored.length : Math.min(9, scored.length);
+        const n = all ? scored.length : Math.min(8, scored.length); // eight: full rows of four or two (tablets show six, three by three)
         out.innerHTML = scored.length
-          ? `<p class="eyebrow" style="margin-bottom:1.4rem">${n < scored.length ? `<span>De</span> ${n} <span>bästa av</span> ${scored.length} <span>förslag</span>` : `${scored.length} <span>förslag</span>`}${max ? ` <span>upp till</span> ${kr(max)}` : ""}</p>${RQ.grid(scored.slice(0, n).map((x) => x.p), "three")}${n < scored.length ? `<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="gfAll"><span>Visa alla</span> ${scored.length}</button></div>` : ""}`
-          : `<div class="empty">${fits.length ? `<h3><span>Inget under</span> ${kr(max)}</h3><p><span>Det billigaste som passar kostar</span> ${kr(cheapest(fits.map((x) => x.p)))}.</p><button class="btn ghost" type="button" id="gfNoMax">Visa utan maxpris</button>` : `<h3>Inget passar riktigt</h3><p>Prova ett annat tillfälle, eller ge ett presentkort.</p><a class="btn ghost" href="#presentkort">Till presentkortet</a>`}</div>`;
+          ? `<p class="eyebrow" style="margin-bottom:1.4rem">${n < scored.length ? `<span>De bästa av</span> ${scored.length} <span>förslag</span>` : `${scored.length} <span>förslag</span>`}${max ? ` <span>upp till</span> ${kr(max)}` : ""}</p>${RQ.grid(scored.slice(0, n).map((x) => x.p), all ? "" : "feat")}${n < scored.length ? `<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="gfAll">Visa alla ${scored.length}</button></div>` : ""}`
+          : fits.length ? `<p class="eyebrow" style="margin-bottom:1.4rem"><span>Inget under</span> ${kr(max)}<span>. Det här ligger närmast i pris:</span></p>${RQ.grid(byPrice(fits.map((x) => x.p)).slice(0, 4))}<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="gfNoMax">Visa utan maxpris</button></div>`
+          : `<div class="empty">${`<h3>Inget passar riktigt</h3><p>Prova ett annat tillfälle, eller ge ett presentkort.</p><a class="btn ghost" href="#presentkort">Till presentkortet</a>`}</div>`;
         const nm = $("#gfNoMax", out); if (nm) nm.addEventListener("click", () => { gfMax.value = ""; run(true); });
         const al = $("#gfAll", out); if (al) al.addEventListener("click", () => run(false, true));
         RQ.watch(root); RQ.markImages && RQ.markImages(out);
         if (show) showOut(out);
       };
-      $$("[data-q]", root).forEach((g) => g.addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (!b) return; const off = b.getAttribute("aria-pressed") === "true"; $$("[data-v]", g).forEach((x) => x.setAttribute("aria-pressed", !off && x === b)); a[g.dataset.q] = off ? null : b.dataset.v; if (out.firstChild) run(false); }));
+      $$("[data-q]", root).forEach((g) => g.addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (!b) return; const off = b.getAttribute("aria-pressed") === "true"; $$("[data-v]", g).forEach((x) => x.setAttribute("aria-pressed", !off && x === b)); a[g.dataset.q] = off ? null : b.dataset.v; if (out.firstChild) run(false);
+        else if (!off) toNext(g.dataset.q === "for" ? $("#gfQ2", root) : g.dataset.q === "occ" ? $("#gfQ3", root) : $("#gfGo", root)); })); // one answer leads to the next question
       $("#gfGo", root).addEventListener("click", () => run(true));
       gfMax.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); run(true); } });
       const was = keep.get("rumiq-gift");
