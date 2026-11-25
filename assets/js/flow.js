@@ -254,7 +254,7 @@
     render(id, opts = {}) {
       const r = RQ.HOTSPOTS[id], room = RQ.roomById(id); if (!r) return "";
       // opts.layer/opts.spots: products placed in the photo by the room engine (the look pages); their dots are the product itself, not a look-alike
-      const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).concat(opts.spots || []).map(([h, x, y, own]) => { const p = RQ.byHandle(h), like = own ? "" : " · Liknande i butiken"; return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}" aria-label="${esc(p.name)}, ${kr(p.price)}.${own ? "" : " Liknande i butiken."}"><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)}${like}</em></span></button>`; }).join("");
+      const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).concat(opts.spots || []).map(([h, x, y, own, top, bot, w]) => { const p = RQ.byHandle(h), like = own ? "" : " · Liknande i butiken"; return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}"${top != null ? ` data-top="${top}" data-bot="${bot}" data-w="${w}"` : ""} aria-label="${esc(p.name)}, ${kr(p.price)}.${own ? "" : " Liknande i butiken."}"><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)}${like}</em></span></button>`; }).join("");
       return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}"${opts.focus ? ` data-focus="${opts.focus.map((v) => v.toFixed(1)).join(",")}"` : ""} style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 180vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async">${opts.layer || ""}<div class="hs-layer">${spots}</div></div></div>`;
     },
     caption: () => `<p class="hs-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p>`,
@@ -267,14 +267,23 @@
       // data-focus (x1,y1,x2,y2 in % of the photo): the picture comes closer to that part, so a look's things are the picture
       const f = stage.dataset.focus && stage.dataset.focus.split(",").map(Number), img = $(".hs-img", stage), layer = $(".rc-layer", stage);
       if (f && f.length === 4 && img) {
-        const z = Math.max(1, Math.min(1.8, 0.8 * W / Math.max(1, (f[2] - f[0]) / 100 * dw), 0.8 * H / Math.max(1, (f[3] - f[1]) / 100 * dh)));
+        // closer, but the 1 600 px photo is never drawn wider than about 1 150 px: on a large screen it stays about as sharp as Mitt rum
+        const z = Math.max(1, Math.min(1.8, 1150 / dw, 0.8 * W / Math.max(1, (f[2] - f[0]) / 100 * dw), 0.8 * H / Math.max(1, (f[3] - f[1]) / 100 * dh)));
         s *= z; dw = IW * s; dh = IH * s;
         ox = Math.max(W - dw, Math.min(0, W / 2 - (f[0] + f[2]) / 200 * dw)); oy = Math.max(H - dh, Math.min(0, H / 2 - (f[1] + f[3]) / 200 * dh));
         const geo = `inset:auto;left:${ox}px;top:${oy}px;width:${dw}px;height:${dh}px`; img.style.cssText = geo + ";max-width:none;max-height:none;object-fit:fill"; if (layer) layer.style.cssText = geo;
         if (layer) $(".rc-box", stage).style.cssText = ""; }
       else { const box = $(".rc-box", stage); if (box) box.style.cssText = `left:${ox}px;top:${oy}px;width:${dw}px;height:${dh}px`; } // placed products follow the photo's crop
-      $$(".hs", stage).forEach((b) => {
-        const x = ox + (+b.dataset.x / 100) * dw, y = oy + (+b.dataset.y / 100) * dh;
+      const pts = $$(".hs", stage).map((b) => { const x = ox + (+b.dataset.x / 100) * dw, y = oy + (+b.dataset.y / 100) * dh, t = b.dataset.top != null ? oy + (+b.dataset.top / 100) * dh : null;
+        if (t == null) return { b, x, y }; const bt = oy + (+b.dataset.bot / 100) * dh;
+        // a thing too small to carry a dot gets it on its top edge; a tall thing cut by the frame gets it on the part you see
+        const hw = (+b.dataset.w / 200) * dw, fit = (v, lo, hi, a, z) => Math.min(Math.max(v, Math.min(z - 12, a), lo + 12), Math.max(lo + 12, hi)); // in frame, on the thing
+        return { b, x: fit(x, x - hw, W - 26, 26, x + hw), y: bt - t < 46 ? t - 6 : fit(y, t, H - 26, 26, bt) }; });
+      // dots closer than a finger (44 px) are pushed apart, a little each, so every one can be tapped
+      for (let k = 0; k < 8; k++) for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i], c = pts[j], dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy); if (d >= 44) continue;
+        const ux = d > 0.5 ? dx / d : 0, uy = d > 0.5 ? dy / d : 1, m = (44 - d) / 2 + 0.5; a.x -= ux * m; a.y -= uy * m; c.x += ux * m; c.y += uy * m; }
+      pts.forEach(({ b, x, y }) => {
         const vis = x > 18 && x < W - 18 && y > 18 && y < H - 18;
         b.style.left = x + "px"; b.style.top = y + "px"; b.hidden = !vis;
         b.classList.toggle("flip", x > W * 0.6); b.classList.toggle("up", y > H * 0.72);

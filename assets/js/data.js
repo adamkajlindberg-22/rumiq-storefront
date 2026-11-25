@@ -240,9 +240,9 @@
     hall: { pos: "52% 50%", spots: [["glob-bordslampa-opalglas", 10.5, 53], ["forvaringslada-filt", 37, 78], ["flatad-forvaringskorg", 61, 77]] },
     vardagsrum: { pos: "68% 50%", spots: [["plad-ullblandning-havre", 62, 66], ["terrakottakruka-rafflad", 76, 48]] },
     kok: { pos: "38% 50%", spots: [["forradsburkar-glas-ek-3-pack", 27, 27], ["skarbrada-ek-med-handtag", 30, 49], ["tvalpump-stengods", 45.5, 58], ["sand-keramikvas", 64.5, 59], ["vaffelhandduk-bomull", 21, 85]] },
-    sovrum: { pos: "34% 50%", spots: [["svamp-uppladdningsbar-lampa", 14, 65], ["lin-kuddfodral", 28, 55], ["plad-ullblandning-havre", 63, 64], ["forvaringslada-filt", 26, 88]] },
+    sovrum: { pos: "34% 50%", spots: [["svamp-uppladdningsbar-lampa", 14, 65], ["lin-kuddfodral", 28, 55], ["vila-paslakanset-linne", 45, 67], ["plad-ullblandning-havre", 63, 64], ["forvaringslada-filt", 26, 88]] },
     badrum: { pos: "34% 50%", spots: [["tvalpump-stengods", 21, 53], ["vaffelhandduk-bomull", 19, 80], ["flatad-forvaringskorg", 66, 85]] },
-    hemmakontor: { pos: "68% 50%", spots: [["skrivbordsorganisator-ek", 61, 53], ["lysa-keramiklampa", 70, 45], ["terrakottakruka-rafflad", 86, 56]] },
+    hemmakontor: { pos: "68% 50%", spots: [["skrivbordsorganisator-ek", 61, 53], ["lysa-keramiklampa", 70, 45], ["terrakottakruka-rafflad", 86, 56], ["forvaringslada-filt", 65.5, 88]] },
     uteliv: { pos: "50% 50%", spots: [["terrakottakruka-rafflad", 21, 75], ["svamp-uppladdningsbar-lampa", 70, 52], ["lin-kuddfodral", 57, 47]] },
   };
   RQ.JOURNEY = ["hall", "vardagsrum", "kok", "sovrum", "badrum"];

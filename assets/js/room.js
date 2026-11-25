@@ -268,7 +268,13 @@
       const items = orderOf(list).map((it, i) => { const p = RQ.byHandle(it.h), r = meta(p)[2];
         return `<div class="rm-item k-${kindOf(p)}${p.cat === "belysning-atmosfar" ? " lamp" : ""}" style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}"><img src="${RQ.cut(p)}" alt="" decoding="async" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}"></div>`; }).join("");
       const hOf = (it) => it.w * meta(RQ.byHandle(it.h))[2] * (it.sy || 1) * ar; // height in % of the photo's height
-      const spots = list.map((it) => [it.h, it.x, +Math.max(4, it.y - hOf(it) - 2.5).toFixed(1), true]); // the dot just above the thing, so it never hides a small one
+      // each dot on its own thing: the middle of it, a lamp's dot on its body, and never on something standing in front of it.
+      // [h, x, y, own, top, bottom, width] in % of the photo; a thing too small to carry a dot gets it on its top edge (hotspots.layout)
+      const ord = orderOf(list), rect = (it) => { const h = hOf(it); return [it.x - it.w / 2, it.y - h, it.x + it.w / 2, it.y]; };
+      const spots = list.map((it) => { const [l, t, r, bt] = rect(it), h = bt - t, front = ord.slice(ord.indexOf(it) + 1).map(rect);
+        const tries = [[it.x, bt - h * (/lampa/.test(it.h) ? 0.3 : 0.5)], [l + (r - l) * 0.8, t + h * 0.5], [l + (r - l) * 0.2, t + h * 0.5], [it.x, t + h * 0.22]];
+        const [x, y] = tries.find(([x, y]) => !front.some((f) => x > f[0] && x < f[2] && y > f[1] && y < f[3])) || tries[0];
+        return [it.h, +x.toFixed(1), +y.toFixed(1), true, +t.toFixed(1), +bt.toFixed(1), it.w]; });
       const box = [Math.min(...list.map((it) => it.x - it.w / 2)), Math.min(...list.map((it) => it.y - hOf(it))), Math.max(...list.map((it) => it.x + it.w / 2)), Math.max(...list.map((it) => it.y))];
       return { box, layer: `<div class="rc-layer" aria-hidden="true"><div class="rc-box"><div class="rm-items">${items}</div></div></div>`, spots };
     },
@@ -304,9 +310,14 @@
     /* rule-based suggestions: the room's type and colours, one product per category */
     suggest(n = 4) {
       const have = new Set(R.scene().map((it) => it.h)), cats = new Set(R.scene().map((it) => RQ.byHandle(it.h).cat));
+      // a sample photo already shows some things (the shop's dots in it): a second pump or box beside them comes last,
+      // and only so that Inred åt mig always gives at least two things
+      const shown = new Set(((room && room.sample && RQ.HOTSPOTS && RQ.HOTSPOTS[room.map]) || { spots: [] }).spots.map((x) => x[0]));
       const shy = { window: 14, bedding: room && room.type === "sovrum" ? 4 : 30 }; // kinds that are harder to make look right come later
-      const pool = RQ.PRODUCTS.filter((p) => !have.has(p.handle) && (!room || !room.type || p.rooms.includes(room.type)))
+      const all = RQ.PRODUCTS.filter((p) => !have.has(p.handle) && (!room || !room.type || p.rooms.includes(room.type)))
         .map((p) => ({ p, s: (match(p) || 70) + (p.featured ? 4 : 0) - (shy[kindOf(p)] || 0) })).sort((a, b) => b.s - a.s);
+      const pool = all.filter((x) => !shown.has(x.p.handle)), more = all.filter((x) => shown.has(x.p.handle));
+      if (pool.length < 2) pool.push(...more.slice(0, 2 - pool.length));
       const out = [];
       for (const { p } of pool) { if (out.length >= n) break; if (cats.has(p.cat)) continue; cats.add(p.cat); out.push(p); }
       for (const { p } of pool) { if (out.length >= n) break; if (!out.includes(p)) out.push(p); }

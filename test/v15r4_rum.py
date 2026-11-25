@@ -154,6 +154,44 @@ with sync_playwright() as p:
         pg.evaluate("RQ.room.add('lysa-keramiklampa', true)"); lamp = pg.evaluate(SPOT, "lysa-keramiklampa")
         ok(lo <= lamp[2] <= hi and 55 <= lamp[1] <= 68, f"[M12 {name}] the first table lamp starts lamp-sized at mid-height: {lamp}")
         c.close()
+    # ---------------------------------------------------------------- look pictures: every dot on its own thing, a finger apart, sharp on large screens, no doubles
+    DOTS = """() => { const st = document.querySelector('.lp-stage'), r = st.getBoundingClientRect();
+      const its = [...st.querySelectorAll('.rc-box .rm-item')].map((e) => { const b = e.getBoundingClientRect(), h = (e.querySelector('img').src.split('/').pop() || '').replace('.webp', ''); return { h, b: [b.left, b.top, b.right, b.bottom], z: +e.style.zIndex }; });
+      const ds = [...st.querySelectorAll('.hs')].filter((d) => !d.hidden).map((d) => { const b = d.getBoundingClientRect(); return { h: d.dataset.hs, x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+      return { its, ds, stage: [r.left, r.top, r.right, r.bottom], img: st.querySelector('.hs-img').getBoundingClientRect().width }; }"""
+    for W, Hh, mob in ((360, 740, True), (390, 844, True), (430, 932, True), (820, 1180, True), (1024, 768, True), (1280, 720, False), (1440, 900, False), (1920, 1080, False)):
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c)
+        for l in ("mjuk-kvall", "lugn-hall", "frukostbanken", "sov-gott", "vardagsmiddag", "spa-hemma", "fokus"):
+            tag = f"[look {W} {l}]"
+            pg.goto(BASE + f"look-{l}/"); pg.wait_for_timeout(900)
+            d = pg.evaluate(DOTS)
+            close = [(a["h"], c2["h"]) for i, a in enumerate(d["ds"]) for c2 in d["ds"][i + 1:] if ((a["x"] - c2["x"]) ** 2 + (a["y"] - c2["y"]) ** 2) ** 0.5 < 43.5]
+            ok(not close, f"{tag} no two dots closer than a finger (44 px): {close}")
+            for it in d["its"]:
+                dot = next((x for x in d["ds"] if x["h"] == it["h"]), None)
+                if not dot:
+                    continue
+                l0, t0, r0, b0 = it["b"]
+                on = l0 - 1 <= dot["x"] <= r0 + 1 and t0 - 24 <= dot["y"] <= b0
+                ok(on, f"{tag} the dot of {it['h']} sits on it: dot {round(dot['x'])},{round(dot['y'])} thing {[round(v) for v in it['b']]}")
+                hid = [o["h"] for o in d["its"] if o["z"] > it["z"] and o["b"][0] + 2 < dot["x"] < o["b"][2] - 2 and o["b"][1] + 2 < dot["y"] < o["b"][3] - 2]
+                ok(not hid, f"{tag} the dot of {it['h']} is not on {hid}, which stands in front of it")
+            if W >= 1280:
+                ok(d["img"] <= 1215, f"{tag} the 1 600 px photo is drawn at most about 1 200 px wide, so it stays sharp: {round(d['img'])}")
+        pg.goto(BASE + "look-sov-gott/"); pg.wait_for_timeout(800)
+        ok(not pg.evaluate("[...document.querySelectorAll('.lp-stage .rc-box img')].some((i) => /paslakan/.test(i.src))"), f"[look {W}] Sov gott: the duvet set is the one on the bed in the photo, no pile on top")
+        pg.goto(BASE + "look-fokus/"); pg.wait_for_timeout(800)
+        ok(not pg.evaluate("[...document.querySelectorAll('.lp-stage .rc-box img')].some((i) => /forvaringslada/.test(i.src))"), f"[look {W}] Fokus: one box, the one under the desk, not a second one in front")
+        ok(not pg.errs, f"[look {W}] no script errors: {pg.errs[:2]}")
+        c.close()
+    # Inred åt mig in a sample room: nothing the photo already shows (a second pump, a second throw) while there is something else
+    c = ctx_for(b, 1440, 900, False); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(400)
+    for r in ("vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor", "uteliv"):
+        pg.evaluate(SAMPLE, r); pg.evaluate("RQ.room.saveScene([])")
+        picks, shown = pg.evaluate("RQ.room.suggest(4).map((p) => p.handle)"), pg.evaluate(f"RQ.HOTSPOTS['{r}'].spots.map((s) => s[0])")
+        dup = [h for h in picks if h in shown]
+        ok(len(picks) >= 2 and (not dup or len(picks) - len(dup) < 2), f"[suggest {r}] Inred åt mig gives at least two things and doubles what the photo shows only when nothing else suits: {picks}")
+    c.close()
 #CHECKS
     b.close()
 
