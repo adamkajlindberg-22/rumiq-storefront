@@ -32,6 +32,30 @@ class Srv(socketserver.ThreadingTCPServer):
 
 
 srv = Srv(("127.0.0.1", 0), lambda *a, **k: H(*a, directory=str(ROOT), **k))
+
+
+BASEPATH = re.search(r'<base href="([^"]*)"', (ROOT / "404.html").read_text(encoding="utf-8")).group(1)
+
+
+class H404(H):
+    """as the static host does: the site lives under its base path, an address without a page gets 404.html"""
+    def translate_path(self, path):
+        b = "/" + BASEPATH.strip("/") + "/" if BASEPATH.strip("/") else "/"
+        return super().translate_path("/" + path[len(b):] if path.startswith(b) else path)
+
+    def send_head(self):
+        path = Path(self.translate_path(self.path))
+        if not path.exists() or (path.is_dir() and not (path / "index.html").exists()):
+            body = (ROOT / "404.html").read_bytes()
+            self.send_response(404); self.send_header("Content-Type", "text/html; charset=utf-8"); self.send_header("Content-Length", str(len(body))); self.end_headers()
+            import io
+            return io.BytesIO(body)
+        return super().send_head()
+
+
+srv404 = Srv(("127.0.0.1", 0), lambda *a, **k: H404(*a, directory=str(ROOT), **k))
+threading.Thread(target=srv404.serve_forever, daemon=True).start()
+BASE404 = f"http://127.0.0.1:{srv404.server_address[1]}/" + BASEPATH.strip("/") + ("/" if BASEPATH.strip("/") else "")
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 BASE = f"http://127.0.0.1:{srv.server_address[1]}/"
 UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"
@@ -225,6 +249,16 @@ with sync_playwright() as p:
             ok(pg.evaluate("document.querySelector('#aiSheet .sheet-in').getBoundingClientRect().width") <= 560, "desktop: the 'Logga in för att skapa bilden' dialog is sized to its three lines")
         ok(not errs, f"{tag} konto/sheet: no script errors {errs[:2]}")
         ctx.close()
+
+    # ------------------------------------------------------------ an order page after a reload keeps its own title (D22)
+    ctx, pg, errs = new(b, False)
+    pg.goto(BASE404 + "butik/"); pg.wait_for_timeout(900)
+    num = pg.evaluate("(() => { const pr = RQ.PRODUCTS[1]; RQ.shop.addToCart(pr.variants ? pr.variants[0].id : (RQ.shop.variantsOf ? RQ.shop.variantsOf(pr)[0].id : pr.handle), 1); const o = RQ.shop.placeTestOrder({ contact: { email: 'a@b.se', first: 'A' }, address: { street: 'G 1', zip: '11122', city: 'X' }, shippingId: 'ombud' }); return o && o.number; })()")
+    pg.goto(BASE404 + f"order-{num}/"); pg.wait_for_timeout(1500)
+    ok(num and "Sidan finns inte" not in pg.title() and pg.evaluate("!!document.querySelector('#view h1')"), f"desktop: a reloaded order page has its own title, not 'Sidan finns inte': {pg.title()!r}")
+    pg.goto(BASE404 + "finns-inte-alls/"); pg.wait_for_timeout(1000)
+    ok("finns inte" in pg.title(), f"desktop: a page that does not exist still says so: {pg.title()!r}")
+    ctx.close()
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

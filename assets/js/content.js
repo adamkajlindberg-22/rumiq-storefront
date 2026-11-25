@@ -40,7 +40,7 @@
           <tr><td><a href="#svep">Svep</a></td><td>Svep tio kort eller gör fyra snabba val och få din stilprofil.</td><td>Behövs inte</td></tr>
           <tr><td><a href="#mitt-rum">Mitt rum</a></td><td>Se produkterna i ett foto av ditt rum, dag som kväll, och se vad som passar färgerna där.</td><td>Behövs inte</td></tr>
           <tr><td><a href="#hitta-ratt">Hitta rätt</a></td><td>Till ditt hem, som present eller med egna ord. Stylisten finns ett tryck bort.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#looks">Looks</a></td><td>Färdiga looks med rabatt, eller bygg din egen.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#looks">Looks</a></td><td>Looks med rabatt, eller bygg din egen.</td><td>Behövs inte</td></tr>
           <tr><td><a href="#mitt-hem">Sparat</a></td><td>Det du sparat, dina rum och mått, din stil och dina projekt på ett ställe.</td><td>Sparas i din webbläsare</td></tr>
         </tbody></table>
         <p class="note">Verktygens resultat är förslag, inte garantier eller produktfakta. Kontrollera alltid mått, material och pris på produktsidan innan du köper.</p>`,

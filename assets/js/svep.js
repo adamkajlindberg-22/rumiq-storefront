@@ -229,10 +229,13 @@
     const on = (n, f) => { const b = el(n); if (b) b.addEventListener("click", f); };
     on("No", () => decide(-1)); on("Yes", () => decide(1)); on("Bag", () => decide(2)); on("Undo", undo);
     // the arrows work as soon as a round starts: in the deck, or when the focus is on no control at all (the page itself)
+    let auto = false; // the deck has the focus only because the round started there
+    deckEl.addEventListener("blur", () => { auto = false; });
     const key = (e) => {
       const free = e.target === document.body || e.target.id === "view";
       if (st.over || !e.target.closest || (!free && e.target.closest(".sv-wrap") !== deckEl.parentNode) || e.altKey || e.shiftKey || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
-      if (free && e.key === "ArrowUp") return; // on the page itself ↑ scrolls, it never buys anything by surprise
+      if (e.key === "ArrowUp" && (free || auto)) return; // on the page itself, or before you have used the deck, ↑ scrolls: it never buys anything by surprise
+      if (/^Arrow(Right|Left)$/.test(e.key)) auto = false;
       if (free && /^Arrow(Right|Left)$|^Backspace$/.test(e.key)) deckEl.focus({ preventScroll: true });
       if (e.key === "ArrowRight") { e.preventDefault(); decide(1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); }
@@ -242,7 +245,7 @@
     if (cfg.keys) addEventListener("keydown", key);
     if (cfg.finished) finish(); else paint();
     // with a keyboard and a mouse the round starts in the deck, so the arrows work at once (not on touch screens, where it would only draw a ring)
-    if (cfg.keys && !st.over && matchMedia("(hover:hover) and (pointer:fine)").matches && !RQ.sheet.isOpen()) deckEl.focus({ preventScroll: true });
+    if (cfg.keys && !st.over && matchMedia("(hover:hover) and (pointer:fine)").matches && !RQ.sheet.isOpen()) { deckEl.focus({ preventScroll: true }); auto = true; }
     return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", pup); removeEventListener("pointercancel", cancel); removeEventListener("keydown", key); };
   }
 
