@@ -361,10 +361,13 @@
         grid.addEventListener("click", (e) => { const t = e.target.closest(".inroomtile"); if (t) { location.hash = "#mitt-rum-" + p.handle; return; } const b = e.target.closest(".pg-item:not(.pg-film)"); if (!b) return; RQ.lightbox.open(lbList(), items().indexOf(b), p.name); });
         const fine = matchMedia("(hover:hover) and (pointer:fine)").matches && innerWidth > 900;
         if (fine) {
-          let zt = null;
-          grid.addEventListener("mousemove", (e) => { const b = e.target.closest(".pg-item"); if (!b) return; const r = b.getBoundingClientRect(); b.style.setProperty("--zx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); b.style.setProperty("--zy", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%"); });
-          grid.addEventListener("mouseover", (e) => { const b = e.target.closest(".pg-item:not(.inroomtile)"); if (!b || b.classList.contains("zooming")) return; clearTimeout(zt); zt = setTimeout(() => b.classList.add("zooming"), 380); });
-          grid.addEventListener("mouseout", (e) => { const b = e.target.closest(".pg-item"); if (!b || b.contains(e.relatedTarget)) return; clearTimeout(zt); b.classList.remove("zooming"); });
+          // the loupe starts only once the pointer really moves on a picture: arriving from a card with the pointer already there must show the whole picture
+          let zt = null, at = null;
+          grid.addEventListener("mousemove", (e) => { const b = e.target.closest(".pg-item"); if (!b) return; const r = b.getBoundingClientRect(); b.style.setProperty("--zx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); b.style.setProperty("--zy", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%");
+            if (!at) at = [e.clientX, e.clientY];
+            if (Math.abs(e.clientX - at[0]) + Math.abs(e.clientY - at[1]) < 4 || zt || b.classList.contains("zooming") || b.classList.contains("inroomtile")) return;
+            zt = setTimeout(() => { zt = null; b.classList.add("zooming"); }, 380); });
+          grid.addEventListener("mouseout", (e) => { const b = e.target.closest(".pg-item"); if (!b || b.contains(e.relatedTarget)) return; clearTimeout(zt); zt = null; b.classList.remove("zooming"); });
         }
         // drop images that do not exist yet (lazy images never fire an error off screen)
         items().slice(1).forEach((b) => { const t = new Image(); t.onerror = () => { b.remove(); paintDots(); }; t.src = $("img", b).getAttribute("src"); });

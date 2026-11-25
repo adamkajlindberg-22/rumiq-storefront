@@ -111,6 +111,18 @@ with sync_playwright() as p:
             ok(got[0] == 4 and got[1] == 0, f"{tag} with a room the lamp has four pictures and opens on the first: {got}")
             ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
             ctx.close()
+    # D12: the loupe waits until the pointer moves on the picture
+    for W, Hh, mobile in [x for x in SIZES if not x[2]]:
+        tag = f"[{W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(300)
+        box = pg.locator("#view .card").nth(0).bounding_box()
+        x, y = box["x"] + box["width"] / 2, box["y"] + 100
+        pg.mouse.move(x, y); pg.mouse.click(x, y); pg.wait_for_timeout(1200)
+        ok("produkt-" in pg.evaluate("location.pathname") and pg.evaluate("document.querySelectorAll('.pg-item.zooming').length") == 0, f"{tag} arriving on a product from a card shows the whole picture")
+        pg.mouse.move(x + 30, y + 30, steps=5); pg.wait_for_timeout(700)
+        ok(pg.evaluate("document.querySelectorAll('.pg-item.zooming').length") == 1, f"{tag} moving the pointer on the picture starts the loupe")
+        ctx.close()
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
