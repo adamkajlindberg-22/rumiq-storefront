@@ -284,7 +284,7 @@
       const r = RQ.HOTSPOTS[id], room = RQ.roomById(id); if (!r) return "";
       // opts.layer/opts.spots: products placed in the photo by the room engine (the look pages); their dots are the product itself, not a look-alike
       const spots = r.spots.filter(([h]) => !opts.only || opts.only.includes(h)).concat(opts.spots || []).map(([h, x, y, own, top, bot, w]) => { const p = RQ.byHandle(h), like = own ? "" : " · Liknande i butiken"; return `<button class="hs" type="button" data-hs="${h}" data-x="${x}" data-y="${y}"${top != null ? ` data-top="${top}" data-bot="${bot}" data-w="${w}"` : ""} aria-label="${esc(p.name)}, ${kr(p.price)}.${own ? "" : " Liknande i butiken."}"><i aria-hidden="true"></i><span class="hs-l" aria-hidden="true"><b>${esc(p.name)}</b><em>${kr(p.price)}${like}</em></span></button>`; }).join("");
-      return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}"${opts.focus ? ` data-focus="${opts.focus.map((v) => v.toFixed(1)).join(",")}"` : ""} style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="assets/img/rum/${id}-900.webp 900w, assets/img/rum/${id}-1600.webp 1600w" sizes="(min-width:900px) 64vw, 180vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async">${opts.layer || ""}<div class="hs-layer">${spots}</div></div></div>`;
+      return `<div class="hs-stage${opts.cls ? " " + opts.cls : ""}" data-room="${id}"${opts.focus ? ` data-focus="${opts.focus.map((v) => v.toFixed(1)).join(",")}"` : ""} style="--pos:${r.pos}"><div class="hs-drift"><img class="hs-img" src="assets/img/rum/${id}-1600.webp" srcset="${RQ.srcset(`assets/img/rum/${id}-900.webp`)}" sizes="(min-width:900px) 64vw, 180vw" alt="${esc(room ? room.name : "")}, illustration" ${opts.eager ? "" : 'loading="lazy"'} decoding="async">${opts.layer || ""}<div class="hs-layer">${spots}</div></div></div>`;
     },
     caption: () => `<p class="hs-cap">Bilderna är illustrationer. Prickarna visar liknande produkter i butiken.</p>`,
     handles(id) { return [...new Set((RQ.HOTSPOTS[id] || { spots: [] }).spots.map((s) => s[0]))]; },
@@ -427,7 +427,7 @@
   };
   // a ready-made look whose things these are (a saved look keeps its discount and its name)
   const lookOf = (handles) => RQ.LOOKS.find((l) => l.items.length === handles.length && l.items.every((h) => handles.includes(h)));
-  const lookImg = (l, eager) => `<img src="assets/img/rum/${l.room}-900.webp" srcset="assets/img/rum/${l.room}-900.webp 900w, assets/img/rum/${l.room}-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" width="1600" height="893">`;
+  const lookImg = (l, eager) => `<img src="assets/img/rum/${l.room}-900.webp" srcset="${RQ.srcset(`assets/img/rum/${l.room}-900.webp`)}" sizes="(min-width:900px) 22rem, 90vw" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" width="1600" height="893">`;
   /* what a look's button does now, by what is already in the cart: buy the look, add the rest (the price is what the cart rises by,
      the discount taken into account), or show the cart. The same words on the Looks cards and the look page */
   const lookRise = (miss) => miss.reduce((s, h) => s + RQ.byHandle(h).price, 0) - (S.cartDiscount(miss) - S.cartDiscount());
@@ -583,7 +583,7 @@
       <div><h2 class="h2">Dra solen.</h2><p style="margin-top:1.1rem;color:var(--muted);font-size:1.08rem;max-width:26rem">Samma rum ser olika ut från morgon till kväll. Därför ska du se saken i ditt eget ljus, inte bara i vårt.</p>
         <div class="sun-time" id="sunTime" aria-live="polite">07:00<small>Morgonljus</small></div>
         <input type="range" id="sunRange" min="0" max="100" value="12" aria-label="Tid på dagen" style="margin-top:1.4rem"></div>
-      <figure class="sun-fig"><img src="assets/img/rum-1600.webp" srcset="assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w" sizes="(max-width:900px) 100vw, 60vw" alt="Vardagsrummet i olika ljus beroende på tid på dagen." loading="lazy"><div class="light" id="sunLight"></div><div class="tint" id="sunTint"></div><div class="shade" id="sunShade"></div></figure>
+      <figure class="sun-fig"><img src="assets/img/rum-1600.webp" srcset="${RQ.srcset("assets/img/rum-900.webp")}" sizes="(max-width:900px) 100vw, 60vw" alt="Vardagsrummet i olika ljus beroende på tid på dagen." loading="lazy"><div class="light" id="sunLight"></div><div class="tint" id="sunTint"></div><div class="shade" id="sunShade"></div></figure>
     </div></section>`;
   RQ.mountSun = (root) => {
     const range = $("#sunRange", root); if (!range) return;

@@ -6,10 +6,11 @@
    One <picture> picks the right first image for each of those, so nothing is fetched twice. */
 (function () {
   const RQ = window.RQ, S = RQ.shop, V = RQ.views, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc;
-  const VIDEO_SRC = "assets/video/hero.mp4";
+  /* a big or sharp screen gets the 1440p cut of the film, everything else 1080p */
+  const VIDEO_SRC = (innerWidth || 0) * (devicePixelRatio || 1) > 2000 ? "assets/video/hero-1440.mp4" : "assets/video/hero.mp4";
   const HOLD = 0.9;
   /* the wide still: the box is cropped with object-fit cover, so on a tall screen the picture is wider than the window */
-  const WIDE_SET = "assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w", WIDE_SIZES = "max(100vw, 180vh)";
+  const WIDE_SET = "assets/img/rum-900.webp 900w, assets/img/rum-1600.webp 1600w, assets/img/rum-2400.webp 2400w, assets/img/rum-3200.webp 3200w", WIDE_SIZES = "max(100vw, 180vh)";
   const WIDE_FIRST = "(prefers-reduced-motion: reduce), (pointer: coarse) and (min-width: 821px) and (max-width: 1100px)";
   let videoBlobUrl = null, videoFailed = false;
 
@@ -39,7 +40,7 @@
       html: `
       <section class="hero" id="hero" aria-label="Välkommen till RumIQ">
         <div class="stage">
-          <picture><source media="(prefers-reduced-motion: reduce), (pointer: coarse) and (min-width: 821px) and (max-width: 1100px)" srcset="${WIDE_SET}" sizes="${WIDE_SIZES}"><source media="(max-width: 820px)" srcset="assets/img/hero-m-start.webp"><img class="still first" src="assets/img/hero-start-1600.webp" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="1600" height="900" fetchpriority="high" decoding="async"></picture>
+          <picture><source media="(prefers-reduced-motion: reduce), (pointer: coarse) and (min-width: 821px) and (max-width: 1100px)" srcset="${WIDE_SET}" sizes="${WIDE_SIZES}"><source media="(max-width: 820px)" srcset="assets/img/hero-m-start.webp 540w, assets/img/hero-m-start-1080.webp 1080w" sizes="100vw"><img class="still first" src="assets/img/hero-start-1600.webp" srcset="assets/img/hero-start-1600.webp 1600w, assets/img/hero-start-2560.webp 2560w" sizes="100vw" alt="Ett ljust skandinaviskt vardagsrum i morgonsol, med linnesoffa, ekbord och en stengodsmugg." width="1600" height="900" fetchpriority="high" decoding="async"></picture>
           <img class="still wide" alt="" aria-hidden="true" width="2400" height="1340" decoding="async" hidden>
           <video id="heroVideo" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
           <video class="mloop" id="heroLoop" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
@@ -56,7 +57,7 @@
       <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li>${((window.RQ_CONFIG || {}).delivery || {}).openPurchaseDays ? `<b>${window.RQ_CONFIG.delivery.openPurchaseDays} dagars öppet köp</b>, ångra med en knapp` : `<b>14 dagars ångerrätt</b>, ångra med en knapp`}</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
 
       <section class="hrooms" aria-label="Handla efter rum"><div class="wrap hrooms-in">
-        ${RQ.ROOMS.map((r) => `<a class="hroom" href="#rum-${r.id}"><span class="hroom-im"><img src="assets/img/rum/${r.id}-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>${esc(r.name)}</span></a>`).join("")}
+        ${RQ.ROOMS.map((r) => `<a class="hroom" href="#rum-${r.id}"><span class="hroom-im"><img src="assets/img/rum/${r.id}-600.webp" srcset="${RQ.srcset(`assets/img/rum/${r.id}-600.webp`)}" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>${esc(r.name)}</span></a>`).join("")}
         <a class="hroom all" href="#butik"><span class="hroom-im"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></span><span>Alla produkter</span></a>
       </div></section>
 
@@ -105,7 +106,7 @@
     const SAMPLE = [{ h: "lysa-keramiklampa", x: 86, y: 47, l: 1 }, { h: "plad-ullblandning-havre", x: 44, y: 57 }, { h: "flatad-forvaringskorg", x: 75, y: 74, l: 1 }];
     const items = mine ? R.ordered().slice(0, 8) : SAMPLE;
     const total = items.reduce((s, it) => s + RQ.byHandle(it.h).price, 0);
-    const set = (k) => `assets/img/rum/sovrum-${k}-600.webp 600w, assets/img/rum/sovrum-${k}-900.webp 900w, assets/img/rum/sovrum-${k}-1344.webp 1344w`;
+    const set = (k) => RQ.srcset(`assets/img/rum/sovrum-${k}-900.webp`);
     const sizes = "(max-width: 900px) 100vw, 60vw";
     const stage = mine
       ? `<div class="rh-stage" style="aspect-ratio:${R.get().w} / ${R.get().h}"><img class="rh-bg" src="${R.url()}" alt="Ditt rum med produkterna du ställt in" loading="lazy"><div class="ba-after">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-item" style="left:${it.x}%;top:${it.y}%;width:${it.w}%"><img src="${R.cutIn ? R.cutIn(p) : RQ.cut(p)}" alt="" loading="lazy" style="${it.sy ? `aspect-ratio:1 / ${(R.PLACE[it.h][2] * it.sy).toFixed(3)};` : ""}filter:${R.lightFilter(it.light)}"></span>`; }).join("")}</div>`

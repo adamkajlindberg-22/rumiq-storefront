@@ -227,6 +227,13 @@
   RQ.roomById = (id) => RQ.ROOMS.find((r) => r.id === id) || null;
   RQ.colById = (id) => RQ.COLLECTIONS.find((c) => c.id === id) || null;
   RQ.img = (p, size) => `assets/img/p/${p.handle}-${size || 900}.webp`;
+  /* every room, magazine and style photo comes in a ladder of widths (cut from 4K masters); given any one of them, list them all */
+  const LADDER = { rum: [600, 900, 1600, 2400, 3200], pair: [600, 900, 1344, 2016, 2688], mag: [1200, 1600, 2400], stil: [600, 1200], home: [900, 1600, 2400, 3200] };
+  RQ.srcset = (src) => {
+    const m = /^(.*\/)([a-z-]+)-(\d+)\.webp$/.exec(src || ""); if (!m) return "";
+    const [, dir, name] = m, key = /\/img\/$/.test(dir) ? "home" : /sovrum-(fore|efter)$/.test(name) ? "pair" : /\/mag\/$/.test(dir) ? "mag" : /\/stil\/$/.test(dir) ? "stil" : /\/rum\/$/.test(dir) ? "rum" : "";
+    return key ? LADDER[key].map((w) => `${dir}${name}-${w}.webp ${w}w`).join(", ") : "";
+  };
   RQ.cut = (p) => `assets/img/cut/${p.handle}.webp`;
 })();
 
