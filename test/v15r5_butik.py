@@ -173,7 +173,9 @@ with sync_playwright() as p:
         pg.evaluate("document.querySelector('.sheet.open .var-row [data-v=\"1\"]').click()"); pg.click("#varGo"); pg.wait_for_timeout(500)
         ok(pg.evaluate(LINES) == "glob-bordslampa-opalglas::0x1 lysa-keramiklampa::0x1 vaffelhandduk-bomull::1x1" and "2 nya i varukorgen" in pg.evaluate(TOAST), f"{tag} the list adds the two new ones in the chosen colour: {pg.evaluate(LINES)}")
         pg.wait_for_timeout(1800); pg.click("#allCart"); pg.wait_for_timeout(500)
-        ok("Allt ligger redan i varukorgen" in pg.evaluate(TOAST) and pg.evaluate("RQ.shop.cartCount()") == 3, f"{tag} again: nothing doubled, and it says so")
+        # r6 (C5): with all of it in the cart the button reads "I varukorgen · Visa" and opens the cart
+        ok(pg.evaluate("document.getElementById('allCart').textContent") == "I varukorgen · Visa" and pg.evaluate("document.getElementById('cart').classList.contains('open')") and pg.evaluate("RQ.shop.cartCount()") == 3, f"{tag} again: nothing doubled, the button shows the cart")
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         # Passar ihop: this product in the colour chosen above, only what is new is counted
         pg.evaluate("RQ.shop.clearCart()"); pg.goto(BASE + "produkt-lin-kuddfodral/", wait_until="load"); pg.wait_for_timeout(600)
         pg.evaluate("document.querySelector('.pinfo [data-v=\"lin-kuddfodral::1\"]').click(); document.querySelector('#add').click()"); pg.wait_for_timeout(400)

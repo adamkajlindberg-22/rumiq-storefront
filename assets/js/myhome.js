@@ -221,7 +221,7 @@
         <section class="wrap" style="padding-bottom:5rem"><div class="grid">${ps.map(RQ.card).join("")}</div>
           <p class="small" style="margin-top:1.6rem">Listan finns bara i länken. Vi sparar inget om den på någon server.</p></section>`,
       mount(root) {
-        const a = $("#shAll", root); a.addEventListener("click", () => RQ.addMany(L.hs, a, "Listan"));
+        const a = $("#shAll", root); a.addEventListener("click", () => RQ.addMany(L.hs, a, "Listan")); RQ.addAllBtn(a, () => L.hs, () => `Lägg alla i varukorgen · ${kr(total)}`);
         const b = $("#shSave", root); b.addEventListener("click", () => { let n = 0; L.hs.forEach((h) => { if (!S.isWished(h)) { S.toggleWish(h); n++; } }); RQ.toast(n ? `${n} ${n === 1 ? "sak sparad" : "saker sparade"}. <a href="#mitt-hem">Visa</a>` : "Du har redan sparat allt."); });
         RQ.track("wishlist_open", { items: L.hs.length });
       },

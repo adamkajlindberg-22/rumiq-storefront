@@ -76,6 +76,7 @@
      given asks first (as Mitt rum and a card's + do), and the toast says what really happened */
   const addMany = (entries, btn, label, said) => {
     if (btn && btn.classList && btn.classList.contains("done")) return 0; // the same button again within a moment: a double tap, not a second order
+    if (btn && btn.hasAttribute && btn.hasAttribute("data-open-cart")) return 0; // everything lies there already: the button opens the cart (addAllBtn)
     const have = new Set(S.cartLines().map((l) => l.product.handle)), seen = new Set(); let skip = 0;
     const todo = entries.map(String).filter((e) => { const h = e.split("::")[0]; if (seen.has(h) || !RQ.byHandle(h)) return false; seen.add(h); if (have.has(h)) { skip++; return false; } return true; });
     if (!todo.length) { RQ.toast('<span>Allt ligger redan i varukorgen.</span> <a href="#" data-open-cart>Visa</a>'); return 0; }
@@ -91,6 +92,23 @@
     return n;
   };
   RQ.addMany = addMany;
+  /* an add-all button with nothing left to add shows the cart instead ("I varukorgen · Visa"), with the same check addMany makes,
+     and follows the cart while it is on the page. handles and label are functions, read each time */
+  RQ.allInCart = (hs) => { const have = new Set(S.cartLines().map((l) => l.product.handle)); return hs.length > 0 && hs.every((h) => have.has(String(h).split("::")[0])); };
+  RQ.addAllBtn = (btn, handles, label) => {
+    if (!btn) return () => {};
+    const paint = () => {
+      if (!btn.isConnected) return;
+      if (btn.classList.contains("done")) { clearTimeout(btn._ap); btn._ap = setTimeout(paint, 1900); return; } // "Tillagd" first, then the new state
+      const all = RQ.allInCart(handles()), text = all ? "I varukorgen · Visa" : label();
+      btn.toggleAttribute("data-open-cart", all); btn.classList.toggle("ghost", all);
+      if (btn.dataset.label) btn.dataset.label = text; // what confirmAdd puts back after "Tillagd"
+      if (btn._apText !== text) { btn._apText = text; btn.textContent = text; }
+    };
+    const off = S.onChange((w) => { if (!btn.isConnected) return off(); if (w === "cart" || w === "all") setTimeout(paint); });
+    paint();
+    return paint;
+  };
 
   /* ------------------------------------------------------------------ Leveranskoll */
   const PENDING = '<span class="pending">Bekräftas innan vi öppnar</span>';

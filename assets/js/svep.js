@@ -442,7 +442,7 @@
               RQ.taste.reset(); try { localStorage.removeItem("rumiq-style"); } catch (er) {} again();
             });
             const m = $("#svMore", root); m && m.addEventListener("click", again);
-            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda"));
+            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda")); RQ.addAllBtn(all, () => r.saved.map((p) => p.handle), () => `Lägg alla i varukorgen · ${kr(r.saved.reduce((s, p) => s + p.price, 0))}`);
             const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => toRoom(r.saved.map((p) => p.handle)));
             const sh = $("#svShare", root); sh && sh.addEventListener("click", () => shareStyle(r.top, (r.saved.length ? r.saved : RQ.styleProfile().liked.map(RQ.byHandle)).filter(Boolean)));
             const ans = roundAnswers(st);
@@ -517,7 +517,7 @@
     };
   };
   const bindTwoActions = (root, both) => {
-    const all = $("#twoAll", root); all && all.addEventListener("click", () => RQ.addMany(both.map((p) => p.handle), all, "Det ni båda gillar"));
+    const all = $("#twoAll", root); all && all.addEventListener("click", () => RQ.addMany(both.map((p) => p.handle), all, "Det ni båda gillar")); RQ.addAllBtn(all, () => both.map((p) => p.handle), () => `Lägg det ni båda gillar i varukorgen · ${kr(both.reduce((s, p) => s + p.price, 0))}`);
     const rm = $("#twoRoom", root); rm && rm.addEventListener("click", () => toRoom(both.map((p) => p.handle)));
   };
 

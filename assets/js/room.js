@@ -256,7 +256,7 @@
     toBack(h) { const l = R.scene(); const i = l.findIndex((it) => it.h === h); if (i < 0) return; const it = l.splice(i, 1)[0]; it.back = true; delete it.top; l.unshift(it); R.saveScene(l); },
     /* everything in the room into the cart, once: what already lies there is left as it is. Products with colours ask first. */
     cartAll(btn, chosen) {
-      const list = R.scene(); if (!list.length) return;
+      const list = R.scene(); if (!list.length || (btn && btn.hasAttribute("data-open-cart"))) return; // all of it lies there: the button opens the cart
       const inCart = new Set(S.cartLines().map((l) => l.product.handle)), todo = list.filter((it) => !inCart.has(it.h));
       if (!todo.length) { RQ.toast('Allt i rummet ligger redan i varukorgen. <a href="#" data-open-cart>Visa</a>'); return; }
       const ask = todo.filter((it) => (RQ.byHandle(it.h).variants || []).length > 1);
@@ -540,6 +540,7 @@
         // the thing you came with from a product page lands, and is the one that is selected
         const fresh0 = (RQ.ss && RQ.ss.get("rumiq-room-new")) || "";
         let sel = fresh0 && R.inScene(fresh0) ? fresh0 : null;
+        const paintCart = []; // the add-all buttons follow the cart and the room (addAllBtn)
         if (fresh0) setTimeout(() => RQ.ss.set("rumiq-room-new", ""), 1600); // kept a moment: the view may be drawn twice on the way in
         if (fresh0 && R.lastMoved === fresh0 && R.inScene(fresh0)) { R.lastMoved = null; ls.set("rumiq-room-landed", true); setTimeout(() => RQ.toast(`Där var det fullt, så ${esc(RQ.byHandle(fresh0).name)} står på golvet. Dra den dit du vill.`), 700); } // it came from a product page: say why it is not on the table
         const fits = () => { const t = room.type; const list = RQ.PRODUCTS.map((p) => ({ p, m: (match(p) || 0) + (t && p.rooms.includes(t) ? 100 : 0) })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };
@@ -609,7 +610,7 @@
           $("#rmList", root).innerHTML = list.length ? list.map((it) => { const p = RQ.byHandle(it.h); return `<li class="${sel === it.h ? "on" : ""}"><button type="button" class="rm-li" data-pick="${it.h}"><img src="${RQ.img(p, 600)}" alt=""><span><b>${esc(p.name)}</b><span>${kr(p.price)}</span></span></button><button type="button" class="iconbtn" data-del="${it.h}" aria-label="Ta bort ${esc(p.name)} ur rummet">${ICO.trash}</button></li>`; }).join("") : `<li class="rm-none">Inget i rummet än. Tryck på <b>Inred åt mig</b> eller <b>Lägg till</b>.</li>`;
           const t = kr(R.total()); count(R.total()); $("#rmBarSum", root).textContent = `${list.length} ${list.length === 1 ? "produkt" : "produkter"} · ${t}`;
           $("#rmCount", root).textContent = list.length ? `${list.length} ${list.length === 1 ? "produkt" : "produkter"}` : "";
-          $("#rmCart", root).disabled = $("#rmCart2", root).disabled = !list.length;
+          $("#rmCart", root).disabled = $("#rmCart2", root).disabled = !list.length; paintCart.forEach((f) => f());
           const hm = R.harmony(); $("#rmHarm", root).hidden = !hm; $("#rmLook", root).hidden = list.length < 2;
           if (hm) { $("#rmHm", root).style.width = hm.score + "%"; $("#rmHmv", root).textContent = hm.word; $("#rmHmt", root).textContent = hm.tip; }
           paintSel(); paintUndo();
@@ -768,6 +769,7 @@
           if (S.looks().some((l) => l.handles.join() === hs.join())) { RQ.toast('Den looken är redan sparad. <a href="#mitt-hem">Se Sparat</a>'); return; }
           S.saveLook(hs, "Mitt rum " + new Date().toLocaleDateString("sv-SE")); RQ.toast('Looken är sparad. <a href="#mitt-hem">Se Sparat</a>'); });
         $("#rmCart", root).addEventListener("click", (e) => R.cartAll(e.currentTarget)); $("#rmCart2", root).addEventListener("click", (e) => R.cartAll(e.currentTarget));
+        ["#rmCart", "#rmCart2"].forEach((id) => paintCart.push(RQ.addAllBtn($(id, root), () => R.scene().map((it) => it.h), () => "Lägg allt i varukorgen")));
         // evening: the room dims and every lamp and candle you placed glows, so you see the light at home
         const night = $("#rmNight", root), nChip = $("#rmNightChip", root), setNight = (on) => { stage.classList.toggle("night", on); night.setAttribute("aria-checked", on); if (!on && document.activeElement === nChip) more.focus({ preventScroll: true }); nChip.hidden = !on; /* on the picture while it is on: it stays on between visits */ try { localStorage.setItem("rumiq-room-night", on ? "1" : "0"); } catch (e) {} };
         nChip.addEventListener("click", () => setNight(false));

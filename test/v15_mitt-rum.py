@@ -275,7 +275,9 @@ with sync_playwright() as p:
         cart = pg.evaluate("RQ.shop.cartLines().map((l) => [l.product.handle, l.quantity, l.variant.title])")
         ok(len(cart) == pg.evaluate("RQ.room.scene().length") and ["lin-kuddfodral", 1, "Salvia"] in cart, f"{tag} the cart holds what is in the room, in the chosen colour: {cart}")
         pg.wait_for_timeout(2700); pg.evaluate("document.getElementById('rmCart').click()"); pg.wait_for_timeout(400)
-        ok(all(q == 1 for q in pg.evaluate("RQ.shop.cartLines().map((l) => l.quantity)")) and "redan" in pg.evaluate(TOAST), f"{tag} a second press does not double the order")
+        # r6 (C5): once all of it lies in the cart the button says "I varukorgen · Visa" and opens the cart instead of a toast
+        ok(all(q == 1 for q in pg.evaluate("RQ.shop.cartLines().map((l) => l.quantity)")) and pg.evaluate("document.getElementById('cart').classList.contains('open')"), f"{tag} a second press does not double the order, it shows the cart")
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         # Spara twice, look twice
         quiet(pg); pg.click("#rmSave"); pg.wait_for_timeout(900); pg.click("#rmSave"); pg.wait_for_timeout(500)
         ok(pg.evaluate("RQ.shop.projects().length") == 1 and "redan" in pg.evaluate(TOAST), f"{tag} 'Spara' twice keeps one project")
