@@ -81,8 +81,16 @@
     if (best === spots[0] && side === W) return; // the usual place: the stylesheet's own centring and safe-area margin
     t.style.top = Math.round(best[1]) + "px"; t.style.bottom = "auto"; t.style.left = Math.round(best[0]) + "px"; t.style.right = "auto";
   };
+  // the toast is a flex row: everything before the trailing link or button becomes ONE text item,
+  // so a message built from several spans never falls apart into columns
+  const toastText = (t) => {
+    const nodes = [...t.childNodes]; let end = nodes.length;
+    while (end > 0) { const n = nodes[end - 1]; if (n.nodeType === 3 && !n.textContent.trim()) { end--; continue; } if (n.nodeType === 1 && /^(A|BUTTON)$/.test(n.tagName)) { end--; continue; } break; }
+    const text = nodes.slice(0, end); if (text.length < 2) return;
+    const box = document.createElement("span"); text.forEach((n) => box.appendChild(n)); t.insertBefore(box, t.firstChild);
+  };
   RQ.toast = (html, ms) => {
-    const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); toastPlace(t); t.classList.add("show");
+    const t = $("#toast"); t.innerHTML = html; toastText(t); t.style.setProperty("--toast-lift", toastLift() + "px"); toastPlace(t); t.classList.add("show");
     // a toast with a link stays 6 s, and waits while the pointer or the focus is on it (2.2.1)
     const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":hover, :focus-within")) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); };
     clearTimeout(toastT); toastT = setTimeout(hide, wait);
@@ -773,7 +781,7 @@
     RQ.paintShell();
     RQ.markImages(root);
     $$(".menu a").forEach((a) => a.classList.toggle("active", rawOf(a) === raw));
-    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
+    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|erbjudanden)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration|hitta-ratt|presentguiden|studio-stylist|studio-sok|studio-hemurval)(-|$)/, mitt: /^(mitt-rum|studio(?!-(stylist|sok|hemurval)))/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
     $$("[data-dock]").forEach((a) => { const on = !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw)); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     const anchor = /^faq-\d+$/.test(raw) && document.getElementById(raw);
     if (anchor) anchor.scrollIntoView();

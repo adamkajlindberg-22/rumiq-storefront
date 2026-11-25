@@ -1208,7 +1208,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-hold{position:absolute;left:.8rem;top:.8rem;z-index:3;display:inline-flex;align-items:center;gap:.45rem;height:2.5rem;padding:0 1rem 0 .8rem;border:0;border-radius:999px;background:rgba(247,247,244,.9);color:#22252A;font-size:.86rem;font-weight:600;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .rm-hold svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .rm-hold.on{background:#22252A;color:#F7F7F4}
-.rm-emptyhint{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.8rem;color:#fff;text-shadow:0 1px 16px rgba(0,0,0,.5);font-weight:600;font-size:1.1rem;background:rgba(0,0,0,.12)}
+.rm-emptyhint{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.8rem;color:#fff;text-shadow:0 1px 16px rgba(0,0,0,.5);font-weight:600;font-size:1.1rem;background:radial-gradient(ellipse 55% 40% at 50% 50%,rgba(20,21,19,.5),rgba(20,21,19,.12) 75%)}
 .rm-emptyhint svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .rm-tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-top:.8rem}
 .rm-tool{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;min-height:4rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper);color:var(--ink);font-size:.86rem;font-weight:600;transition:border-color .25s}
@@ -1692,6 +1692,7 @@ html.sheet-lock{overflow:hidden}
 /* touch screens: the hint only leans sideways, because there is no swipe upwards there */
 @media (hover:none){.sv-card.hint{animation-name:svHintX}}
 @keyframes svHintX{0%,100%{transform:none}22%{transform:translateX(26px) rotate(3deg)}44%{transform:none}66%{transform:translateX(-26px) rotate(-3deg)}88%{transform:none}}
+#view{overflow-x:clip} /* a card nudging sideways (svHintX) must never widen the page, not even for a moment */
 @keyframes svHint{0%,100%{transform:none}18%{transform:translateX(26px) rotate(3deg)}36%{transform:none}54%{transform:translateX(-26px) rotate(-3deg)}72%{transform:none}86%{transform:translateY(-22px)}}
 .svep-result{max-width:46rem}
 .sp-grid{display:grid;gap:1.4rem;width:100%;margin-top:.6rem;text-align:left}
@@ -2523,7 +2524,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .sheet.rmpick .pickgrid::-webkit-scrollbar{display:none}
   .sheet.rmpick .pickgrid button{flex:0 0 7.6rem;scroll-snap-align:start;padding:.4rem .4rem .5rem;display:flex;flex-direction:column;gap:.15rem}
   .sheet.rmpick .pickgrid .pg-cut{aspect-ratio:auto;height:4.6rem;margin-bottom:.15rem;flex:none}
-  .sheet.rmpick .pickgrid b{font-size:.8rem;line-height:1.2;max-height:2.4em;overflow:hidden}
+  .sheet.rmpick .pickgrid b{font-size:.8rem;line-height:1.2;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
   .sheet.rmpick .pickgrid em{display:none}
   .sheet.rmpick .pickfoot{display:none}
   .pick-none{flex:1}
