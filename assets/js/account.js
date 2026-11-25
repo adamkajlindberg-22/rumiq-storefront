@@ -239,12 +239,15 @@
         const mark = (el, box, msg) => { box.textContent = msg; box.hidden = !msg; if (msg) { el.setAttribute("aria-invalid", "true"); el.setAttribute("aria-describedby", box.id); } else { el.removeAttribute("aria-invalid"); if (el.name !== "terms") el.removeAttribute("aria-describedby"); } };
         const check = (name) => { const el = f[name], msg = name === "terms" ? (el.checked ? "" : "Kryssa i rutan för att godkänna köpvillkoren.") : CO_RULES[name](el.value.trim()); mark(el, $("#coe-" + name, f), msg); return !msg; };
         const NAMES = [...Object.keys(CO_RULES), "terms"];
-        NAMES.forEach((n) => { const el = f[n]; el.addEventListener(n === "terms" ? "change" : "input", () => { if (el.getAttribute("aria-invalid")) { check(n); if (!$$("[aria-invalid=true]", f).length) $("#coStatus", root).textContent = ""; } });
-          if (n !== "terms") el.addEventListener("blur", () => { if (n === "zip" && digits(el.value).length === 5 && /^[\d\s]+$/.test(el.value)) el.value = digits(el.value).replace(/^(\d{3})(\d{2})$/, "$1 $2"); if (el.value.trim() || el.getAttribute("aria-invalid")) check(n); }); });
+        const said = (n) => (!n ? "" : n === 1 ? "En sak behöver rättas innan du kan beställa." : `${n} saker behöver rättas innan du kan beställa.`);
+        // after a try, the count under the button follows every fix (changed only when the number changes, so it is not read out at every key)
+        const recount = () => { const st = $("#coStatus", root); if (!st.textContent) return; const t = said($$("[aria-invalid=true]", f).length); if (t !== st.textContent) st.textContent = t; };
+        NAMES.forEach((n) => { const el = f[n]; el.addEventListener(n === "terms" ? "change" : "input", () => { if (el.getAttribute("aria-invalid")) { check(n); recount(); } });
+          if (n !== "terms") el.addEventListener("blur", () => { if (n === "zip" && digits(el.value).length === 5 && /^[\d\s]+$/.test(el.value)) el.value = digits(el.value).replace(/^(\d{3})(\d{2})$/, "$1 $2"); if (el.value.trim() || el.getAttribute("aria-invalid")) { check(n); recount(); } }); });
         f.addEventListener("submit", (e) => {
           e.preventDefault(); if (placing) return; const st = $("#coStatus", root);
           const bad = NAMES.filter((n) => !check(n));
-          if (bad.length) { st.textContent = bad.length === 1 ? "En sak behöver rättas innan du kan beställa." : `${bad.length} saker behöver rättas innan du kan beställa.`; const el = f[bad[0]]; (el.closest("label") || el).scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); el.focus({ preventScroll: true }); return; }
+          if (bad.length) { st.textContent = said(bad.length); const el = f[bad[0]]; (el.closest("label") || el).scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); el.focus({ preventScroll: true }); return; }
           st.textContent = ""; placing = true;
           const zip = digits(f.zip.value).replace(/^(\d{3})(\d{2})$/, "$1 $2");
           const o = S.placeTestOrder({ contact: { email: f.email.value.trim(), phone: f.phone.value.trim() }, address: { first: f.first.value.trim(), last: f.last.value.trim(), street: f.street.value.trim(), zip, city: f.city.value.trim(), country: f.country.value }, shippingId: f.ship.value, gift: f.gift && f.gift.checked ? { note: f.giftNote.value.trim().slice(0, 240) } : null });
