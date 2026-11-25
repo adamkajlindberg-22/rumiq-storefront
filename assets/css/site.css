@@ -205,6 +205,8 @@ main{min-height:60vh}
 .sec{padding:clamp(4rem,7.5vw,6.5rem) 0;position:relative}
 .sec.tight{padding:clamp(3rem,6vw,5rem) 0}
 .sec.kalk{background:var(--paper)}
+/* home: two sections on the same background share one gap, not two paddings (no empty band between them) */
+.roomhero + .looks-sec,.looks-sec + .why,.why + .cta-band{padding-top:0}
 .sec-head{max-width:46rem;margin-bottom:clamp(2rem,4vw,3.2rem)}
 .sec-head .eyebrow{display:none}
 .sec-head .h2{margin-top:0}
@@ -856,6 +858,7 @@ details.pw[open] summary::after{content:" −"}
 @media (min-width:821px){.band.settle{width:auto;max-width:min(60rem,62vw)}.band.settle h1{white-space:nowrap}}
 .band.settle .sub{margin:1.5rem 0 2rem;font-size:clamp(1.05rem,1.4vw,1.22rem);line-height:1.5;max-width:30rem;opacity:.85}
 .band.settle .row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+@media (max-width:560px){.band.settle .row{display:inline-grid;grid-template-columns:1fr}} /* stacked on a phone: two buttons of one width, not a ragged pair */
 .band.settle .btn.ghost{border-color:currentColor;color:inherit}
 :root[data-light=kvall] .band.settle .btn:not(.ghost){background:var(--fill);color:#191A18;border-color:var(--fill)}
 .cue{position:absolute;left:50%;bottom:1.6rem;z-index:6;transform:translateX(-50%);display:flex;align-items:center;gap:.55rem;padding:.45rem .9rem .45rem 1rem;border-radius:99px;background:rgba(247,247,244,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:.82rem;font-weight:560;color:#22252A;transition:opacity .6s;pointer-events:none}
@@ -1508,7 +1511,7 @@ html.sheet-lock{overflow:hidden}
 .lc-line button{flex:0 0 calc((100% - .9rem) / 4);min-width:0;aspect-ratio:1;overflow:hidden;border:0;border-radius:var(--r-img);background:var(--paper);box-shadow:0 10px 24px -14px rgba(0,0,0,.45);padding:.4rem;display:grid;place-items:center;transition:transform .35s var(--spring)}
 .lc-line button:hover{transform:translateY(-4px)}
 .lc-line img{width:100%;height:100%;object-fit:contain;display:block}
-.lc-tx{padding:1rem 1.1rem 1.2rem;display:grid;gap:.45rem;flex:1;align-content:start}
+.lc-tx{padding:1rem 1.1rem 1.2rem;display:grid;gap:.45rem;flex:1;grid-template-rows:auto 1fr auto} /* the price row sits at the foot of every card, so a row of cards lines up */
 .lc-tx h3{font-size:var(--t-h3);letter-spacing:-.03em;font-weight:560}
 .lc-tx h3 a{text-decoration:none}
 .lc-tx p{font-size:.92rem;color:var(--muted)}
