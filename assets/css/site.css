@@ -2282,7 +2282,7 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 .rh-tag b{font-weight:600}
 .rh-tag > span{transition:opacity .2s}.rh-tag > span.off{opacity:0;transition:none} /* gone at once, back softly */
 .rh-tag.l{flex-direction:row-reverse;transform:translate(calc(-100% + .55rem),-50%)}
-@media (max-width:620px){.rh-tag > span{display:none}}
+@media (max-width:620px){.rh-tag{display:none}} /* no room for the names on a phone, and a bare dot looks like a button that does nothing: the picture and the card below say it */
 /* v11: a slimmer cookie bar on phones: one short text line and three buttons in a row */
 @media (max-width:700px){
   .cookie{padding:.6rem .7rem;gap:.45rem;border-radius:14px}

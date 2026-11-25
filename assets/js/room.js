@@ -331,7 +331,7 @@
       if (!room) return "";
       const [kind, , r] = meta(p), sp = spotFor(p, []), ar = room.w / room.h;
       const cover = 125 * ar; // the photo's width in % of a 4:5 card when it just fills the card's height
-      const want = { rug: 88, window: 34, wall: 46, floor: 44, throw: 56, cushion: 58, bedding: 50 }[kind] || (r > 1.4 ? 30 : 42);
+      const want = { rug: 170, window: 34, wall: 46, floor: 44, throw: 56, cushion: 58, bedding: 50 }[kind] || (r > 1.4 ? 30 : 42);
       const bw = clamp(want * 100 / sp.w, cover, cover * 3.6), bh = bw / ar / 1.25;
       const ih = sp.w * r * (sp.sy || 1) * ar; // the product's height in % of the photo's height
       const bl = clamp(50 - sp.x / 100 * bw, 100 - bw, 0), bt = clamp((kind === "wall" ? 60 : 72) - (sp.y - ih * 0.1) / 100 * bh, 100 - bh, 0);

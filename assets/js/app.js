@@ -104,6 +104,7 @@
   /* first: "eager" or "high" for the cards at the top of a list (the pictures a visitor sees first are fetched at once, "high" with priority) */
   /* does the product belong in the customer's room? (a room of unknown type takes everything; a cutting board never lands on the living-room table) */
   RQ.suits = (p) => { const r = RQ.room && RQ.room.get(), t = r && r.type; return !t || p.rooms.includes(t); };
+  // "% färgmatch" is said only where it is good news (60 % or more); below that the card shows its colours as usual (the order still follows the match)
   RQ.card = (p, first) => {
     const R = RQ.room, on = R && R.mode() && RQ.suits(p), m = on ? R.match(p) : null;
     const print = RQ.isPrint && RQ.isPrint(p);
@@ -121,7 +122,7 @@
       <button class="qv" type="button" data-sheet="${p.handle}" tabindex="-1" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
-      <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
+      <p class="sub">${m >= 60 ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
   };
   RQ.grid = (list, cls = "", top = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
