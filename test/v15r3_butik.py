@@ -116,7 +116,8 @@ with sync_playwright() as p:
               return [vis.map((e) => e.textContent).join(''), t.getAttribute('aria-pressed'), Math.round(tb.height), s.scrollWidth <= s.clientWidth + 1 || s.clientWidth > 90, Math.round(s.getBoundingClientRect().width)]; }""")
             ok(t[0] in ("I mitt rum", "Visa i Mitt rum") and t[1] == "true" and t[2] < 60, f"{tag} the room switch says what it does and is on: {t}")
             ok(t[3] and t[4] <= 260, f"{tag} the sort menu shows its words and keeps a sensible width: {t[4]} px")
-            room1 = pg.evaluate("""() => [...document.querySelectorAll('#results .card')].slice(0, 4).map((c) => { const ph = c.querySelector('.ph').getBoundingClientRect(), r = c.querySelector('.hov.inroom'), q = r.getBoundingClientRect(); return Math.abs(q.left - ph.left) < 2 && getComputedStyle(r).opacity === '1'; })""")
+            # (r4: a product that does not belong in the room's type keeps its own photo, so only the cards that suit the room are checked)
+            room1 = pg.evaluate("""() => [...document.querySelectorAll('#results .card.in-room')].slice(0, 4).map((c) => { const ph = c.querySelector('.ph').getBoundingClientRect(), r = c.querySelector('.hov.inroom'), q = r.getBoundingClientRect(); return Math.abs(q.left - ph.left) < 2 && getComputedStyle(r).opacity === '1'; })""")
             ok(room1 and all(room1), f"{tag} with the switch on, the cards show the room first: {room1}")
             # M18 + D22: a phone card's photo has heart and Lägg till only; elsewhere the four buttons tab in reading order
             btns = pg.evaluate("[...document.querySelector('#results .card').querySelectorAll('button')].filter((b) => b.offsetParent).map((b) => b.className.replace('iconbtn ', ''))")
