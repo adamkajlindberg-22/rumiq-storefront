@@ -174,6 +174,24 @@ with sync_playwright() as p:
         ok(not errs, f"hitta rätt {tag}: no script errors {errs[:2]}")
         ctx.close()
 
+    # ------------------------------------------------------------ the Svep result: simple and light (D8)
+    for mobile in (True, False):
+        tag = "390" if mobile else "1440"
+        ctx, pg, errs = new(b, mobile)
+        go(pg, "svep", 1200)
+        for i in range(10):
+            pg.click("#svYes"); pg.wait_for_timeout(420)
+        pg.wait_for_timeout(1500)
+        r = pg.evaluate("""(() => { const res = document.querySelector('.svep-result'); const vis = (e) => !!e && e.offsetParent !== null && getComputedStyle(e).visibility !== 'hidden';
+          const acts = [...res.querySelectorAll('a, button, input')].filter((e) => vis(e) && !e.closest('.sv-liked') && !e.closest('form[hidden]'));
+          const sm = res.querySelector('.sp-look small');
+          return { two: [...document.querySelectorAll('.sv-two-link, .sp-two')].filter(vis).length, acts: acts.map((e) => e.textContent.trim().slice(0, 30)), watch: !!res.querySelector('input[type=email]'), small: sm ? getComputedStyle(sm).display : 'none' }; })()""")
+        ok(r["two"] == 1, f"svep result {tag}: 'Inreder ni tillsammans?' once: {r['two']}")
+        ok(not r["watch"] and len(r["acts"]) <= 8, f"svep result {tag}: few actions, no e-mail form: {r['acts']}")
+        ok(r["small"] == "block", f"svep result {tag}: the look text is a block with even lines: {r['small']}")
+        ok(not errs, f"svep result {tag}: no script errors {errs[:2]}")
+        ctx.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

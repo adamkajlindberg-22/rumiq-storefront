@@ -1744,7 +1744,8 @@ html.sheet-lock{overflow:hidden}
 .sp-look-ims img{width:3.2rem;height:3.2rem;object-fit:contain;margin-left:-.6rem}
 .sp-look-ims img:first-child{margin-left:0}
 .sp-look b{display:block;font-size:1.05rem;margin:.15rem 0}
-.sp-look small{color:var(--muted);font-size:.85rem}
+.sp-look small{display:block;color:var(--muted);font-size:.85rem;line-height:1.5}
+.sp-links{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:.4rem}
 #svShare svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6;margin-right:.4rem;vertical-align:-3px}
 .svep-result .tlink{margin-top:.4rem}
 @media (max-width:640px){.sv-ctrl{gap:.6rem}.sp-row{grid-template-columns:6.8rem 1fr 2.6rem}.sp-acts{flex-direction:column;align-items:stretch;width:100%}.sp-acts .btn{justify-content:center;text-align:center}.sp-look{grid-template-columns:1fr}.sp-look-ims img{width:3.6rem;height:3.6rem}}
