@@ -13,7 +13,7 @@
   // only a picture kept in this browser counts as a room; anything else in the storage is ignored
   if (!room || typeof room !== "object" || typeof room.img !== "string" || !/^data:image\//.test(room.img) || !(+room.w > 0) || !(+room.h > 0)) room = null;
   if (room) { room.w = +room.w; room.h = +room.h; if (!Array.isArray(room.pal)) room.pal = []; room.pal = room.pal.filter((x) => x && /^#[0-9a-f]{6}$/i.test(x.hex)); }
-  const FULL = "Webbläsarens lagring är full. Ta bort ett gammalt projekt i Mitt hem och försök igen.";
+  const FULL = "Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat och försök igen.";
 
   /* Where things belong. A lamp stands on a table, a throw lies on the sofa, a print hangs on the wall and a
      rug lies on the floor. kind = where it goes, cm = the real width of what the cut-out shows, r = the
@@ -199,7 +199,7 @@
       const next = { img: data, w: W, h: H, pal: a.pal, light: a.light, warm: a.warm, type: meta.type || null, name: meta.name || "", sample: !!meta.sample, map: meta.map || null, at: new Date().toISOString() };
       let ok = ls.set(KEY, next);
       if (!ok) { data = cv.toDataURL("image/jpeg", 0.62); next.img = data; ok = ls.set(KEY, next); }
-      if (!ok) { R.lastError = "Bilden fick inte plats i webbläsarens lagring. Ta bort gamla projekt i Mitt hem och försök igen."; if (!sheet.classList.contains("open")) RQ.toast(R.lastError); return false; }
+      if (!ok) { R.lastError = "Bilden fick inte plats i webbläsarens lagring. Ta bort gamla projekt under Sparat och försök igen."; if (!sheet.classList.contains("open")) RQ.toast(R.lastError); return false; }
       room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; // a new photo: the old steps belonged to the old room
       ls.del(LEARN); ls.set(MODE, true);
       // what stood in the old room is put where it belongs in the new one
@@ -342,7 +342,7 @@
     <p class="small sheet-tip" data-tip-desk hidden>Du kan också dra hit en bild eller klistra in den. Bäst blir en bild i dagsljus där hela rummet syns.</p>
     <h3>Eller prova med ett exempelrum</h3>
     <div class="sheet-samples">${RQ.SAMPLE_ROOMS.map((r) => `<button type="button" data-room-sample="${r.img}" data-type="${r.id}"><img src="${r.img.replace("-1600", "-600")}" alt="" loading="lazy"><span>${esc(r.name)}</span></button>`).join("")}</div>
-    <h3>Vilket rum är det?</h3>
+    <h3 data-room-type-h>Vilket rum är det?</h3>
     <div class="chips" data-room-type>${TYPES.map(([id, n]) => `<button type="button" class="chip" data-v="${id}" aria-pressed="false">${n}</button>`).join("")}</div>
     <p class="small sheet-priv"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
     <div class="sheet-busy" hidden><span class="spin"></span>Läser in rummet</div>
@@ -355,6 +355,7 @@
     after = then || null; back = document.activeElement;
     chosenType = room && room.type;
     $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType));
+    const own = !!(room && !room.sample); $("[data-room-type-h]", sheet).hidden = !own; $("[data-room-type]", sheet).hidden = !own; // the room type is asked about a photo you have, not before (a new photo is asked in the editor)
     $("#roomSheetTitle", sheet).textContent = room ? "Byt rum" : "Lägg in ditt rum";
     const touch = matchMedia("(pointer:coarse)").matches;
     $(".cam", sheet).hidden = !touch; $("[data-tip-touch]", sheet).hidden = !touch; $("[data-tip-desk]", sheet).hidden = touch;
@@ -735,8 +736,8 @@
         $("#rmSuggest", root).addEventListener("click", suggest); $("#rmSuggest0", root).addEventListener("click", suggest);
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });
         $("#rmLook", root).addEventListener("click", () => { const hs = R.scene().map((it) => it.h); if (hs.length < 2) return;
-          if (S.looks().some((l) => l.handles.join() === hs.join())) { RQ.toast('Den looken är redan sparad. <a href="#mitt-hem">Mitt hem</a>'); return; }
-          S.saveLook(hs, "Mitt rum " + new Date().toLocaleDateString("sv-SE")); RQ.toast('Looken är sparad. <a href="#mitt-hem">Mitt hem</a>'); });
+          if (S.looks().some((l) => l.handles.join() === hs.join())) { RQ.toast('Den looken är redan sparad. <a href="#mitt-hem">Se Sparat</a>'); return; }
+          S.saveLook(hs, "Mitt rum " + new Date().toLocaleDateString("sv-SE")); RQ.toast('Looken är sparad. <a href="#mitt-hem">Se Sparat</a>'); });
         $("#rmCart", root).addEventListener("click", (e) => R.cartAll(e.currentTarget)); $("#rmCart2", root).addEventListener("click", (e) => R.cartAll(e.currentTarget));
         // evening: the room dims and every lamp and candle you placed glows, so you see the light at home
         const night = $("#rmNight", root), nChip = $("#rmNightChip", root), setNight = (on) => { stage.classList.toggle("night", on); night.setAttribute("aria-checked", on); if (!on && document.activeElement === nChip) more.focus({ preventScroll: true }); nChip.hidden = !on; /* on the picture while it is on: it stays on between visits */ try { localStorage.setItem("rumiq-room-night", on ? "1" : "0"); } catch (e) {} };
@@ -747,7 +748,7 @@
         $("#rmSave", root).addEventListener("click", async () => {
           try {
             const key = JSON.stringify(R.scene()) + room.at;
-            if (key === lastSave) { RQ.toast('Det här är redan sparat. <a href="#mitt-hem">Öppna Mitt hem</a>'); return; }
+            if (key === lastSave) { RQ.toast('Det här är redan sparat. <a href="#mitt-hem">Se Sparat</a>'); return; }
             const bg = $(".rm-bg", root); const W = 1100, H = Math.round(W * room.h / room.w);
             const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
             const before = document.createElement("canvas"); before.width = 480; before.height = Math.round(480 * H / W); before.getContext("2d").drawImage(bg, 0, 0, before.width, before.height);
@@ -759,13 +760,13 @@
             }
             const handles = R.scene().map((it) => it.h);
             const ok = S.saveProject({ title: "Mitt rum med " + handles.map((h) => RQ.byHandle(h).name.split(" ")[0]).join(", "), img: cv.toDataURL("image/jpeg", 0.74), before: before.toDataURL("image/jpeg", 0.6), handles });
-            if (!ok) { RQ.toast("Webbläsarens lagring är full. Ta bort ett gammalt projekt i Mitt hem."); return; }
+            if (!ok) { RQ.toast("Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat."); return; }
             lastSave = key;
             if (navigator.canShare && window.isSecureContext) {
               const blob = await new Promise((r) => cv.toBlob(r, "image/jpeg", 0.86)); const file = new File([blob], "mitt-rum.jpg", { type: "image/jpeg" });
-              if (navigator.canShare({ files: [file] })) { RQ.toast('Sparat i Mitt hem. <a href="#" data-share-room>Dela bilden</a>'); R._share = file; return; }
+              if (navigator.canShare({ files: [file] })) { RQ.toast('Rummet är sparat under Sparat. <a href="#" data-share-room>Dela bilden</a>'); R._share = file; return; }
             }
-            RQ.toast('Sparat i Mitt hem. <a href="#mitt-hem">Öppna</a>');
+            RQ.toast('Rummet är sparat. <a href="#mitt-hem">Se Sparat</a>');
           } catch (e) { RQ.toast("Bilden gick inte att spara i den här webbläsaren."); }
         });
         const onRoom = (e) => { if (e.detail === "scene") { touched = true; if (sel && !R.inScene(sel)) sel = null; draw(); }
@@ -866,7 +867,7 @@
     }
     if (b.matches("[data-room-setup]")) { R.openSetup(b.dataset.roomSetup ? () => (location.hash = b.dataset.roomSetup) : null); return; }
     if (b.matches("[data-room-sample-now]")) { const to = b.dataset.roomSampleNow || "#butik", im = new Image(); b.setAttribute("aria-busy", "true");
-      im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum i morgonljus" }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
+      im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum" }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
         // already on that page (the empty Mitt rum): a new hash would change nothing, so the page is drawn again here
         if (RQ.currentRoute && RQ.currentRoute() === to.replace(/^#/, "")) { RQ.router(); scrollTo(0, 0); RQ.toast("Klart. Här är ditt rum."); } else location.hash = to; });
       im.onerror = () => { b.removeAttribute("aria-busy"); RQ.toast("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); };

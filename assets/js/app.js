@@ -259,7 +259,7 @@
   RQ.shopView = shopView;
   V.butik = () => shopView({ title: "Alla produkter", kicker: "", lead: "Färre, bättre saker för hemmets alla rum.", trail: [["Hem", "hem"], ["Butik"]] });
   V.nyheter = () => shopView({ title: "Nyheter", lead: "Allt i sortimentet är nytt, eftersom butiken precis har börjat. Här visas det senast tillagda först.", sort: "new", trail: [["Hem", "hem"], ["Butik", "butik"], ["Nyheter"]] });
-  V.favoriter = () => shopView({ title: "Populärt", lead: "Det vi själva tycker extra mycket om.", only: (p) => p.featured, noSort: true, trail: [["Hem", "hem"], ["Butik", "butik"], ["Populärt"]] });
+  V.favoriter = () => shopView({ title: "Våra favoriter", lead: "Det vi själva tycker extra mycket om.", only: (p) => p.featured, noSort: true, trail: [["Hem", "hem"], ["Butik", "butik"], ["Våra favoriter"]] });
   V.erbjudanden = () => ({
     html: `${head(crumbs([["Hem", "hem"], ["Butik", "butik"], ["Erbjudanden"]]), "Erbjudanden", "Här samlar vi kampanjer och erbjudanden när de finns.")}
       <section class="wrap" style="padding-bottom:6rem"><div class="empty"><h3>Inga erbjudanden just nu</h3><p>Vi sätter hellre rätt pris från början än hittar på rabatter. När det finns ett riktigt erbjudande syns det här, med tydligt vad det gäller och hur länge.</p><a class="btn ghost" href="#butik">Se alla produkter</a></div></section>`,
@@ -369,7 +369,7 @@
               : `<button type="button" class="roomcta" data-room-setup="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.roomIco}</span><span><b>Se den i ditt rum</b><small>Ta en bild av ditt rum, så ställer vi in produkten där.</small></span>${RQ.plus}</button>`}
             ${RQ.p3d ? RQ.p3d.card(p) : ""}
             <div class="pactions">
-              <button type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}">${I.heart}<span>${S.isWished(p.handle) ? "Sparad" : "Spara"}</span></button>
+              <button type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}<span aria-hidden="true">${S.isWished(p.handle) ? "Sparad" : "Spara"}</span></button>
               <button type="button" id="saveRoomBtn" aria-expanded="false" aria-controls="listPanel">${ic.list}<span>Lägg i lista${S.listsWith(p.handle).length ? ` (${S.listsWith(p.handle).length})` : ""}</span></button>
               <button type="button" id="shareBtn">${ic.share}<span>Dela</span></button>
             </div>
@@ -379,7 +379,7 @@
             <div class="example-note"><span>●</span><div><p><b>Exempelprodukt.</b> Den går inte att köpa än. Du kan prova varukorgen och kassan, men inget betalas. Bilderna är skapade med AI, så färg och detaljer kan skilja sig.</p>${RQ.notify ? RQ.notify.html(p) : ""}</div></div>
             <div class="ptabs" data-ptabs>
               <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
-              <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h2>Så använder du den</h2><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
+              <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h2>Så använder du den</h2><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
               <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h2>Passar den hemma?</h2><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#mitt-rum-${p.handle}">Mitt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h2>Material och skötsel</h2><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h2>Mått och fakta</h2><ul class="facts" style="margin-top:0;border-top:0">
                 <li><span>Artikel</span><span>${esc(p.sku || "RQ-" + (1001 + RQ.PRODUCTS.indexOf(p)))}</span></li>
                 <li><span>Mått</span><span class="pending">Bekräftas när produkten är verifierad</span></li>
@@ -499,8 +499,8 @@
     const cur = active === "fav" ? { id: "fav", name: "Allt sparat", handles: S._wish } : lists.find((l) => l.id === active);
     const items = cur.handles.map(RQ.byHandle).filter(Boolean);
     const total = items.reduce((s, p) => s + p.price, 0);
-    return { title: "Sparat · RumIQ",
-      html: `${head(crumbs([["Hem", "hem"], ["Mitt hem", "mitt-hem"], ["Sparat"]]), "Sparat", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
+    return { title: "Mina listor · RumIQ",
+      html: `${head(crumbs([["Hem", "hem"], ["Sparat", "mitt-hem"], ["Mina listor"]]), "Mina listor", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
       <section class="wrap" style="padding-bottom:6rem">
         <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Allt sparat (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="min-height:var(--field-h-s);padding-block:0;width:11rem"><button class="chip" type="submit">Skapa</button></form></div>
@@ -528,12 +528,12 @@
     const saved = S.savedArticles().includes(slug);
     return { title: `${a.title} · RumIQ Magasin`,
       html: `<header class="page-head wrap" style="padding-bottom:0">${crumbs([["Hem", "hem"], ["Magasin", "magasin"], ["Artikel"]])}<h1 class="h1" style="max-width:22ch">${esc(a.title)}</h1><p class="lead">${esc(a.lead)}</p>
-        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${readMin(a)} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad i Mitt hem" : "Spara artikeln"}</button></div></header>
+        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${readMin(a)} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad under Sparat" : "Spara artikeln"}</button></div></header>
         <div class="wrap"><div class="article-hero reveal"><img src="${a.img.replace("-1200", "-1600")}" onerror="this.src='${a.img}'" alt=""></div></div>
         <div class="wrap"><article class="prose" style="padding-bottom:4rem">${a.body}</article></div>
         <section class="sec tight kalk"><div class="wrap"><div class="sec-head"><span class="eyebrow">Från artikeln</span><h2 class="h2">Saker som passar</h2></div>${RQ.grid(a.picks.map(RQ.byHandle).filter(Boolean))}</div></section>
         <section class="sec tight"><div class="wrap"><div class="sec-head"><span class="eyebrow">Läs mer</span></div><div class="mag-grid">${RQ.ARTICLES.filter((x) => x.slug !== slug).slice(0, 3).map(RQ.magCard).join("")}</div></div></section>`,
-      mount(root) { $("#saveArt", root).addEventListener("click", (e) => { const on = S.toggleArticle(slug); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Sparad i Mitt hem" : "Spara artikeln"; }); },
+      mount(root) { $("#saveArt", root).addEventListener("click", (e) => { const on = S.toggleArticle(slug); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Sparad under Sparat" : "Spara artikeln"; }); },
     };
   };
   V.inspiration = () => ({ html: `${head(crumbs([["Hem", "hem"], ["Rumsinspiration"]]), "Rumsinspiration", "Rum att drömma sig bort i, och idéer att ta med hem. Bilderna är illustrationer.")}
@@ -590,7 +590,7 @@
       html: `${head(crumbs([["Hem", "hem"], ["Sidan finns inte"]]), "Den här sidan finns inte", "Länken kan vara gammal eller felstavad.")}
         <section class="wrap nf"><form class="nf-search" role="search" id="nfForm"><label class="sr" for="nfQ">Sök i butiken</label><div class="field"><input type="search" id="nfQ" placeholder="Vad letar du efter?" value="${esc(guess)}" autocomplete="off" enterkeyhint="search"><button class="btn" type="submit">Sök</button></div></form>
         <ul class="chips nf-go">${go.map(([t, h]) => `<li><a class="chip" href="#${h}">${t}</a></li>`).join("")}</ul></section>
-        <section class="wrap nf-pop"><h2 class="h3">Populärt just nu</h2>${RQ.grid(RQ.PRODUCTS.filter((p) => p.featured).slice(0, 4))}</section>`,
+        <section class="wrap nf-pop"><h2 class="h3">Våra favoriter just nu</h2>${RQ.grid(RQ.PRODUCTS.filter((p) => p.featured).slice(0, 4))}</section>`,
       mount(root) {
         $("#nfForm", root).addEventListener("submit", (e) => { e.preventDefault(); $("#searchInput").value = $("#nfQ", root).value.trim(); RQ.openSearch(); });
       },
@@ -619,7 +619,7 @@
     [/^butik$/, () => V.butik()], [/^nyheter$/, () => V.nyheter()], [/^favoriter$/, () => V.favoriter()], [/^erbjudanden$/, () => V.erbjudanden()],
     [/^kategori-(.+)$/, (m) => V.kategori(m[1])], [/^rum$/, () => V.rumindex()], [/^rum-(.+)$/, (m) => V.rum(m[1])],
     [/^kollektioner$/, () => V.looks()], [/^kollektion-(.+)$/, (m) => V.kollektion(m[1])],
-    [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.myHome()], // the compare tool is gone: its old address opens Mitt hem
+    [/^produkt-(.+)$/, (m) => V.produkt(m[1])], [/^onskelista$/, () => V.onskelista()], [/^jamfor$/, () => V.myHome()], // the compare tool is gone: its old address opens Sparat
     [/^magasin$/, () => V.magasin()], [/^artikel-(.+)$/, (m) => V.artikel(m[1])], [/^inspiration$/, () => V.inspiration()],
     [/^juridik-(.+)$/, (m) => V.juridik(m[1])], [/^ideer$/, () => V.onska()],
     [/^(kontakt|faq|frakt|returer|betalning|om|sa-fungerar-det)$/, (m) => V[m[1]]()],
@@ -908,7 +908,7 @@
     $$("[data-count=cartline]").forEach((b) => { const n = S.cartCount(); b.textContent = n ? `${n} ${n === 1 ? "produkt" : "produkter"}` : ""; });
     $$("[data-count=wish]").forEach((b) => { const n = S._wish.length; b.textContent = n || ""; b.dataset.n = n; });
     const named = (q, base, n, one, many) => $$(q).forEach((el) => el.setAttribute("aria-label", n ? `${base}, ${n} ${n === 1 ? one : many}` : base));
-    named(".tools [data-open-cart]", "Varukorg", S.cartCount(), "vara", "varor"); named(".tools .wishlink", "Sparat i Mitt hem", S._wish.length, "sak", "saker");
+    named(".tools [data-open-cart]", "Varukorg", S.cartCount(), "vara", "varor"); named(".tools .wishlink", "Sparat", S._wish.length, "sak", "saker");
     const c = S.customer(); const acc = $("#accLink"); if (acc) acc.setAttribute("aria-label", c ? "Mitt konto" : "Logga in");
   };
   const drawer = $("#cart"), scrimAll = $("#scrimAll");
@@ -1109,7 +1109,7 @@
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-wish],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-undo-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
-    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
+    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad. <a href="#mitt-hem">Se Sparat</a>' : "Borttagen ur Sparat"); return; }
     if (t.matches("[data-add]")) {
       // a card's + on a product with several colours asks which colour (in the quick view), as Mitt rum does, instead of choosing one
       const qp = t.classList.contains("qadd") && RQ.byHandle(t.dataset.add.split("::")[0]);

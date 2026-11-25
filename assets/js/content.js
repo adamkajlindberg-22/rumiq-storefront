@@ -30,7 +30,7 @@
         <ol class="steps-list">
           <li><h3>Upptäck</h3><p>Bläddra i butiken efter kategori eller rum, läs magasinet eller beskriv med egna ord vad du behöver. Svep, Hitta rätt och stylisten föreslår produkter, och ingen av dem behöver en bild.</p></li>
           <li><h3>Se det i ditt rum</h3><p>Lägg till ett foto av ditt rum eller välj ett exempelrum. Välj produkter och placera dem där du vill ha dem. Resultatet är en bild att inspireras av, så storlek och färg kan skilja sig från verkligheten. Kontrollera alltid produktsidan.</p></li>
-          <li><h3>Spara det du gillar</h3><p>I Mitt hem samlar du det du sparat, dina rumsprojekt och din stil, så att du kan fortsätta där du slutade.</p></li>
+          <li><h3>Spara det du gillar</h3><p>Under Sparat samlar du produkter, dina rumsprojekt och din stil, så att du kan fortsätta där du slutade.</p></li>
           <li><h3>Beställ tryggt</h3><p>Lägg enskilda produkter eller en hel look i varukorgen och betala i Shopifys säkra kassa. Leveranssätt, kostnad och beräknad leveranstid visas innan du betalar. Vi ser aldrig dina kortuppgifter.</p></li>
           <li><h3>Leverans och hjälp</h3><p>Följ din beställning, tänk på att varor kan komma i olika paket och hör av dig om något inte stämmer. ${openBuy}</p></li>
         </ol>
@@ -40,8 +40,8 @@
           <tr><td><a href="#svep">Svep</a></td><td>Svep tio kort eller gör fyra snabba val och få din stilprofil.</td><td>Behövs inte</td></tr>
           <tr><td><a href="#mitt-rum">Mitt rum</a></td><td>Se produkterna i ett foto av ditt rum, dag som kväll, och se vad som passar färgerna där.</td><td>Behövs inte</td></tr>
           <tr><td><a href="#hitta-ratt">Hitta rätt</a></td><td>Till ditt hem, som present eller med egna ord. Stylisten finns ett tryck bort.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#looks">Looks</a></td><td>Färdiga looks med rabatt, eller bygg din egen.</td><td>Behövs inte</td></tr>
-          <tr><td><a href="#mitt-hem">Mitt hem</a></td><td>Det du sparat, dina rum och mått, din stil och dina projekt på ett ställe.</td><td>Sparas i din webbläsare</td></tr>
+          <tr><td><a href="#looks">Looks</a></td><td>Looks med rabatt, eller bygg din egen.</td><td>Behövs inte</td></tr>
+          <tr><td><a href="#mitt-hem">Sparat</a></td><td>Det du sparat, dina rum och mått, din stil och dina projekt på ett ställe.</td><td>Sparas i din webbläsare</td></tr>
         </tbody></table>
         <p class="note">Verktygens resultat är förslag, inte garantier eller produktfakta. Kontrollera alltid mått, material och pris på produktsidan innan du köper.</p>`,
     },
@@ -215,7 +215,7 @@
       <h2>Nödvändiga</h2><p>Varukorg, inloggning, språk och dina cookieval. Krävs för att butiken ska fungera och kan inte stängas av.</p>
       <h2>Statistik</h2><p>Hjälper oss att förstå vilka sidor som används. Bara med ditt samtycke.</p>
       <h2>Marknadsföring</h2><p>Gör annonser mer relevanta. Bara med ditt samtycke.</p>
-      <h2>Lagring i webbläsaren</h2><p>Varukorg, favoriter, Mitt hem och din stilprofil sparas i din webbläsares lokala lagring i den här versionen. Du kan rensa allt under Mitt konto.</p>
+      <h2>Lagring i webbläsaren</h2><p>Varukorg, det du sparat och din stilprofil sparas i din webbläsares lokala lagring i den här versionen. Du kan rensa allt under Mitt konto.</p>
       <p><button class="btn ghost" type="button" data-action="cookies">Ändra mina cookieval</button></p>` },
     angerratt: { title: "Ångerrätt", lead: "Din rätt att ångra ett köp på nätet.", html: () => `${draft}
       <p>Enligt lagen om distansavtal har du rätt att ångra köpet inom 14 dagar från den dag du, eller någon du utsett, tog emot varan. Vid flera varor i samma beställning räknas fristen från dagen du fick den sista.</p>${F.openDays ? `

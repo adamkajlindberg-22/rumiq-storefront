@@ -228,8 +228,15 @@
     deckEl.addEventListener("pointerdown", pdown); deckEl.addEventListener("click", tap); addEventListener("pointermove", move); addEventListener("pointerup", pup); addEventListener("pointercancel", cancel);
     const on = (n, f) => { const b = el(n); if (b) b.addEventListener("click", f); };
     on("No", () => decide(-1)); on("Yes", () => decide(1)); on("Bag", () => decide(2)); on("Undo", undo);
+    // the arrows work as soon as a round starts: in the deck, or when the focus is on no control at all (the page itself)
+    let auto = false; // the deck has the focus only because the round started there
+    deckEl.addEventListener("blur", () => { auto = false; });
     const key = (e) => {
-      if (st.over || !e.target.closest || e.target.closest(".sv-wrap") !== deckEl.parentNode || e.altKey || e.shiftKey || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
+      const free = e.target === document.body || e.target.id === "view";
+      if (st.over || !e.target.closest || (!free && e.target.closest(".sv-wrap") !== deckEl.parentNode) || e.altKey || e.shiftKey || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
+      if (e.key === "ArrowUp" && (free || auto)) return; // on the page itself, or before you have used the deck, ↑ scrolls: it never buys anything by surprise
+      if (/^Arrow(Right|Left)$/.test(e.key)) auto = false;
+      if (free && /^Arrow(Right|Left)$|^Backspace$/.test(e.key)) deckEl.focus({ preventScroll: true });
       if (e.key === "ArrowRight") { e.preventDefault(); decide(1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); }
       if (e.key === "ArrowUp") { e.preventDefault(); decide(2); }
@@ -237,6 +244,8 @@
     };
     if (cfg.keys) addEventListener("keydown", key);
     if (cfg.finished) finish(); else paint();
+    // with a keyboard and a mouse the round starts in the deck, so the arrows work at once (not on touch screens, where it would only draw a ring)
+    if (cfg.keys && !st.over && matchMedia("(hover:hover) and (pointer:fine)").matches && !RQ.sheet.isOpen()) { deckEl.focus({ preventScroll: true }); auto = true; }
     return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", pup); removeEventListener("pointercancel", cancel); removeEventListener("keydown", key); };
   }
 
@@ -323,15 +332,37 @@
   });
 
   // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
+  // only what belongs in this kind of room goes in, four at a time, so the room does not fill with soap pumps and desk trays;
+  // the rest stays under Sparat, and the toast says so
+  RQ.placeFitting = (hs) => {
+    const R = RQ.room, type = R.get() && R.get().type, MAX = 4;
+    const fit = hs.filter((h) => { const p = RQ.byHandle(h); return p && (!type || p.rooms.includes(type)); });
+    const placed = [], already = fit.filter((h) => R.inScene(h));
+    fit.filter((h) => !already.includes(h)).forEach((h) => { if (placed.length < MAX && R.add(h, true)) placed.push(h); });
+    const notFit = hs.length - fit.length, over = fit.length - already.length - placed.length, rest = notFit + over;
+    const lead = placed.length ? `${placed.length} ${placed.length === 1 ? "sak står" : "saker står"} nu i rummet.` : already.length ? "De som passar står redan i rummet." : "Inget av det passar i det här rummet.";
+    const tail = !rest ? "" : notFit === hs.length ? " Det ligger kvar under Sparat." : notFit && !over ? ` De andra ${notFit} passar bättre i andra rum och ligger kvar under Sparat.` : !notFit ? ` ${over} till ligger kvar under Sparat, så att rummet inte blir för fullt.` : ` De andra ${rest} ligger kvar under Sparat. Några passar bättre i andra rum.`;
+    return { placed, already, rest, text: lead + tail };
+  };
+  // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
   const toRoom = (hs) => {
     const R = RQ.room; if (!R) return;
-    const put = () => { hs.forEach((h) => R.add(h, true)); location.hash = "#mitt-rum"; };
+    const put = () => { const r = RQ.placeFitting(hs); if (r.placed.length || r.already.length) { location.hash = "#mitt-rum"; setTimeout(() => RQ.toast(r.text), 400); } else RQ.toast(`${r.text} <a href="#mitt-hem">Se Sparat</a>`); };
     if (R.has()) put(); else R.openSetup(put);
   };
 
   /* ---------------------------------------------------------------- Svep (the full page) */
   const roundAnswers = (st) => { const hs = st.done.filter((h) => !h.startsWith("soon:") && RQ.byHandle(h)); return { hs, a: hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join("") }; };
-  const savedTiles = (list) => `<div class="sv-liked">${list.map((p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(p.name)}</span><small>${kr(p.price)}</small></button>`).join("")}</div>`;
+  // long Swedish compounds in narrow tiles break where the words meet ("Skrivbords-organisatör"), never mid-syllable
+  RQ.shy = (s) => (window.RQ_LANG === "en" ? String(s) : String(s).replace(/(skrivbords|förvarings|terrakotta|uppladdnings|förråds|våffel|keramik|ull|jute|linne|bords)(?=[a-zåäö]{4,})/giu, "$1\u00AD"));
+  const savedTiles = (list) => `<div class="sv-liked">${list.map((p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(RQ.shy(p.name))}</span><small>${kr(p.price)}</small></button>`).join("")}</div>`;
+  // "Skandinavisk och klassisk", "Skandinavisk, mjuk och ombonad": one "och", a capital only first
+  const styleTitle = (top) => {
+    const ns = top.map((s) => s.name), i = ns.findIndex((n) => / och /.test(n));
+    if (ns.length > 1 && i === 0) ns.reverse();
+    const low = (n) => n.charAt(0).toLocaleLowerCase("sv") + n.slice(1);
+    return ns.length < 2 ? `<span>${esc(ns[0])}</span>` : / och /.test(ns[1]) ? `<span>${esc(ns[0])}</span>, <span>${esc(low(ns[1]))}</span>` : `<span>${esc(ns[0])}</span> <span>och</span> <span>${esc(low(ns[1]))}</span>`;
+  };
   const resultHtml = (st, scope) => {
     const t = RQ.taste.get(), prof = RQ.styleProfile(t), top = prof.mix.filter((m) => m.pct >= 25).slice(0, 2);
     const more = RQ.PRODUCTS.some((p) => inScope(p, scope) && !(p.handle in t.seen));
@@ -341,7 +372,7 @@
     const saved = st.saved.map(RQ.byHandle).filter(Boolean), ra = roundAnswers(st);
     return { top, saved, html: `<div class="svep-result" tabindex="-1">
       <span class="eyebrow">Din stilprofil</span>
-      <h2 class="h2">${top.length ? top.map((s) => `<span>${esc(s.name)}</span>`).join(" <span>och</span> ") : "Vi lär oss fortfarande"}</h2>
+      <h2 class="h2">${top.length ? styleTitle(top) : "Vi lär oss fortfarande"}</h2>
       <p class="lead">${top.length ? esc(RQ.STYLES[top[0].id].text) : "Spara några saker du gillar, så kan butiken sortera efter dig."}</p>
       ${allDone}
       ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
@@ -350,9 +381,10 @@
         <div class="ctrl-row sp-acts"><button class="btn" type="button" id="svAll">Lägg alla i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="svRoomAll">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div>
         ${RQ.priceWatch ? RQ.priceWatch.html(saved.map((p) => p.handle), "svw") : ""}</div>` : ""}
       ${st.bagged.length ? `<p class="small">${st.bagged.length} ${st.bagged.length === 1 ? "vara ligger" : "varor ligger"} redan i varukorgen. <a href="#kassa">Till kassan</a></p>` : ""}
-      ${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
+      ${prof.look || ra.hs.length >= 3 ? `<div class="sp-next">` : ""}${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
       ${ra.hs.length >= 3 ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Inreder ni tillsammans?</b><p>Skicka samma kort till någon. När ni båda har svept ser ni vad ni gillar gemensamt.</p>
-        ${linkForm("svTwo", "Ditt namn, om du vill", "Skicka korten")}</div></div>` : ""}
+        <button class="btn ghost sm" type="button" id="svTwoOpen" aria-expanded="false" aria-controls="svTwo">${SV.link}<span>Skicka korten</span></button>
+        ${linkForm("svTwo", "Ditt namn, om du vill", "Skicka korten").replace("<form ", "<form hidden ")}</div></div>` : ""}${prof.look || ra.hs.length >= 3 ? "</div>" : ""}
       <div class="ctrl-row" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep tio till</button>` : ""}<a class="btn ghost" href="#for-dig">Butiken för dig</a>${top.length ? `<button class="btn ghost" type="button" id="svShare">${SV.share}<span>Dela min stil</span></button>` : ""}</div>
       <button class="tlink" type="button" id="svAgain">Börja om från början</button><p class="small" id="svAgainNote" role="status"></p></div>` };
   };
@@ -362,7 +394,7 @@
       <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
-      <li class="sv-tip">Pilarna fungerar när kortet är markerat. Gå dit med Tab.</li>
+      <li class="sv-tip">Pilarna fungerar direkt, så länge du inte har markerat en annan knapp.</li>
     </ul>`;
   // a room with fewer cards left than a full round: how many there are (0 = a normal round of ten)
   const roomLeft = (scope) => { if (!scope) return 0; const t = RQ.taste.get(), n = RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length; return n && n < ROUND ? n : 0; };
@@ -412,6 +444,8 @@
             const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => toRoom(r.saved.map((p) => p.handle)));
             const sh = $("#svShare", root); sh && sh.addEventListener("click", () => shareStyle(r.top, (r.saved.length ? r.saved : RQ.styleProfile().liked.map(RQ.byHandle)).filter(Boolean)));
             const ans = roundAnswers(st);
+            // the form for a name opens only for those who want to send the cards, so the result page stays short
+            const to = $("#svTwoOpen", root); to && to.addEventListener("click", () => { const f = $("#svTwo", root); f.hidden = false; to.hidden = true; to.setAttribute("aria-expanded", "true"); $("#svTwoN", root).focus(); });
             bindLinkForm($("#svTwo", root), (n) => twoLink(ans.hs, ans.a, null, n, ""), tr("Svep tillsammans på RumIQ"), tr("Svep samma kort som jag, så ser vi vad vi båda gillar."));
           },
         });

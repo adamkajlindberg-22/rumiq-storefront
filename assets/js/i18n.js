@@ -14,8 +14,13 @@
   document.addEventListener("DOMContentLoaded", () => {
     const EN = window.RQ_EN || { dict: {}, prods: [] };
     const D = EN.dict;
-    const PRODS = EN.prods.slice().sort((a, b) => b[0].length - a[0].length);
-    const PROD_EN = Object.fromEntries(EN.prods);
+    // product names: data.js says each product's English name (field en), so a name is written in one place;
+    // the dictionary's own list is only for names data.js does not have
+    const own = ((window.RQ && window.RQ.PRODUCTS) || []).filter((p) => p.en).map((p) => [p.name, p.en]);
+    const ALL = [...own, ...EN.prods.filter(([sv]) => !own.some((o) => o[0] === sv))];
+    const PRODS = ALL.slice().sort((a, b) => b[0].length - a[0].length);
+    const PROD_EN = Object.fromEntries(ALL);
+    own.forEach(([sv, en]) => (D[sv] = en)); // a name on its own (a card, a heading) is the same name
     const NUM = /\d+(?:[  ]\d{3})*(?:[.,]\d+)?/g;
     const EMAIL = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g;
     const L = "ABCDEFGH";

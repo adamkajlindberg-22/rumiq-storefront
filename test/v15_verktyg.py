@@ -251,7 +251,7 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.sharedList.dec('4.3.2.1.0').hs.length") == 5, f"{tag} shared list: an older link still opens")
         go(pg, "onskelista", 800)
         tab = pg.evaluate("document.querySelector('[data-tab=fav]').textContent")
-        ok(pg.evaluate("document.querySelector('h1').textContent.trim()") == "Sparat" and pg.title() == "Sparat · RumIQ" and "sparat" in tab.lower() and "Favorit" not in tab, f"{tag} one word for saved things: the page is called Sparat ({pg.title()}, tab '{tab}')")
+        ok(pg.evaluate("document.querySelector('h1').textContent.trim()") == "Mina listor" and pg.title() == "Mina listor · RumIQ" and "sparat" in tab.lower() and "Favorit" not in tab, f"{tag} one word for saved things: the lists page under Sparat is 'Mina listor' (v15 r3: the overview page is Sparat) ({pg.title()}, tab '{tab}')")
         q0 = pg.evaluate(QTY)  # the look bought above is still in the cart
         pg.dblclick("#allCart"); pg.wait_for_timeout(400)
         ok(pg.evaluate(QTY) - q0 == 5, f"{tag} Sparat: a double click on 'Lägg alla' adds five, not ten ({q0} -> {pg.evaluate(QTY)})")
