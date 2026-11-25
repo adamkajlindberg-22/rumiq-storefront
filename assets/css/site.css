@@ -1208,8 +1208,12 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-hold{position:absolute;left:.8rem;top:.8rem;z-index:3;display:inline-flex;align-items:center;gap:.45rem;height:2.5rem;padding:0 1rem 0 .8rem;border:0;border-radius:999px;background:rgba(247,247,244,.9);color:#22252A;font-size:.86rem;font-weight:600;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .rm-hold svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .rm-hold.on{background:#22252A;color:#F7F7F4}
-.rm-emptyhint{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.8rem;color:#fff;text-shadow:0 1px 16px rgba(0,0,0,.5);font-weight:600;font-size:1.1rem;background:radial-gradient(ellipse 55% 40% at 50% 50%,rgba(20,21,19,.5),rgba(20,21,19,.12) 75%)}
+.rm-emptyhint{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.8rem;color:#fff;font-weight:600;font-size:1.1rem}
+.rm-emptyhint p{margin:0;padding:.4rem 1rem;border-radius:1.3rem;background:rgba(34,37,42,.84);color:#F7F7F4;line-height:1.35} /* its own dark ground: readable on a white wall and a dark floor alike */
 .rm-emptyhint svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6}
+.rm-hintask{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;max-width:min(30rem,calc(100% - 2rem));margin:-.2rem auto .3rem;text-shadow:none}
+.rm-hintask .chip{background:rgba(247,247,244,.94);color:#22252A;border-color:transparent;font-weight:560}
+.rm-hintask .chip:hover{background:#fff}
 .rm-tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;margin-top:.8rem}
 .rm-tool{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;min-height:4rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper);color:var(--ink);font-size:.86rem;font-weight:600;transition:border-color .25s}
 .rm-tool:hover{border-color:var(--ink)}

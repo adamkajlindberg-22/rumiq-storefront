@@ -125,6 +125,35 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.room.scene().length") == n0 + 1, f"{tag} the button brings it back")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
+    # ---------------------------------------------------------------- a new own photo: the room type is asked on the picture; the empty hint reads on any wall
+    from PIL import Image, ImageDraw
+    white = Image.new("RGB", (1600, 1200), (244, 242, 238)); ImageDraw.Draw(white).rectangle((0, 900, 1600, 1200), fill=(226, 220, 210))
+    wbuf = io.BytesIO(); white.save(wbuf, "JPEG", quality=88)
+    tall = Image.new("RGB", (900, 1200), (214, 206, 194)); ImageDraw.Draw(tall).rectangle((0, 780, 900, 1200), fill=(150, 112, 80))
+    tbuf = io.BytesIO(); tall.save(tbuf, "JPEG", quality=88)
+    for W, Hh, mob in ((360, 740, True), (390, 844, True), (430, 932, True), (820, 1180, True), (1024, 768, True), (1280, 720, False), (1440, 900, False), (1920, 1080, False)):
+        tag = f"[own {W}]"
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c)
+        pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300)
+        pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": wbuf.getvalue()}]); pg.wait_for_timeout(2000)
+        q, bar = pg.evaluate(RECT, "#rmHint .rm-hintask"), pg.evaluate(RECT, ".rm-bar")
+        lim = bar[1] if bar and bar[3] > bar[1] and pg.is_visible(".rm-bar") else Hh
+        ok(q and 0 < q[1] and q[3] <= lim, f"{tag} 'Vilket rum är det?' is on the first screen, above the buy bar: {q and [round(v) for v in q]} (limit {round(lim)})")
+        ok(pg.is_hidden("#rmAsk"), f"{tag} and asked once, not also under the room")
+        pg.click('#rmHint [data-roomtype="vardagsrum"]'); pg.wait_for_timeout(300)
+        ok(pg.evaluate("RQ.room.get().type") == "vardagsrum" and pg.evaluate("document.getElementById('rmHintT').textContent") == "Rummet är tomt." and not pg.evaluate("!!document.querySelector('.rm-hintask,#rmAsk')"), f"{tag} a tap sets the room type and the question goes away")
+        bgc = pg.evaluate("getComputedStyle(document.querySelector('#rmHint p')).backgroundColor")
+        ok(bgc.startswith("rgba(34, 37, 42, 0.8"), f"{tag} 'Rummet är tomt.' has its own dark ground on a white wall: {bgc}")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
+        c.close()
+    # M12: the first table lamp on an own photo is the size of a lamp on a side table, also in an upright photo
+    for buf, lo, hi, name in ((wbuf, 10.5, 14, "wide"), (tbuf, 15, 22, "upright")):
+        c = ctx_for(b, 390, 844, True); pg = new_page(c)
+        pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300)
+        pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": buf.getvalue()}]); pg.wait_for_timeout(2000)
+        pg.evaluate("RQ.room.add('lysa-keramiklampa', true)"); lamp = pg.evaluate(SPOT, "lysa-keramiklampa")
+        ok(lo <= lamp[2] <= hi and 55 <= lamp[1] <= 68, f"[M12 {name}] the first table lamp starts lamp-sized at mid-height: {lamp}")
+        c.close()
 #CHECKS
     b.close()
 

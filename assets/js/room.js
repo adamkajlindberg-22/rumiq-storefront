@@ -83,7 +83,7 @@
   /* A room we have not seen before: sensible spots for each kind, until the customer shows where things stand. */
   // a photo from the doorway: tables and sofa seats are about mid-height, the wall above them; the first things land there, large enough to grab
   const GENERIC = { h: 48, k: 0.9, sun: 1,
-    surface: [[50, 63, 30], [32, 63, 30], [68, 63, 30]], cushion: [[50, 68, 24], [36, 68, 24]], throw: [[60, 71, 24], [40, 71, 24]], bedding: [[50, 70, 24]],
+    surface: [[50, 63, 38], [32, 63, 38], [68, 63, 38]], cushion: [[50, 68, 24], [36, 68, 24]], throw: [[60, 71, 24], [40, 71, 24]], bedding: [[50, 70, 24]],
     wall: [[50, 40, 22], [30, 40, 22], [70, 40, 22]], floor: [[22, 92], [78, 92], [50, 94], [36, 90], [64, 90]],
     rug: [[50, 98, 56, 0.45]], window: [[86, 84, 15, 1]] };
   const FALLBACK = { cushion: ["throw", "floor"], throw: ["cushion", "floor"], bedding: ["throw", "cushion", "floor"], surface: ["floor"], wall: [], floor: [] };
@@ -103,7 +103,9 @@
       while (taken(x, learned.y, w) && n < 6) { n++; x = learned.x + (n % 2 ? 1 : -1) * Math.ceil(n / 2) * (w + 2.5); }
       return { x: +clamp(x, 3, 97).toFixed(1), y: learned.y, w: +w.toFixed(1), sy: learned.sy };
     }
-    const k = !M && L.k > 0 ? L.k : 1; // your own photo: the size you gave the first thing sets the scale for the rest
+    // your own photo: the size you gave the first thing sets the scale for the rest. Before that, a photo taken on its
+    // side shows less of the room across, so the same lamp is a larger share of its width
+    const k = M ? 1 : L.k > 0 ? L.k : room ? clamp((1.5 * room.h / room.w) ** 0.7, 1, 1.8) : 1;
     const place = (kd) => {
       const spots = G[kd] && G[kd].length ? G[kd] : null; if (!spots) return null;
       if (kd === "rug" || kd === "window") { const sp = spots[0]; return { x: sp[0], y: sp[1], w: sp[2], sy: sp[3] }; }
@@ -455,7 +457,7 @@
               <button type="button" class="rm-undo" id="rmUndo" aria-keyshortcuts="Control+Z" hidden>${ICO.undo}<span>Ångra</span></button>
               <button type="button" class="rm-nightchip" id="rmNightChip" aria-label="Kvällsljus är på. Stäng av" hidden>${ICO.moon}<span>Kvällsljus</span><svg class="x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
               <span class="rm-pos" id="rmPos" aria-hidden="true" hidden><i></i></span>
-              <div class="rm-emptyhint" id="rmHint" hidden><p>Rummet är tomt.</p><button class="btn sm light" type="button" id="rmSuggest0">${ICO.wand}Inred åt mig</button></div>
+              <div class="rm-emptyhint" id="rmHint" hidden>${!room.sample && !room.type ? `<p id="rmHintT">Vilket rum är det?</p><div class="chips rm-hintask">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div>` : `<p id="rmHintT">Rummet är tomt.</p>`}<button class="btn sm light" type="button" id="rmSuggest0">${ICO.wand}Inred åt mig</button></div>
               <p class="rm-first" id="rmFirst" role="status" hidden></p>
             </div>
             <div class="rm-tools">
@@ -580,6 +582,7 @@
             else if (!ls.get("rumiq-room-landed", false)) { ls.set("rumiq-room-landed", true); f.textContent = "Så här kan det se ut hemma hos dig."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); } }
           list.forEach((it) => seen.add(it.h)); [...seen].forEach((h) => { if (!list.some((it) => it.h === h)) seen.delete(h); });
           $("#rmHint", root).hidden = list.length > 0;
+          { const ask = $("#rmAsk", root); if (ask) ask.hidden = !list.length && !!$(".rm-hintask", root); } // a new photo is asked about on the picture itself, where you look
           $("#rmList", root).innerHTML = list.length ? list.map((it) => { const p = RQ.byHandle(it.h); return `<li class="${sel === it.h ? "on" : ""}"><button type="button" class="rm-li" data-pick="${it.h}"><img src="${RQ.img(p, 600)}" alt=""><span><b>${esc(p.name)}</b><span>${kr(p.price)}</span></span></button><button type="button" class="iconbtn" data-del="${it.h}" aria-label="Ta bort ${esc(p.name)} ur rummet">${ICO.trash}</button></li>`; }).join("") : `<li class="rm-none">Inget i rummet än. Tryck på <b>Inred åt mig</b> eller <b>Lägg till</b>.</li>`;
           const t = kr(R.total()); count(R.total()); $("#rmBarSum", root).textContent = `${list.length} ${list.length === 1 ? "produkt" : "produkter"} · ${t}`;
           $("#rmCount", root).textContent = list.length ? `${list.length} ${list.length === 1 ? "produkt" : "produkter"}` : "";
@@ -724,7 +727,8 @@
         $("#rmAct", root).addEventListener("click", (e) => { const b = e.target.closest("[data-act]"); if (!b || !sel) return; const it = R.scene().find((x) => x.h === sel); if (!it) return; const a = b.dataset.act;
           if (a === "smaller") resize(sel, it.w / 1.12); if (a === "bigger") resize(sel, it.w * 1.12); if (a === "flip") flip();
           if (a === "order") { if (it.back) R.toFront(sel); else R.toBack(sel); } if (a === "del") removeIt(sel); if (a === "done") select(null); });
-        const ask = $("#rmAsk", root); if (ask) ask.addEventListener("click", (e) => { const b = e.target.closest("[data-roomtype]"); if (!b) return; R.setType(b.dataset.roomtype); ask.remove(); fits(); RQ.toast("Tack. Nu föreslår vi sådant som passar där."); });
+        root.addEventListener("click", (e) => { const b = e.target.closest("[data-roomtype]"); if (!b) return; R.setType(b.dataset.roomtype); $$("#rmAsk, .rm-hintask", root).forEach((x) => x.remove()); const t = $("#rmHintT", root); if (t) t.textContent = "Rummet är tomt.";
+          if (b.closest("#rmHint")) $("#rmSuggest0", root).focus({ preventScroll: true }); fits(); RQ.toast("Tack. Nu föreslår vi sådant som passar där."); });
         root.addEventListener("click", (e) => {
           const pk = e.target.closest("[data-pick]"); if (pk) { select(pk.dataset.pick); const it = R.scene().find((x) => x.h === pk.dataset.pick); if (it) lookAt([it]); if (innerWidth <= 900) stage.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
           const dl = e.target.closest("[data-del]"); if (dl) removeIt(dl.dataset.del);
