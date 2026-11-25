@@ -109,6 +109,21 @@ with sync_playwright() as p:
             pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(200)
             got = pg.evaluate(FIRST_SLIDE)
             ok(got[0] == 4 and got[1] == 0, f"{tag} with a room the lamp has four pictures and opens on the first: {got}")
+            # M6: the shop's room switch has visible words; when on, every card shows the room first
+            pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(250)
+            t = pg.evaluate("""() => { const t = document.querySelector('#view .roomtoggle'), vis = [...t.querySelectorAll('.rt-t, .rt-s')].filter((e) => e.offsetWidth > 2 && getComputedStyle(e).position !== 'absolute');
+              const tb = document.querySelector('#view .toolbar').getBoundingClientRect(), s = document.getElementById('sort');
+              return [vis.map((e) => e.textContent).join(''), t.getAttribute('aria-pressed'), Math.round(tb.height), s.scrollWidth <= s.clientWidth + 1 || s.clientWidth > 90, Math.round(s.getBoundingClientRect().width)]; }""")
+            ok(t[0] in ("I mitt rum", "Visa i Mitt rum") and t[1] == "true" and t[2] < 60, f"{tag} the room switch says what it does and is on: {t}")
+            ok(t[3] and t[4] <= 260, f"{tag} the sort menu shows its words and keeps a sensible width: {t[4]} px")
+            room1 = pg.evaluate("""() => [...document.querySelectorAll('#results .card')].slice(0, 4).map((c) => { const ph = c.querySelector('.ph').getBoundingClientRect(), r = c.querySelector('.hov.inroom'), q = r.getBoundingClientRect(); return Math.abs(q.left - ph.left) < 2 && getComputedStyle(r).opacity === '1'; })""")
+            ok(room1 and all(room1), f"{tag} with the switch on, the cards show the room first: {room1}")
+            # M18 + D22: a phone card's photo has heart and Lägg till only; elsewhere the four buttons tab in reading order
+            btns = pg.evaluate("[...document.querySelector('#results .card').querySelectorAll('button')].filter((b) => b.offsetParent).map((b) => b.className.replace('iconbtn ', ''))")
+            if W <= 640:
+                ok(btns == ["fav", "qadd"], f"{tag} a phone card carries heart and Lägg till only: {btns}")
+            else:
+                ok(btns == ["fav", "rbtn", "qv", "qadd"], f"{tag} card buttons in reading order (heart, room, Snabbtitt, Lägg till): {btns}")
             ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
             ctx.close()
     # D12: the loupe waits until the pointer moves on the picture

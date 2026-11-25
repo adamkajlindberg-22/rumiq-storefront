@@ -61,7 +61,8 @@
     const print = RQ.isPrint && RQ.isPrint(p);
     const photo = print ? `<img class="fade cutph" src="${RQ.cut(p)}" alt="${esc(p.name)}" ${first ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="461" height="600">`
       : `<img class="fade" src="${RQ.img(p, 600)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="${esc(p.name)}" ${first === "high" ? 'fetchpriority="high"' : first === "eager" ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="600" height="750">`;
-    // with "Visa i mitt rum" on, the product photo still comes first; the room is the second picture (hover, or swipe on a phone)
+    // with "Visa i Mitt rum" on, the room is the picture shown (CSS puts it first; hover or a swipe shows the product photo)
+    // tab order follows the picture: heart and room top right, then Snabbtitt (bottom left) before Lägg till (bottom right)
     const ph = on ? `${photo}<span class="hov inroom">${R.layer(p)}<i class="inr-tag">I ditt rum</i></span>`
       : `${photo}<img class="hov fade" data-src="${print ? RQ.img(p, 600) : `assets/img/d/${p.handle}-600.webp`}" alt="" decoding="async" width="600" height="750" onerror="this.remove()">`;
     return `
@@ -69,8 +70,8 @@
       <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
       <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}</button>
       <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i Mitt rum">${roomIco}</button>
-      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <button class="qv" type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
       <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
@@ -101,7 +102,6 @@
   const nProd = (n) => `${n} ${n === 1 ? "produkt" : "produkter"}`;
   RQ.nProd = nProd;
 
-  let modeAt = 0; document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("[data-room-mode]")) modeAt = Date.now(); }, true);
   // Shop listing used by #butik, #kategori-x, #rum-x, #kollektion-x, #nyheter, #favoriter
   function shopView({ title, kicker, lead, cat = null, room = null, col = null, sort = "rel", banner = null, extraTop = "", extraBottom = "", trail, only = null, noSort = false }) {
     /* what the visitor chose on this list is kept for the visit, so Back from a product shows the same list */
@@ -152,10 +152,10 @@
             </aside><div class="f-scrim" data-f-close></div>` : ""}
             <div>
               <div class="toolbar">
-                <span class="tb-l"><span class="count" id="count" role="status">${nProd(first.length)}</span>${RQ.room && RQ.room.mode() ? '<span class="rm-hint">Peka på en bild så ser du den i ditt rum.</span>' : ""}</span>
+                <span class="tb-l"><span class="count" id="count" role="status">${nProd(first.length)}</span>${RQ.room && RQ.room.mode() ? '<span class="rm-hint">Korten visar allt i ditt rum.</span>' : ""}</span>
                 <div class="tb-r">
                   ${groups ? `<button class="chip tb-filter" type="button" id="toggleFilters" aria-expanded="false" aria-controls="filters">${fIco}<span>Filter</span><b id="fN"${nActive() ? "" : " hidden"}>${nActive()}</b></button>` : ""}
-                  <button class="roomtoggle" type="button" data-room-mode aria-pressed="${!!(RQ.room && RQ.room.mode())}"><span class="rt-img" data-room-thumb data-empty='${roomIco}'>${RQ.room && RQ.room.has() ? RQ.room.thumb() : roomIco}</span><span class="rt-t">${RQ.room && RQ.room.has() ? "Visa i Mitt rum" : "Se allt i ditt rum"}</span><i class="sw" aria-hidden="true"></i></button>
+                  <button class="roomtoggle" type="button" data-room-mode aria-pressed="${!!(RQ.room && RQ.room.mode())}"><span class="rt-img" data-room-thumb data-empty='${roomIco}'>${RQ.room && RQ.room.has() ? RQ.room.thumb() : roomIco}</span><span class="rt-t">${RQ.room && RQ.room.has() ? "Visa i Mitt rum" : "Se allt i ditt rum"}</span><span class="rt-s" aria-hidden="true">${RQ.room && RQ.room.has() ? "I mitt rum" : "I ditt rum"}</span><i class="sw" aria-hidden="true"></i></button>
                   ${noSort ? "" : `<label class="sr" for="sort">Sortera</label>
                   <select class="select" id="sort"><option value="rel">Relevans</option><option value="pop">Popularitet</option><option value="asc">Pris: lågt till högt</option><option value="desc">Pris: högt till lågt</option><option value="new">Senaste</option>${RQ.room && RQ.room.has() ? '<option value="match">Passar mitt rum</option>' : ""}${RQ.taste && RQ.taste.has() ? '<option value="dig">För dig</option>' : ""}</select>`}
                 </div>
@@ -170,7 +170,6 @@
         const sel = $("#sort", root), aside = $("#filters", root), tf = $("#toggleFilters", root), form = $("#fForm", root);
         if (sel) { if (![...sel.options].some((o) => o.value === st.sort)) st.sort = sort; sel.value = st.sort; }
         /* the room switch was just turned on: every card shows its room picture for a moment, so the switch is seen to do something */
-        if (RQ.room && RQ.room.mode() && Date.now() - modeAt < 1500) { const r = $("#results", root); r.classList.add("peek"); setTimeout(() => r.classList.remove("peek"), 2200); }
         const paint = () => {
           const list = listFor(st.sort), n = nActive();
           $("#results", root).innerHTML = results(list); $("#count", root).textContent = nProd(list.length);
