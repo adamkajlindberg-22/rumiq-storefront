@@ -155,6 +155,26 @@ with sync_playwright() as p:
             ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
             ctx.close()
 
+    # D17: the filter counts follow the other groups' choices, also after Back from a product
+    for W, Hh, mobile in ((390, 844, True), (1440, 900, False)):
+        tag = f"[filter {W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(300)
+        C = "Object.fromEntries([...document.querySelectorAll('#fForm .f-opt')].map((o) => [o.querySelector('input').value, [+o.querySelector('.count').textContent, o.classList.contains('f-zero')]]))"
+        before = pg.evaluate(C)
+        if mobile:
+            pg.tap("#toggleFilters"); pg.wait_for_timeout(500)
+        pg.click("#fForm input[name=cat][value=belysning-atmosfar]", force=True); pg.wait_for_timeout(300)
+        shown = pg.evaluate("document.querySelectorAll('#results .card').length")
+        after = pg.evaluate(C)
+        want = pg.evaluate("RQ.PRODUCTS.filter((p) => p.cat === 'belysning-atmosfar' && p.rooms.includes('vardagsrum')).length")
+        ok(before["vardagsrum"][0] > after["vardagsrum"][0] == want and after["vardagsrum"][0] <= shown, f"{tag} Vardagsrum counts only lighting once Belysning is chosen: {before['vardagsrum'][0]} -> {after['vardagsrum'][0]} (want {want}, {shown} shown)")
+        ok(after["hem-inredning"][0] == before["hem-inredning"][0], f"{tag} choices in the same group keep their own counts (they add up)")
+        ok(all(z == (n == 0) for v, (n, z) in after.items() if v != "belysning-atmosfar"), f"{tag} a choice that would show nothing is marked quiet")
+        pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(300); pg.go_back(); pg.wait_for_timeout(700)
+        ok(pg.evaluate(C)["vardagsrum"][0] == want, f"{tag} the counts still follow the filter after Back")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"

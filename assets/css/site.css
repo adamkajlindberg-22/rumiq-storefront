@@ -305,6 +305,8 @@ main{min-height:60vh}
 .f-chip{display:inline-flex;align-items:center;gap:.35rem;padding-right:.55rem}
 .f-chip svg{width:.85rem;height:.85rem;fill:none;stroke:currentColor;stroke-width:1.8}
 .f-active .tlink{font-size:.9rem;margin-left:.3rem}
+/* a choice that would show nothing with the other filters: still there, but quiet */
+.f-opt.f-zero{color:var(--muted)}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:.8rem 1rem;margin-bottom:1.4rem}
 .toolbar .count{font-size:.9rem;color:var(--muted)}
 .tb-l{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .9rem;min-width:0}

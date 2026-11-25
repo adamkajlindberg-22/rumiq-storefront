@@ -125,8 +125,12 @@
     const st = { sort: noSort ? sort : saved.sort || sort }; FKEYS.forEach((k) => (st[k] = Array.isArray(saved[k]) ? saved[k].slice() : []));
     const base = (srt = "rel") => { const l = S.list({ cat, room, col, sort: srt }); return only ? l.filter(only) : l; };
     const all = base();
-    const pass = (p) => (!st.cat.length || st.cat.includes(p.cat)) && (!st.room.length || p.rooms.some((r) => st.room.includes(r)))
-      && (!st.price.length || SPANS.some(([id, , lo, hi]) => st.price.includes(id) && p.price >= lo && p.price < hi)) && (!st.tone.length || RQ.colours(p).some((c) => st.tone.includes(c)));
+    /* one test per filter group; choices inside a group add up (or), groups narrow each other (and) */
+    const has = { cat: (p, id) => p.cat === id, room: (p, id) => p.rooms.includes(id), price: (p, id) => SPANS.some(([x, , lo, hi]) => x === id && p.price >= lo && p.price < hi), tone: (p, id) => RQ.colours(p).includes(id) };
+    const passBut = (p, skip) => FKEYS.every((k) => k === skip || !st[k].length || st[k].some((id) => has[k](p, id)));
+    const pass = (p) => passBut(p, null);
+    /* how many products a choice would show, given the other groups' choices (the counts follow the filters) */
+    const countOf = (k, id) => all.filter((p) => passBut(p, k) && has[k](p, id)).length;
     const listFor = (srt) => {
       let l = srt === "dig" && RQ.taste ? RQ.taste.sort(base()) : base(srt === "match" ? "rel" : srt);
       if (srt === "match" && RQ.room && RQ.room.has()) l = [...l].sort((a, b) => (RQ.room.match(b) || 0) - (RQ.room.match(a) || 0));
@@ -134,7 +138,7 @@
     };
     const nActive = () => FKEYS.reduce((n, k) => n + st[k].length, 0);
     /* the groups a list can be narrowed by: only choices that exist in this list, and not the one the page itself is about */
-    const opt = (name, id, label, n, sw) => `<label class="f-opt${sw ? " f-sw" : ""}"><input type="checkbox" name="${name}" value="${id}"${st[name].includes(id) ? " checked" : ""}>${sw ? `<i style="background:${sw}"></i>` : ""}<span>${esc(label)}</span><span class="count">${n}</span></label>`;
+    const opt = (name, id, label, n, sw) => { const on = st[name].includes(id), c = countOf(name, id); return `<label class="f-opt${sw ? " f-sw" : ""}${!c && !on ? " f-zero" : ""}"><input type="checkbox" name="${name}" value="${id}"${on ? " checked" : ""}>${sw ? `<i style="background:${sw}"></i>` : ""}<span>${esc(label)}</span><span class="count">${c}</span></label>`; };
     const group = (name, legend, rows) => (rows.filter(Boolean).length > 1 ? `<fieldset class="f-group" data-f="${name}"><legend>${legend}</legend><div class="f-opts">${rows.filter(Boolean).join("")}</div></fieldset>` : "");
     const groups = [
       cat ? "" : group("cat", "Kategori", RQ.CATEGORIES.map((c) => { const n = all.filter((p) => p.cat === c.id).length; return n ? opt("cat", c.id, c.name, n) : ""; })),
@@ -189,7 +193,8 @@
           const list = listFor(st.sort), n = nActive();
           $("#results", root).innerHTML = results(list); $("#count", root).textContent = nProd(list.length);
           const fa = $("#fActive", root); fa.innerHTML = chips(); fa.hidden = !n;
-          if (aside) { $("#fShow", root).textContent = `Visa ${nProd(list.length)}`; const b = $("#fN", root); b.textContent = n; b.hidden = !n; }
+          if (aside) { $("#fShow", root).textContent = `Visa ${nProd(list.length)}`; const b = $("#fN", root); b.textContent = n; b.hidden = !n;
+            $$("input", form).forEach((i) => { const c = countOf(i.name, i.value), o = i.closest(".f-opt"); $(".count", o).textContent = c; o.classList.toggle("f-zero", !c && !i.checked); }); }
           RQ.ss.set(key, JSON.stringify({ sort: st.sort, cat: st.cat, room: st.room, price: st.price, tone: st.tone }));
           RQ.markImages(root); RQ.watch(root);
         };
