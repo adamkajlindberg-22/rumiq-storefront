@@ -278,23 +278,28 @@
     `<form id="trForm" class="form-grid" novalidate><label>Ordernummer<input name="num" placeholder="Till exempel TEST-1001" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label><label>E-post<input type="email" name="email" autocomplete="email" autocapitalize="off" spellcheck="false" required></label><button class="btn" type="submit">Visa status</button><p class="status full" id="trStatus" role="alert"></p></form><div id="trOut"></div>
      <h2>Om du har en riktig beställning</h2><p>Använd länken till orderstatus i orderbekräftelsen. Spårning från fraktbolaget visas när leverantören eller fraktbolaget skickar den. Varor från olika leverantörer kan komma i separata paket.</p>`,
     (root) => {
-      const f = $("#trForm", root); const pre = RQ.ss.get("rumiq-prefill"); if (pre) { f.num.value = pre; const o = S.findOrder(pre); if (o) f.email.value = o.contact.email; }
-      f.addEventListener("submit", (e) => {
-        e.preventDefault(); const st = $("#trStatus", root);
-        if (!f.num.value.trim()) return RQ.badField(f.num, st, "Skriv ordernumret, till exempel TEST-1001.");
-        if (!emailOk(f.email.value)) return RQ.badField(f.email, st, "Skriv e-postadressen du använde vid köpet.");
+      const f = $("#trForm", root), out = $("#trOut", root); const pre = RQ.ss.get("rumiq-prefill"), preO = pre && S.findOrder(pre); if (pre) { f.num.value = pre; if (preO) f.email.value = preO.contact.email; }
+      // errors under the field they belong to, in red, as in the checkout; the first one gets the focus
+      [f.num, f.email].forEach((el) => el.addEventListener("input", () => { if (el.getAttribute("aria-invalid")) RQ.fieldErr(el, ""); }));
+      const show = (e) => {
+        if (e) e.preventDefault(); const st = $("#trStatus", root);
+        const e1 = f.num.value.trim() ? "" : "Skriv ordernumret, till exempel TEST-1001.", e2 = emailOk(f.email.value) ? "" : "Skriv e-postadressen du använde vid köpet.";
+        RQ.fieldErr(f.num, e1); RQ.fieldErr(f.email, e2);
+        if (e1 || e2) { st.textContent = ""; out.innerHTML = ""; (e1 ? f.num : f.email).focus(); return; }
         const o = S.findOrder(f.num.value, f.email.value);
-        if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna i den här webbläsaren. Kontrollera ordernumret och e-posten."; $("#trOut", root).innerHTML = ""; return; }
+        if (!o) { st.textContent = "Vi hittar ingen beställning med de uppgifterna i den här webbläsaren. Kontrollera ordernumret och e-posten."; out.innerHTML = ""; return; }
         st.textContent = "";
         const dc = RQ.delivery ? RQ.delivery.cfg() : {}, eta = RQ.delivery ? RQ.delivery.range(dc, o.createdAt) : "", ship = (S.SHIPPING.find((x) => x.id === o.shippingId) || {}).title || "";
-        $("#trOut", root).innerHTML = `<div class="panel" style="margin-top:1.6rem">${orderCard(o, true)}
+        out.innerHTML = `<div class="tr-res">${orderCard(o, true)}
           ${o.withdrawn ? "" : `<div class="tr-eta"><span class="eyebrow">Beräknad leverans</span><b>${eta || "Bekräftas innan vi öppnar"}</b>${ship ? `<small>${esc(ship)}${dc.fromCountry ? ` · ${esc(dc.fromCountry)}` : ""}</small>` : ""}</div>`}
           <ol class="timeline"><li class="done"><div><b>Mottagen</b><small>${date(o.createdAt)}</small></div></li>
           <li class="${o.withdrawn ? "done" : ""}"><div><b>${o.withdrawn ? "Köpet ångrat" : "Packas"}</b><small>${o.withdrawn ? date(o.withdrawnAt) : "Testorder, skickas inte"}</small></div></li>
           ${o.withdrawn ? "" : `<li><div><b>Lämnar lagret</b><small>Du får ett mejl när paketet har lämnat lagret</small></div></li>
           <li><div><b>På väg</b><small>Spårningsnummer och fraktbolagets länk visas här</small></div></li>
           <li><div><b>${o.shippingId === "hem" ? "Levererad" : "Redo att hämta"}</b><small>${o.shippingId === "skap" ? "Du får en kod till paketskåpet" : o.shippingId === "ombud" ? "Ta med legitimation till ombudet" : "Fraktbolaget meddelar när det kommer"}</small></div></li>`}</ol></div>`;
-      });
+      };
+      f.addEventListener("submit", show);
+      if (preO) show(); // came from the order: its status straight away
     });
 
   /* ---------------- Ångra avtalet här */

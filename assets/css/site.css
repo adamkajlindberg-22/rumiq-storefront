@@ -2193,6 +2193,7 @@ body.on-checkout .tools{grid-column:3}
 .hf li.warn i{background:color-mix(in srgb,var(--danger) 16%,transparent);color:var(--danger)}
 .hf li b{font-weight:600}
 /* tracking: estimated delivery */
+.tr-res{margin-top:.6rem} /* the order card itself, with the delivery and the steps under it: no card around the card */
 .tr-eta{display:grid;gap:.2rem;margin:1.2rem 0 .4rem;padding:1rem 1.1rem;border-radius:var(--r);background:var(--sunk)}
 .tr-eta b{font-size:1.35rem;font-weight:560;letter-spacing:-.02em}
 .tr-eta small{color:var(--ink2)}
