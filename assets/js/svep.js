@@ -389,11 +389,12 @@
       <button class="tlink" type="button" id="svAgain">Börja om från början</button><p class="small" id="svAgainNote" role="status"></p></div>` };
   };
   const scopeNav = (scope) => `<nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="#svep"${scope ? "" : ' aria-current="true"'}>Hela butiken</a>${RQ.ROOMS.map((r) => `<a class="chip" href="#svep-rum-${r.id}"${scope === r.id ? ' aria-current="true"' : ""}>${esc(r.name)}</a>`).join("")}</nav>`;
+  // keys where there is a keyboard and a mouse; on touch screens the same rows show the gesture and the button's own icon
   const legend = `<ul class="sv-legend">
-      <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar under Sparat och lär oss din stil.</span></div></li>
-      <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
-      <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
-      <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
+      <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true">${ICO.heart}</i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar under Sparat och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">←</kbd><i class="sv-ti" aria-hidden="true">${ICO.x}</i><div><b>Hoppa över</b><span><em class="sv-tc">Svep åt vänster. </em>Du får se mindre av sådant framöver.</span></div></li>
+      <li><kbd aria-hidden="true">↑</kbd><i class="sv-ti" aria-hidden="true">${SV.bag}</i><div><b>Lägg i varukorgen</b><span><em class="sv-tc">Svep uppåt. </em>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
+      <li><kbd aria-hidden="true">⌫</kbd><i class="sv-ti" aria-hidden="true">${SV.undo}</i><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
       <li class="sv-tip">Pilarna fungerar direkt, så länge du inte har markerat en annan knapp.</li>
     </ul>`;
   // a room with fewer cards left than a full round: how many there are (0 = a normal round of ten)
@@ -407,7 +408,7 @@
         <div class="sv-head">${RQ.crumbs(room ? [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], [room.name]] : [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep"]])}<h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           ${scopeNav(scope)}
           ${legend}
-          <p class="small sv-after">Klicka på bildens kanter för fler bilder, eller mitt på bilden för att läsa mer. ${roomLeft(scope) ? `<span>${roomLeft(scope)}</span> <span>kort för</span> <span>${esc(room.name.toLowerCase())}</span>, <span>sedan får du din stilprofil.</span>` : "Efter tio kort får du din stilprofil."}</p>
+          <p class="small sv-after">Tryck på bildens kanter för fler bilder, eller mitt på bilden för att läsa mer. ${roomLeft(scope) ? `<span>${roomLeft(scope)}</span> <span>kort för</span> <span>${esc(room.name.toLowerCase())}</span>, <span>sedan får du din stilprofil.</span>` : "Efter tio kort får du din stilprofil."}</p>
           <a class="sv-two-link" href="#svep-ihop">${SV.two}<span>Inreder ni tillsammans? <b>Svep tillsammans</b></span></a></div>
         ${deckHtml("sv", false)}</section>`,
       mount(root) {

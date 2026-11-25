@@ -790,7 +790,8 @@
     RQ.paintShell();
     RQ.markImages(root);
     $$(".menu a").forEach((a) => a.classList.toggle("active", rawOf(a) === raw));
-    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|erbjudanden)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration|hitta-ratt|presentguiden|studio-stylist|studio-sok|studio-hemurval)(-|$)/, mitt: /^(mitt-rum|studio(?!-(stylist|sok|hemurval)))/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
+    // the same "you are here" as the top menu and the breadcrumbs: rooms are in Butik, For dig and Looks (also the old Kollektioner) in Upptäck, the tools in Upptäck
+    const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion-|favoriter|erbjudanden|presentkort|rum$|rum-)/, upptack: /^(upptack|svep|looks?|kollektioner|for-dig|rosta|onska|ideer|magasin|artikel|inspiration|hitta-ratt|presentguiden|studio-stylist|studio-sok|studio-hemurval|studio-stil)(-|$)/, mitt: /^(mitt-rum|studio(?!-(stylist|sok|hemurval|stil)))/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
     $$("[data-dock]").forEach((a) => { const on = !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw)); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     const anchor = /^faq-\d+$/.test(raw) && document.getElementById(raw);
     if (anchor) anchor.scrollIntoView();
@@ -1108,7 +1109,7 @@
     li.addEventListener("focusout", (e) => { if (b.getAttribute("aria-expanded") === "true" && e.relatedTarget && !li.contains(e.relatedTarget)) closeMega(); });
   });
   /* the menu shows where you are, and every icon in the bar says what it is when the mouse rests on it */
-  const NAV_AT = [[/^(upptack|svep|magasin|artikel-|inspiration|hitta-ratt|onska|for-dig)/, 0], [/^(butik|kategori-|produkt-|rum$|rum-|nyheter|favoriter|erbjudanden|kollektion-|presentkort)/, 1], [/^(looks$|look-|kollektioner)/, 2]];
+  const NAV_AT = [[/^(upptack|svep|magasin|artikel-|inspiration|hitta-ratt|onska|rosta|ideer|for-dig|presentguiden|studio-(?:stylist|sok|hemurval|stil)$)/, 0], [/^(butik|kategori-|produkt-|rum$|rum-|nyheter|favoriter|erbjudanden|kollektion-|presentkort)/, 1], [/^(looks$|look-|kollektioner)/, 2]];
   const navMark = () => {
     const r = location.hash.slice(1) || location.pathname.replace(/\/$/, "").split("/").pop() || "", hit = NAV_AT.find(([re]) => re.test(r));
     $$(".menu > li > a, .menu > li > button").forEach((el, i) => { const on = !!hit && hit[1] === i; el.classList.toggle("active", on); if (el.tagName === "A") { if (on) el.setAttribute("aria-current", "page"); else el.removeAttribute("aria-current"); } });

@@ -175,7 +175,9 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.getElementById('gfOut').innerText").strip() == "" and "Välj" in pg.evaluate(TOAST), f"{tag} gift tab: nothing chosen asks for a choice instead of 'Inget passar'")
         pg.click("[data-q=for] button[data-v=van]"); pg.click("[data-q=occ] button[data-v=inflyttning]"); pg.evaluate("document.getElementById('gfGo').click()"); pg.wait_for_timeout(1200)
         head = pg.evaluate("document.querySelector('#gfOut .eyebrow').innerText"); cards = pg.evaluate("document.querySelectorAll('#gfOut .card').length")
-        ok(re.search(r"De\s+%d\s+bästa av\s+\d+" % cards, head) is not None or re.match(r"^%d\s+förslag" % cards, head) is not None, f"{tag} gift tab: the number in the heading is the number shown: {head!r} / {cards}")
+        # r4: "De bästa av 15 förslag" (rows are filled per screen, so the heading no longer names how many are shown)
+        m = re.search(r"De bästa av\s+(\d+)", head)
+        ok((m is not None and cards < int(m.group(1))) or re.match(r"^%d\s+förslag" % cards, head) is not None, f"{tag} gift tab: the number in the heading is true: {head!r} / {cards}")
         ok(0 <= pg.evaluate("document.getElementById('gfOut').getBoundingClientRect().top") < pg.evaluate("innerHeight") * 0.5, f"{tag} gift tab: the result is scrolled into view")
         go(pg, "hitta-ratt-ord", 800)
         box = pg.evaluate("(() => { const f = document.getElementById('ssForm'), cs = getComputedStyle(f); return [parseFloat(cs.paddingTop), parseFloat(cs.borderTopLeftRadius)]; })()")
@@ -208,7 +210,8 @@ with sync_playwright() as p:
         ok(pg.evaluate("(() => { const i = document.getElementById('chatIn').getBoundingClientRect(); return i.top >= 0 && i.bottom <= innerHeight; })()"), f"{tag} stylist: the field is still on screen after several answers")
         ok(not pg.evaluate("(() => { const a = [...[...document.querySelectorAll('#log .msg.ai')].pop().querySelectorAll('.mini a')]; return a.some((x) => x.scrollWidth > x.clientWidth + 1); })()"), f"{tag} stylist: product names stay inside their columns")
         pg.evaluate("document.getElementById('maxP').value = '100'"); say("Jag behöver mjukare ljus"); a = pg.evaluate(last)
-        ok(a[1] == 0 and "Det billigaste kostar" in a[0] and "Billigare" not in a[0], f"{tag} stylist: nothing under the price is said plainly, with the cheapest price")
+        # r4: said plainly, and the nearest thing comes as a card instead of a dead end
+        ok(a[1] >= 1 and "Under 100 kr hittar jag inget" in a[0] and "Närmast" in a[0] and "Billigare" not in a[0], f"{tag} stylist: nothing under the price is said plainly, with the nearest thing as a card: {a[0][:160]!r}")
 
         # looks
         go(pg, "looks", 800)

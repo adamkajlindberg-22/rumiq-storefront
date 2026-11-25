@@ -555,6 +555,7 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .imgopts button{border:0;padding:0;background:none;text-align:left;border-radius:var(--r-img);position:relative}
 .imgopts button img{aspect-ratio:4/5;object-fit:cover;width:100%;border-radius:var(--r-img);transition:filter .4s,box-shadow .3s;background:var(--img-bg)}
 .imgopts button span{display:block;font-size:.92rem;font-weight:500;margin-top:.5rem;color:var(--ink2)}
+.imgopts button{align-self:start} /* a two-line name ("Hemma-kontor") does not push its neighbours' names down */
 .imgopts button[aria-pressed=true] img{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
 .imgopts button[aria-pressed=false].dim img{filter:saturate(.4) opacity(.55)}
 .result{border-radius:var(--r);background:var(--paper);border:1px solid var(--line2);padding:clamp(1.5rem,4vw,2.6rem);margin-top:1rem}
@@ -573,8 +574,9 @@ input[type=range]::-moz-range-thumb{width:1.1rem;height:1.1rem;border-radius:50%
 .msg.ai p + p{margin-top:.6rem}
 .msg-help{font-weight:600;text-underline-offset:3px}
 .msg.ai .mini img{border-radius:var(--r-img);width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;margin-bottom:.3rem;background:var(--img-bg)}
+.msg.ai .mini small{font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:.01em}
 /* phones: the suggestions as rows (picture, name, price), so a long name is never cut mid-word */
-@media (max-width:640px){.msg.ai{max-width:100%}.msg.ai .mini{grid-template-columns:1fr;gap:.45rem}.msg.ai .mini a{grid-template-columns:3.4rem 1fr;column-gap:.8rem;align-items:center;font-size:.92rem}.msg.ai .mini img{grid-row:1/3;width:3.4rem;margin:0}.msg.ai .mini a span{-webkit-line-clamp:2;align-self:end}.msg.ai .mini a b{align-self:start}}
+@media (max-width:640px){.msg.ai{max-width:100%}.msg.ai .mini{grid-template-columns:1fr;gap:.45rem}.msg.ai .mini a{grid-template-columns:3.4rem 1fr;column-gap:.8rem;align-items:center;font-size:.92rem}.msg.ai .mini img{grid-row:1/3;width:3.4rem;margin:0}.msg.ai .mini a span{-webkit-line-clamp:2;align-self:end}.msg.ai .mini a b{align-self:start}.msg.ai .mini a.tagged img{grid-row:1/4}.msg.ai .mini a.tagged span{align-self:center}.msg.ai .mini small{align-self:end}}
 .chat form{display:flex;gap:.5rem;padding:.8rem;border-top:1px solid var(--line)}
 .chat form input{flex:1}
 .typing{display:inline-flex;gap:.25rem}
@@ -781,6 +783,7 @@ footer.site .co + .ai{margin-top:.4rem}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:var(--r-s);padding:.25rem;margin-bottom:1.5rem}
 .seg a{text-align:center;text-decoration:none;padding:.6rem;border-radius:6px;font-size:.94rem;font-weight:500;color:var(--muted);transition:background .3s,color .3s}
 .seg a[aria-selected=true]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+:root[data-light=kvall] .seg a[aria-selected=true]{background:color-mix(in srgb,var(--ink) 16%,var(--paper))} /* the chosen tab stands out also at night */
 .sso-list{display:grid;gap:.55rem}
 .sso{display:flex;align-items:center;justify-content:center;gap:.7rem;width:100%;border:1px solid var(--line);background:#fff;color:#1f1f1f;border-radius:var(--r-btn);min-height:3.1rem;padding:0 1rem;font-size:.97rem;font-weight:560;transition:border-color .3s}
 .sso:hover{border-color:#6c6e6b}
@@ -824,6 +827,7 @@ details.pw[open] summary::after{content:" −"}
 .stat:hover{border-color:var(--ink)}
 .stat b{font-weight:500;font-size:2.3rem;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
 .stat span{font-size:.88rem;color:var(--muted)}
+@media (max-width:640px){.stat{padding:.75rem .9rem;gap:.1rem}.stat b{font-size:1.7rem}} /* four counts take half a phone screen, not a whole one */
 .switch{display:flex;align-items:center;gap:.8rem;color:var(--ink);font-size:.98rem;cursor:pointer}
 .switch input{position:absolute;opacity:0;width:1px;height:1px}
 .switch span{flex:none;width:2.6rem;height:1.5rem;border-radius:999px;background:var(--field);position:relative;transition:background .3s}
@@ -1529,6 +1533,9 @@ html.sheet-lock{overflow:hidden}
 .mh-none{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;align-items:baseline;justify-content:space-between;padding:1rem 1.2rem;border:1px dashed var(--line);border-radius:var(--r)}
 .mh-none p{color:var(--muted)}
 .mh-none b{color:var(--ink);font-weight:560}
+.mh .sec-head{margin-bottom:1rem} /* each part of Sparat has a visible name (an eyebrow in .sec-head is hidden site-wide) */
+#mh-matt > .lead{font-size:1rem;color:var(--muted)}#mh-matt #hrOpen{margin-top:1rem} /* same quiet size as the other parts, and air above the button */
+.mh .sec-row{align-items:center;margin-bottom:1rem}.mh .sec-row .sec-head{margin-bottom:0}
 .mh .watch{margin:1.6rem 0 0}
 #hrOpen[hidden],.hr-form[hidden]{display:none}
 .mh .sv-nudge{margin-top:1rem}
@@ -1710,6 +1717,7 @@ html.sheet-lock{overflow:hidden}
 #view{overflow-x:clip} /* a card nudging sideways (svHintX) must never widen the page, not even for a moment */
 @keyframes svHint{0%,100%{transform:none}18%{transform:translateX(26px) rotate(3deg)}36%{transform:none}54%{transform:translateX(-26px) rotate(-3deg)}72%{transform:none}86%{transform:translateY(-22px)}}
 .svep-result{max-width:46rem}
+.svep-result > .lead{text-wrap:balance} /* no lone "med." on its own line */
 .sp-grid{display:grid;gap:1.4rem;width:100%;margin-top:.6rem;text-align:left}
 @media (min-width:760px){.sp-grid{grid-template-columns:1.4fr 1fr;align-items:start}}
 .sp-mix{display:grid;gap:.55rem}
@@ -2039,7 +2047,12 @@ body.on-checkout .tools{grid-column:3}
   .svep:not(:has(.svep-result)) .sv-after{display:block;color:var(--muted);margin-top:.9rem}
 }
 /* the key hints only where there is a keyboard and a mouse, not on touch tablets */
-@media (hover:none),(pointer:coarse){.sv-keys,.sv-legend li.sv-tip{display:none}}
+.sv-wrap.compact .sv-prog{display:none} /* the home taster: one progress sign ("1 av 3"), not a bar above it too */
+.sv-ti,.sv-tc{display:none}
+@media (hover:none),(pointer:coarse){.sv-keys,.sv-legend li.sv-tip,.sv-legend kbd{display:none}
+  .sv-legend .sv-ti{flex:none;display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+  .sv-legend .sv-ti svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .sv-legend .sv-tc{display:inline;font-style:normal;color:var(--ink)}}
 
 /* ---------------------------------------------------------------- Svep v8: rooms, together, home taster, nudges */
 .sv-scope{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem}
@@ -2198,6 +2211,8 @@ html[data-no-offers] [data-show=offers],html[data-no-news] [data-show=news]{disp
 .own-look b{display:block;font-weight:600}
 .own-look small{color:var(--muted)}
 .onska .vote-grid{margin-top:0}
+@media (min-width:1000px){.onska .vote-grid{grid-template-columns:repeat(4,minmax(0,1fr))}} /* eight ideas in full rows, not five and three */
+.vote{align-content:start} /* in a row of unequal cards the name stays under the picture, not floating mid-card */
 .idea-list{display:grid;gap:.8rem}
 .idea{display:flex;gap:1rem;align-items:flex-start}
 .idea .chip{flex:none}
@@ -2594,7 +2609,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .quiz .q-max{display:flex;flex-wrap:wrap;gap:1rem 1.2rem;align-items:flex-end}
 .quiz .q-max label{flex:0 1 20rem;min-width:0}
 .quiz .q-max .ctrl-row{margin:0}
-.q-out{scroll-margin-top:calc(var(--nav-h) + 1rem)}
+.q-out{scroll-margin-top:.4rem} /* html's scroll-padding already keeps it clear of the header; both together put the result 170 px down */
 .q-out:empty{display:none}
 .q-out [tabindex="-1"]:focus,#ssOut [tabindex="-1"]:focus{outline:none}
 .imgopts.pick button:focus-visible{outline:none;box-shadow:none}
@@ -2610,7 +2625,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .ss-form .field{display:flex;gap:.5rem}
 .ss-form input{flex:1;min-width:0}
 @media (max-width:640px){.ss-form .field{flex-direction:column}}
-#ssOut{scroll-margin-top:calc(var(--nav-h) + 1rem)}
+#ssOut{scroll-margin-top:.4rem} /* html's scroll-padding already keeps it clear of the header; both together put the result 170 px down */
 .ss-read{color:var(--ink2);margin-bottom:1.6rem}
 @media (max-width:640px){.imgopts.pick{grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}.imgopts.pick button span{font-size:.8rem;overflow-wrap:break-word}}
 /* 7. Stylist: questions to start from, and what to do with an answer */

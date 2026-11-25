@@ -119,7 +119,8 @@ with sync_playwright() as p:
         a = say("A lamp for the living room under 1000 kr" if en else "En lampa till vardagsrummet under 1000 kr")
         ok(a[1] >= 1 and all("lampa" in h and DATA[h]["price"] <= 1000 for h in a[3]), f"{tag} stylist: 'lampa' means lamps only, no candle: {a[3]}")
         a = say("Something green for the hallway under 300 kr" if en else "Något grönt till hallen under 300 kr")
-        ok(a[1] == 0 and ("mirror" not in a[0].lower() if en else "spegel" not in a[0]) and ("549" in a[0]), f"{tag} stylist: green for the hall under 300 kr says plainly what is cheapest, no mirror: {a[0][:120]!r}")
+        # r4: no longer a dead end, the nearest thing comes as a card (549 kr) next to what fits under 300 kr
+        ok(a[1] >= 1 and ("mirror" not in a[0].lower() if en else "spegel" not in a[0]) and ("549" in a[0]), f"{tag} stylist: green for the hall under 300 kr says plainly what is nearest, no mirror: {a[0][:120]!r}")
         a = say("Something green for the hallway" if en else "Något grönt till hallen")
         ok(a[1] >= 1 and all("hall" in DATA[h]["rooms"] for h in a[3]), f"{tag} stylist: only products for the room asked: {a[3]}")
         a = say("How do I make a small hallway feel more organised?" if en else "Hur får jag en liten hall att kännas mer ordnad?")
