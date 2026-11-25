@@ -121,8 +121,11 @@ with sync_playwright() as p:
             pg.evaluate("document.getElementById('svRoomAll').click()"); pg.wait_for_timeout(700)
             ok("/svep/" in pg.url and pg.evaluate("!!document.querySelector('.sheet.open, dialog[open]')"), f"{tag} 'Se dem i ditt rum' without a room asks for a room first")
             pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
-            q0 = pg.evaluate(QTY); pg.evaluate("const x = document.getElementById('svAll'); x.click(); x.click();"); pg.wait_for_timeout(300)
-            ok(pg.evaluate(QTY) - q0 == pg.evaluate("document.querySelectorAll('.sv-liked button').length"), f"{tag} a double tap on 'Lägg alla' adds each thing once")
+            # r5 (D1): add-all leaves what is already in the cart and asks the colour of a thing with several: count the new ones, answer the question once
+            NEW = "[...document.querySelectorAll('.sv-liked [data-sheet]')].map((x) => x.dataset.sheet).filter((h, i, a) => a.indexOf(h) === i && !RQ.shop.cartLines().some((l) => l.product.handle === h)).length"
+            q0, want = pg.evaluate(QTY), pg.evaluate(NEW); pg.evaluate("const x = document.getElementById('svAll'); x.click(); x.click();"); pg.wait_for_timeout(300)
+            if pg.evaluate("!!document.querySelector('.sheet.open #varGo')"): pg.evaluate("document.querySelector('.sheet.open #varGo').click()"); pg.wait_for_timeout(300)
+            ok(pg.evaluate(QTY) - q0 == want, f"{tag} a double tap on 'Lägg alla' adds each thing once")
             h0 = pg.evaluate("history.length"); pg.evaluate("document.getElementById('svMore').click()"); pg.wait_for_timeout(600)
             ok(pg.evaluate("history.length") == h0 and pg.evaluate(COUNT) == "1 av 10", f"{tag} a new round does not add pages to the history")
             finish_round(pg)
@@ -256,8 +259,10 @@ with sync_playwright() as p:
         tab = pg.evaluate("document.querySelector('[data-tab=fav]').textContent")
         ok(pg.evaluate("document.querySelector('h1').textContent.trim()") == "Mina listor" and pg.title() == "Mina listor · RumIQ" and "sparat" in tab.lower() and "Favorit" not in tab, f"{tag} one word for saved things: the lists page under Sparat is 'Mina listor' (v15 r3: the overview page is Sparat) ({pg.title()}, tab '{tab}')")
         q0 = pg.evaluate(QTY)  # the look bought above is still in the cart
+        want = pg.evaluate("RQ.shop.wishlist().filter((p) => !RQ.shop.cartLines().some((l) => l.product.handle === p.handle)).length")  # r5 (D1): what already lies in the cart is not added again
         pg.dblclick("#allCart"); pg.wait_for_timeout(400)
-        ok(pg.evaluate(QTY) - q0 == 5, f"{tag} Sparat: a double click on 'Lägg alla' adds five, not ten ({q0} -> {pg.evaluate(QTY)})")
+        if pg.evaluate("!!document.querySelector('.sheet.open #varGo')"): pg.evaluate("document.querySelector('.sheet.open #varGo').click()"); pg.wait_for_timeout(300)
+        ok(pg.evaluate(QTY) - q0 == want and want >= 4, f"{tag} Sparat: a double click on 'Lägg alla' adds each new thing once ({q0} -> {pg.evaluate(QTY)}, {want} new)")
         go(pg, "onska", 800)
         for t in ("Större krukor", "Fler mattor"):
             pg.fill("#ideaForm [name=title]", t); pg.click("#ideaForm button[type=submit]"); pg.wait_for_timeout(400)
