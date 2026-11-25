@@ -445,12 +445,11 @@
         // drop images that do not exist yet (lazy images never fire an error off screen)
         items().slice(1).forEach((b) => { const t = new Image(); t.onerror = () => { b.remove(); paintDots(); }; t.src = $("img", b).getAttribute("src"); });
         // phones: dots follow the carousel
-        const dots = $("#pgDots", root);
-        const paintDots = () => { const n = $$(".pg-item", grid).length; if (dots.children.length !== n) dots.innerHTML = Array.from({ length: n }, () => "<i></i>").join(""); const i = Math.round(grid.scrollLeft / Math.max(1, grid.clientWidth)); [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i)); };
+        const dots = $("#pgDots", root), sw = $("#lightSw", root);
+        const paintDots = () => { const n = $$(".pg-item", grid).length; if (dots.children.length !== n) dots.innerHTML = Array.from({ length: n }, () => "<i></i>").join(""); const i = Math.round(grid.scrollLeft / Math.max(1, grid.clientWidth)); [...dots.children].forEach((d, k) => d.classList.toggle("on", k === i)); if (sw) sw.classList.toggle("away", i !== 0); };
         grid.addEventListener("scroll", () => requestAnimationFrame(paintDots), { passive: true });
         setTimeout(paintDots, 300); setTimeout(paintDots, 1500);
         // lamps: switch the light on the first image
-        const sw = $("#lightSw", root);
         if (sw) {
           const off = gal.find((g) => g.k === "off"), main = gal.find((g) => g.k === "main");
           const pre = new Image(); pre.onload = () => (sw.hidden = false); pre.src = off.src;
@@ -459,7 +458,6 @@
             sw.setAttribute("aria-pressed", on); $("span", sw).textContent = on ? "Lampan är tänd" : "Lampan är släckt";
             const im = $(".pg-item img", grid); im.style.opacity = 0;
             setTimeout(() => { im.src = on ? main.src : off.src; im.alt = on ? main.alt : off.alt; im.style.opacity = 1; }, 220);
-            grid.scrollTo({ left: 0, behavior: "smooth" });
           });
         }
         $$("[data-v]", $(".pinfo", root)).forEach((b) => b.addEventListener("click", () => {
