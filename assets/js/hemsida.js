@@ -188,7 +188,7 @@
   board.addEventListener("click", (e) => { if (e.target.closest("[data-mb-close]")) mclose(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && board.classList.contains("open")) { e.stopPropagation(); mclose(); } }, true);
   // neat start: a loose grid, larger things first
-  const autoLayout = (items) => { const n = items.length, cols = n <= 1 ? 1 : n <= 4 ? 2 : 3, rows = Math.ceil(n / cols), w = Math.min(30, (cols === 1 ? 40 : cols === 2 ? 26 : 19) * (rows > 2 ? 0.8 : 1));
+  const autoLayout = (items) => { const n = items.length, cols = n <= 1 ? 1 : n <= 4 ? 2 : 3, rows = Math.ceil(n / cols), w = Math.min(28, (cols === 1 ? 34 : cols === 2 ? 20 : 16) * (rows > 2 ? 0.8 : 1)); // tall cut-outs stay inside their cell
     return items.map((it, i) => ({ ...it, x: Math.round((100 / cols) * ((i % cols) + 0.5)), y: Math.round((100 / rows) * (Math.floor(i / cols) + 0.5)), w, z: i })); };
   const tones = () => [...new Set(B.items.map((it) => { const p = RQ.byHandle(it.h); return p && (p.tone[it.v || 0] || p.tone[0]); }).filter(Boolean))].slice(0, 6);
   const mbItems = () => B.items.filter((it) => RQ.byHandle(it.h)).map((it, i) => { const p = RQ.byHandle(it.h); return `<button type="button" class="mb-it${sel === i ? " on" : ""}" data-mb-i="${i}" style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${it.z || 0}" aria-label="${esc(p.name)}" aria-pressed="${sel === i}"><img src="${RQ.cut(p)}" alt="" draggable="false"></button>`; }).join("");
