@@ -2523,7 +2523,9 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .rm-top.has-room .lead{display:none}
   .rm-top.has-room .rm-title{margin:.5rem 0 1rem}
   .rm-top.has-room .rm-title .h1{font-size:var(--t-h1-tool)}
-  .rm-stage{width:min(100%,calc(78vh * var(--ar,1.6)),calc((100svh - var(--nav-h) - 13rem) * var(--ar,1.6)))}
+  .rm-stagewrap{--stage-w:min(100%,calc(78vh * var(--ar,1.6)),calc((100svh - var(--nav-h) - 13rem) * var(--ar,1.6)))}
+  .rm-stage{width:var(--stage-w)}
+  .rm-stagewrap > :not(.rm-stage){width:var(--stage-w);margin-left:calc((100% - var(--stage-w)) / 2)} /* the toolbar and what follows line up with the photo, however wide it is */
 }
 @media (prefers-reduced-motion:reduce){.rm-canvas.glide,.rm-stage.resize,.rm-stage.resize .rm-canvas{transition:none}}
 /* the picker is a drawer that leaves the room in view: under it on a phone, beside it on a computer */
