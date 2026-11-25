@@ -44,7 +44,7 @@ Butiken är en förhandsversion. Produkterna är exempel som visar hur butiken k
 - [Skärbräda ek med handtag](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-skarbrada-ek-med-handtag/): Skär- och serveringsbräda i ek med handtag. 449 kr. Kategori: Kök & matplats.
 - [Förrådsburkar glas & ek, 3‑pack](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-forradsburkar-glas-ek-3-pack/): Tre förvaringsburkar i glas med lock i ek, i tre höjder. 349 kr. Kategori: Kök & matplats.
 - [Pläd ullblandning havre](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-plad-ullblandning-havre/): Mjuk pläd i ullblandning i varm havreton med fransar. Lika fin över sängens fotände som i soffan. 799 kr. Kategori: Sovrum & komfort.
-- [Lin kuddfodral](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-lin-kuddfodral/): Kuddfodral i lin. 249 kr. Kategori: Hem & inredning.
+- [Lin kuddfodral](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-lin-kuddfodral/): Kuddfodral i lin, i havre eller salvia. Ytan blir mjukare för varje tvätt. 249 kr. Kategori: Hem & inredning.
 - [Sand keramikvas](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-sand-keramikvas/): Keramikvas i sandton med smal hals. 399 kr. Kategori: Hem & inredning.
 - [Förvaringslåda filt](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-forvaringslada-filt/): Förvaringslåda i filt för textilier och småsaker. 199 kr. Kategori: Förvaring & organisering.
 - [Flätad förvaringskorg](https://adamkajlindberg-22.github.io/rumiq-storefront/produkt-flatad-forvaringskorg/): Flätad korg för filtar, tidningar eller handdukar. 379 kr. Kategori: Förvaring & organisering.

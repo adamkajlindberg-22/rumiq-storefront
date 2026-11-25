@@ -30,7 +30,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=d6debd17">
+<link rel="stylesheet" href="assets/css/site.min.css?v=95435d03">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -86,9 +86,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <div class="mnav-top"><a class="nav-logo" href="./" aria-label="RumIQ, till startsidan"><img class="logo-day" src="assets/brand/rumiq-grafit-288.webp" alt="RumIQ" width="288" height="72" loading="lazy"><img class="logo-night" src="assets/brand/rumiq-vit-288.webp" alt="" aria-hidden="true" width="288" height="72" loading="lazy"></a><button class="iconbtn close" id="mnavClose" type="button" aria-label="Stäng meny"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="mnav-set"><button type="button" class="lang mnav-lang" translate="no" data-lang-long lang="en">English</button><button type="button" class="mnav-light" data-light-cycle>Ljus: <span data-light-label>Dag</span></button></div>
   <h4>Butik</h4><a href="butik/">Alla produkter</a>
-  <div class="mnav-grid"><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a><a href="kategori-badrum-valmaende/">Badrum & välmående</a><a href="kategori-uteliv/">Uteliv</a><a href="for-dig/">För dig</a><a href="presentkort/">Presentkort</a></div>
-  <h4>Upptäck</h4><a href="looks/">Looks</a><a href="rum/">Handla efter rum</a><a href="svep/">Svep</a><a href="hitta-ratt/">Hitta rätt</a><a href="onska/">Önska</a><a href="magasin/">Magasin</a>
-  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat</a><a href="studio-plus/">Studio Plus</a>
+  <div class="mnav-grid"><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a><a href="kategori-badrum-valmaende/">Badrum & välmående</a><a href="kategori-uteliv/">Uteliv</a><a href="rum/">Handla efter rum</a><a href="presentkort/">Presentkort</a></div>
+  <h4>Upptäck</h4><a href="looks/">Looks</a><a href="for-dig/">För dig</a><a href="svep/">Svep</a><a href="hitta-ratt/">Hitta rätt</a><a href="onska/">Önska</a><a href="magasin/">Magasin</a>
+  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat</a><a href="varukorg/" data-open-cart>Varukorg<span class="badge" data-count="cart"></span></a><a href="studio-plus/">Studio Plus</a>
   <h4>Konto och hjälp</h4>
   <div class="mnav-grid"><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Spåra min beställning</a><a href="frakt/">Frakt & leverans</a><a href="returer/">Returer</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a></div>
 </nav>
@@ -143,7 +143,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <div class="lc-line"><button type="button" data-sheet="skrivbordsorganisator-ek" aria-label="Skrivbordsorganisatör ek"><img src="assets/img/cut/skrivbordsorganisator-ek.webp" alt="" loading="lazy"></button><button type="button" data-sheet="lysa-keramiklampa" aria-label="Lysa keramiklampa"><img src="assets/img/cut/lysa-keramiklampa.webp" alt="" loading="lazy"></button><button type="button" data-sheet="affisch-linje-ekram" aria-label="Affisch Linje med ekram, 50 × 70"><img src="assets/img/cut/affisch-linje-ekram.webp" alt="" loading="lazy"></button><button type="button" data-sheet="forvaringslada-filt" aria-label="Förvaringslåda filt"><img src="assets/img/cut/forvaringslada-filt.webp" alt="" loading="lazy"></button></div>
       <div class="lc-tx"><h3><a href="look-fokus/">Fokus</a></h3><p>Bättre ljus, en fast plats för det som annars sprids ut och något fint att vila blicken på.</p>
         <div class="lc-row" data-lookrow="fokus"><span class="price">4 saker · <s>2&nbsp;387 kr</s></span><button class="btn sm" type="button" data-look-add="fokus" data-lookbtn="fokus">Handla looken · 2&nbsp;148 kr</button></div></div></article></div></div></section>
-      <section class="wrap" style="margin-bottom:4rem"><a class="vtz" href="onska/"><div class="vtz-sw" aria-hidden="true"><img src="assets/img/soon/linneduk-400.webp" alt="" loading="lazy"><img src="assets/img/soon/ljuslykta-400.webp" alt="" loading="lazy"><img src="assets/img/soon/ullmatta-400.webp" alt="" loading="lazy"><img src="assets/img/soon/muggar-400.webp" alt="" loading="lazy"><img src="assets/img/soon/krokar-400.webp" alt="" loading="lazy"></div><div><span class="eyebrow">Önska</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a></section>
+      <section class="wrap"><a class="vtz" href="onska/"><div class="vtz-sw" aria-hidden="true"><img src="assets/img/soon/linneduk-400.webp" alt="" loading="lazy"><img src="assets/img/soon/ljuslykta-400.webp" alt="" loading="lazy"><img src="assets/img/soon/ullmatta-400.webp" alt="" loading="lazy"><img src="assets/img/soon/muggar-400.webp" alt="" loading="lazy"><img src="assets/img/soon/krokar-400.webp" alt="" loading="lazy"></div><div><span class="eyebrow">Önska</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a></section>
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Magasin</h2><p>Korta texter om ljus, material, färg och vardag.</p></div><a class="link" href="magasin/">Alla artiklar</a></div><div class="mag-grid"><a class="mag" href="artikel-vardagsdukning/"><div class="im"><img src="assets/img/mag/vardagsdukning-1200.webp" alt="" loading="lazy"></div><h3>En välkomnande dukning, även en vanlig tisdag</h3><p>Ge plats åt vardagens måltider med en dukning som är lätt att använda och lika lätt att plocka undan.</p><span class="min">1 min läsning</span></a><a class="mag" href="artikel-farger-att-trivas-med/"><div class="im"><img src="assets/img/mag/farger-1200.webp" alt="" loading="lazy"></div><h3>Skapa en färgpalett att trivas med</h3><p>Kombinera välbekanta färger, lite kontrast och det ljus du faktiskt har.</p><span class="min">1 min läsning</span></a><a class="mag" href="artikel-texturer-och-material/"><div class="im"><img src="assets/img/mag/texturer-1200.webp" alt="" loading="lazy"></div><h3>Texturer och material: ge ett enkelt rum personlighet</h3><p>Släta, vävda och mjuka ytor gör ett rum varmare utan att du behöver byta ut allt du har.</p><span class="min">1 min läsning</span></a></div></div></section></main>
 
 <footer class="site">
@@ -188,8 +188,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0c5b682a"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bf7e882d"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
-<script src="assets/js/i18n.min.js?v=0def31f4"></script>
-<script src="assets/js/site.min.js?v=b3128339"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=4243ac09"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=198572a2"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=9910ad2a"></script>
+<script src="assets/js/site.min.js?v=bda62d7e"></script>
 </body>
 </html>
