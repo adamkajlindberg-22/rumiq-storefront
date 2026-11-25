@@ -7,7 +7,9 @@
 (function () {
   const RQ = window.RQ, S = RQ.shop, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc, kr = S.kr;
   const KEY = "rumiq-myroom", SCENE = "rumiq-scene", MODE = "rumiq-roommode";
-  const ls = S.store; // the shop's one typed reader (commerce.js)
+  const ls = S.store;
+  // the size slider is read as a share of its own range ("Storlek 40 %"), not as a bare number like 7.6
+  const sizeText = (sz) => { const a = +sz.min, b = +sz.max, v = +sz.value; sz.setAttribute("aria-valuetext", `Storlek ${b > a ? Math.round(((v - a) / (b - a)) * 100) : 100} %`); }; // the shop's one typed reader (commerce.js)
   let room = ls.get(KEY, null), blobUrl = null, hist = [], lastTag = "", lastAt = 0;
   const emit = (what) => document.dispatchEvent(new CustomEvent("rq-room", { detail: what }));
   // only a picture kept in this browser counts as a room; anything else in the storage is ignored
@@ -592,7 +594,7 @@
           if (!it) return;
           const p = RQ.byHandle(it.h);
           $("#rmSelImg", root).src = RQ.img(p, 600); $("#rmSelName", root).textContent = p.name; $("#rmSelPrice", root).textContent = kr(p.price);
-          $("#rmSelLink", root).href = "#produkt-" + p.handle; { const sz = $("#rmSize", root), [a, b] = span(it.h); sz.min = a.toFixed(1); sz.max = b.toFixed(1); sz.value = it.w;
+          $("#rmSelLink", root).href = "#produkt-" + p.handle; { const sz = $("#rmSize", root), [a, b] = span(it.h); sz.min = a.toFixed(1); sz.max = b.toFixed(1); sz.value = it.w; sizeText(sz);
             $('[data-act="bigger"]', root).setAttribute("aria-disabled", it.w >= b - 0.05); $('[data-act="smaller"]', root).setAttribute("aria-disabled", it.w <= a + 0.05); } $("#rmLight", root).value = it.light;
           $("#rmActOrder", root).textContent = it.back ? "Lägg framför" : "Lägg bakom";
         };
@@ -710,7 +712,7 @@
         const away = (e) => { if (!menu.hidden && !e.target.closest(".rm-morewrap")) openMenu(false); };
         document.addEventListener("pointerdown", away);
         // controls
-        $("#rmSize", root).addEventListener("input", (e) => { if (sel) live(sel, { w: +e.target.value }); });
+        $("#rmSize", root).addEventListener("input", (e) => { sizeText(e.target); if (sel) live(sel, { w: +e.target.value }); });
         $("#rmSize", root).addEventListener("change", (e) => { if (sel) resize(sel, +e.target.value, "size:" + sel); });
         $("#rmLight", root).addEventListener("input", (e) => { if (!sel) return; const im = $(`.rm-item[data-h="${sel}"] img`, wrap); if (im) im.style.filter = lightFilter(+e.target.value); });
         $("#rmLight", root).addEventListener("change", (e) => { if (sel) R.update(sel, { light: +e.target.value }, "light:" + sel); });

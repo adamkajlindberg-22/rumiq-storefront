@@ -457,12 +457,13 @@
         const qty = () => { const n = Math.round(+String(q.value).replace(",", ".")); const v = !isFinite(n) || n < 1 ? 1 : Math.min(MAXQ, n); if (String(v) !== q.value) q.value = v; qNote.textContent = n > MAXQ ? `Max ${MAXQ} per produkt.` : ""; return v; };
         q.addEventListener("change", qty);
         $$("[data-q]", root).forEach((b) => b.addEventListener("click", () => { q.value = (Math.round(+q.value) || 1) + +b.dataset.q; $("#qtySaid", root).textContent = `Antal: ${qty()}`; }));
-        const put = () => { const want = qty(), line = S.cartLines().find((l) => l.id === variant), room = MAXQ - (line ? line.quantity : 0), n = Math.min(want, room);
+        let putDone = false; // set once this page has put the thing in the cart (Gå till kassan must not add it twice)
+        const put = () => { putDone = true; const want = qty(), line = S.cartLines().find((l) => l.id === variant), room = MAXQ - (line ? line.quantity : 0), n = Math.min(want, room);
           if (n < 1) { qNote.textContent = `Du har redan ${MAXQ} i varukorgen. Det är max per produkt.`; return 0; }
           S.addToCart(variant, n); q.value = 1; qNote.textContent = n < want ? `Max ${MAXQ} per produkt. Vi lade till ${n}.` : ""; return n; };
         const add = (btn) => { if (btn.classList.contains("done")) return; if (put()) RQ.confirmAdd(btn, p.name); };
         $("#add", root).addEventListener("click", (e) => add(e.currentTarget)); $("#add2", root).addEventListener("click", (e) => add(e.currentTarget));
-        $("#buyNow", root).addEventListener("click", () => { put(); location.hash = "#kassa"; });
+        $("#buyNow", root).addEventListener("click", () => { if (!putDone) put(); location.hash = "#kassa"; }); // already added on this page: go, do not add it again
         /* share: the phone's own share sheet where there is one, otherwise the address is copied */
         $("#shareBtn", root).addEventListener("click", async () => {
           const url = location.href.split("#")[0], data = { title: p.name, text: `${p.name} från RumIQ`, url };

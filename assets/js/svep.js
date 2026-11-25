@@ -245,7 +245,7 @@
     if (cfg.keys) addEventListener("keydown", key);
     if (cfg.finished) finish(); else paint();
     // with a keyboard and a mouse the round starts in the deck, so the arrows work at once (not on touch screens, where it would only draw a ring)
-    if (cfg.keys && !st.over && matchMedia("(hover:hover) and (pointer:fine)").matches && !RQ.sheet.isOpen()) { deckEl.focus({ preventScroll: true }); auto = true; }
+    if (cfg.keys && !st.over && matchMedia("(hover:hover) and (pointer:fine)").matches && !RQ.sheet.isOpen()) { deckEl.focus({ preventScroll: true, focusVisible: false }); auto = true; }
     return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", pup); removeEventListener("pointercancel", cancel); removeEventListener("keydown", key); };
   }
 

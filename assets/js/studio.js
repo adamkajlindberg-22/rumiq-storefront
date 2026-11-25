@@ -151,7 +151,7 @@
   // questions about buying, not about decorating: the answer is the shop's own fixed facts (config.js) and the page, never products
   const helpFacts = {
     frakt: () => { const F = RQ.facts || {}; return [F.minDays ? `Målet är ${F.minDays}–${F.maxDays} arbetsdagar. Varje produktsida visar vilka datum paketet beräknas komma.` : "Leveranstiden visas innan du betalar.", `Hämta hos ombud eller i paketskåp kostar ${F.pickup} kr och hemleverans ${F.home} kr.${F.freeFrom ? ` Handlar du för ${F.freeFrom} kr eller mer är frakten till ombud och paketskåp fri.` : ""} Du ser fraktkostnaden i kassan innan du betalar.`]; },
-    returer: () => [S.returnsLine(), "Så gör du steg för steg:"],
+    returer: () => [S.returnsLine(), "Hur du gör, steg för steg, står här:"],
     betalning: () => { const m = ((window.RQ_CONFIG || {}).payments || []); return [m.length ? `Du kan betala med ${m.join(", ")}.` : "Vilka betalsätt som finns ser du i kassan innan du betalar.", "Betalningen sker i Shopifys kassa. Vi ser eller sparar aldrig dina fullständiga kortuppgifter."]; },
     spara: () => ["Med ordernumret och din e-post ser du var beställningen är."],
     kontakt: () => ["Det där hjälper kundservice dig bäst med. Skriv till oss så svarar vi så snart vi kan."],

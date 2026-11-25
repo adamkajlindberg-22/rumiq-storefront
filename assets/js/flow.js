@@ -384,7 +384,7 @@
     if (!miss.length) { RQ.toast(`${esc(label)} <span>ligger redan i varukorgen.</span> <a href="#" data-open-cart>Visa</a>`); return []; }
     // a ready-made look: the whole look is now in the cart, and what it saves (not "1 produkt", which reads as if only one thing were there)
     const off = look ? lookTotal(look) - lookNet(look) : 0;
-    const said = look ? `<span>${esc(look.name)}</span> <span>ligger i varukorgen.</span>${off ? ` <span>Du sparar</span> ${kr(off)}.` : ""}` : "";
+    const said = look ? `<span><span>${esc(look.name)}</span> <span>ligger i varukorgen.</span>${off ? ` <span>Du sparar</span> ${kr(off)}.` : ""}</span>` : ""; // one outer span: the toast is a flex row
     return addMany(miss, btn, label, said) ? miss : [];
   };
   // a ready-made look whose things these are (a saved look keeps its discount and its name)
