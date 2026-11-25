@@ -80,6 +80,10 @@ def quiet(pg):
     pg.evaluate("document.querySelectorAll('.toast').forEach((t) => t.classList.remove('show'))")
 
 
+def touch(cdp, typ, pts):
+    cdp.send("Input.dispatchTouchEvent", {"type": typ, "touchPoints": [{"x": x, "y": y, "id": i} for i, (x, y) in enumerate(pts)]})
+
+
 def put(pg, name, data, mime="image/jpeg"):
     pg.set_input_files(FILE, {"name": name, "mimeType": mime, "buffer": data})
 
@@ -237,6 +241,84 @@ with sync_playwright() as p:
     pg.evaluate("document.querySelector('[data-pick=flatad-forvaringskorg]').click()"); pg.wait_for_timeout(400)
     ok(pg.evaluate("document.getElementById('rmOn2').value") == "bord", "[on own] and it is remembered")
     c.close()
+
+    # ------------------------------------------------------------ 2. real size: "Känd längd i bilden", true scale, perspective, honest otherwise
+    data = (ROOT / "assets/js/data.js").read_text()
+    sized = re.findall(r'handle: "([a-z0-9-]+)"[^{]*?(?:\{[^}]*\}[^{]*?)*?size: \{ w: (\d+), (?:h|d): (\d+) \}', data)
+    PRODS = {h: (w, x) for h, w, x in sized}
+    ok(set(PRODS) == {"affisch-linje-ekram", "affisch-horisont-ekram", "strand-jutematta", "dagsljus-linnegardin-2-pack"}, f"[real] only products whose text states their measurements have them: {sorted(PRODS)}")
+    for W, Hh, mob in ((1440, 900, False), (1280, 720, False), (390, 844, True), (360, 740, True)):
+        tag = f"[real {W}]"
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c); cdp = c.new_cdp_session(pg) if mob else None
+        pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate(SAMPLE, "vardagsrum")
+        pg.evaluate("['lysa-keramiklampa', 'strand-jutematta', 'affisch-linje-ekram'].forEach((h) => RQ.room.add(h, true)); location.hash = '#mitt-rum'; RQ.router()"); pg.wait_for_timeout(1400); quiet(pg)
+        lamp0, rug0 = pg.evaluate(SPOT, "lysa-keramiklampa"), pg.evaluate(SPOT, "strand-jutematta")
+        ok(pg.evaluate("document.getElementById('rmScale').textContent").startswith("Storleken är ungefärlig."), f"{tag} without a known length: Storleken är ungefärlig")
+        pg.evaluate("document.querySelector('[data-pick=lysa-keramiklampa]').click()"); pg.wait_for_timeout(300)
+        ok(pg.evaluate("document.getElementById('rmReal').textContent") == "Storleken är ungefärlig.", f"{tag} a product without measurements says its size is approximate")
+        pg.evaluate("document.querySelector('[data-pick=affisch-linje-ekram]').click()"); pg.wait_for_timeout(300)
+        ok(pg.evaluate("document.getElementById('rmReal').textContent") == "50 × 70 cm. Visa i rätt skala", f"{tag} a print shows its stated 50 × 70 cm and offers true scale")
+        pg.evaluate("document.querySelector('#rmScale [data-measure]').click()"); pg.wait_for_timeout(600)
+        ok(pg.evaluate("!document.getElementById('rmRuler').hidden && !document.getElementById('rmMeasure').hidden && document.getElementById('rmStage').classList.contains('measuring')"), f"{tag} Känd längd i bilden: a line to drag and a length to type")
+        ok(pg.evaluate("document.getElementById('rmLen').value") == "200" and "dörr" in pg.evaluate("document.getElementById('rmRHint').textContent"), f"{tag} a door, about 200 cm, is the suggested example")
+        cv = pg.evaluate("(() => { const r = document.getElementById('rmCanvas').getBoundingClientRect(), s = document.getElementById('rmStage').getBoundingClientRect(); return [r.left, r.top, r.width, r.height, s.left, s.width]; })()")
+        x = max(cv[4] + 40, min(cv[4] + cv[5] - 40, cv[0] + cv[2] * 0.4)); ya, yb = cv[1] + cv[3] * 0.3, cv[1] + cv[3] * 0.82
+        if mob:
+            touch(cdp, "touchStart", [(x, ya)]); pg.wait_for_timeout(40)
+            for i in range(1, 9):
+                touch(cdp, "touchMove", [(x, ya + (yb - ya) * i / 8)]); pg.wait_for_timeout(16)
+            touch(cdp, "touchEnd", []); pg.wait_for_timeout(200)
+        else:
+            pg.mouse.move(x, ya); pg.mouse.down(); pg.mouse.move(x, yb, steps=8); pg.mouse.up(); pg.wait_for_timeout(200)
+        m = pg.evaluate("(() => { const l = document.querySelector('#rmRuler line'); return ['x1','y1','x2','y2'].map((k) => +l.getAttribute(k)); })()")
+        ok(abs(m[1] - 30) < 1 and abs(m[3] - 82) < 1 and abs(m[0] - m[2]) < 0.5, f"{tag} the line follows the {'finger' if mob else 'mouse'}: {m}")
+        pg.fill("#rmLen", "200"); pg.click("#rmMDone"); pg.wait_for_timeout(700)
+        K = pg.evaluate("RQ.room.get().known"); sc = {it["h"]: it for it in pg.evaluate("RQ.room.scene()")}
+        k0 = ((K["x2"] - K["x1"]) ** 2 + ((K["y2"] - K["y1"]) * 893 / 1600) ** 2) ** 0.5 / 200
+        ok(K and K["cm"] == 200 and abs(K["y2"] - 82) < 1, f"{tag} the length is kept with the photo: {K}")
+        ok(sc["affisch-linje-ekram"].get("real") and abs(sc["affisch-linje-ekram"]["w"] - 70 * k0 / 1.3) < 0.15, f"{tag} the print is drawn at 70 cm high on the wall at the line's scale: {sc['affisch-linje-ekram']['w']} vs {70 * k0 / 1.3:.2f}")
+        hz, d0 = 58, K["y2"] - 58
+        ok(sc["strand-jutematta"].get("real") and abs(sc["strand-jutematta"]["w"] - min(96, 230 * k0 * max(0.3, min(3, (rug0[1] - hz) / d0)))) < 0.15, f"{tag} the rug, 230 cm across, with perspective at its place: {sc['strand-jutematta']['w']}")
+        ok(not sc["lysa-keramiklampa"].get("real") and pg.evaluate(SPOT, "lysa-keramiklampa") == lamp0, f"{tag} a product without measurements keeps its approximate size")
+        ok("rätt skala" in pg.evaluate("document.getElementById('rmScale').textContent") and "200 cm" in pg.evaluate("document.getElementById('rmScale').textContent"), f"{tag} the caption says which sizes are true and which approximate")
+        ok("i rätt skala" in pg.evaluate("document.querySelector('.toast.show') ? document.querySelector('.toast.show').innerText : ''"), f"{tag} and a toast names what is now at true scale")
+        # perspective: the rug moved further away gets smaller, in proportion to its distance below the horizon; the print on the wall does not
+        pg.evaluate("RQ.room.update('strand-jutematta', { y: 80 }); RQ.room.update('affisch-linje-ekram', { y: 40 })"); pg.wait_for_timeout(300)
+        rw, pw = pg.evaluate(SPOT, "strand-jutematta")[2], pg.evaluate(SPOT, "affisch-linje-ekram")[2]
+        ok(abs(rw - 230 * k0 * (80 - hz) / d0) < 0.15 and rw < sc["strand-jutematta"]["w"], f"{tag} further back on the floor, smaller: {rw}")
+        ok(abs(pw - sc["affisch-linje-ekram"]["w"]) < 0.05, f"{tag} higher on the wall, the same size: {pw}")
+        # selected: the floor it covers, dashed, and its measurements
+        pg.evaluate("document.querySelector('[data-pick=strand-jutematta]').click()"); pg.wait_for_timeout(400)
+        pts = pg.evaluate("document.querySelector('#rmArea polygon').getAttribute('points')").split()
+        ok(len(pts) == 4 and pg.evaluate("!document.getElementById('rmAreaLab').hidden && document.getElementById('rmAreaLab').textContent") == "160 × 230 cm", f"{tag} the rug's floor area is outlined with its measurements: {pts}")
+        ok(pg.evaluate("getComputedStyle(document.querySelector('#rmArea polygon')).strokeDasharray") not in ("none", ""), f"{tag} dashed")
+        # a size of your own leaves true scale, and one tap brings it back
+        tw = pg.evaluate(SPOT, "strand-jutematta")[2]
+        pg.evaluate("document.querySelector('[data-act=smaller]').click()" if mob else "document.querySelector('[data-act=smaller]').click()"); pg.wait_for_timeout(300)
+        ok(not pg.evaluate("RQ.room.scene().find((i) => i.h === 'strand-jutematta').real") and "Rätt storlek" in pg.evaluate("document.getElementById('rmReal').textContent"), f"{tag} made smaller by hand: no longer said to be true scale, Rätt storlek offered")
+        ok(pg.evaluate("document.getElementById('rmAreaLab').hidden"), f"{tag} and the measurements are not shown on it")
+        pg.evaluate("document.querySelector('#rmReal [data-real]').click()"); pg.wait_for_timeout(300)
+        ok(abs(pg.evaluate(SPOT, "strand-jutematta")[2] - tw) < 0.05, f"{tag} Rätt storlek brings the true size back")
+        # a measured product put in afterwards starts at true scale
+        pg.evaluate("RQ.room.add('affisch-horisont-ekram', true)"); pg.wait_for_timeout(300)
+        it = pg.evaluate("RQ.room.scene().find((i) => i.h === 'affisch-horisont-ekram')")
+        ok(it.get("real") and abs(it["w"] - 70 * k0 / 1.3) < 0.15, f"{tag} a print put in afterwards is at true scale at once: {it['w']}")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
+        if W == 1440:
+            # it is remembered with the photo; the keys move the line's ends; Escape leaves; Ta bort brings approximate sizes back
+            pg.reload(); pg.wait_for_timeout(1200)
+            ok(pg.evaluate("RQ.room.get().known.cm") == 200 and pg.evaluate("RQ.room.scene().find((i) => i.h === 'strand-jutematta').real"), f"{tag} the length and the true scale stay after a reload")
+            pg.focus("#rmMore"); pg.keyboard.press("Enter"); pg.wait_for_timeout(200)
+            pg.evaluate("document.querySelector('#rmMenu [data-measure]').focus()"); pg.keyboard.press("Enter"); pg.wait_for_timeout(300)
+            ok(pg.evaluate("document.activeElement.classList.contains('rm-rh')"), f"{tag} opened with the keyboard, the focus is on the line's end")
+            y0 = pg.evaluate("+document.querySelector('#rmRuler line').getAttribute('y1')"); pg.keyboard.press("ArrowUp"); pg.keyboard.press("ArrowUp")
+            ok(abs(pg.evaluate("+document.querySelector('#rmRuler line').getAttribute('y1')") - (y0 - 1)) < 0.01, f"{tag} the arrow keys move it")
+            pg.keyboard.press("Escape"); pg.wait_for_timeout(200)
+            ok(pg.evaluate("document.getElementById('rmRuler').hidden && RQ.room.get().known.y1") == K["y1"], f"{tag} Escape leaves without changing the length")
+            pg.evaluate("document.querySelector('#rmScale [data-measure]').click()"); pg.wait_for_timeout(300)
+            pg.click("#rmMOff"); pg.wait_for_timeout(400)
+            ok(not pg.evaluate("RQ.room.get().known") and not any(i.get("real") for i in pg.evaluate("RQ.room.scene()")) and pg.evaluate("document.getElementById('rmScale').textContent").startswith("Storleken är ungefärlig."), f"{tag} Ta bort: the sizes are approximate again, and said so")
+        c.close()
 
     b.close()
 

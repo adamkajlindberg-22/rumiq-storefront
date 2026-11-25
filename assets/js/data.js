@@ -61,6 +61,10 @@
   RQ.CARE = CARE;
 
   // styles: skandinavisk, minimalistisk, klassisk, mjuk ; needs: forvaring, ljus, detaljer, rutiner
+  // size: measurements in cm (w × h, or w × d for something lying flat), used by Mitt rum to draw a product at true scale.
+  // EXAMPLE DATA like the products themselves, and only where the product's own text states the measurements (a print's
+  // 50 × 70, the rug's 160 × 230, a curtain length's 140 × 250). Nothing is guessed: a product without it is drawn at an
+  // approximate size and Mitt rum says so. The product page keeps saying the measurements are confirmed later.
   // gift: van, familj, vard ; tone: hex colours used by Mix & match and the style tools
   RQ.PRODUCTS = [
     { handle: "glob-bordslampa-opalglas", name: "Glob bordslampa opalglas", en: "Glob table lamp, opal glass", price: 899, cat: "belysning-atmosfar",
@@ -164,7 +168,7 @@
       short: "Två halvtransparenta gardinlängder i tvättat lin, 140 × 250 cm. Släpper in ljuset men tar bort skärpan.",
       story: "Linnegardiner är det snabbaste sättet att göra ett rum mjukare. De filtrerar dagsljuset så att det sprider sig, och de skrynkliga vecken gör att de ser lika bra ut slarvigt dragna som perfekt hängda.",
       use: ["Häng dem högt, nära taket, så ser fönstret större ut.", "Låt dem gå ända ner till golvet eller någon centimeter ovanför.", "Två längder per fönster ger fina, fylliga veck."],
-      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 20 },
+      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 20, size: { w: 140, h: 250 } },
     { handle: "vila-paslakanset-linne", name: "Vila påslakanset linne", en: "Vila linen duvet set", price: 1290, cat: "sovrum-komfort",
       rooms: ["sovrum"], material: "Tvättat lin", care: ["lin"], variants: ["Havre", "Vit", "Salvia"], tone: ["#D8C6A8", "#EFE6D6", "#A9B39A"], styles: ["skandinavisk", "mjuk", "klassisk"], needs: ["detaljer", "rutiner"], gift: ["familj"], occ: ["inflyttning", "jul"],
       short: "Påslakan 150 × 210 cm och örngott 50 × 60 cm i tvättat lin. Andas, värmer lagom och blir mjukare för varje tvätt.",
@@ -176,19 +180,19 @@
       short: "Handvävd matta i naturlig jute, 160 × 230 cm. Ger golvet värme och struktur.",
       story: "En matta binder ihop möblerna till en plats. Jute har en grov, varm struktur som passar mot ljust trä och linne, och den naturliga färgen tål vardagen utan att se sliten ut.",
       use: ["Låt soffans framben stå på mattan så hänger rummet ihop.", "Lägg en halkskyddsmatta under på hala golv.", "Jute trivs bäst i torra rum, inte i badrum eller kök."],
-      collections: ["skandinaviskt-hemmaliv"], added: 22 },
+      collections: ["skandinaviskt-hemmaliv"], added: 22, size: { w: 160, d: 230 } },
     { handle: "affisch-linje-ekram", name: "Affisch Linje med ekram, 50 × 70", en: "Linje print with oak frame, 50 × 70", price: 549, cat: "tavlor-vaggar",
       rooms: ["vardagsrum", "hemmakontor", "hall"], material: "Tryck på matt papper, ram i ek med passepartout", care: ["papper", "ek"], tone: ["#EFE8DA", "#B8714A"], styles: ["minimalistisk", "skandinavisk"], needs: ["detaljer"], gift: ["van"], occ: ["inflyttning", "fodelsedag"], wall: true,
       short: "Grafiskt motiv med en sol i terrakotta och en fri linje, i ram av ek. Tryckt i Sverige.",
       story: "En enda linje och en sol. Motivet är tillräckligt enkelt för att passa nästan var som helst och tillräckligt varmt för att ge en tom vägg liv. Ramen i ek knyter an till resten av rummet.",
       use: ["Häng tavlan så att mitten hamnar i ögonhöjd, ungefär 150 cm från golvet.", "Ovanför en byrå eller soffa: låt tavlan vara ungefär två tredjedelar så bred som möbeln.", "Ställ den lutad mot väggen på en hylla för ett mer avslappnat uttryck."],
-      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 23 },
+      collections: ["skandinaviskt-hemmaliv"], featured: true, added: 23, size: { w: 50, h: 70 } },
     { handle: "affisch-horisont-ekram", name: "Affisch Horisont med ekram, 50 × 70", en: "Horisont print with oak frame, 50 × 70", price: 549, cat: "tavlor-vaggar",
       rooms: ["vardagsrum", "sovrum", "hall"], material: "Tryck på matt papper, ram i ek med passepartout", care: ["papper", "ek"], tone: ["#D6C2A2", "#A9B39A"], styles: ["skandinavisk", "mjuk", "klassisk"], needs: ["detaljer"], gift: ["van", "familj"], occ: ["inflyttning", "fodelsedag"], wall: true,
       short: "Bågar i havre, sand, salvia och terrakotta över en horisont, i ram av ek. Tryckt i Sverige.",
       story: "Färgerna är hämtade från resten av sortimentet, så tavlan passar ihop med plädarna, lampan och krukan. Bågarna ger ett lugnt, nästan solnedgångslikt intryck.",
       use: ["Häng den där du vill att blicken ska vila, till exempel mitt emot sängen.", "Två tavlor bredvid varandra: håll 5–8 cm mellanrum.", "Passar med Linje om du vill bygga en liten tavelvägg."],
-      collections: ["skandinaviskt-hemmaliv"], added: 24 },
+      collections: ["skandinaviskt-hemmaliv"], added: 24, size: { w: 50, h: 70 } },
   ];
 
   RQ.COLLECTIONS = [

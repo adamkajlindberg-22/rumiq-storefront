@@ -1270,6 +1270,34 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-on1{font-weight:600;color:var(--ink);font-size:.9rem}
 .rm-onrow{margin-top:.5rem}
 .rm-acth{display:none}
+/* Känd längd i bilden: the line you draw, its two ends, its length; the things fade back while you draw */
+.rm-stage.measuring .rm-items{opacity:.35;pointer-events:none;transition:opacity .25s}
+.rm-stage.measuring :is(.rm-hold,.rm-undo,.rm-nightchip,.rm-first,.rm-emptyhint),.rm-stagewrap.measuring :is(.rm-tools,.rm-act,.rm-ask){display:none}
+.rm-stage.measuring{touch-action:none;cursor:crosshair}
+.rm-ruler{position:absolute;inset:0;z-index:180}
+.rm-ruler[hidden]{display:none}
+.rm-ruler svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.rm-ruler line{stroke:#fff;stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+.rm-rh{position:absolute;width:2.75rem;height:2.75rem;margin:-1.375rem 0 0 -1.375rem;padding:0;border:0;border-radius:50%;background:transparent;touch-action:none;cursor:grab}
+.rm-rh::after{content:"";position:absolute;inset:.75rem;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--accent),0 2px 6px rgba(0,0,0,.4)}
+.rm-rh:active{cursor:grabbing}
+.rm-rlab,.rm-arealab{position:absolute;transform:translate(.9rem,-50%);padding:.25rem .6rem;border-radius:999px;background:rgba(34,37,42,.84);color:#fff;font-size:.82rem;font-weight:600;white-space:nowrap;pointer-events:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.rm-rhint{position:absolute;left:50%;top:.8rem;z-index:6;width:max-content;text-wrap:balance;max-width:calc(100% - 1.6rem);margin:0;transform:translateX(-50%);padding:.5rem .95rem;border-radius:999px;background:rgba(34,37,42,.84);color:#fff;font-size:.86rem;font-weight:600;line-height:1.3;text-align:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.rm-rhint[hidden],.rm-arealab[hidden],.rm-measure[hidden]{display:none}
+.rm-measure{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.7rem 1rem;margin-top:.8rem;padding:.75rem .9rem;border:1px solid var(--line2);border-radius:var(--r);background:var(--paper)}
+.rm-len{display:flex;align-items:center;gap:.5rem;font-weight:600}
+.rm-len input{width:5.2rem;height:var(--field-h-s);padding:0 .7rem;border:1px solid var(--field);border-radius:var(--r-s);background:var(--paper);color:var(--ink);font:inherit;font-size:1rem;text-align:right}
+.rm-mbtns{display:flex;gap:.5rem;margin-left:auto}
+.rm-mbtns .btn{min-height:var(--field-h-s)}
+/* the selected thing at true scale: the floor a rug covers, dashed, and its measurements */
+.rm-area{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:150}
+.rm-area polygon{fill:rgba(255,255,255,.1);stroke:#fff;stroke-width:2;stroke-dasharray:7 5;vector-effect:non-scaling-stroke;filter:drop-shadow(0 1px 1px rgba(0,0,0,.45))}
+.rm-arealab{z-index:151;transform:translate(-50%,-50%)}
+.rm-arealab.under{transform:translate(-50%,.4rem)}
+.rm-stage.before .rm-area,.rm-stage.before .rm-arealab{display:none}
+.rm-real{margin-top:.6rem;color:var(--muted)}
+#rmScale{display:block}
+.rm-real:empty{display:none}
 .rm-move div{display:flex;gap:.4rem}.rm-move .chip{width:2.75rem;height:2.75rem;padding:0;justify-content:center;font-size:1.05rem}
 .rm-sel-a .chip svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .rm-listhead{display:flex;justify-content:space-between;align-items:baseline}
@@ -2566,6 +2594,10 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .rm-acth .rm-on{flex:none;gap:.4rem;color:var(--muted)}
   .rm-acth .rm-on select{min-height:2.5rem}
   .rm-ask{margin-left:var(--gutter);margin-right:var(--gutter)}
+  .rm-measure{margin-left:var(--gutter);margin-right:var(--gutter);flex-wrap:nowrap;gap:.5rem;padding:.6rem .7rem}
+  .rm-len input{width:4.6rem}
+  .rm-mbtns{gap:.4rem}
+  .rm-mbtns .btn{padding-left:.8rem;padding-right:.8rem}
   .rm-stagewrap .rm-more{margin:1rem 0 0;padding:0 var(--gutter)}
 }
 /* a computer with a room: a short heading, so the room and its toolbar fit the first screen (1280 x 720 too) */
