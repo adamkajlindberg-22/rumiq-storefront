@@ -68,8 +68,8 @@
     const cx = (side - tw) / 2, bottomY = H - toastLift() - m - 2 - th;
     const spots = [[cx, bottomY]];
     if (panel && side === W && panel.top > th * 0.6) spots.push([cx, Math.max(6, Math.min((panel.top - th) / 2, panel.top - th - 6))]); // above a sheet from below, over the dimmed page
+    if (W >= 1100) spots.push([24, bottomY], [side - tw - 24, bottomY]); // a wide screen: a bottom corner before the top
     if (!panel) spots.push([cx, navB + m]);
-    if (W >= 1100) spots.push([24, bottomY], [side - tw - 24, bottomY]);
     const hits = ([x, y]) => { let n = 0;
       for (const fx of [0.06, 0.5, 0.94]) for (const fy of [0.15, 0.85]) {
         const py = y + th * fy, el = (document.elementsFromPoint(x + tw * fx, py) || []).find((e) => e !== t && !t.contains(e));
