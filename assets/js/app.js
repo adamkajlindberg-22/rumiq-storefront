@@ -1062,7 +1062,11 @@
     const t = e.target.closest("[data-wish],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-undo-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
     if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
-    if (t.matches("[data-add]")) { S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
+    if (t.matches("[data-add]")) {
+      // a card's + on a product with several colours asks which colour (in the quick view), as Mitt rum does, instead of choosing one
+      const qp = t.classList.contains("qadd") && RQ.byHandle(t.dataset.add.split("::")[0]);
+      if (qp && qp.variants && qp.variants.length > 1 && RQ.sheet) { RQ.sheet.open(qp.handle, { from: t, ask: true }); return; }
+      S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
     if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }
     if (t.matches("[data-q]") && t.closest("#searchRes")) { sInput.value = t.dataset.q; doSearch(); return; }

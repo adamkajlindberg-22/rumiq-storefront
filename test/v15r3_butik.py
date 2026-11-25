@@ -175,6 +175,27 @@ with sync_playwright() as p:
         ok(pg.evaluate(C)["vardagsrum"][0] == want, f"{tag} the counts still follow the filter after Back")
         ctx.close()
 
+    # D18: + on a card of a product with several colours asks for the colour; nothing is put in the cart before that
+    for W, Hh, mobile in ((390, 844, True), (1440, 900, False)):
+        tag = f"[colour {W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(300)
+        sel = "#results [data-add='lin-kuddfodral::0']"
+        pg.evaluate(f"document.querySelector(\"{sel}\").scrollIntoView({{block:'center'}})"); pg.wait_for_timeout(200)
+        if mobile:
+            pg.tap(sel)
+        else:
+            pg.hover("#results .card:has([data-add='lin-kuddfodral::0'])"); pg.wait_for_timeout(300); pg.click(sel)
+        pg.wait_for_timeout(500)
+        got = pg.evaluate("[document.getElementById('sheet').classList.contains('open'), [...document.querySelectorAll('#sheet [data-shv]')].map((x) => x.getAttribute('aria-checked')), localStorage.getItem('rumiq-cart'), (document.getElementById('shAsk') || {}).textContent]")
+        ok(got[0] and got[1] == ["false", "false"] and got[2] in (None, "[]") and got[3] == "Vilken färg vill du ha?", f"{tag} + asks which colour, nothing chosen for you: {got}")
+        pg.click("#shAdd"); pg.wait_for_timeout(200)
+        ok(pg.evaluate("[document.getElementById('shAsk').textContent, document.activeElement.dataset.shv, localStorage.getItem('rumiq-cart')]") in (["Välj en färg först.", "0", None], ["Välj en färg först.", "0", "[]"]), f"{tag} Lägg i varukorgen without a colour says so and goes to the colours")
+        pg.click("#sheet [data-shv='1']"); pg.click("#shAdd"); pg.wait_for_timeout(400)
+        ok(pg.evaluate("JSON.parse(localStorage.getItem('rumiq-cart'))") == [{"v": "lin-kuddfodral::1", "q": 1}], f"{tag} the chosen colour is what lands in the cart")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"

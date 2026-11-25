@@ -1355,6 +1355,8 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .sh-price{font-size:1.2rem;font-weight:560;font-variant-numeric:tabular-nums}
 .sh-short{color:var(--ink2);max-width:34rem}
 .sh-v{display:flex;gap:.4rem;flex-wrap:wrap}
+.sh-ask{margin:0 0 .5rem;font-weight:600;color:var(--ink)}
+.sh-ask.need{color:var(--danger)}
 .sh-act{display:flex;gap:.5rem;align-items:center;margin-top:.3rem}
 .sh-act .btn{flex:1}
 .sh-fav{border:1px solid var(--line);width:3.25rem;height:3.25rem}

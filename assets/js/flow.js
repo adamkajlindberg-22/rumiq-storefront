@@ -138,7 +138,8 @@
   const sIn = $(".sheet-in", sheetEl), sBody = $(".sheet-body", sheetEl);
   let sOpen = false, sReturn = null;
 
-  const sheetHtml = (p) => {
+  /* ask: opened from a card's + on a product with several colours, so the colour is asked for (as Mitt rum does), not picked for you */
+  const sheetHtml = (p, ask) => {
     const cat = RQ.catById(p.cat), vs = p.variants || [];
     return `<figure class="sh-img"><img src="${RQ.img(p, 900)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(min-width:900px) 30rem, 100vw" alt="${esc(p.name)}"></figure>
       <div class="sh-tx">
@@ -146,9 +147,9 @@
         <h2 id="shTitle">${esc(p.name)}</h2>
         <p class="sh-price">${kr(p.price)}</p>
         <p class="sh-short">${esc(p.short)}</p>
-        ${vs.length ? `<div class="sh-v" role="radiogroup" aria-label="Variant">${vs.map((v, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === 0}" data-shv="${i}">${esc(v)}</button>`).join("")}</div>` : ""}
+        ${vs.length ? `${ask ? '<p class="sh-ask" id="shAsk">Vilken färg vill du ha?</p>' : ""}<div class="sh-v" role="radiogroup" aria-label="${ask ? "Vilken färg vill du ha?" : "Variant"}">${vs.map((v, i) => `<button type="button" class="chip" role="radio" aria-checked="${!ask && i === 0}" data-shv="${i}">${esc(v)}</button>`).join("")}</div>` : ""}
         <div class="sh-act">
-          <button class="btn" type="button" id="shAdd" data-add="${p.handle}::0">Lägg i varukorgen</button>
+          <button class="btn" type="button" id="shAdd" data-add="${p.handle}::${ask ? "" : 0}">Lägg i varukorgen</button>
           <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${ICO.heart}</button>
         </div>
         <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i Mitt rum</span></button>
@@ -163,7 +164,7 @@
     open(handle, opts = {}) {
       const p = RQ.byHandle(handle); if (!p) return;
       RQ.closeAll && RQ.closeAll();
-      sBody.innerHTML = sheetHtml(p); sBody.scrollTop = 0; sIn.scrollTop = 0;
+      sBody.innerHTML = sheetHtml(p, opts.ask && p.variants && p.variants.length > 1); sBody.scrollTop = 0; sIn.scrollTop = 0;
       sReturn = opts.from || document.activeElement;
       if (!sOpen) { try { history.pushState({ rqSheet: 1 }, "", location.href); } catch (e) {} }
       sOpen = true;
@@ -190,7 +191,9 @@
   sheetEl.addEventListener("click", (e) => {
     if (e.target.closest("[data-sheet-close]")) { RQ.sheet.close(); return; }
     const v = e.target.closest("[data-shv]");
-    if (v) { $$("[data-shv]", sheetEl).forEach((x) => x.setAttribute("aria-checked", x === v)); const add = $("#shAdd", sheetEl); add.dataset.add = add.dataset.add.split("::")[0] + "::" + v.dataset.shv; return; }
+    if (v) { $$("[data-shv]", sheetEl).forEach((x) => x.setAttribute("aria-checked", x === v)); const add = $("#shAdd", sheetEl); add.dataset.add = add.dataset.add.split("::")[0] + "::" + v.dataset.shv; const q = $("#shAsk", sheetEl); if (q) { q.classList.remove("need"); q.textContent = "Vilken färg vill du ha?"; } return; }
+    const ad = e.target.closest("#shAdd");
+    if (ad && /::$/.test(ad.dataset.add)) { e.stopPropagation(); const q = $("#shAsk", sheetEl); if (q) { q.textContent = "Välj en färg först."; q.classList.add("need"); } const c = $("[data-shv]", sheetEl); if (c) c.focus(); return; }
     const a = e.target.closest("a[href^='#']");
     if (a && a.getAttribute("href").length > 1) { e.preventDefault(); RQ.sheet.close(a.getAttribute("href")); return; }
     if (e.target.closest("[data-room-btn]") && !(RQ.room && RQ.room.has())) RQ.sheet.close();
