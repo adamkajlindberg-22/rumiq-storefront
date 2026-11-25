@@ -1917,6 +1917,7 @@ body.on-home footer.site .news{display:none}
 :root[data-light=kvall] .rm-empty{background-image:none}
 .rm-empty .rh-fig{margin:0}
 @media (max-width:1100px){.rm-empty{grid-template-columns:1fr}.rm-empty .rh-fig{order:-1}.rm-empty .rh-card{left:1rem;right:1rem}}
+@media (min-width:901px) and (max-width:1100px) and (orientation:landscape){.rm-empty{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2rem}.rm-empty .rh-fig{order:0}.rm-empty .bav .rh-card{position:static;margin-top:.7rem;box-shadow:none;border:1px solid var(--line);justify-content:space-between}} /* a landscape tablet: the button beside the picture, on the first screen */
 footer.site .bottom > span:last-child{align-items:center}
 footer.site .bottom .bottom-link{color:var(--muted);text-decoration:underline;text-underline-offset:.2em;font-size:.86rem;line-height:inherit}
 
