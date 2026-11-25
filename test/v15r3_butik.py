@@ -248,6 +248,16 @@ with sync_playwright() as p:
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
         ctx.close()
 
+    # D9: the Mitt rum link in the header has a real name where only its picture and number show
+    for W, Hh, mobile in ((1024, 768, True), (1280, 720, False), (1440, 900, False)):
+        tag = f"[header {W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE, wait_until="load"); pg.evaluate(SAMPLE, "vardagsrum"); pg.evaluate("RQ.room.add('sand-keramikvas', true)"); pg.wait_for_timeout(300)
+        pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(300)
+        got = pg.evaluate("(() => { const p = document.querySelector('.roompill'), n = +p.querySelector('.badge').textContent; return [p.getAttribute('aria-label'), n, p.textContent.replace(/\\s+/g, ' ').trim()]; })()")
+        ok(got[0] == f"Mitt rum, {got[1]} {'sak' if got[1] == 1 else 'saker'} i rummet" and "Mitt rum" in got[2], f"{tag} the header's Mitt rum link is named: {got}")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"

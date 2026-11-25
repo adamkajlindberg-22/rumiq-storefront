@@ -1091,7 +1091,11 @@
     $$(".menu > li > a, .menu > li > button").forEach((el, i) => { const on = !!hit && hit[1] === i; el.classList.toggle("active", on); if (el.tagName === "A") { if (on) el.setAttribute("aria-current", "page"); else el.removeAttribute("aria-current"); } });
     $$(".tools > a[aria-label], .tools > button[aria-label], #lampBtn").forEach((el) => { const t = el.getAttribute("aria-label"); if (el.title !== t) el.title = t; });
     const rp = $(".roompill"); if (rp && !rp.title) rp.title = "Mitt rum";
+    pillName();
   };
+  // the Mitt rum link says what its number is ("Mitt rum, 4 saker i rummet"), also where only the picture and the number show
+  const pillName = () => { const rp = $(".roompill"), n = rp ? +($(".badge", rp) || {}).textContent || 0 : 0; if (rp) rp.setAttribute("aria-label", n ? `Mitt rum, ${n} ${n === 1 ? "sak" : "saker"} i rummet` : "Mitt rum"); };
+  if (window.MutationObserver && $(".roompill .badge")) new MutationObserver(pillName).observe($(".roompill .badge"), { childList: true, characterData: true, subtree: true });
   RQ.navMark = navMark;
   if (window.MutationObserver) new MutationObserver(navMark).observe($("#view"), { childList: true });
   document.addEventListener("DOMContentLoaded", navMark);

@@ -1256,7 +1256,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rh-card > span span{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums}
 
 @media (max-width:1100px){
-  .roompill span:not(.rp-img):not(.badge){display:none}
+  .roompill span:not(.rp-img):not(.badge){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap} /* hidden to the eye, kept as the link's name */
   .roompill{padding:0 .3rem;margin-right:.2rem}
 }
 @media (max-width:900px){
