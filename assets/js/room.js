@@ -297,13 +297,13 @@
     /* several changes as one step */
     group(fn) { const n = hist.length, before = ls.get(SCENE, []); let out; R._quiet = true; try { out = fn(); } finally { R._quiet = false; } if (hist.length > n) { hist.length = n; hist.push(before); } lastTag = ""; emit("scene"); return out; }, // the editor draws once, after all of them (so they land together)
     inScene: (h) => R.scene().some((it) => it.h === h),
-    add(h, quiet) {
+    add(h, quiet, v) {
       const p = RQ.byHandle(h); if (!p) return false; RQ.track && RQ.track("studio_place", { item_id: h });
       const list = R.scene(); if (list.some((it) => it.h === h)) return false;
       const sp = spotFor(p, list, false, null, null, true);
       { const tw = trueW({ h, x: sp.x, y: sp.y, sy: sp.sy, on: sp.moved }); if (tw) { sp.w = tw; sp.real = true; // a known scale: true size from the start
           if (kindOf(p) === "window" && room) sp.y = +Math.min(sp.y, tw * meta(p)[2] * (sp.sy || 1) * room.w / room.h - 2).toFixed(1); } } // a curtain hangs from above the picture, a little above the floor if it is shorter than the room
-      list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.real ? { real: true } : {}), ...(sp.row ? { row: true, on: "golv" } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
+      list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(v > 0 && (p.variants || [])[v] ? { v } : {}), ...(sp.real ? { real: true } : {}), ...(sp.row ? { row: true, on: "golv" } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
       if (!R.saveScene(list)) { RQ.toast(FULL); return false; }
       R.lastMoved = sp.moved ? h : null;
       if (!quiet && sp.moved) RQ.toast(`Där var det fullt, så ${esc(p.name)} står på golvet. Dra den dit du vill.`);
@@ -327,15 +327,39 @@
       const list = R.scene(); if (!list.length || (btn && btn.hasAttribute("data-open-cart"))) return; // all of it lies there: the button opens the cart
       const inCart = new Set(S.cartLines().map((l) => l.product.handle)), todo = list.filter((it) => !inCart.has(it.h));
       if (!todo.length) { RQ.toast('Allt i rummet ligger redan i varukorgen. <a href="#" data-open-cart>Visa</a>'); return; }
-      const ask = todo.filter((it) => (RQ.byHandle(it.h).variants || []).length > 1);
+      const ask = todo.filter((it) => (RQ.byHandle(it.h).variants || []).length > 1 && it.v == null);
       if (ask.length && !chosen) { R.openVariants(ask.map((it) => it.h), (pick) => R.cartAll(btn, pick)); return; }
-      todo.forEach((it) => S.addToCart(it.h + "::" + ((chosen && chosen[it.h]) || 0), 1));
+      todo.forEach((it) => S.addToCart(it.h + "::" + ((chosen && chosen[it.h] != null ? chosen[it.h] : it.v) || 0), 1));
       const n = S.cartLines().filter((l) => todo.some((it) => it.h === l.product.handle)).length;
       if (!n) { RQ.toast("Det gick inte att lägga sakerna i varukorgen. Försök igen."); return; }
       RQ.confirmAdd(btn, "");
       RQ.toast(`${n === 1 ? "1 produkt från ditt rum ligger" : n + " produkter från ditt rum ligger"} i varukorgen${todo.length < list.length ? ", resten låg redan där" : ""}. <a href="#" data-open-cart>Visa</a>`);
     },
     total: () => R.scene().reduce((s, it) => s + RQ.byHandle(it.h).price, 0),
+    /* Byt: what can take this thing's place (the same kind of thing, for the same surface), best colour match first */
+    alternatives(h) { const p = RQ.byHandle(h); if (!p) return []; const have = new Set(R.scene().map((it) => it.h));
+      // a lamp for a lamp or a candle, a textile for a textile, a print for a print, a rug for a rug, a thing on the table or the floor for the same
+      const grp = (q) => { const k = kindOf(q); return q.cat === "belysning-atmosfar" && (k === "surface" || k === "floor") ? "ljus" : ["cushion", "throw", "bedding"].includes(k) ? "textil" : k; };
+      return RQ.PRODUCTS.filter((q) => q.handle !== h && !have.has(q.handle) && grp(q) === grp(p))
+        .map((q) => ({ q, m: (match(q) || 60) + (room && room.type && q.rooms.includes(room.type) ? 20 : 0) })).sort((a, b) => b.m - a.m).map((x) => x.q).slice(0, 8); },
+    /* the thing at h, as "to" (another product, or the same one in colour v), in its place: the same spot, the same
+       scale (true size when measured), the same surface. One step for Ångra. */
+    swapWith(h, to, v) { const list = R.scene(), i = list.findIndex((it) => it.h === h); if (i < 0) return false; const it = list[i], p = RQ.byHandle(h), q = RQ.byHandle(to || h); if (!q) return false;
+      if (q.handle !== h && list.some((x) => x.h === q.handle)) return false;
+      const n = { ...it, h: q.handle }; if (v > 0 && (q.variants || [])[v]) n.v = v; else delete n.v;
+      if (q.handle !== h) { const r = meta(p)[1] > 0 ? meta(q)[1] / meta(p)[1] : 1; n.w = +clamp(it.w * r, 1, 96).toFixed(1); n.w0 = +clamp((it.w0 || it.w) * r, 1, 96).toFixed(1); delete n.sy; const sp = spotFor(q, [], true); if (sp.sy && sp.sy !== 1) n.sy = sp.sy; delete n.real;
+        if (SURF[it.on] && !(CAN[kindOf(q)] || []).includes(it.on)) delete n.on; const tw = trueW(n); if (tw) { n.w = tw; n.real = true; } }
+      list[i] = n; R._swapped = { from: h, to: q.handle }; return R.saveScene(list); },
+    /* a colour other than the one the picture shows: the cut-out takes the colour's tone (approximate, and said so) */
+    tint: (it) => { const p = RQ.byHandle(it.h); return it.v > 0 && p && (p.variants || [])[it.v] ? p.tone[it.v] || null : null; },
+    /* a ready set from the range for this room: style and budget (Inred åt mig). Uses the same proposal as Mitt hem when it is there */
+    suggestSet({ style = null, budget = null, avoid = [] } = {}) {
+      const t = (room && room.type) || "vardagsrum", have = new Set(R.scene().filter((it) => !it.sg).map((it) => it.h));
+      const pr = RQ.hem && RQ.hem.propose ? RQ.hem.propose({ type: t, style, budget, avoid: [...avoid, ...have] }) : null;
+      if (pr) { const items = pr.items.filter((it) => !have.has(it.h)); return { items, left: pr.left, total: items.reduce((s, it) => s + RQ.byHandle(it.h).price, 0), fullTotal: pr.fullTotal, min: pr.min, style: pr.style }; }
+      const ps = R.suggest(4).filter((q) => !avoid.includes(q.handle) && (!style || q.styles.includes(style))); let sum = 0; const items = [], left = [];
+      ps.forEach((q) => { if (!budget || sum + q.price <= budget) { items.push({ h: q.handle, v: 0 }); sum += q.price; } else left.push(q.handle); });
+      return { items, left, total: sum, fullTotal: ps.reduce((s, q) => s + q.price, 0), min: ps.length ? Math.min(...ps.map((q) => q.price)) : 0, style }; },
     ordered() { return orderOf(R.scene()); },
     /* a sample room with these things placed in it, the way Mitt rum would place them: for the look pictures.
        layer = the things, to lie over the photo (in % of the photo); spots = where each one stands, for its dot */
@@ -598,6 +622,42 @@
   })();
 
 
+  /* ---------------------------------------------------------------- one way in from anywhere (Mitt hem, Svep, the stylist, looks, moodboards)
+     RQ.room.openWith({ room: "vardagsrum" | null, own: false, items: [{ h, v }], style, budget, project, swap })
+     - own: your own photo (the one in this browser, or the sheet with its sign-in gate when there is none);
+     - room: a sample room of that type (free); null keeps the room you have, or the living room;
+     - a project whose saved scene belongs to this photo gets that scene back exactly; otherwise the things are placed
+       by the editor's rules (mapped spots in a sample room, the tidy floor row in an own photo; never in mid-air);
+     - swap: open with Byt on that thing (from the AI picture: "Prova en annan färg", "Byt produkt").
+     Resolves true when Mitt rum is open with the things in it (false when it waits for the sheet or sign-in). */
+  const projOf = (id) => (id && RQ.hem && RQ.hem.room ? RQ.hem.room(id) : null);
+  const keyNow = () => (RQ.ai && RQ.ai.projectKey ? RQ.ai.projectKey() : room && room.at);
+  const putIn = (items, pr) => R.group(() => {
+    const keep = pr && Array.isArray(pr.scene) && pr.pkey && pr.pkey === keyNow() ? pr.scene.filter((it) => it && RQ.byHandle(it.h) && isFinite(it.x) && isFinite(it.y) && it.w > 0) : null;
+    if (keep && keep.length) { R.saveScene(keep); return keep.length; }
+    R.saveScene([]); return items.filter((it) => R.add(it.h, true, it.v || 0)).length; });
+  const goRoom = (swap) => { if (swap) RQ.ss.set("rumiq-room-swap", swap); const here = (RQ.currentRoute && RQ.currentRoute()) || ""; if (here === "mitt-rum") { RQ.router(); scrollTo(0, 0); } else if (RQ.go) RQ.go("mitt-rum"); else location.hash = "#mitt-rum"; };
+  R.openWith = async ({ room: type = null, own = false, items = [], style = null, budget = null, project = null, swap = null } = {}) => {
+    const its = (items || []).map((it) => (typeof it === "string" ? { h: it, v: 0 } : { h: it.h, v: +it.v || 0 })).filter((it) => RQ.byHandle(it.h)).slice(0, 16);
+    const pr = projOf(project); if (project && RQ.hem && RQ.hem.setActive) RQ.hem.setActive(project);
+    R._want = { style: RQ.STYLES[style] ? style : null, budget: budget > 0 ? +budget : null }; // Inred åt mig starts from the same style and budget
+    document.dispatchEvent(new CustomEvent("rq-hem-go"));
+    if (own) {
+      if (room && !room.sample) { putIn(its, pr); goRoom(swap); return true; }
+      R.openSetup(() => { putIn(its, pr); goRoom(swap); }, { add: its.map((it) => it.h), go: "#mitt-rum" }); return false; // the sheet, with its sign-in gate; the plan survives signing in
+    }
+    const same = pr && pr.pkey && room && pr.pkey === keyNow();
+    const want = RQ.SAMPLE_ROOMS.find((x) => x.id === (type || (pr && pr.type))) || null;
+    if (!same && (want || !room) && !(room && room.sample && want && room.map === want.id)) {
+      const sm = want || RQ.SAMPLE_ROOMS[0], im = new Image();
+      const ok = await new Promise((res) => { im.onload = () => res(true); im.onerror = () => res(false); im.src = sm.img; });
+      if (!ok || !(await R.saveImage(im, { sample: true, map: sm.id, type: sm.id, name: sm.name, src: sm.img }))) { RQ.toast("Rummet gick inte att öppna. Försök igen."); return false; }
+    }
+    putIn(its, pr); goRoom(swap); return true;
+  };
+  /* from the AI picture: open the editor with Byt on that thing */
+  R.openSwap = (h) => { if (!room || !R.inScene(h)) return false; goRoom(h); return true; };
+
   /* ---------------------------------------------------------------- the room editor (#mitt-rum) */
   const V = RQ.views;
   const ICO = {
@@ -618,6 +678,7 @@
     back: '<svg viewBox="0 0 24 24"><rect x="5" y="5" width="11" height="11" rx="1"/><path d="M19 9v10H9"/></svg>',
     fit: '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
     undo: '<svg viewBox="0 0 24 24"><path d="M9 14L4.5 9.5 9 5"/><path d="M4.5 9.5h10a5 5 0 0 1 0 10H11"/></svg>',
+    swapx: '<svg viewBox="0 0 24 24"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/></svg>',
     ruler: '<svg viewBox="0 0 24 24"><path d="M3.5 15.5l12-12 5 5-12 12z"/><path d="M7.5 11.5l1.8 1.8M10.5 8.5l1.3 1.3M13.5 5.5l1.8 1.8"/></svg>',
   };
   const setupBlock = (want) => `<div class="rm-empty">
@@ -631,6 +692,10 @@
         <p class="small" style="margin-top:1.2rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
       </div>${RQ.demoFig ? RQ.demoFig({ bare: true }) : ""}</div>`; // the picture shows what it does; no way out of Studio in it
 
+  /* the customer's rooms (Mitt hem): switching is one tap; the active one is marked */
+  const projChips = () => { const H = RQ.hem, rs = H && H.rooms ? H.rooms() : []; if (!rs.length) return "";
+    const act = H.activeId && H.activeId();
+    return `<nav class="rm-projs" aria-label="Dina rum">${rs.slice(0, 6).map((r) => `<button type="button" class="chip" data-proj="${esc(r.id)}" aria-pressed="${r.id === act}">${esc(H.name(r))}</button>`).join("")}<a class="chip rm-projnew" href="#mitt-hem">${ICO.plus}<span>Nytt rum</span></a></nav>`; };
   V.myRoom = (pre) => {
     if (pre && RQ.byHandle(pre) && room && R.add(pre, true)) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
     if (pre && RQ.byHandle(pre) && !room) RQ.ss && RQ.ss.set("rumiq-room-pre", pre);
@@ -638,7 +703,7 @@
     const more = `<nav class="rm-more" aria-label="Fler sätt att välja"><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
     return {
       title: pre && RQ.byHandle(pre) ? `${RQ.byHandle(pre).name} i ditt rum · RumIQ` : "Mitt rum · RumIQ",
-      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
+      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
         ${room ? "" : more}</section>
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap" id="rmWrap" style="--ar:${(room.w / room.h).toFixed(4)}">
@@ -670,14 +735,16 @@
                 </div></div>
             </div>
             <div class="rm-act" id="rmAct" role="group" aria-label="Den valda saken" hidden>
-              <div class="rm-acth"><b id="rmActName"></b><span class="rm-on"><span id="rmOnL2">Står på</span><select id="rmOn2" aria-labelledby="rmOnL2"></select><b class="rm-on1" id="rmOn2b" hidden></b></span></div>
+              <div class="rm-acth"><b id="rmActName"></b><button type="button" class="rm-bytbtn" data-swap-open>${ICO.swapx}<span>Byt</span></button><span class="rm-on"><span id="rmOnL2">Står på</span><select id="rmOn2" aria-labelledby="rmOnL2"></select><b class="rm-on1" id="rmOn2b" hidden></b></span></div>
               <button type="button" data-act="smaller">${ICO.minus}<span>Mindre</span></button>
               <button type="button" data-act="bigger">${ICO.plus}<span>Större</span></button>
               <button type="button" data-act="flip">${ICO.flip}<span>Vänd</span></button>
-              <button type="button" data-act="order">${ICO.front}<span id="rmActOrder">Lägg bakom</span></button>
+              <button type="button" data-act="order" id="rmActOrderB" aria-label="Lägg bakom">${ICO.front}<span id="rmActOrder">Bakom</span></button>
               <button type="button" data-act="del">${ICO.trash}<span>Ta bort</span></button>
               <button type="button" data-act="done" class="on">${ICO.check}<span>Klar</span></button>
             </div>
+            <div class="rm-swap" id="rmSwap" role="region" aria-label="Byt" hidden></div>
+            <div class="rm-sugg" id="rmSugg" role="region" aria-label="Förslag" hidden></div>
             <div class="rm-measure" id="rmMeasure" role="group" aria-label="Känd längd i bilden" hidden>
               <label class="rm-len"><span>Längd</span><input type="number" id="rmLen" inputmode="decimal" min="10" max="2000" step="1" value="200"><span>cm</span></label>
               <div class="rm-mbtns"><button type="button" class="btn sm ghost" id="rmMOff" hidden>Ta bort</button><button type="button" class="btn sm ghost" id="rmMCancel">Avbryt</button><button type="button" class="btn sm" id="rmMDone">Klar</button></div>
@@ -694,6 +761,7 @@
             ${RQ.ai ? RQ.ai.card() : ""}
             <div class="rm-sel" id="rmSel" hidden>
               <div class="rm-sel-h"><img id="rmSelImg" alt=""><div><b id="rmSelName"></b><span id="rmSelPrice"></span></div><a class="tlink" id="rmSelLink" href="#">Visa</a></div>
+              <button type="button" class="btn ghost block rm-bytdesk" data-swap-open>${ICO.swapx}<span>Byt eller jämför</span></button>
               <div class="range-row rm-onrow"><span id="rmOnL">Står på</span><span class="rm-on"><select id="rmOn" aria-labelledby="rmOnL"></select><b class="rm-on1" id="rmOnb" hidden></b></span></div>
               <p class="small rm-real" id="rmReal"></p>
               <div class="range-row"><span>Storlek</span><input type="range" id="rmSize" min="3" max="96" step=".1" aria-label="Storlek"></div>
@@ -820,12 +888,13 @@
           const x = c[0] / 100 * w + view.tx, y = c[1] / 100 * h + view.ty; if (x > view.sw * 0.22 && x < view.sw * 0.78 && y > view.sh * 0.1 && y < view.sh * 0.9 && list.length === 1) return false;
           view.tx = view.sw / 2 - c[0] / 100 * w; view.ty = view.sh / 2 - c[1] / 100 * h; paintView(true); return Math.abs(view.tx - tx) + Math.abs(view.ty - ty) > 8; };
 
+        const tintHtml = (it, p) => { const t = R.tint(it); return t ? `<i class="rm-tint" aria-hidden="true" style="background:${esc(t)};-webkit-mask-image:url(${cutIn(p)});mask-image:url(${cutIn(p)});transform:scaleX(${it.flip ? -1 : 1})"></i>` : ""; };
         const draw = () => {
           const list = R.scene(), order = R.ordered(); let fresh = 0; const news = [];
           const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h;
           const lane = new Map(nw.slice().sort((a, b) => a.x - b.x).map((it, i) => [it.h, i])); // several land from left to right
           wrap.innerHTML = order.map((it, i) => { const p = RQ.byHandle(it.h), kind = kindOf(p), isNew = !seen.has(it.h), r = meta(p)[2]; if (isNew) news.push(it);
-            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${lane.get(it.h) ?? fresh++}` : ""}"><img src="${cutIn(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
+            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${lane.get(it.h) ?? fresh++}` : ""}"><img src="${cutIn(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}">${tintHtml(it, p)}</div>`; }).join("");
           const teach = news.length && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length; // own photo, nothing shown yet
           if (news.length) { const t = tour(news); wrap.style.setProperty("--pre", t ? "360ms" : "90ms"); wrap.style.setProperty("--step", t === 2 ? "300ms" : "130ms");
             const f = $("#rmFirst", root);
@@ -853,7 +922,7 @@
           $("#rmSelImg", root).src = RQ.img(p, 600); $("#rmSelName", root).textContent = p.name; $("#rmSelPrice", root).textContent = kr(p.price);
           $("#rmSelLink", root).href = "#produkt-" + p.handle; { const sz = $("#rmSize", root), [a, b] = span(it.h); sz.min = a.toFixed(1); sz.max = b.toFixed(1); sz.value = it.w; sz.dataset.base = it.w0 || spotFor(p, [], true).w; sizeText(sz);
             $('[data-act="bigger"]', root).setAttribute("aria-disabled", it.w >= b - 0.05); $('[data-act="smaller"]', root).setAttribute("aria-disabled", it.w <= a + 0.05); } $("#rmLight", root).value = it.light;
-          $("#rmActOrder", root).textContent = it.back ? "Lägg framför" : "Lägg bakom";
+          $("#rmActOrder", root).textContent = it.back ? "Framför" : "Bakom"; $("#rmActOrderB", root).setAttribute("aria-label", it.back ? "Lägg framför" : "Lägg bakom");
           $("#rmActName", root).textContent = p.name; paintOn(it);
           // honest about size: true scale, or the measurements and how to get there, or approximate
           const z = measures(p); $("#rmReal", root).innerHTML = !z ? "Storleken är ungefärlig." : it.real ? `${z}, i rätt skala.` : room && (room.known || mapOf()) ? `${z}. <button type="button" class="tlink" data-real>Rätt storlek</button>` : `${z}. <button type="button" class="tlink" data-measure>Visa i rätt skala</button>`;
@@ -875,7 +944,7 @@
             else { const sp = spotFor(p, R.scene().filter((x) => x.h !== h), true, null, now); if (sp) Object.assign(patch, { x: sp.x, y: sp.y, w: sp.w }, sp.sy ? { sy: sp.sy } : {}); } }
           R.update(h, patch); const nw = R.scene().find((x) => x.h === h); if (nw) { lookAt([nw]); learn(h, nw); } said(`${ON_WORD(it, to)} ${SURF[to]}.`); };
         ["#rmOn", "#rmOn2"].forEach((q) => $(q, root).addEventListener("change", (e) => { if (sel) setOn(sel, e.target.value); }));
-        const select = (h) => { sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); };
+        const select = (h) => { if (swap && swap.h && swap.h !== h) { swap.h = null; paintSwap(); } sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); };
         /* the selected thing at true scale: its measurements beside it, and for a rug the floor it covers, dashed */
         const paintFoot = (cur) => { const it = cur || (sel && R.scene().find((x) => x.h === sel)), poly = $("#rmArea polygon", root), lab = $("#rmAreaLab", root);
           if (!it || !it.real || !scaleAt(it)) { poly.setAttribute("points", ""); lab.hidden = true; return; }
@@ -944,7 +1013,7 @@
           if (pan) { const p = pan; pan = null; if (!p.moved && e.type === "pointerup") select(null); return; }
           if (drag) { const d = drag; drag = null; if (!d.moved) return;
             const it = R.scene().find((x) => x.h === d.h); if (!it) return;
-            const next = { x: +d.x.toFixed(1), y: +d.y.toFixed(1), w: +d.w.toFixed(1), ...(it.row ? { row: undefined, on: undefined } : {}) };
+            const next = { x: +d.x.toFixed(1), y: +d.y.toFixed(1), w: +d.w.toFixed(1), sg: undefined, ...(it.row ? { row: undefined, on: undefined } : {}) };
             R.update(d.h, next); learn(d.h, { ...it, ...next }); refocus(d.h); } // the room is drawn again: the moved thing keeps the focus, so the keys go on working
         };
         stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
@@ -1021,18 +1090,87 @@
           const dl = e.target.closest("[data-del]"); if (dl) removeIt(dl.dataset.del);
         });
         let wantSuggest = false;
-        const suggest = () => {
+        /* ---- Inred åt mig: a ready set for this room, in a style and within a budget if you like (both optional).
+           The set's things are marked (sg); a new set replaces them, while what you moved or swapped stays. One step for Ångra. */
+        const want0 = R._want || {}; R._want = null;
+        const sg = { style: want0.style || null, budget: want0.budget || null, avoid: [], left: [], shown: false };
+        const suggest = (again) => {
           if (!mapOf() && !room.type) { // your own photo: which room it is comes first, then the suggestions fit
             wantSuggest = true; const a = !$("#rmHint", root).hidden && $(".rm-hintask", root) ? $("#rmHint", root) : $("#rmAsk", root);
             if (a) { a.classList.remove("ask-now"); void a.offsetWidth; a.classList.add("ask-now"); a.scrollIntoView({ block: "nearest", behavior: calm() ? "auto" : "smooth" }); const c = $("[data-roomtype]", a); if (c) c.focus({ preventScroll: true }); }
             said("Välj först vilket rum det är."); return; }
-          const first = !!mapOf() && !ls.get("rumiq-room-landed", false), before = R.scene(), picks = R.suggest(Math.max(1, 4 - before.length) + (before.length >= 4 ? 1 : 0));
-          if (!picks.length) { RQ.toast("Nu står allt som passar här i rummet. Lägg till fler själv."); return; }
-          const n = R.group(() => picks.filter((p) => R.add(p.handle, true)).length); if (!n) return; // one step: Ångra takes all of them back
+          const first = !!mapOf() && !ls.get("rumiq-room-landed", false), old = R.scene().filter((it) => it.sg).map((it) => it.h);
+          if (again === true) sg.avoid = [...new Set([...sg.avoid, ...old])].slice(-14);
+          let set = R.suggestSet({ style: sg.style, budget: sg.budget, avoid: sg.avoid });
+          if (!set.items.length && sg.avoid.length) { sg.avoid = []; set = R.suggestSet({ style: sg.style, budget: sg.budget, avoid: [] }); } // every other set shown: start over
+          sg.left = set.left; sg.full = set.fullTotal; sg.min = set.min; sg.shown = true;
+          const n = R.group(() => { R.saveScene(R.scene().filter((it) => !it.sg)); const put = set.items.filter((it) => R.add(it.h, true, it.v)).map((it) => it.h);
+            R.saveScene(R.scene().map((it) => (put.includes(it.h) ? { ...it, sg: true } : it))); return put.length; });
+          paintSugg();
+          if (!n) { RQ.toast(set.items.length ? "Nu står allt som passar här i rummet. Lägg till fler själv." : "Inget i stilen ryms i budgeten. Höj budgeten eller välj en annan stil."); return; }
           if (first || !mapOf()) return; // the room itself says it ("Så här kan det se ut hemma hos dig", "Dra sakerna dit du vill ha dem"): one message at a time
-          RQ.toast(`${n} förslag efter rummets färger${room.type ? " och rumstyp" : ""}. Flytta och byt fritt.${mapOf() ? "" : " Dra en sak dit den ska stå, så hamnar nästa bredvid."}`); // Ångra on the room takes all of them back
+          said(`${n} förslag i rummet.`);
         };
-        $("#rmSuggest", root).addEventListener("click", suggest); $("#rmSuggest0", root).addEventListener("click", suggest);
+        const STY = [["", "Alla stilar"], ...Object.entries(RQ.STYLES).map(([k, v]) => [k, v.name.split(" ")[0]])];
+        const step50 = (v, up) => (up ? Math.ceil(v / 50) * 50 : Math.floor(v / 50) * 50);
+        const paintSugg = () => { const bx = $("#rmSugg", root), its = R.scene().filter((it) => it.sg); bx.hidden = !sg.shown || !its.length && !sg.left.length;
+          if (bx.hidden) return; const tot = its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), lo = step50(Math.max(100, sg.min || 100), true), hi = Math.max(lo + 50, step50(sg.full || tot, true)), b = sg.budget ? clamp(sg.budget, lo, hi) : hi;
+          const focus = document.activeElement && bx.contains(document.activeElement) ? document.activeElement.dataset.sgk || document.activeElement.id : null;
+          bx.innerHTML = `<div class="rm-sugg-h"><div><b>Förslag${sg.style ? ` i ${esc(RQ.STYLES[sg.style].name.split(" ")[0].toLowerCase())} stil` : ""}</b><span>${its.length} ${its.length === 1 ? "sak" : "saker"} · ${kr(tot)}</span></div><button class="btn sm" type="button" id="rmSgBuy"${its.length ? "" : " disabled"}>Köp allt</button></div>
+            <div class="chips rm-sugg-sty" role="group" aria-label="Stil">${STY.map(([k, n]) => `<button type="button" class="chip" data-sgk="sty-${k}" data-sty="${k}" aria-pressed="${(sg.style || "") === k}">${esc(n)}</button>`).join("")}</div>
+            <label class="rm-sugg-b"><span>Budget <b id="rmSgBv">${sg.budget && sg.budget < hi ? kr(b) : "Hela rummet"}</b></span><input type="range" id="rmSgB" min="${lo}" max="${hi}" step="50" value="${b}" aria-valuetext="${sg.budget && sg.budget < hi ? kr(b) : "Hela rummet"}"></label>
+            ${sg.left.length ? `<p class="small rm-sugg-left">Budgeten räcker till ${its.length} av ${its.length + sg.left.length}. Kvar att lägga till: ${sg.left.map((h) => `<b>${esc(RQ.byHandle(h).name)}</b>`).join(" · ")}.</p>` : ""}
+            <button type="button" class="tlink" data-sgk="again" id="rmSgAgain">Ett annat förslag</button>`;
+          if (focus) { const f = $(`[data-sgk="${focus}"], #${focus}`, bx); if (f) f.focus({ preventScroll: true }); } };
+        $("#rmSugg", root).addEventListener("click", (e) => { const t = e.target.closest("[data-sty]"); if (t) { sg.style = t.dataset.sty || null; sg.avoid = []; suggest(); return; }
+          if (e.target.closest("#rmSgAgain")) { suggest(true); return; }
+          const bb = e.target.closest("#rmSgBuy"); if (bb && RQ.addMany) RQ.addMany(R.scene().filter((it) => it.sg).map((it) => it.h + "::" + (it.v || 0)), bb, sg.style ? `Förslaget i ${RQ.STYLES[sg.style].name.split(" ")[0].toLowerCase()} stil` : "Förslaget"); });
+        $("#rmSugg", root).addEventListener("input", (e) => { if (e.target.id !== "rmSgB") return; const v = +e.target.value, hi = +e.target.max; $("#rmSgBv", root).textContent = v >= hi ? "Hela rummet" : kr(v); });
+        $("#rmSugg", root).addEventListener("change", (e) => { if (e.target.id !== "rmSgB") return; const v = +e.target.value; sg.budget = v >= +e.target.max ? null : v; sg.avoid = []; suggest(); });
+
+        /* ---- Byt och jämför: the selected thing's colours and what could stand in its place, swapped in one tap; up to three side by side */
+        const swap = { h: null, cmp: false, pick: [] };
+        const swapBox = $("#rmSwap", root);
+        const paintSwap = () => { const it = swap.h && R.scene().find((x) => x.h === swap.h); swapBox.hidden = !it; box.classList.toggle("swapping", !!it); if (!it) return;
+          const p = RQ.byHandle(it.h), alts = R.alternatives(it.h), vs = p.variants || [];
+          swapBox.innerHTML = `<div class="rm-swap-h"><b>Byt ${esc(p.name)}</b><div><button type="button" class="chip" id="rmCmpT" aria-pressed="${swap.cmp}">Jämför</button><button type="button" class="iconbtn" id="rmSwapX" aria-label="Stäng Byt"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
+            ${vs.length > 1 ? `<div class="rm-swap-col"><span class="small">Färg</span><div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${vs.map((v, i) => `<button type="button" class="chip" data-swv="${i}" aria-pressed="${(it.v || 0) === i}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div>${it.v > 0 ? `<span class="small rm-swap-note">Färgen i bilden är ungefärlig.</span>` : ""}</div>` : ""}
+            ${alts.length ? `<p class="small rm-swap-lead">${swap.cmp ? "Välj upp till två att jämföra med." : "Andra som passar här"}</p><div class="rm-swap-row">${alts.map((q) => `<button type="button" class="rm-alt" data-alt="${q.handle}"${swap.cmp ? ` aria-pressed="${swap.pick.includes(q.handle)}"` : ""}><span class="rm-alt-im"><img src="${RQ.cut(q)}" alt="" loading="lazy"></span><b>${esc(q.name)}</b><span>${kr(q.price)}</span></button>`).join("")}</div>` : `<p class="small rm-swap-lead">Inget annat i sortimentet passar på samma plats än.</p>`}
+            ${swap.cmp ? `<button class="btn sm" type="button" id="rmCmpGo"${swap.pick.length ? "" : " disabled"}>Jämför ${swap.pick.length + 1} i rummet</button>` : ""}`; };
+        const openSwap = (h, focus) => { if (!h) return; if (sel !== h) select(h); swap.h = h; swap.cmp = false; swap.pick = []; paintSwap(); if (innerWidth <= 900) swapBox.scrollIntoView({ block: "nearest", behavior: calm() ? "auto" : "smooth" }); const f = $(focus || "[data-swv][aria-pressed=true], .rm-alt", swapBox); if (f) setTimeout(() => f.focus({ preventScroll: true }), 30); };
+        const closeSwap = () => { swap.h = null; paintSwap(); };
+        root.addEventListener("click", (e) => { if (e.target.closest("[data-swap-open]") && sel) openSwap(sel); });
+        swapBox.addEventListener("click", (e) => {
+          if (e.target.closest("#rmSwapX")) { closeSwap(); return; }
+          if (e.target.closest("#rmCmpT")) { swap.cmp = !swap.cmp; swap.pick = []; paintSwap(); $("#rmCmpT", swapBox).focus(); return; }
+          const v = e.target.closest("[data-swv]"); if (v) { const nv = +v.dataset.swv; R.swapWith(swap.h, swap.h, nv); said(`${RQ.byHandle(swap.h).variants[nv]}.`); return; }
+          const a = e.target.closest("[data-alt]");
+          if (a && swap.cmp) { const h = a.dataset.alt; swap.pick = swap.pick.includes(h) ? swap.pick.filter((x) => x !== h) : [...swap.pick, h].slice(-2); paintSwap(); const f = $(`[data-alt="${h}"]`, swapBox); if (f) f.focus({ preventScroll: true }); return; }
+          if (a) { const from = swap.h, to = a.dataset.alt; if (R.swapWith(from, to)) { sel = to; swap.h = to; said(`Bytt till ${RQ.byHandle(to).name}.`); RQ.toast(`Bytt till ${esc(RQ.byHandle(to).name)}. Ångra finns på rummet.`); } return; }
+          if (e.target.closest("#rmCmpGo")) compare([swap.h, ...swap.pick]);
+        });
+        /* Jämför: the same room picture with each one in place, side by side (a swipe on a phone), one tap keeps one */
+        const cmpEl = document.createElement("div"); cmpEl.className = "sheet rmcmp"; cmpEl.setAttribute("role", "dialog"); cmpEl.setAttribute("aria-modal", "true"); cmpEl.setAttribute("aria-labelledby", "cmpT"); document.body.appendChild(cmpEl);
+        const itemHtml = (it, i) => { const p = RQ.byHandle(it.h), r = meta(p)[2]; return `<div class="rm-item k-${kindOf(p)}" style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}"><img src="${cutIn(p)}" alt="" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}">${tintHtml(it, p)}</div>`; };
+        let cmpBack = null;
+        const compare = (hs) => { const base = R.scene(), cur = base.find((x) => x.h === hs[0]); if (!cur) return; cmpBack = document.activeElement;
+          const opts = hs.map((h) => { if (h === cur.h) return { h, list: base }; const q = RQ.byHandle(h), r = meta(RQ.byHandle(cur.h))[1] > 0 ? meta(q)[1] / meta(RQ.byHandle(cur.h))[1] : 1, n = { ...cur, h, w: +clamp(cur.w * r, 1, 96).toFixed(1) }; delete n.v; delete n.real; const tw = trueW(n); if (tw) n.w = tw; return { h, list: base.map((x) => (x.h === cur.h ? n : x)) }; });
+          const hgt = cur.w * meta(RQ.byHandle(cur.h))[2] * (cur.sy || 1) * room.w / room.h, z = clamp(30 / Math.max(cur.w, 4), 1, 2.4), ox = clamp(cur.x, 0, 100), oy = clamp(cur.y - hgt / 2, 0, 100);
+          cmpEl.innerHTML = `<div class="sheet-scrim" data-cmp-close></div><div class="sheet-card wide"><span class="sheet-grip" aria-hidden="true"></span><button class="iconbtn sheet-x" type="button" data-cmp-close aria-label="Stäng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            <h2 id="cmpT">Jämför i ditt rum</h2><p class="lead">Samma rum, samma plats. Behåll den du gillar.</p>
+            <div class="rm-cmp" style="--n:${opts.length}">${opts.map((o) => { const q = RQ.byHandle(o.h); return `<figure><div class="rm-cmp-pic" style="aspect-ratio:${room.w} / ${room.h}"><div class="rm-cmp-in" style="transform-origin:${ox}% ${oy}%;transform:scale(${z.toFixed(2)})"><img class="rm-bg" src="${R.url()}" alt=""><div class="rm-items">${orderOf(o.list).map(itemHtml).join("")}</div></div></div>
+              <figcaption><b>${esc(q.name)}</b><span>${kr(q.price)}${o.h === cur.h ? " · nu i rummet" : ""}</span><button class="btn sm${o.h === cur.h ? " ghost" : ""}" type="button" data-keep="${o.h}">${o.h === cur.h ? "Behåll den här" : "Välj den här"}</button></figcaption></figure>`; }).join("")}</div></div>`;
+          cmpEl.classList.add("open"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".sheet-x", cmpEl).focus(), 60); };
+        const closeCmp = () => { cmpEl.classList.remove("open"); document.documentElement.style.overflow = ""; if (cmpBack && document.contains(cmpBack)) cmpBack.focus({ preventScroll: true }); };
+        cmpEl.addEventListener("click", (e) => { if (e.target.closest("[data-cmp-close]")) { closeCmp(); return; }
+          const k = e.target.closest("[data-keep]"); if (!k) return; const to = k.dataset.keep; closeCmp(); if (to !== swap.h && R.swapWith(swap.h, to)) { sel = to; swap.h = to; RQ.toast(`${esc(RQ.byHandle(to).name)} står nu i rummet. Ångra finns på rummet.`); } swap.cmp = false; swap.pick = []; paintSwap(); });
+        const escCmp = (e) => { if (e.key === "Escape" && cmpEl.classList.contains("open")) { e.stopImmediatePropagation(); closeCmp(); } else if (e.key === "Escape" && swap.h && !meas) closeSwap(); };
+        document.addEventListener("keydown", escCmp, true);
+
+        /* ---- your rooms (Mitt hem): one tap opens another one, with its things */
+        root.addEventListener("click", (e) => { const b = e.target.closest("[data-proj]"); if (!b || !RQ.hem) return; const r = RQ.hem.room(b.dataset.proj); if (!r || b.getAttribute("aria-pressed") === "true") return;
+          $$("[data-proj]", root).forEach((x) => x.setAttribute("aria-pressed", x === b)); R.openWith({ room: r.type, items: RQ.hem.items(r), style: r.style, budget: r.budget, project: r.id }); });
+        $("#rmSuggest", root).addEventListener("click", () => suggest()); $("#rmSuggest0", root).addEventListener("click", () => suggest());
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });
         $("#rmLook", root).addEventListener("click", () => { const hs = R.scene().map((it) => it.h); if (hs.length < 2) return;
           if (S.looks().some((l) => l.handles.join() === hs.join())) { RQ.toast('Den looken är redan sparad. <a href="#mitt-hem">Se Sparat</a>'); return; }
@@ -1052,7 +1190,8 @@
             const p = RQ.byHandle(it.h); const im = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = cutIn(p); });
             const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h;
             if (["bord", "golv"].includes(surfOf(it)) && kindOf(p) !== "rug") { const g = cx.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.45); g.addColorStop(0, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.save(); cx.translate(0, y + h); cx.scale(1, 0.18); cx.translate(0, -(y + h)); cx.fillStyle = g; cx.fillRect(x - w * 0.1, y + h - w * 0.5, w * 1.2, w); cx.restore(); }
-            cx.save(); cx.filter = lightFilter(it.light); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(im, 0, 0, w, h); } else cx.drawImage(im, x, y, w, h); cx.restore();
+            let src = im; const tone = R.tint(it); if (tone) { const t = document.createElement("canvas"); t.width = Math.max(1, Math.round(w)); t.height = Math.max(1, Math.round(h)); const tx = t.getContext("2d"); tx.drawImage(im, 0, 0, t.width, t.height); tx.globalCompositeOperation = "color"; tx.fillStyle = tone; tx.fillRect(0, 0, t.width, t.height); tx.globalCompositeOperation = "destination-in"; tx.drawImage(im, 0, 0, t.width, t.height); src = t; } // the colour you chose (approximate)
+            cx.save(); cx.filter = lightFilter(it.light); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(src, 0, 0, w, h); } else cx.drawImage(src, x, y, w, h); cx.restore();
           }
           return cv; };
         /* "Visa någon": before and after side by side (or one above the other for an upright photo), to share or keep */
@@ -1089,7 +1228,7 @@
             RQ.toast('Rummet är sparat. <a href="#mitt-hem">Se Sparat</a>');
           } catch (e) { RQ.toast("Bilden gick inte att spara i den här webbläsaren."); }
         });
-        const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") { touched = true; if (sel && !R.inScene(sel)) sel = null; draw(); }
+        const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") { touched = true; const sw = R._swapped; R._swapped = null; if (sw) { if (sel === sw.from) sel = sw.to; if (swap.h === sw.from) swap.h = sw.to; seen.add(sw.to); } if (sel && !R.inScene(sel)) sel = null; if (swap.h && !R.inScene(swap.h)) swap.h = null; draw(); paintSwap(); paintSugg(); }
           if (e.detail === "known") { draw(); }
           if (e.detail === "picker" && view.on) { stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); } }; // the room makes space for the drawer, and takes it back
         document.addEventListener("rq-room", onRoom);
@@ -1098,7 +1237,8 @@
         // back from signing in that started at Skapa AI-bild: the AI sheet opens again (within half an hour)
         { const t = +((RQ.ss && RQ.ss.get("rumiq-ai-after")) || 0); if (t && S.customer()) { RQ.ss.set("rumiq-ai-after", ""); if (Date.now() - t < 18e5 && RQ.openAI) setTimeout(() => { if (root.isConnected) RQ.openAI(); }, 500); } }
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
-        return () => { document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
+        { const sw = RQ.ss && RQ.ss.get("rumiq-room-swap"); if (sw) { RQ.ss.set("rumiq-room-swap", ""); if (R.inScene(sw)) setTimeout(() => { if (root.isConnected) { const it = R.scene().find((x) => x.h === sw); if (it) lookAt([it]); openSwap(sw); } }, 300); } }
+        return () => { document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
       },
     };
   };

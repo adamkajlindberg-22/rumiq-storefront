@@ -1245,6 +1245,66 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-on1{font-weight:600;color:var(--ink);font-size:.9rem}
 .rm-onrow{margin-top:.5rem}
 .rm-acth{display:none}
+/* Studio 2: Byt och jämför, Inred åt mig with style and budget, your rooms */
+.rm-tint{position:absolute;inset:0;mix-blend-mode:color;opacity:.9;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;pointer-events:none}
+.rm-item{isolation:isolate}
+.rm-bytbtn{display:none}
+.rm-bytdesk{margin:.7rem 0 .2rem;min-height:2.75rem;gap:.5rem}
+.rm-bytdesk svg,.rm-bytbtn svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.rm-swap,.rm-sugg{margin-top:.8rem;padding:.85rem .95rem;border:1px solid var(--line2);border-radius:var(--r);background:var(--paper)}
+.rm-swap[hidden],.rm-sugg[hidden]{display:none}
+.rm-swap-h{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.rm-swap-h > b{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:600}
+.rm-swap-h > div{display:flex;align-items:center;gap:.4rem;flex:none}
+.rm-swap-h .chip{min-height:2.75rem}
+.rm-swap-h .chip[aria-pressed=true],.rm-sugg-sty .chip[aria-pressed=true]{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
+.rm-swap-col{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .6rem;margin-top:.7rem}
+.rm-swap-col .chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.rm-swap-col .chip{min-height:2.75rem;display:inline-flex;align-items:center;gap:.4rem}
+.rm-swap-col .chip i{width:.9rem;height:.9rem;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.rm-swap-col .chip[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.rm-swap-note{color:var(--muted);flex-basis:100%}
+.rm-swap-lead{margin:.8rem 0 .45rem;color:var(--muted)}
+.rm-swap-row{display:grid;grid-auto-flow:column;grid-auto-columns:7.4rem;gap:.5rem;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:.3rem;scrollbar-width:thin}
+.rm-alt{display:grid;gap:.2rem;padding:.4rem;border:1px solid var(--line2);border-radius:var(--r-s);background:var(--bg);text-align:left;font-size:.8rem;line-height:1.25;scroll-snap-align:start;cursor:pointer;transition:border-color .2s,transform .2s var(--spring)}
+.rm-alt:hover{border-color:var(--ink)}
+.rm-alt:active{transform:scale(.97)}
+.rm-alt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.rm-alt-im{display:block;aspect-ratio:1;border-radius:5px;background:radial-gradient(circle at 50% 60%,var(--paper),var(--sunk))}
+.rm-alt-im img{width:100%;height:100%;object-fit:contain;padding:8%}
+.rm-alt b{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rm-alt span:last-child{color:var(--muted)}
+#rmCmpGo{margin-top:.7rem}
+.rm-sugg-h{display:flex;align-items:center;justify-content:space-between;gap:.8rem}
+.rm-sugg-h > div{display:grid;line-height:1.3}
+.rm-sugg-h b{font-weight:600}
+.rm-sugg-h span{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
+.rm-sugg-h .btn{min-height:2.75rem;flex:none}
+.rm-sugg-sty{display:flex;flex-wrap:nowrap;gap:.35rem;overflow-x:auto;scrollbar-width:none;margin:.75rem 0 .2rem}
+.rm-sugg-sty::-webkit-scrollbar{display:none}
+.rm-sugg-sty .chip{flex:none;min-height:2.75rem}
+.rm-sugg-b{display:grid;gap:.2rem;margin-top:.6rem;font-size:.9rem;color:var(--ink2)}
+.rm-sugg-b b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.rm-sugg-b input{width:100%;min-height:2.75rem}
+.rm-sugg-left{margin-top:.3rem;color:var(--ink2)}
+.rm-sugg-left b{font-weight:600}
+.rm-sugg .tlink{margin-top:.3rem;min-height:2.75rem;display:inline-flex;align-items:center}
+.rm-projs{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;margin:.4rem 0 .2rem}
+.rm-projs::-webkit-scrollbar{display:none}
+.rm-projs .chip{flex:none;min-height:2.6rem;display:inline-flex;align-items:center;gap:.35rem}
+.rm-projs .chip[aria-pressed=true]{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
+.rm-projs .chip svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.7}
+.rmcmp .sheet-card.wide{width:min(76rem,calc(100% - 2rem))}
+.rm-cmp{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:1rem;margin-top:1.1rem}
+.rm-cmp figure{margin:0;display:grid;gap:.6rem;align-content:start}
+.rm-cmp-pic{position:relative;overflow:hidden;border-radius:10px;background:var(--img-bg)}
+.rm-cmp-in{position:absolute;inset:0}
+.rm-cmp-in .rm-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rm-cmp-in .rm-item{cursor:auto;pointer-events:none}
+.rm-cmp figcaption{display:grid;grid-template-columns:1fr auto;align-items:center;gap:.1rem .8rem}
+.rm-cmp figcaption b{font-weight:600}
+.rm-cmp figcaption span{grid-row:2;color:var(--muted);font-size:.9rem}
+.rm-cmp figcaption .btn{grid-row:1/3;grid-column:2;min-height:2.75rem}
 .var-shown{display:block;color:var(--muted);font-size:.85rem;margin:.1rem 0 .35rem}
 /* back from signing in: the next step glows once; Inred åt mig on an own photo first asks which room it is */
 .sheet-acts .btn.nudge{animation:sheetNudge 1.6s var(--ease) 2}
@@ -2658,6 +2718,15 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .rm-acth > b{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:600}
   .rm-acth .rm-on{flex:none;gap:.4rem;color:var(--muted)}
   .rm-acth .rm-on select{min-height:2.5rem}
+  .rm-act .rm-bytbtn{flex-direction:row;min-height:2.5rem}
+  .rm-bytbtn{display:inline-flex;align-items:center;gap:.35rem;flex:none;min-height:2.5rem;padding:0 .85rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font-weight:600;font-size:.88rem}
+  .rm-swap,.rm-sugg{margin-left:var(--gutter);margin-right:var(--gutter)}
+  .rm-cmp{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:84%;overflow-x:auto;scroll-snap-type:x mandatory;margin:1rem calc(-1*var(--gutter)) 0;padding:0 var(--gutter) .4rem;scrollbar-width:none}
+  .rm-cmp figure{scroll-snap-align:center}
+  .rm-cmp figcaption{grid-template-columns:1fr}
+  .rm-cmp figcaption span{grid-row:auto}
+  .rm-cmp figcaption .btn{grid-row:auto;grid-column:auto;margin-top:.4rem}
+  .rm-projs{margin:.2rem calc(-1*var(--gutter)) .3rem;padding:0 var(--gutter)}
   .rm-ask{margin-left:var(--gutter);margin-right:var(--gutter)}
   .rm-measure{margin-left:var(--gutter);margin-right:var(--gutter);flex-wrap:nowrap;gap:.5rem;padding:.6rem .7rem}
   .rm-len input{width:4.6rem}
