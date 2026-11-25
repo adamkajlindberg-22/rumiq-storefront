@@ -132,7 +132,7 @@
 
   const viewSignin = () => show(`<div class="ai-pad"><span class="eyebrow">AI-bild av ditt rum</span><h2 id="aiTitle" class="ai-h">Logga in för att skapa bilden.</h2>
       <p class="ai-lead">Bilderna sparas i ditt konto. Du får ${FREE_IMAGES} bilder gratis varje månad.</p>
-      <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-close>Skapa konto</a></div></div>`);
+      <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-after data-ai-close>Skapa konto</a></div></div>`);
 
   const viewConsent = () => {
     show(`<div class="ai-pad"><span class="eyebrow">Innan första bilden</span><h2 id="aiTitle" class="ai-h">Så används din bild.</h2>
@@ -216,15 +216,16 @@
 
   function viewResult() {
     const r = last, st = AI.peek() || {};
-    show(`<div class="ai-grid result">
-      <figure class="ai-ba" id="aiBa" style="--x:100%"><img class="after" src="${esc(r.url)}" alt="AI-bild av ditt rum med produkterna"><img class="before" src="${r.before}" alt="Din uppställning"><span class="ai-tag">${r.demo ? "Demo" : "AI-bild"}</span><input type="range" min="0" max="100" value="100" aria-label="Jämför före och efter"><span class="ai-ba-hint">Dra för att jämföra</span></figure>
+    // the demo shows your own set-up as it is: there is nothing to compare, so no slider (and no "result" card from the quiz styles)
+    show(`<div class="ai-grid ai-result">
+      <figure class="ai-ba${r.demo ? " same" : ""}" id="aiBa" style="--x:100%"><img class="after" src="${esc(r.url)}" alt="${r.demo ? "Din uppställning" : "AI-bild av ditt rum med produkterna"}">${r.demo ? "" : `<img class="before" src="${r.before}" alt="Din uppställning">`}<span class="ai-tag">${r.demo ? "Demo" : "AI-bild"}</span>${r.demo ? "" : `<input type="range" min="0" max="100" value="100" aria-label="Jämför före och efter"><span class="ai-ba-hint">Dra för att jämföra</span>`}</figure>
       <div class="ai-pad"><span class="eyebrow">${r.demo ? "Förhandsvisning" : "Klar"}</span><h2 id="aiTitle" class="ai-h">${r.demo ? "Så här fungerar det." : "Ditt rum, med sakerna på plats."}</h2>
         ${r.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p>` : `<p class="small">Bilden är skapad med AI. Färg och storlek kan skilja sig något från verkligheten.</p>`}
         ${productsList(r.scene)}
         <div class="ai-row"><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiSave">Spara i Mitt hem</button></div>
         <div class="ai-row small-row"><button class="tlink" type="button" id="aiAgain">Skapa igen</button>${!r.demo && r.id && st.quality_left > 0 ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${r.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div></div></div>`);
     const ba = $("#aiBa", body), range = $("input", ba);
-    range.addEventListener("input", () => ba.style.setProperty("--x", range.value + "%"));
+    if (range) range.addEventListener("input", () => ba.style.setProperty("--x", range.value + "%"));
     $("#aiBuy", body).addEventListener("click", (e) => { RQ.addMany(r.scene.map((it) => it.h), e.currentTarget, "Ditt rum"); });
     $("#aiSave", body).addEventListener("click", async (e) => {
       const b = e.currentTarget; b.disabled = true;
@@ -253,6 +254,8 @@
 
   RQ.openAI = () => { if (!RQ.room.has()) { RQ.room.openSetup(() => (location.hash = "#mitt-rum")); return; } pick = {}; chosen = null; viewCompose(); };
   document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-create]")) { e.preventDefault(); RQ.openAI(); } });
+  // signing in from the AI sheet: back in Mitt rum the sheet opens again where you were (room.js reads this)
+  document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-after]") && RQ.ss) RQ.ss.set("rumiq-ai-after", String(Date.now())); });
 
   /* ------------------------------------------------------------------ card in Mitt rum, balance chips */
   AI.card = () => `<div class="ai-card"><div><b>Gör bilden verklig</b><span data-ai-balance>${FREE_IMAGES} AI-bilder gratis varje månad</span></div><button class="btn sm" type="button" data-ai-create>Skapa AI-bild</button></div>`;
