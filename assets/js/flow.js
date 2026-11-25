@@ -399,12 +399,30 @@
   // a ready-made look whose things these are (a saved look keeps its discount and its name)
   const lookOf = (handles) => RQ.LOOKS.find((l) => l.items.length === handles.length && l.items.every((h) => handles.includes(h)));
   const lookImg = (l, eager) => `<img src="assets/img/rum/${l.room}-900.webp" srcset="assets/img/rum/${l.room}-900.webp 900w, assets/img/rum/${l.room}-1600.webp 1600w" sizes="(min-width:900px) 22rem, 90vw" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async" width="1600" height="893">`;
+  /* what a look's button does now, by what is already in the cart: buy the look, add the rest (the price is what the cart rises by,
+     the discount taken into account), or show the cart. The same words on the Looks cards and the look page */
+  const lookRise = (miss) => miss.reduce((s, h) => s + RQ.byHandle(h).price, 0) - (S.cartDiscount(miss) - S.cartDiscount());
+  const lookBtn = (l, cls = "") => {
+    const miss = l.items.filter((h) => !inCart(h));
+    if (!miss.length) return `<button class="btn ghost${cls}" type="button" data-open-cart data-lookbtn="${l.id}">Visa varukorgen</button>`;
+    return `<button class="btn${cls}" type="button" data-look-add="${l.id}" data-lookbtn="${l.id}">${miss.length < l.items.length ? `Lägg till resten · +${kr(lookRise(miss))}` : `Handla looken · ${kr(lookRise(miss))}`}</button>`;
+  };
+  // the cards follow the cart (after a tap, once the button has said its "added" moment)
+  let lookT = null;
+  const lookRefresh = () => { clearTimeout(lookT); lookT = setTimeout(() => { let wait = false;
+    $$(".lc [data-lookrow]").forEach((b) => { if ($(".done", b)) { wait = true; return; } const l = lookById(b.dataset.lookrow), had = b.contains(document.activeElement);
+      const t = document.createElement("template"); t.innerHTML = lookRow(l); const nb = t.content.firstChild; if (nb.outerHTML === b.outerHTML) return; b.replaceWith(nb); if (had) $(".btn", nb).focus({ preventScroll: true }); });
+    if (wait) lookRefresh(); }, $(".lc .done") ? 1700 : 0); };
+  S.onChange((w) => { if (w === "cart" || w === "all") lookRefresh(); });
+  // a card's price line and button: the struck price goes with the look's own price; once it is all in the cart, it says so
+  const lookRow = (l) => { const cut = lookNet(l) < lookTotal(l), all = l.items.every(inCart);
+    return `<div class="lc-row" data-lookrow="${l.id}"><span class="price">${all ? `${l.items.length} saker i varukorgen` : `${l.items.length} saker${cut ? ` · <s>${kr(lookTotal(l))}</s>` : ""}`}</span>${lookBtn(l, " sm")}</div>`; };
   RQ.lookCard = (l) => {
-    const room = RQ.roomById(l.room), cut = lookNet(l) < lookTotal(l);
+    const room = RQ.roomById(l.room);
     return `<article class="lc"><a class="lc-im" href="#look-${l.id}">${lookImg(l)}<span class="lc-tag">${esc(room.name)}</span></a>
       <div class="lc-line">${l.items.map((h) => { const p = RQ.byHandle(h); return `<button type="button" data-sheet="${h}" aria-label="${esc(p.name)}"><img src="${RQ.cut(p)}" alt="" loading="lazy"></button>`; }).join("")}</div>
       <div class="lc-tx"><h3><a href="#look-${l.id}">${esc(l.name)}</a></h3><p>${esc(l.lead)}</p>
-        <div class="lc-row"><span class="price">${l.items.length} saker${cut ? ` · <s>${kr(lookTotal(l))}</s>` : ""}</span><button class="btn sm" type="button" data-look-add="${l.id}">Handla looken · ${kr(lookNet(l))}</button></div></div></article>`;
+        ${lookRow(l)}</div></article>`;
   };
   // the looks you have saved yourself (from Mitt rum or a ready-made one): the same block in Mitt hem and on Looks
   RQ.savedLooksHtml = () => S.looks().map((l) => {
@@ -416,7 +434,7 @@
   }).join("");
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-look-add]");
-    if (b) { const l = lookById(b.dataset.lookAdd); const added = addMissing(l.items, b, l.name, l); const host = b.closest(".lc, .look-page"); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
+    if (b) { const l = lookById(b.dataset.lookAdd), host = b.closest(".lc, .look-page"); const added = addMissing(l.items, b, l.name, l); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
     const mb = e.target.closest("[data-look-buy]"); if (mb) { addMissing(mb.dataset.lookBuy.split(",").filter(Boolean), mb, mb.dataset.lookName || "Looken"); return; }
     const s = e.target.closest("[data-look-save]");
     if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad"; RQ.toast(`Looken är sparad. <a href="#mitt-hem">Se Sparat</a>`); }
@@ -451,9 +469,8 @@
       const miss = l.items.filter((h) => !inCart(h)), have = l.items.length - miss.length, saved = S.looks().some((x) => x.name === l.name);
       const save = `<button class="btn ghost" type="button" data-look-save="${l.id}"${saved ? " disabled" : ""}>${saved ? "Sparad" : "Spara looken"}</button>`;
       if (!miss.length) return `<p class="lp-in" role="status"><span>Hela looken ligger i varukorgen.</span>${off ? ` <span>Rabatten är avdragen:</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-open-cart>Visa varukorgen</button>${save}</div>`;
-      if (have) { const rest = miss.reduce((s, h) => s + RQ.byHandle(h).price, 0); // what the rest costs; the saving is said on its own line
-        return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>finns i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Lägg till resten · ${kr(rest)}</button>${save}</div>`; }
-      return `<div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(net)}</button>${save}</div>`;
+      if (have) return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>finns i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row">${lookBtn(l)}${save}</div>`;
+      return `<div class="ctrl-row">${lookBtn(l)}${save}</div>`;
     };
     return {
       title: `${l.name} · RumIQ`,

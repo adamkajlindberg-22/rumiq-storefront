@@ -205,6 +205,8 @@ main{min-height:60vh}
 .sec{padding:clamp(4rem,7.5vw,6.5rem) 0;position:relative}
 .sec.tight{padding:clamp(3rem,6vw,5rem) 0}
 .sec.kalk{background:var(--paper)}
+/* home: two sections on the same background share one gap, not two paddings (no empty band between them) */
+.roomhero + .looks-sec,.looks-sec + .why,.why + .cta-band{padding-top:0}
 .sec-head{max-width:46rem;margin-bottom:clamp(2rem,4vw,3.2rem)}
 .sec-head .eyebrow{display:none}
 .sec-head .h2{margin-top:0}
@@ -353,6 +355,11 @@ main{min-height:60vh}
 .pinfo .priceline{display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap}
 .pinfo .pprice{font-size:1.35rem;font-weight:560;letter-spacing:-.02em}
 .pinfo .vat{font-size:.86rem;color:var(--muted)}
+.pinroom{display:none}
+@media (max-width:640px){
+  .pinfo .pinroom{display:inline-flex;align-items:baseline;gap:.4rem;margin:-.5rem 0 -.5rem auto;padding:.75rem .1rem;border:0;background:none;color:var(--ink);font:inherit;font-size:.9rem;font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent);cursor:pointer}
+  .pinfo .pinroom svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.6;flex:none;align-self:center}
+}
 .pinfo .short{font-size:1.06rem;color:var(--ink2);margin:1.3rem 0 0;max-width:34rem}
 .opt{margin:1.6rem 0 0}
 .opt label,.opt .lbl{display:block;font-size:.88rem;font-weight:500;color:var(--muted);margin-bottom:.6rem}
@@ -851,6 +858,7 @@ details.pw[open] summary::after{content:" −"}
 @media (min-width:821px){.band.settle{width:auto;max-width:min(60rem,62vw)}.band.settle h1{white-space:nowrap}}
 .band.settle .sub{margin:1.5rem 0 2rem;font-size:clamp(1.05rem,1.4vw,1.22rem);line-height:1.5;max-width:30rem;opacity:.85}
 .band.settle .row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+@media (max-width:560px){.band.settle .row{display:inline-grid;grid-template-columns:1fr}} /* stacked on a phone: two buttons of one width, not a ragged pair */
 .band.settle .btn.ghost{border-color:currentColor;color:inherit}
 :root[data-light=kvall] .band.settle .btn:not(.ghost){background:var(--fill);color:#191A18;border-color:var(--fill)}
 .cue{position:absolute;left:50%;bottom:1.6rem;z-index:6;transform:translateX(-50%);display:flex;align-items:center;gap:.55rem;padding:.45rem .9rem .45rem 1rem;border-radius:99px;background:rgba(247,247,244,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:.82rem;font-weight:560;color:#22252A;transition:opacity .6s;pointer-events:none}
@@ -1509,7 +1517,7 @@ html.sheet-lock{overflow:hidden}
 .lc-line button{flex:0 0 calc((100% - .9rem) / 4);min-width:0;aspect-ratio:1;overflow:hidden;border:0;border-radius:var(--r-img);background:var(--paper);box-shadow:0 10px 24px -14px rgba(0,0,0,.45);padding:.4rem;display:grid;place-items:center;transition:transform .35s var(--spring)}
 .lc-line button:hover{transform:translateY(-4px)}
 .lc-line img{width:100%;height:100%;object-fit:contain;display:block}
-.lc-tx{padding:1rem 1.1rem 1.2rem;display:grid;gap:.45rem;flex:1;align-content:start}
+.lc-tx{padding:1rem 1.1rem 1.2rem;display:grid;gap:.45rem;flex:1;grid-template-rows:auto 1fr auto} /* the price row sits at the foot of every card, so a row of cards lines up */
 .lc-tx h3{font-size:var(--t-h3);letter-spacing:-.03em;font-weight:560}
 .lc-tx h3 a{text-decoration:none}
 .lc-tx p{font-size:.92rem;color:var(--muted)}
@@ -1548,6 +1556,7 @@ html.sheet-lock{overflow:hidden}
 .lp-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.8rem;font-size:1.05rem}
 .lp-in{font-size:.95rem;color:var(--ink2);margin-bottom:.7rem}
 .lp-buy .ctrl-row{margin:0}
+.lp-buy .ctrl-row > .btn{flex:1 1 auto} /* a wrapped row fills the width instead of leaving two odd-sized buttons */
 .lp-item .iconbtn.done{background:#2C4A3E;border-color:#2C4A3E;color:#F7F7F4}
 .lp-item .iconbtn.done span{display:none}
 .lp-item .iconbtn.done svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:2}
@@ -1931,7 +1940,7 @@ footer.site .bottom .bottom-link{color:var(--muted);text-decoration:underline;te
 .empty-cart :is(h2,h3){font-size:var(--t-h3);font-weight:560}
 .empty-cart > p{color:var(--ink2)}
 .ec-looks{display:grid;gap:.6rem;margin-top:.6rem}
-.ec-look{display:flex;align-items:center;gap:1rem;padding:.7rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper)}
+.ec-look{display:flex;align-items:center;gap:1rem;padding:.7rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper);text-decoration:none;color:var(--ink)}
 .ec-look:hover{border-color:var(--ink)}
 .ec-imgs{display:flex;gap:.25rem}
 .ec-imgs img{width:2.8rem;height:2.8rem;object-fit:contain;background:var(--img-bg);border-radius:8px}
@@ -2384,7 +2393,7 @@ a,button,input,select,textarea,label,[role=button]{touch-action:manipulation}
   ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
   .sv-card,.fade,.card .ph img,.jr-room,.jr-room.on,.mnav,.mnav.open,.drawer,.drawer.open,.sheet-in,.toast,.toast.show,.buybar,.btn{transition:none}
 }
-@media (max-width:560px){.sec.why{padding-block:2.6rem}.why .sec-head p{margin-top:.4rem}.why-foot{margin-top:1rem;font-size:.88rem}}
+@media (max-width:560px){.sec.why{padding-block:2.6rem}.looks-sec + .sec.why{padding-top:0}.why .sec-head p{margin-top:.4rem}.why-foot{margin-top:1rem;font-size:.88rem}}
 /* ============ v13 ============ */
 /* 1. Start picture on phones and tablets in the light theme: the photo keeps its colour, the words are
       white on a warm dark fade at the bottom (before: a white veil washed out the lower half) */

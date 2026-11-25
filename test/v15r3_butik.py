@@ -116,7 +116,8 @@ with sync_playwright() as p:
               return [vis.map((e) => e.textContent).join(''), t.getAttribute('aria-pressed'), Math.round(tb.height), s.scrollWidth <= s.clientWidth + 1 || s.clientWidth > 90, Math.round(s.getBoundingClientRect().width)]; }""")
             ok(t[0] in ("I mitt rum", "Visa i Mitt rum") and t[1] == "true" and t[2] < 60, f"{tag} the room switch says what it does and is on: {t}")
             ok(t[3] and t[4] <= 260, f"{tag} the sort menu shows its words and keeps a sensible width: {t[4]} px")
-            room1 = pg.evaluate("""() => [...document.querySelectorAll('#results .card')].slice(0, 4).map((c) => { const ph = c.querySelector('.ph').getBoundingClientRect(), r = c.querySelector('.hov.inroom'), q = r.getBoundingClientRect(); return Math.abs(q.left - ph.left) < 2 && getComputedStyle(r).opacity === '1'; })""")
+            # (r4: a product that does not belong in the room's type keeps its own photo, so only the cards that suit the room are checked)
+            room1 = pg.evaluate("""() => [...document.querySelectorAll('#results .card.in-room')].slice(0, 4).map((c) => { const ph = c.querySelector('.ph').getBoundingClientRect(), r = c.querySelector('.hov.inroom'), q = r.getBoundingClientRect(); return Math.abs(q.left - ph.left) < 2 && getComputedStyle(r).opacity === '1'; })""")
             ok(room1 and all(room1), f"{tag} with the switch on, the cards show the room first: {room1}")
             # M18 + D22: a phone card's photo has heart and Lägg till only; elsewhere the four buttons tab in reading order
             btns = pg.evaluate("[...document.querySelector('#results .card').querySelectorAll('button')].filter((b) => b.offsetParent).map((b) => b.className.replace('iconbtn ', ''))")
@@ -229,9 +230,10 @@ with sync_playwright() as p:
             pg.evaluate("(h) => RQ.shop.addToCart(h + '::0', 1)", h)
         pg.wait_for_timeout(300)
         pg.evaluate("document.getElementById('lpBuy').scrollIntoView({block:'center'})"); pg.wait_for_timeout(200)
-        want = pg.evaluate("(h) => RQ.byHandle(h).price", items[-1])
+        # r4: the button says what the cart rises by (the rest, less the discount it completes), so it is never higher than the whole look
+        want = pg.evaluate("(h) => RQ.byHandle(h).price - (RQ.shop.cartDiscount([h]) - RQ.shop.cartDiscount())", items[-1])
         txt = pg.evaluate("document.querySelector('#lpBuy [data-look-add]').textContent")
-        ok(txt == f"Lägg till resten · {want} kr", f"{tag} Lägg till resten says what the rest costs, one space: {txt!r}")
+        ok(txt == f"Lägg till resten · +{want} kr", f"{tag} Lägg till resten says what the cart rises by, one space: {txt!r}")
         y0 = pg.evaluate("scrollY"); pg.click("#lpBuy [data-look-add]"); pg.wait_for_timeout(600)
         ok(abs(pg.evaluate("scrollY") - y0) <= 2, f"{tag} the page stays where it is after the click")
         toast = pg.evaluate("document.getElementById('toast').textContent")
