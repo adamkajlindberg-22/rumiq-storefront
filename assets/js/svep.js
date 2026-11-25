@@ -350,7 +350,16 @@
 
   /* ---------------------------------------------------------------- Svep (the full page) */
   const roundAnswers = (st) => { const hs = st.done.filter((h) => !h.startsWith("soon:") && RQ.byHandle(h)); return { hs, a: hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join("") }; };
-  const savedTiles = (list) => `<div class="sv-liked">${list.map((p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(p.name)}</span><small>${kr(p.price)}</small></button>`).join("")}</div>`;
+  // long Swedish compounds in narrow tiles break where the words meet ("Skrivbords-organisatör"), never mid-syllable
+  RQ.shy = (s) => (window.RQ_LANG === "en" ? String(s) : String(s).replace(/(skrivbords|förvarings|terrakotta|uppladdnings|förråds|våffel|keramik|ull|jute|linne|bords)(?=[a-zåäö]{4,})/giu, "$1\u00AD"));
+  const savedTiles = (list) => `<div class="sv-liked">${list.map((p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(RQ.shy(p.name))}</span><small>${kr(p.price)}</small></button>`).join("")}</div>`;
+  // "Skandinavisk och klassisk", "Skandinavisk, mjuk och ombonad": one "och", a capital only first
+  const styleTitle = (top) => {
+    const ns = top.map((s) => s.name), i = ns.findIndex((n) => / och /.test(n));
+    if (ns.length > 1 && i === 0) ns.reverse();
+    const low = (n) => n.charAt(0).toLocaleLowerCase("sv") + n.slice(1);
+    return ns.length < 2 ? `<span>${esc(ns[0])}</span>` : / och /.test(ns[1]) ? `<span>${esc(ns[0])}</span>, <span>${esc(low(ns[1]))}</span>` : `<span>${esc(ns[0])}</span> <span>och</span> <span>${esc(low(ns[1]))}</span>`;
+  };
   const resultHtml = (st, scope) => {
     const t = RQ.taste.get(), prof = RQ.styleProfile(t), top = prof.mix.filter((m) => m.pct >= 25).slice(0, 2);
     const more = RQ.PRODUCTS.some((p) => inScope(p, scope) && !(p.handle in t.seen));
@@ -360,7 +369,7 @@
     const saved = st.saved.map(RQ.byHandle).filter(Boolean), ra = roundAnswers(st);
     return { top, saved, html: `<div class="svep-result" tabindex="-1">
       <span class="eyebrow">Din stilprofil</span>
-      <h2 class="h2">${top.length ? top.map((s) => `<span>${esc(s.name)}</span>`).join(" <span>och</span> ") : "Vi lär oss fortfarande"}</h2>
+      <h2 class="h2">${top.length ? styleTitle(top) : "Vi lär oss fortfarande"}</h2>
       <p class="lead">${top.length ? esc(RQ.STYLES[top[0].id].text) : "Spara några saker du gillar, så kan butiken sortera efter dig."}</p>
       ${allDone}
       ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
@@ -369,9 +378,10 @@
         <div class="ctrl-row sp-acts"><button class="btn" type="button" id="svAll">Lägg alla i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="svRoomAll">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div>
         ${RQ.priceWatch ? RQ.priceWatch.html(saved.map((p) => p.handle), "svw") : ""}</div>` : ""}
       ${st.bagged.length ? `<p class="small">${st.bagged.length} ${st.bagged.length === 1 ? "vara ligger" : "varor ligger"} redan i varukorgen. <a href="#kassa">Till kassan</a></p>` : ""}
-      ${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
+      ${prof.look || ra.hs.length >= 3 ? `<div class="sp-next">` : ""}${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
       ${ra.hs.length >= 3 ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Inreder ni tillsammans?</b><p>Skicka samma kort till någon. När ni båda har svept ser ni vad ni gillar gemensamt.</p>
-        ${linkForm("svTwo", "Ditt namn, om du vill", "Skicka korten")}</div></div>` : ""}
+        <button class="btn ghost sm" type="button" id="svTwoOpen" aria-expanded="false" aria-controls="svTwo">${SV.link}<span>Skicka korten</span></button>
+        ${linkForm("svTwo", "Ditt namn, om du vill", "Skicka korten").replace("<form ", "<form hidden ")}</div></div>` : ""}${prof.look || ra.hs.length >= 3 ? "</div>" : ""}
       <div class="ctrl-row" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep tio till</button>` : ""}<a class="btn ghost" href="#for-dig">Butiken för dig</a>${top.length ? `<button class="btn ghost" type="button" id="svShare">${SV.share}<span>Dela min stil</span></button>` : ""}</div>
       <button class="tlink" type="button" id="svAgain">Börja om från början</button><p class="small" id="svAgainNote" role="status"></p></div>` };
   };
@@ -431,6 +441,8 @@
             const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => toRoom(r.saved.map((p) => p.handle)));
             const sh = $("#svShare", root); sh && sh.addEventListener("click", () => shareStyle(r.top, (r.saved.length ? r.saved : RQ.styleProfile().liked.map(RQ.byHandle)).filter(Boolean)));
             const ans = roundAnswers(st);
+            // the form for a name opens only for those who want to send the cards, so the result page stays short
+            const to = $("#svTwoOpen", root); to && to.addEventListener("click", () => { const f = $("#svTwo", root); f.hidden = false; to.hidden = true; to.setAttribute("aria-expanded", "true"); $("#svTwoN", root).focus(); });
             bindLinkForm($("#svTwo", root), (n) => twoLink(ans.hs, ans.a, null, n, ""), tr("Svep tillsammans på RumIQ"), tr("Svep samma kort som jag, så ser vi vad vi båda gillar."));
           },
         });

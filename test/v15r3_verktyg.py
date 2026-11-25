@@ -143,6 +143,23 @@ with sync_playwright() as p:
     go(pg, "svep", 900)
     ok(pg.evaluate("document.activeElement.id") != "svDeck", "phone Svep: no focus ring forced on a touch screen")
     ctx.close()
+
+    # ------------------------------------------------------------ Svep: buttons clear of the dock (M5), result title and length (D16)
+    for w, h in ((360, 740), (390, 844), (430, 932)):
+        ctx, pg, errs = new(b, True, w, h)
+        go(pg, "svep", 900)
+        g = pg.evaluate("(() => { const c = document.querySelector('.sv-ctrl').getBoundingClientRect(), d = document.querySelector('.dock').getBoundingClientRect(); return [Math.round(c.bottom), Math.round(d.top), Math.round(document.getElementById('svDeck').getBoundingClientRect().height)]; })()")
+        ok(g[1] - g[0] >= 10 and g[2] >= 340, f"phone {w}: Svep buttons end at least 10 px above the dock and the card stays large: {g}")
+        if w == 390:
+            finish_round(pg, "YYN")
+            t = pg.evaluate("document.querySelector('.svep-result h2').innerText")
+            ok(t.count(" och ") <= 1 and not re.search(r" (och|,) [A-ZÅÄÖ]", t), f"phone Svep result title: one 'och', a capital only first: {t!r}")
+            ok(pg.evaluate("!!document.getElementById('svTwoOpen') && document.getElementById('svTwo').hidden"), "phone Svep result: the name form for swiping together opens only on request")
+            pg.click("#svTwoOpen"); pg.wait_for_timeout(200)
+            ok(pg.evaluate("!document.getElementById('svTwo').hidden && document.activeElement.id === 'svTwoN'"), "phone Svep result: 'Skicka korten' opens the form with the focus in the name field")
+            ok(not pg.evaluate("[...document.querySelectorAll('.sv-liked span')].some(s => /[a-zåäö]-$/m.test(s.innerText) && !/(bords|organisatör|linne|förvarings)/i.test(s.innerText))"), "phone Svep result: saved names break where words meet")
+        ok(not errs, f"phone {w} Svep: no script errors {errs[:2]}")
+        ctx.close()
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
