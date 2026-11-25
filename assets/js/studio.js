@@ -646,7 +646,7 @@
         const r = e.target.closest("[data-inroom]"); if (!r) return;
         const hs = r.dataset.inroom.split(","), R = RQ.room;
         const put = () => { const n = hs.filter((h) => R.add(h, true)).length; RQ.toast(n ? `${n} ${n === 1 ? "sak står" : "saker står"} nu i ditt rum. <a href="#mitt-rum">Öppna</a>` : 'De står redan i ditt rum. <a href="#mitt-rum">Öppna</a>'); };
-        if (R.has()) put(); else R.openSetup(put);
+        if (R.has()) put(); else R.openSetup(put, { add: hs });
       });
       return () => removeEventListener("resize", fit);
     },

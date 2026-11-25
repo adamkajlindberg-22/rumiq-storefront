@@ -135,7 +135,7 @@ with sync_playwright() as p:
         tag = f"[own {W}]"
         c = ctx_for(b, W, Hh, mob); pg = new_page(c)
         pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300)
-        pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": wbuf.getvalue()}]); pg.wait_for_timeout(2000)
+        pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')"); pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": wbuf.getvalue()}]); pg.wait_for_timeout(2000)
         q, bar = pg.evaluate(RECT, "#rmHint .rm-hintask"), pg.evaluate(RECT, ".rm-bar")
         lim = bar[1] if bar and bar[3] > bar[1] and pg.is_visible(".rm-bar") else Hh
         ok(q and 0 < q[1] and q[3] <= lim, f"{tag} 'Vilket rum är det?' is on the first screen, above the buy bar: {q and [round(v) for v in q]} (limit {round(lim)})")
@@ -150,7 +150,7 @@ with sync_playwright() as p:
     for buf, lo, hi, name in ((wbuf, 10.5, 14, "wide"), (tbuf, 15, 22, "upright")):
         c = ctx_for(b, 390, 844, True); pg = new_page(c)
         pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300)
-        pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": buf.getvalue()}]); pg.wait_for_timeout(2000)
+        pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')"); pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": buf.getvalue()}]); pg.wait_for_timeout(2000)
         pg.evaluate("RQ.room.add('lysa-keramiklampa', true)"); lamp = pg.evaluate(SPOT, "lysa-keramiklampa")
         ok(lo <= lamp[2] <= hi and 55 <= lamp[1] <= 68, f"[M12 {name}] the first table lamp starts lamp-sized at mid-height: {lamp}")
         c.close()

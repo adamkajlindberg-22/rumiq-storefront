@@ -78,6 +78,7 @@ def swipe(pg, cdp, x0, y0, x1, y1, steps=10):
 
 
 def upload(pg, name, data, mime="image/jpeg"):
+    pg.evaluate("RQ.shop.customer() || RQ.shop.signIn('test@example.com', 'Test', 'email')")  # an own photo needs an account (studio brief, founder decision)
     pg.set_input_files(".sheet [data-room-file]:not([capture])", {"name": name, "mimeType": mime, "buffer": data})
 
 
@@ -115,7 +116,8 @@ with sync_playwright() as p:
         pg.tap("#rmMore"); pg.tap("#rmMenu [data-room-setup]"); pg.wait_for_timeout(500)
         pg.tap(".sheet.open [data-room-sample][data-type=vardagsrum]"); pg.wait_for_timeout(1900)
         lamp = pg.evaluate(SPOT, "lysa-keramiklampa")
-        ok(pg.evaluate("document.querySelector('.rm-bg').naturalWidth") == 1400 and abs(float(pg.evaluate("getComputedStyle(document.getElementById('rmStage')).getPropertyValue('--ar')")) - 1400 / 781) < 0.01, f"{tag} Byt rum shows the new room")
+        # studio brief: photos are kept at about 1600 px on the long side (was 1400)
+        ok(pg.evaluate("document.querySelector('.rm-bg').naturalWidth") == 1600 and abs(float(pg.evaluate("getComputedStyle(document.getElementById('rmStage')).getPropertyValue('--ar')")) - 1600 / 893) < 0.01, f"{tag} Byt rum shows the new room")
         ok(lamp[0] > 70 and 60 < lamp[1] < 72, f"{tag} after Byt rum the lamp stands on the new room's table: {lamp}")
         pg.evaluate("scrollTo(0, 0)"); pg.wait_for_timeout(300); quiet(pg)
         # the room mode: tall view, bigger things, positions unchanged
@@ -209,7 +211,8 @@ with sync_playwright() as p:
         tops = pg.evaluate("[...document.querySelectorAll('.sheet-samples img')].map((i) => Math.round(i.getBoundingClientRect().top))")
         ok(len(set(tops)) == -(-len(tops) // 4), f"{tag} sample thumbnails line up: {tops}")  # r3 D22: seven samples, four to a row
         ok(pg.evaluate("document.querySelector('[data-tip-touch]').hidden && !document.querySelector('[data-tip-desk]').hidden && !document.querySelector('.sheet-acts .btn:not(.cam)').classList.contains('ghost')"), f"{tag} the sheet speaks to a computer: own tip, one main button")
-        # drop a photo on the sheet
+        # drop a photo on the sheet (an own photo needs an account: studio brief, founder decision)
+        pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')")
         pg.evaluate("""(b64) => { const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); const dt = new DataTransfer(); dt.items.add(new File([u8], 'rum.jpg', { type: 'image/jpeg' }));
           document.querySelector('.sheet.open .sheet-card').dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })); }""", base64.b64encode(picture(1050, 1400)).decode())
         pg.wait_for_timeout(1800)
@@ -225,11 +228,11 @@ with sync_playwright() as p:
           document.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); }""", base64.b64encode(picture(4000, 1000)).decode())
         pg.wait_for_timeout(1800)
         r = pg.evaluate("[RQ.room.get().w, RQ.room.get().h]")
-        ok(r[0] == 1400 and abs(r[0] / r[1] - 2.2) < 0.02, f"{tag} a pasted panorama is taken in and trimmed to 2.2:1: {r}")
+        ok(r[0] == 1600 and abs(r[0] / r[1] - 2.2) < 0.02, f"{tag} a pasted panorama is taken in and trimmed to 2.2:1: {r}")
         # sample from the sheet, on the Mitt rum page
         pg.evaluate("RQ.room.saveScene([]); RQ.room.openSetup()"); pg.wait_for_timeout(300)
         pg.click(".sheet.open [data-room-sample][data-type=vardagsrum]"); pg.wait_for_timeout(1700); quiet(pg)
-        ok(pg.evaluate("RQ.room.get().sample && document.querySelector('.rm-bg').naturalWidth === 1400"), f"{tag} a sample room from the sheet is shown at once")
+        ok(pg.evaluate("RQ.room.get().sample && document.querySelector('.rm-bg').naturalWidth === 1600"), f"{tag} a sample room from the sheet is shown at once")
         # a table has an end: the fourth thing goes to the floor and says so
         for h in ["lysa-keramiklampa", "sand-keramikvas", "glod-doftljus-keramik"]:
             pg.evaluate("(h) => RQ.room.add(h, true)", h)
@@ -322,7 +325,10 @@ with sync_playwright() as p:
     upload_small = picture(300, 200)
     pg.evaluate("document.querySelector('[data-act=done]') && document.querySelector('[data-act=done]').click(); RQ.room.openSetup()"); pg.wait_for_timeout(300)
     upload(pg, "liten.jpg", upload_small); pg.wait_for_timeout(1800)
-    ok("liten" in pg.evaluate(TOAST), "[own] a tiny photo is taken in with a warning")
+    # studio brief: a small photo gets a friendly word with "Använd ändå" / "Välj en annan" before it goes in (was a toast after)
+    ok("liten" in pg.evaluate("document.getElementById('roomSheetTitle').textContent"), "[own] a tiny photo gets a friendly word first")
+    pg.tap(".sheet.open [data-check-use]"); pg.wait_for_timeout(1500)
+    ok(pg.evaluate("RQ.room.get().w") == 300, "[own] and goes in with Använd ändå")
     ctx.close()
 
     ctx = ctx_for(b, 390, 844, True); pg = new_page(ctx)

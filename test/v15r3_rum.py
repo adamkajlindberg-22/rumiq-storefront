@@ -177,7 +177,7 @@ with sync_playwright() as p:
     from PIL import Image
     buf = io.BytesIO(); Image.open(ROOT / "assets/img/rum/vardagsrum-1600.webp").convert("RGB").resize((1600, 1100)).save(buf, "JPEG", quality=85)
     pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(600); pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300)
-    pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": buf.getvalue()}]); pg.wait_for_timeout(2200)
+    pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')"); pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": buf.getvalue()}]); pg.wait_for_timeout(2200)
     ok(pg.evaluate(RECT, ".rm-tools")[3] <= 900, "[D11 1440] a 16:11 own photo and its toolbar fit the first screen")
     # M12: in an own photo the first lamp and print start mid-picture and large enough to grab
     pg.evaluate("RQ.room.add('lysa-keramiklampa', true); RQ.room.add('affisch-linje-ekram', true)"); pg.wait_for_timeout(300)

@@ -348,7 +348,7 @@
   const toRoom = (hs) => {
     const R = RQ.room; if (!R) return;
     const put = () => { const r = RQ.placeFitting(hs); if (r.placed.length || r.already.length) { location.hash = "#mitt-rum"; setTimeout(() => RQ.toast(r.text), 400); } else RQ.toast(`${r.text} <a href="#mitt-hem">Se Sparat</a>`); };
-    if (R.has()) put(); else R.openSetup(put);
+    if (R.has()) put(); else R.openSetup(put, { add: hs, go: "#mitt-rum" });
   };
 
   /* ---------------------------------------------------------------- Svep (the full page) */

@@ -1174,7 +1174,7 @@
     if (t.id === "mnavClose") { closeAll(); return; }
     if (t.matches("a[data-after]")) RQ.ss.set("rumiq-after-login", "#" + t.dataset.after);
     if (t.matches("[data-close]") || t.matches("a[href^='#']")) { closeAll(); }
-    if (t.matches("[data-cart-room]")) { const hs = S.cartLines().map((l) => l.product.handle); const go = () => { hs.forEach((h) => RQ.room.add(h, true)); location.hash = "#mitt-rum"; }; closeAll(); if (RQ.room.has()) go(); else RQ.room.openSetup(go); }
+    if (t.matches("[data-cart-room]")) { const hs = S.cartLines().map((l) => l.product.handle); const go = () => { hs.forEach((h) => RQ.room.add(h, true)); location.hash = "#mitt-rum"; }; closeAll(); if (RQ.room.has()) go(); else RQ.room.openSetup(go, { add: hs, go: "#mitt-rum" }); }
   });
   let undoRm = null;
   scrimAll.addEventListener("click", closeAll);

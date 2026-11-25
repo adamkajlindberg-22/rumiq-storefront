@@ -206,8 +206,8 @@
     setMode(on) { ls.set(MODE, !!on); emit("mode"); },
     async saveImage(img, meta = {}) {
       // a panorama or a very tall strip is trimmed around its middle (to 2.2:1 or 1:2.2), so the room can be shown at a useful size
-      const nw = img.naturalWidth, nh = img.naturalHeight, sw = Math.min(nw, Math.round(nh * 2.2)), sh = Math.min(nh, Math.round(nw * 2.2)), sx = Math.round((nw - sw) / 2), sy0 = Math.round((nh - sh) / 2);
-      const max = 1400, k = Math.min(1, max / Math.max(sw, sh));
+      const nw = img.naturalWidth || img.width, nh = img.naturalHeight || img.height, sw = Math.min(nw, Math.round(nh * 2.2)), sh = Math.min(nh, Math.round(nw * 2.2)), sx = Math.round((nw - sw) / 2), sy0 = Math.round((nh - sh) / 2);
+      const max = 1600, k = Math.min(1, max / Math.max(sw, sh)); // long side about 1600 px, as JPEG
       const W = Math.round(sw * k), H = Math.round(sh * k);
       const cv = document.createElement("canvas"); cv.width = W; cv.height = H; cv.getContext("2d").drawImage(img, sx, sy0, sw, sh, 0, 0, W, H);
       let data = cv.toDataURL("image/jpeg", 0.82);
@@ -354,45 +354,69 @@
     thumb: () => (room ? `<img src="${R.url()}" alt="">` : ""),
   });
 
-  /* ---------------------------------------------------------------- setup sheet: take or choose the photo */
+  /* ---------------------------------------------------------------- setup sheet: take or choose the photo
+     The sample rooms are free to try. Your own photo needs an account: the sheet asks you to sign in first and
+     remembers the step you were on, what you were about to put in the room and the photo if you had already picked
+     one, so you come back to the same step with everything still chosen (resumeGate below).
+     Any photo goes: JPG, PNG, WebP and iPhone's HEIC/HEIF (a decoder is fetched only when such a file is chosen),
+     turned the right way up, trimmed to a useful shape and kept at most 1600 px on the long side. */
   const TYPES = [["vardagsrum", "Vardagsrum"], ["sovrum", "Sovrum"], ["kok", "Kök"], ["badrum", "Badrum"], ["hall", "Hall"], ["hemmakontor", "Hemmakontor"], ["uteliv", "Uteliv"]];
+  const LEAD = "Ta en bild av rummet du vill inreda. Sedan står varje produkt du tittar på i just ditt rum.";
   const sheet = document.createElement("div");
-  sheet.className = "sheet"; sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true"); sheet.setAttribute("aria-labelledby", "roomSheetTitle");
+  sheet.className = "sheet roomsheet"; sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true"); sheet.setAttribute("aria-labelledby", "roomSheetTitle");
   sheet.innerHTML = `<div class="sheet-scrim" data-sheet-close></div><div class="sheet-card"><span class="sheet-grip" aria-hidden="true"></span>
     <button class="iconbtn sheet-x" type="button" data-sheet-close aria-label="Stäng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <h2 id="roomSheetTitle">Lägg in ditt rum</h2>
-    <p class="lead">Ta en bild av rummet du vill inreda. Sedan står varje produkt du tittar på i just ditt rum.</p>
-    <div class="sheet-acts">
-      <label class="btn cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Ta en bild<input type="file" accept="image/*" capture="environment" class="sr" data-room-file></label>
-      <label class="btn ghost"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>Välj en bild<input type="file" accept="image/*" class="sr" data-room-file></label>
+    <p class="sheet-hello" role="status" hidden></p>
+    <h2 id="roomSheetTitle" tabindex="-1">Lägg in ditt rum</h2>
+    <p class="lead" id="roomSheetLead">${LEAD}</p>
+    <div class="sheet-main">
+      <div class="sheet-acts">
+        <label class="btn cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Ta en bild<input type="file" accept="image/*" capture="environment" class="sr" data-room-file></label>
+        <label class="btn ghost"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>Välj en bild<input type="file" accept="image/*,.heic,.heif" class="sr" data-room-file></label>
+      </div>
+      <p class="small sheet-tip" data-tip-touch>Ställ dig i dörröppningen och ta bilden i dagsljus, gärna på bredden så att hela rummet kommer med.</p>
+      <p class="small sheet-tip" data-tip-desk hidden>Du kan också dra hit en bild eller klistra in den. Bäst blir en bild i dagsljus där hela rummet syns.</p>
+    </div>
+    <div class="sheet-check" hidden><img class="sheet-shot" alt="Bilden du valde"><div class="sheet-two"><button type="button" class="btn" data-check-use>Använd ändå</button><button type="button" class="btn ghost" data-check-other>Välj en annan</button></div></div>
+    <div class="sheet-gate" hidden>
+      <p class="sheet-wait" hidden><img class="sheet-shot" alt="Bilden du valde"><span>Bilden väntar här medan du loggar in.</span></p>
+      <div class="sheet-two"><a class="btn" href="#konto" data-room-gate>Logga in</a><a class="btn ghost" href="#skapa-konto" data-room-gate>Skapa gratis konto</a></div>
+      <div class="sso-list sheet-sso" hidden></div>
     </div>
     <p class="sheet-err" role="alert" hidden></p>
-    <p class="small sheet-tip" data-tip-touch>Ställ dig i dörröppningen och ta bilden i dagsljus, gärna på bredden så att hela rummet kommer med.</p>
-    <p class="small sheet-tip" data-tip-desk hidden>Du kan också dra hit en bild eller klistra in den. Bäst blir en bild i dagsljus där hela rummet syns.</p>
-    <h3>Eller prova med ett exempelrum</h3>
+    <h3 data-samples-h>Eller prova med ett exempelrum</h3>
     <div class="sheet-samples">${RQ.SAMPLE_ROOMS.map((r) => `<button type="button" data-room-sample="${r.img}" data-type="${r.id}"><img src="${r.img.replace("-1600", "-600")}" alt="" loading="lazy"><span>${esc(r.name)}</span></button>`).join("")}</div>
     <h3 data-room-type-h>Vilket rum är det?</h3>
     <div class="chips" data-room-type>${TYPES.map(([id, n]) => `<button type="button" class="chip" data-v="${id}" aria-pressed="false">${n}</button>`).join("")}</div>
     <p class="small sheet-priv"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
-    <div class="sheet-busy" hidden><span class="spin"></span>Läser in rummet</div>
+    <div class="sheet-busy" hidden><span class="spin"></span>Läser in bilden</div>
   </div>`;
   document.body.appendChild(sheet);
-  let after = null, chosenType = null, back = null;
+  let after = null, plan = null, chosenType = null, back = null, held = null; // held: the photo that waits for "Använd ändå", or for you to sign in
   const busy = (on) => ($(".sheet-busy", sheet).hidden = !on);
   const fail = (msg) => { const e = $(".sheet-err", sheet); e.textContent = msg || ""; e.hidden = !msg; if (msg) $(".sheet-card", sheet).scrollTop = 0; };
-  R.openSetup = (then) => {
-    after = then || null; back = document.activeElement;
+  const hello = (msg) => { const h = $(".sheet-hello", sheet); h.textContent = msg || ""; h.hidden = !msg; };
+  /* what the sheet shows: "main" (take or choose), "check" (the photo is dark or small) or "gate" (sign in first) */
+  const mode = (m, t) => { sheet.dataset.mode = m;
+    $(".sheet-main", sheet).hidden = m !== "main"; $(".sheet-check", sheet).hidden = m !== "check"; $(".sheet-gate", sheet).hidden = m !== "gate";
+    $("#roomSheetTitle", sheet).textContent = t ? t[0] : m === "gate" ? "Logga in för att lägga in ditt rum" : room ? "Byt rum" : "Lägg in ditt rum";
+    $("#roomSheetLead", sheet).textContent = t ? t[1] : m === "gate" ? "Ett gratis konto behövs för att lägga in en bild av ditt eget rum. Allt du har valt finns kvar när du kommer tillbaka." : LEAD;
+    $("[data-samples-h]", sheet).textContent = m === "gate" ? "Exempelrummen kan du prova utan konto" : "Eller prova med ett exempelrum";
+    $(".sheet-card", sheet).scrollTop = 0; };
+  /* then: what happens once the room is in (a closure). plan: the same thing written down ({ add: [handles], go: "#route" }),
+     so it can wait while you sign in, when a closure would be lost with the page */
+  R.openSetup = (then, pl) => {
+    after = then || null; plan = pl || null; back = document.activeElement; held = null;
     chosenType = room && room.type;
     $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType));
     const own = !!(room && !room.sample); $("[data-room-type-h]", sheet).hidden = !own; $("[data-room-type]", sheet).hidden = !own; // the room type is asked about a photo you have, not before (a new photo is asked in the editor)
-    $("#roomSheetTitle", sheet).textContent = room ? "Byt rum" : "Lägg in ditt rum";
     const touch = matchMedia("(pointer:coarse)").matches;
     $(".cam", sheet).hidden = !touch; $("[data-tip-touch]", sheet).hidden = !touch; $("[data-tip-desk]", sheet).hidden = touch;
     $(".sheet-acts .btn:not(.cam)", sheet).classList.toggle("ghost", touch); // on a computer "Välj en bild" is the one main button
-    fail(""); sheet.classList.add("open"); document.documentElement.style.overflow = "hidden";
+    fail(""); hello(""); busy(false); mode("main"); sheet.classList.add("open"); document.documentElement.style.overflow = "hidden";
     setTimeout(() => $(".sheet-x", sheet).focus(), 60);
   };
-  const close = () => { sheet.classList.remove("open"); document.documentElement.style.overflow = ""; if (back && back.focus) back.focus({ preventScroll: true }); };
+  const close = () => { sheet.classList.remove("open"); document.documentElement.style.overflow = ""; held = null; if (back && back.focus) back.focus({ preventScroll: true }); };
   R.closeSetup = close;
   const done = async (img, meta) => {
     busy(true); fail("");
@@ -404,26 +428,112 @@
     else if (/^(mitt-rum|studio(-rum|-analys|-kombinera)?$)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) { RQ.router(); scrollTo(0, 0); if (room.sample || !R.scene().length) RQ.toast("Klart. Här är ditt rum."); } // the editor is drawn with the new photo
     else RQ.toast('Klart. Nu visas butiken i ditt rum. <a href="#butik">Till butiken</a>');
   };
+
+  /* ---- reading a photo */
+  const isHeic = (f) => /hei[cf]/i.test(f.type || "") || /\.(heic|heif)$/i.test(f.name || "");
+  let heicLib = null; // iPhone photos on a browser that cannot open them: a decoder (heic2any, MIT) fetched the first time one is chosen
+  const loadHeic = () => heicLib || (heicLib = new Promise((ok, bad) => { const s = document.createElement("script"); s.src = "assets/vendor/heic2any.js"; s.onload = () => (window.heic2any ? ok(window.heic2any) : bad()); s.onerror = () => { heicLib = null; bad(); }; document.head.appendChild(s); }));
+  const loadImg = (blob) => new Promise((ok, bad) => { const u = URL.createObjectURL(blob), im = new Image(); im.decoding = "async"; im.onload = () => { ok(im); setTimeout(() => URL.revokeObjectURL(u), 4000); }; im.onerror = () => { URL.revokeObjectURL(u); bad(new Error("decode")); }; im.src = u; });
+  /* the camera's own note of which way is up (EXIF orientation 1–8), read from the start of a JPEG */
+  const exifTurn = async (f) => { try {
+      const v = new DataView(await f.slice(0, 131072).arrayBuffer()); if (v.byteLength < 4 || v.getUint16(0) !== 0xffd8) return 1; let o = 2;
+      while (o + 10 < v.byteLength) { const m = v.getUint16(o);
+        if (m === 0xffe1 && v.getUint32(o + 4) === 0x45786966) { const t = o + 10, le = v.getUint16(t) === 0x4949, d = t + v.getUint32(t + 4, le), n = v.getUint16(d, le);
+          for (let i = 0; i < n; i++) { const e = d + 2 + i * 12; if (v.getUint16(e, le) === 0x0112) return v.getUint16(e + 8, le) || 1; } return 1; }
+        if ((m & 0xff00) !== 0xff00 || m === 0xffda) return 1; o += 2 + v.getUint16(o + 2); }
+    } catch (e) {} return 1; };
+  // browsers that know CSS image-orientation already show and draw photos the right way up; older ones get turned here
+  const turnsByItself = () => !!(window.CSS && CSS.supports && CSS.supports("image-orientation", "from-image"));
+  const upright = (im, o) => { const w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, k = Math.min(1, 3200 / Math.max(w, h)), W = Math.round(w * k), H = Math.round(h * k), side = o > 4;
+    const cv = document.createElement("canvas"); cv.width = side ? H : W; cv.height = side ? W : H; const cx = cv.getContext("2d");
+    const T = { 2: [-1, 0, 0, 1, W, 0], 3: [-1, 0, 0, -1, W, H], 4: [1, 0, 0, -1, 0, H], 5: [0, 1, 1, 0, 0, 0], 6: [0, 1, -1, 0, H, 0], 7: [0, -1, -1, 0, H, W], 8: [0, -1, 1, 0, 0, W] }[o];
+    if (T) cx.setTransform(...T); cx.drawImage(im, 0, 0, W, H); return cv; };
+  const readPhoto = async (f) => {
+    let im = null; try { im = await loadImg(f); } catch (e) {}
+    // the browser cannot open it: only a real HEIC/HEIF file (it says "ftyp" near its start) fetches the decoder
+    if (!im && isHeic(f) && new TextDecoder().decode(await f.slice(4, 8).arrayBuffer()) === "ftyp") { const dec = await loadHeic(); const out = await dec({ blob: f, toType: "image/jpeg", quality: 0.92 }); im = await loadImg(Array.isArray(out) ? out[0] : out); }
+    if (!im) throw new Error("decode");
+    const o = !isHeic(f) && !turnsByItself() ? await exifTurn(f) : 1;
+    const cv = upright(im, o), long = Math.max(im.naturalWidth, im.naturalHeight), a = analyse(cv);
+    return { cv, small: long < 800, dark: a.light < 0.3 };
+  };
+  const shot = (cv) => { const k = Math.min(1, 640 / Math.max(cv.width, cv.height)), c = document.createElement("canvas"); c.width = Math.round(cv.width * k); c.height = Math.round(cv.height * k); c.getContext("2d").drawImage(cv, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.8); };
+  /* a picture is in: a dark or small one gets a friendly word first, then you sign in (if you have not), then it becomes the room */
+  const takeFile = async (f) => {
+    if (!f) return;
+    if (!/^image\//.test(f.type) && !isHeic(f)) { fail("Det där är ingen bild. Välj ett foto, till exempel JPG, PNG eller HEIC."); return; }
+    busy(true); fail(""); let ph;
+    try { ph = await readPhoto(f); }
+    catch (e) { busy(false); fail(isHeic(f) ? "Den här HEIC-bilden gick inte att läsa. Spara den som JPG eller ta en ny bild här." : "Bilden gick inte att läsa. Prova en JPG eller PNG."); return; }
+    busy(false);
+    if (ph.dark || ph.small) { held = ph; $(".sheet-check .sheet-shot", sheet).src = shot(ph.cv);
+      mode("check", ph.dark && ph.small ? ["Bilden är ganska mörk och liten.", "Ett ljusare och större foto ger en mer verklighetstrogen bild."] : ph.dark ? ["Bilden är ganska mörk.", "Ett ljusare foto ger en mer verklighetstrogen bild."] : ["Bilden är ganska liten.", "En större bild ger ett skarpare rum."]);
+      setTimeout(() => $("#roomSheetTitle", sheet).focus({ preventScroll: true }), 60); return; }
+    use(ph);
+  };
+  const use = (ph) => { held = null; if (!S.customer()) { gate(ph); return; } done(ph.cv, { name: "Mitt rum" }); };
+
+  /* ---- the gate: your own photo needs an account */
+  const GATE = "rumiq-room-gate", GATE_IMG = "rumiq-room-gate-img";
+  const routeNow = () => (RQ.currentRoute && RQ.currentRoute()) || "hem";
+  let waiting = null, from = "hem"; // the photo you picked before signing in (small enough for the tab's storage), and the page you were on
+  const gate = (ph) => {
+    waiting = ph ? (() => { const k = Math.min(1, 1600 / Math.max(ph.cv.width, ph.cv.height)), c = document.createElement("canvas"); c.width = Math.round(ph.cv.width * k); c.height = Math.round(ph.cv.height * k); c.getContext("2d").drawImage(ph.cv, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", 0.85); })() : null;
+    const w = $(".sheet-wait", sheet); w.hidden = !waiting; if (waiting) $("img", w).src = waiting;
+    from = routeNow(); $$("[data-room-gate]", sheet).forEach((a) => (a.dataset.after = from));
+    mode("gate"); fail("");
+    const sso = $(".sheet-sso", sheet); sso.hidden = true; sso.innerHTML = "";
+    // Google, Apple and Microsoft in one tap, once the sign-in server has said which are switched on
+    if (RQ.auth) RQ.auth.start().then(() => { if (sheet.dataset.mode !== "gate" || RQ.auth.mode !== "supabase" || !RQ.auth.socials.length) return; sso.innerHTML = RQ.socialButtons("Fortsätt"); sso.hidden = false; }, () => {});
+    setTimeout(() => $("#roomSheetTitle", sheet).focus({ preventScroll: true }), 60); // the new title is read out; Logga in is the next stop
+  };
+  /* the moment you leave to sign in: the step, what you were about to put in the room, the room type and the photo */
+  const keepGate = () => {
+    const st = { at: Date.now(), route: from, plan: plan || (after ? { go: "#mitt-rum" } : null), type: chosenType || null, photo: false };
+    if (waiting) { try { sessionStorage.setItem(GATE_IMG, waiting); st.photo = true; } catch (e) {} }
+    RQ.ss.set(GATE, JSON.stringify(st)); RQ.ss.set("rumiq-after-login", "#" + st.route);
+  };
+  const readGate = () => { try { const g = JSON.parse(RQ.ss.get(GATE) || "null"); return g && Date.now() - g.at < 18e5 ? g : null; } catch (e) { return null; } };
+  const dropGate = () => { RQ.ss.set(GATE, ""); try { sessionStorage.removeItem(GATE_IMG); } catch (e) {} };
+  /* back from signing in: on the same page, the sheet opens again with everything you had chosen; a photo you had
+     already picked goes straight into the room */
+  let resuming = 0;
+  const resumeGate = () => {
+    const g = readGate(); if (!g || !S.customer() || resuming) return;
+    const t0 = Date.now(); resuming = 1;
+    const tick = () => {
+      const here = routeNow();
+      if (here !== g.route) { if (/^(konto|skapa-konto|logga-in)$/.test(here) && Date.now() - t0 > 250) location.hash = "#" + g.route; if (Date.now() - t0 < 8000) setTimeout(tick, 150); else resuming = 0; return; }
+      resuming = 0; let pic = null; try { pic = g.photo ? sessionStorage.getItem(GATE_IMG) : null; } catch (e) {} dropGate();
+      const p = g.plan || {}, then = p.add || p.go ? () => { (p.add || []).forEach((h) => RQ.byHandle(h) && R.add(h, true)); if (p.go && routeNow() !== p.go.replace(/^#/, "")) location.hash = p.go; } : null;
+      R.openSetup(then, g.plan); chosenType = g.type || chosenType;
+      if (pic) { busy(true); const im = new Image(); im.onload = () => done(im, { name: "Mitt rum" }); im.onerror = () => { busy(false); hello("Du är inloggad. Välj bilden en gång till, så är du igång."); }; im.src = pic; }
+      else hello("Du är inloggad. Nu kan du lägga in ditt rum.");
+    };
+    setTimeout(tick, 0);
+  };
+  // signing in happens on the account page (or with Google and the like, which come back to it)
+  S.onChange((w) => { if (w === "customer" && S.customer() && readGate() && /^(konto|skapa-konto|logga-in)$/.test(routeNow())) resumeGate(); });
+  document.addEventListener("DOMContentLoaded", () => setTimeout(() => { if (readGate() && S.customer()) resumeGate(); }, 300));
+
   sheet.addEventListener("click", (e) => {
     if (e.target.closest("[data-sheet-close]")) return close();
+    // your own photo: signed in first (a click on Ta en bild / Välj en bild opens the gate instead of the camera)
+    const pickBtn = e.target.closest(".sheet-acts label, .sheet-acts input"); if (pickBtn && !S.customer()) { e.preventDefault(); gate(null); return; }
+    if (e.target.closest("[data-room-gate]")) { keepGate(); setTimeout(close, 0); return; } // the link goes to the account page; the sheet closes behind it
+    const sso = e.target.closest("[data-sso]"); if (sso) { keepGate(); sso.disabled = true; RQ.auth.social(sso.dataset.sso).catch((er) => { sso.disabled = false; fail((er && er.message) || "Inloggningen gick inte att starta. Försök igen."); }); return; }
+    if (e.target.closest("[data-check-use]")) { if (held) use(held); return; }
+    if (e.target.closest("[data-check-other]")) { held = null; mode("main"); const inp = $(".sheet-acts label:not(.cam) input", sheet); inp.click(); return; }
     const t = e.target.closest("[data-room-type] [data-v]"); if (t) { chosenType = chosenType === t.dataset.v ? null : t.dataset.v; $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType)); if (room) R.setType(chosenType); return; }
     const s = e.target.closest("[data-room-sample]"); if (s) { busy(true); const im = new Image(); im.onload = () => done(im, { sample: true, map: s.dataset.type, type: s.dataset.type, name: $("span", s).textContent }); im.onerror = () => { busy(false); fail("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); }; im.src = s.dataset.roomSample; }
   });
-  const takeFile = (f) => {
-    if (!f) return;
-    if (!/^image\//.test(f.type) && !/\.(heic|heif)$/i.test(f.name)) { fail("Det där är ingen bild. Välj en JPG, PNG eller WebP."); return; }
-    busy(true); fail(""); const url = URL.createObjectURL(f); const im = new Image();
-    im.onload = () => { const small = Math.max(im.naturalWidth, im.naturalHeight) < 700; done(im, { name: "Mitt rum" }).then(() => { if (small && room && !room.sample) RQ.toast("Bilden är liten och kan se suddig ut. En större bild ger ett finare rum."); }); setTimeout(() => URL.revokeObjectURL(url), 4000); };
-    im.onerror = () => { busy(false); fail(/\.(heic|heif)$/i.test(f.name) ? "Den här webbläsaren kan inte läsa HEIC-bilder. Spara bilden som JPG eller ta en ny bild här." : "Bilden gick inte att läsa. Prova en JPG eller PNG."); };
-    im.src = url;
-  };
   $$("[data-room-file]", sheet).forEach((inp) => inp.addEventListener("change", () => { const f = inp.files[0]; inp.value = ""; takeFile(f); }));
   // on a computer: drop a picture on the sheet, or paste one
   const card0 = $(".sheet-card", sheet);
   ["dragenter", "dragover"].forEach((ev) => card0.addEventListener(ev, (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) { e.preventDefault(); card0.classList.add("drop"); } }));
   ["dragleave", "drop"].forEach((ev) => card0.addEventListener(ev, (e) => { if (ev === "dragleave" && card0.contains(e.relatedTarget)) return; card0.classList.remove("drop"); }));
   card0.addEventListener("drop", (e) => { if (!e.dataTransfer || !e.dataTransfer.files.length) return; e.preventDefault(); takeFile(e.dataTransfer.files[0]); });
-  document.addEventListener("paste", (e) => { if (!sheet.classList.contains("open") || !e.clipboardData) return; const f = [...e.clipboardData.files].find((x) => /^image\//.test(x.type)); if (f) { e.preventDefault(); takeFile(f); } });
+  document.addEventListener("paste", (e) => { if (!sheet.classList.contains("open") || !e.clipboardData) return; const f = [...e.clipboardData.files].find((x) => /^image\//.test(x.type) || isHeic(x)); if (f) { e.preventDefault(); takeFile(f); } });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheet.classList.contains("open")) { e.stopImmediatePropagation(); close(); } }, true);
   // swipe the sheet down to close it on phones
   (() => { const card = $(".sheet-card", sheet); let y0 = null, dy = 0;
@@ -897,9 +1007,9 @@
     if (b.matches("[data-room-all]")) { // several things at once (a saved look, a wish list): into the room, then open it
       const hs = b.dataset.roomAll.split(",").filter((h) => RQ.byHandle(h)); if (!hs.length) return;
       const put = () => { hs.forEach((h) => R.add(h, true)); if (RQ.currentRoute && /^mitt-rum/.test(RQ.currentRoute())) RQ.router(); else location.hash = "#mitt-rum"; };
-      if (room) put(); else R.openSetup(put); return;
+      if (room) put(); else R.openSetup(put, { add: hs, go: "#mitt-rum" }); return;
     }
-    if (b.matches("[data-room-setup]")) { R.openSetup(b.dataset.roomSetup ? () => (location.hash = b.dataset.roomSetup) : null); return; }
+    if (b.matches("[data-room-setup]")) { const to = b.dataset.roomSetup; R.openSetup(to ? () => (location.hash = to) : null, to ? { go: to } : null); return; }
     if (b.matches("[data-room-sample-now]")) { const to = b.dataset.roomSampleNow || "#butik", im = new Image(); b.setAttribute("aria-busy", "true");
       im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum" }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
         // already on that page (the empty Mitt rum): a new hash would change nothing, so the page is drawn again here
@@ -911,6 +1021,6 @@
     const inPick = !!b.closest(".sheet.rmpick");
     const go = () => { if (R.inScene(h)) { R.remove(h); b.setAttribute("aria-pressed", false); RQ.toast(document.getElementById("rmUndo") ? "Borttagen ur ditt rum." : 'Borttagen ur ditt rum. <a href="#" data-room-undo>Ångra</a>'); return; } // in Mitt rum the Ångra button is on the room
       const ok = R.add(h, inPick); b.setAttribute("aria-pressed", ok); if (ok && inPick && R.lastMoved === h) RQ.toast("Där var det fullt, så den står på golvet. Dra den dit du vill."); };
-    if (!room) R.openSetup(() => { R.add(h); }); else go();
+    if (!room) R.openSetup(() => { R.add(h); }, { add: [h] }); else go();
   });
 })();
