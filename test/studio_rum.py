@@ -320,6 +320,33 @@ with sync_playwright() as p:
             ok(not pg.evaluate("RQ.room.get().known") and not any(i.get("real") for i in pg.evaluate("RQ.room.scene()")) and pg.evaluate("document.getElementById('rmScale').textContent").startswith("Storleken är ungefärlig."), f"{tag} Ta bort: the sizes are approximate again, and said so")
         c.close()
 
+    # ------------------------------------------------------------ the editor's delight: things land left to right and a phone's camera follows them; one warm word; Visa någon
+    for W, Hh, mob in ((390, 844, True), (1440, 900, False)):
+        tag = f"[delight {W}]"
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c)
+        pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(800); quiet(pg)
+        pg.click("#view [data-room-sample-now]"); pg.wait_for_timeout(1800); quiet(pg)
+        cx0 = pg.evaluate("document.getElementById('rmCanvas').getBoundingClientRect().left")
+        pg.click("#rmSuggest0"); pg.wait_for_timeout(250)
+        lanes = pg.evaluate("[...document.querySelectorAll('.rm-item.land')].map((e) => [parseFloat(e.style.left), +getComputedStyle(e).getPropertyValue('--i')]).sort((a, b) => a[1] - b[1]).map((x) => x[0])")
+        ok(len(lanes) >= 3 and lanes == sorted(lanes), f"{tag} Inred åt mig: the things land one after the other from left to right: {lanes}")
+        if mob:
+            a0 = pg.evaluate("document.getElementById('rmCanvas').getBoundingClientRect().left"); pg.wait_for_timeout(2600)
+            a1 = pg.evaluate("document.getElementById('rmCanvas').getBoundingClientRect().left")
+            ok(a1 < a0 - 100, f"{tag} and the camera glides across the room after them: {round(a0)} -> {round(a1)}")
+        else:
+            pg.wait_for_timeout(1500)
+        ok(pg.evaluate("!document.getElementById('rmFirst').hidden && /hemma hos dig/.test(document.getElementById('rmFirst').textContent)") and not pg.evaluate("document.querySelector('.toast.show')"), f"{tag} the first time, one warm line on the room and no toast beside it")
+        if not mob:
+            pg.click("#rmMore"); pg.wait_for_timeout(200)
+            with pg.expect_download() as dl:
+                pg.click("#rmShow")
+            from PIL import Image
+            im = Image.open(dl.value.path())
+            ok(dl.value.suggested_filename == "mitt-rum-fore-efter.jpg" and im.size == (1200, 2 * 670 + 16), f"{tag} Visa någon: a before and after picture to show someone: {dl.value.suggested_filename} {im.size}")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
+        c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

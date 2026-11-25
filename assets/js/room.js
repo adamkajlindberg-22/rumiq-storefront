@@ -272,7 +272,7 @@
     canUndo: () => hist.length > 0,
     undo() { if (!hist.length) return false; const p = hist.pop(); lastTag = ""; ls.set(SCENE, p); emit("scene"); return true; },
     /* several changes as one step */
-    group(fn) { const n = hist.length, before = ls.get(SCENE, []), out = fn(); if (hist.length > n) { hist.length = n; hist.push(before); } lastTag = ""; return out; },
+    group(fn) { const n = hist.length, before = ls.get(SCENE, []); let out; R._quiet = true; try { out = fn(); } finally { R._quiet = false; } if (hist.length > n) { hist.length = n; hist.push(before); } lastTag = ""; emit("scene"); return out; }, // the editor draws once, after all of them (so they land together)
     inScene: (h) => R.scene().some((it) => it.h === h),
     add(h, quiet) {
       const p = RQ.byHandle(h); if (!p) return false; RQ.track && RQ.track("studio_place", { item_id: h });
@@ -648,6 +648,7 @@
               <div class="rm-morewrap"><button type="button" class="rm-tool" id="rmMore" aria-haspopup="true" aria-expanded="false" aria-controls="rmMenu">${ICO.more}<span>Mer</span></button>
                 <div class="rm-menu" id="rmMenu" role="menu" aria-label="Mer" hidden>
                   <button type="button" role="menuitem" class="rm-ai" data-ai-create>${ICO.spark}<span>Skapa AI-bild<small>Rummet med sakerna, i rätt ljus</small></span></button>
+                  <button type="button" role="menuitem" id="rmShow">${ICO.share}<span>Visa någon<small>Före och efter i en bild</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmNight" aria-checked="false">${ICO.moon}<span>Kvällsljus<small>Se lamporna lysa i rummet</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmBefore" aria-checked="false">${ICO.eye}<span>Visa före<small>Rummet utan sakerna</small></span></button>
                   <button type="button" role="menuitem" data-measure>${ICO.ruler}<span>Känd längd i bilden<small>Rätt skala för produkter med mått</small></span></button>
@@ -790,6 +791,13 @@
           if (!keep) { view.z = 1; const c = centre(R.scene()); view.tx = view.sw / 2 - c[0] / 100 * view.cw; view.ty = 0; }
           paintView();
         };
+        /* several things land at once, wider than a phone shows: the camera starts at the left one and glides across while they
+           land, one after the other, so you see every one arrive. 2 = touring, 1 = moved, false = stayed */
+        const tour = (list) => { if (!view.on || list.length < 2 || calm()) return lookAt(list) ? 1 : false;
+          const w = view.cw * view.z, xs = list.map((it) => it.x / 100 * w), lo = Math.min(...xs), hi = Math.max(...xs); if (hi - lo <= view.sw * 0.7) return lookAt(list) ? 1 : false;
+          const c = centre(list); view.ty = clamp(view.sh / 2 - c[1] / 100 * view.ch * view.z, view.sh - view.ch * view.z, 0); view.tx = view.sw * 0.22 - lo; paintView(true);
+          setTimeout(() => { if (!canvas.isConnected || drag || pan || pinch) return; canvas.classList.add("tour"); view.tx = view.sw * 0.78 - hi; paintView(true); setTimeout(() => canvas.classList.remove("tour"), 1700); }, 620);
+          return 2; };
         const centre = (list) => { if (!list.length) return [50, 50]; const xs = list.map((it) => it.x), ys = list.map((it) => it.y - (it.w * meta(RQ.byHandle(it.h))[2] * (it.sy || 1) * room.w / room.h) / 2); return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2]; };
         /* the camera glides to where something stands */
         const lookAt = (list) => { if (!view.on || !list.length) return false; const c = centre(list), w = view.cw * view.z, h = view.ch * view.z, tx = view.tx, ty = view.ty;
@@ -798,11 +806,12 @@
 
         const draw = () => {
           const list = R.scene(), order = R.ordered(); let fresh = 0; const news = [];
-          { const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h; }
+          const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h;
+          const lane = new Map(nw.slice().sort((a, b) => a.x - b.x).map((it, i) => [it.h, i])); // several land from left to right
           wrap.innerHTML = order.map((it, i) => { const p = RQ.byHandle(it.h), kind = kindOf(p), isNew = !seen.has(it.h), r = meta(p)[2]; if (isNew) news.push(it);
-            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${fresh++}` : ""}"><img src="${cutIn(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
+            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${lane.get(it.h) ?? fresh++}` : ""}"><img src="${cutIn(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}"></div>`; }).join("");
           const teach = news.length && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length; // own photo, nothing shown yet
-          if (news.length) { wrap.style.setProperty("--pre", lookAt(news) ? "360ms" : "90ms");
+          if (news.length) { const t = tour(news); wrap.style.setProperty("--pre", t ? "360ms" : "90ms"); wrap.style.setProperty("--step", t === 2 ? "300ms" : "130ms");
             const f = $("#rmFirst", root);
             if (teach) { f.textContent = "Dra den dit den ska stå och gör den lagom stor. Nästa sak följer efter."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); }
             else if (!ls.get("rumiq-room-landed", false)) { ls.set("rumiq-room-landed", true); f.textContent = "Så här kan det se ut hemma hos dig."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); } }
@@ -988,9 +997,10 @@
           const dl = e.target.closest("[data-del]"); if (dl) removeIt(dl.dataset.del);
         });
         const suggest = () => {
-          const before = R.scene(), picks = R.suggest(Math.max(1, 4 - before.length) + (before.length >= 4 ? 1 : 0));
+          const first = !!mapOf() && !ls.get("rumiq-room-landed", false), before = R.scene(), picks = R.suggest(Math.max(1, 4 - before.length) + (before.length >= 4 ? 1 : 0));
           if (!picks.length) { RQ.toast("Nu står allt som passar här i rummet. Lägg till fler själv."); return; }
           const n = R.group(() => picks.filter((p) => R.add(p.handle, true)).length); if (!n) return; // one step: Ångra takes all of them back
+          if (first) return; // the first time, the room itself says "Så här kan det se ut hemma hos dig."
           RQ.toast(`${n} förslag efter rummets färger${room.type ? " och rumstyp" : ""}. Flytta och byt fritt.${mapOf() ? "" : " Dra en sak dit den ska stå, så hamnar nästa bredvid."}`); // Ångra on the room takes all of them back
         };
         $("#rmSuggest", root).addEventListener("click", suggest); $("#rmSuggest0", root).addEventListener("click", suggest);
@@ -1006,19 +1016,38 @@
         night.addEventListener("click", () => { setNight(!stage.classList.contains("night")); RQ.track && RQ.track("room_night", { on: stage.classList.contains("night") }); });
         try { if (localStorage.getItem("rumiq-room-night") === "1") setNight(true); } catch (e) {}
         let lastSave = "";
+        /* the room with its things as one picture, W px wide (Spara, Visa någon) */
+        const picture = async (W) => { const bg = $(".rm-bg", root), H = Math.round(W * room.h / room.w);
+          const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
+          for (const it of R.ordered()) {
+            const p = RQ.byHandle(it.h); const im = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = cutIn(p); });
+            const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h;
+            if (["bord", "golv"].includes(surfOf(it)) && kindOf(p) !== "rug") { const g = cx.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.45); g.addColorStop(0, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.save(); cx.translate(0, y + h); cx.scale(1, 0.18); cx.translate(0, -(y + h)); cx.fillStyle = g; cx.fillRect(x - w * 0.1, y + h - w * 0.5, w * 1.2, w); cx.restore(); }
+            cx.save(); cx.filter = lightFilter(it.light); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(im, 0, 0, w, h); } else cx.drawImage(im, x, y, w, h); cx.restore();
+          }
+          return cv; };
+        /* "Visa någon": before and after side by side (or one above the other for an upright photo), to share or keep */
+        $("#rmShow", root).addEventListener("click", async () => {
+          if (!R.scene().length) { RQ.toast("Ställ in något i rummet först, så finns det något att visa."); return; }
+          try {
+            const W = 1200, after = await picture(W), H = after.height, up = H > W * 1.05, g = 16, pad = 0;
+            const cv = document.createElement("canvas"); cv.width = up ? W * 2 + g : W; cv.height = up ? H : H * 2 + g; const cx = cv.getContext("2d");
+            cx.fillStyle = "#F7F7F4"; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage($(".rm-bg", root), pad, pad, W, H); cx.drawImage(after, up ? W + g : 0, up ? 0 : H + g);
+            const tag = (t, x, y) => { cx.font = "600 30px 'Familjen Grotesk', system-ui, sans-serif"; const w = cx.measureText(t).width + 40; cx.fillStyle = "rgba(34,37,42,.78)"; cx.beginPath(); cx.roundRect ? cx.roundRect(x, y, w, 52, 26) : cx.rect(x, y, w, 52); cx.fill(); cx.fillStyle = "#fff"; cx.fillText(t, x + 20, y + 36); };
+            tag("Före", 24, 24); tag("Efter", (up ? W + g : 0) + 24, (up ? 0 : H + g) + 24);
+            cx.font = "500 26px 'Familjen Grotesk', system-ui, sans-serif"; cx.fillStyle = "rgba(255,255,255,.92)"; cx.shadowColor = "rgba(0,0,0,.45)"; cx.shadowBlur = 8; cx.textAlign = "right"; cx.fillText("RumIQ · Mitt rum", cv.width - 28, cv.height - 28);
+            const blob = await new Promise((r) => cv.toBlob(r, "image/jpeg", 0.88)), file = new File([blob], "mitt-rum-fore-efter.jpg", { type: "image/jpeg" });
+            if (navigator.canShare && window.isSecureContext && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: "Mitt rum, före och efter" }); } catch (x) {} return; }
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+            RQ.toast("Bilden med före och efter är nedladdad. Visa den för vem du vill.");
+          } catch (e) { RQ.toast("Bilden gick inte att göra i den här webbläsaren."); }
+        });
         $("#rmSave", root).addEventListener("click", async () => {
           try {
             const key = JSON.stringify(R.scene()) + room.at;
             if (key === lastSave) { RQ.toast('Det här är redan sparat. <a href="#mitt-hem">Se Sparat</a>'); return; }
-            const bg = $(".rm-bg", root); const W = 1100, H = Math.round(W * room.h / room.w);
-            const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
+            const cv = await picture(1100), W = cv.width, H = cv.height, bg = $(".rm-bg", root);
             const before = document.createElement("canvas"); before.width = 480; before.height = Math.round(480 * H / W); before.getContext("2d").drawImage(bg, 0, 0, before.width, before.height);
-            for (const it of R.ordered()) {
-              const p = RQ.byHandle(it.h); const im = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = cutIn(p); });
-              const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h;
-              if (["bord", "golv"].includes(surfOf(it)) && kindOf(p) !== "rug") { const g = cx.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.45); g.addColorStop(0, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.save(); cx.translate(0, y + h); cx.scale(1, 0.18); cx.translate(0, -(y + h)); cx.fillStyle = g; cx.fillRect(x - w * 0.1, y + h - w * 0.5, w * 1.2, w); cx.restore(); }
-              cx.save(); cx.filter = lightFilter(it.light); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(im, 0, 0, w, h); } else cx.drawImage(im, x, y, w, h); cx.restore();
-            }
             const handles = R.scene().map((it) => it.h);
             const ok = S.saveProject({ title: "Mitt rum med " + handles.map((h) => RQ.byHandle(h).name.split(" ")[0]).join(", "), img: cv.toDataURL("image/jpeg", 0.74), before: before.toDataURL("image/jpeg", 0.6), handles });
             if (!ok) { RQ.toast("Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat."); return; }
@@ -1030,7 +1059,7 @@
             RQ.toast('Rummet är sparat. <a href="#mitt-hem">Se Sparat</a>');
           } catch (e) { RQ.toast("Bilden gick inte att spara i den här webbläsaren."); }
         });
-        const onRoom = (e) => { if (e.detail === "scene") { touched = true; if (sel && !R.inScene(sel)) sel = null; draw(); }
+        const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") { touched = true; if (sel && !R.inScene(sel)) sel = null; draw(); }
           if (e.detail === "known") { draw(); }
           if (e.detail === "picker" && view.on) { stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); } }; // the room makes space for the drawer, and takes it back
         document.addEventListener("rq-room", onRoom);

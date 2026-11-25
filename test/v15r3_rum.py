@@ -189,6 +189,8 @@ with sync_playwright() as p:
     # ---------------------------------------------------------------- M7: messages over the room picture, not the title
     for W, Hh, mob in ((390, 844, True), (1024, 768, True)):
         c, pg = room_page(b, W, Hh, mob, room="sovrum")
+        # studio brief: the very first landing speaks on the room ("Så här kan det se ut hemma hos dig") without a toast beside it; this checks the toast after that
+        pg.evaluate("localStorage.setItem('rumiq-room-landed', 'true')")
         pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900)
         t, s, hd = pg.evaluate(RECT, "#toast"), pg.evaluate(RECT, "#rmStage"), pg.evaluate(RECT, ".rm-title h1")
         ok(t[1] >= s[1] and t[1] > hd[3], f"[M7 {W}] the toast comes in over the room picture, below the title: toast {round(t[1])}, room {round(s[1])}, title {round(hd[3])}")
