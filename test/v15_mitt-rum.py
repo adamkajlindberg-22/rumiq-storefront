@@ -149,8 +149,8 @@ with sync_playwright() as p:
         pg.tap("[data-act=order]"); pg.wait_for_timeout(200)
         ok(pg.evaluate("RQ.room.ordered()[0].h") == "lysa-keramiklampa" and pg.evaluate("document.getElementById('rmActOrder').innerText") == "Lägg framför", f"{tag} 'Lägg bakom' sends it to the back")  # r3 M3: Bakåt/Framåt renamed Lägg bakom/Lägg framför
         pg.tap("[data-act=del]"); pg.wait_for_timeout(300)
-        ok(not pg.evaluate("RQ.room.inScene('lysa-keramiklampa')") and "Ångra" in pg.evaluate(TOAST), f"{tag} 'Ta bort' offers an undo")
-        pg.evaluate("document.querySelector('.toast [data-room-undo]').click()"); pg.wait_for_timeout(300)
+        ok(not pg.evaluate("RQ.room.inScene('lysa-keramiklampa')") and pg.is_visible("#rmUndo"), f"{tag} 'Ta bort' offers an undo")  # r4: the Ångra button on the room is the one undo (no second link in the toast)
+        pg.evaluate("document.getElementById('rmUndo').click()"); pg.wait_for_timeout(300)
         ok(pg.evaluate("RQ.room.inScene('lysa-keramiklampa')"), f"{tag} undo brings it back")
         # two fingers zoom the room when nothing is selected
         quiet(pg); pg.evaluate("scrollTo(0, 0)"); pg.wait_for_timeout(200); v = pg.evaluate(VIEW)

@@ -219,6 +219,14 @@ with sync_playwright() as p:
                 pg.evaluate(f"(() => {{ const r = document.querySelector('.bav .ba-range'); r.value = {v}; r.dispatchEvent(new Event('input')); }})()"); pg.wait_for_timeout(260); cut += pg.evaluate(CUT)
             ok(cut == 0, f"[C9 {W} /{url}] the line never shows a product name cut in half, in the demo or when dragged")
             c.close()
+    # ---------------------------------------------------------------- the empty Mitt rum: the first button on the first screen, the demo card on one line
+    for W, Hh, mob in ((360, 740, True), (1024, 768, True), (1280, 720, False)):
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(900)
+        if W >= 1024:
+            ok(pg.evaluate(RECT, ".rm-empty [data-room-setup]")[3] <= Hh, f"[empty {W}] 'Lägg in ditt rum' is on the first screen")
+        hs = pg.evaluate("[...document.querySelectorAll('.rm-empty .rh-card .btn, .rm-empty .rh-card > span span')].map((e) => Math.round(e.getBoundingClientRect().height))")
+        ok(hs and max(hs) <= 44, f"[empty {W}] the demo card's price and button keep one line each: {hs}")
+        c.close()
 #CHECKS
     b.close()
 

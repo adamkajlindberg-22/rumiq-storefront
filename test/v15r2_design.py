@@ -196,7 +196,11 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.getElementById('filters').classList.contains('show')") and fw <= 545, f"{tag} the filters open as a sheet of a phone's width ({fw} px)")
         pg.goto(BASE + "mitt-rum/", wait_until="load"); pg.wait_for_timeout(300)
         st = pg.evaluate("() => { const f = document.querySelector('#view .rm-empty .rh-fig'), t = document.querySelector('#view .rm-empty h2'); return f && t ? [Math.round(f.getBoundingClientRect().bottom), Math.round(t.getBoundingClientRect().top), Math.round(f.getBoundingClientRect().width)] : null; }")
-        ok(st and st[0] <= st[1] and st[2] > 600, f"{tag} the Mitt rum intro picture stands above the text at full width: {st}")
+        if W > Hh:  # r4: on a landscape tablet the picture stands beside the text, so 'Lägg in ditt rum' is on the first screen
+            cta = pg.evaluate("Math.round(document.querySelector('#view .rm-empty [data-room-setup]').getBoundingClientRect().bottom)")
+            ok(st and st[2] > 380 and cta <= Hh, f"{tag} the Mitt rum intro picture stands beside the text and the button is on the first screen: {st}, button {cta}")
+        else:
+            ok(st and st[0] <= st[1] and st[2] > 600, f"{tag} the Mitt rum intro picture stands above the text at full width: {st}")
         pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(200)
         pill = pg.evaluate("() => { const e = document.querySelector('.roompill'); return e && e.offsetParent ? getComputedStyle(e).whiteSpace : 'nowrap'; }")
         ok(pill == "nowrap", f"{tag} the Mitt rum pill stays on one line")
