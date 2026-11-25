@@ -100,7 +100,8 @@
   const deckHtml = (px, compact) => `<div class="sv-wrap${compact ? " compact" : ""}">
       <div class="sv-prog" aria-hidden="true"><i id="${px}Bar"></i></div>
       <p class="sv-meta"><span id="${px}Count"></span><span class="sv-chip" id="${px}Chip" hidden></span></p>
-      <div class="sv-deck" id="${px}Deck" aria-live="polite"></div>
+      <div class="sv-deck" id="${px}Deck" tabindex="0" role="group" aria-label="Kortet"${compact ? "" : ' aria-keyshortcuts="ArrowRight ArrowLeft ArrowUp Backspace"'}></div>
+      <p class="sr" id="${px}Said" role="status"></p>
       <div class="sv-ctrl" id="${px}Ctrl">
         ${compact ? "" : `<button class="sv-b undo" type="button" id="${px}Undo" aria-label="Ångra senaste" title="Ångra senaste" disabled>${SV.undo}</button>`}
         <button class="sv-b no" type="button" id="${px}No" aria-label="Nej tack" title="Nej tack">${ICO.x}</button>
@@ -128,6 +129,7 @@
       if (!stack.length || st.done.length >= total) return finish();
       deckEl.innerHTML = stack.map((it, k) => (it.soon ? svSoon(it.soon, k) : svCard(it, k, k || !cfg.why ? "" : cfg.why(it, t)))).reverse().join("");
       const c = el("Count"); if (c) c.textContent = `${st.done.length + 1} av ${total}`;
+      const said = el("Said"), nx = stack[0]; if (said && said.dataset.msg != null) { said.textContent = `${said.dataset.msg} Nästa: ${nx.soon ? `Kommer snart? ${nx.soon.name}.` : `${nx.name}, ${kr(nx.price)}.`}`.trim(); delete said.dataset.msg; }
       const b = el("Bar"); if (b) b.style.width = `${(st.done.length / total) * 100}%`;
       const room = el("Room"), first = stack[0];
       if (room) { room.disabled = !!first.soon; if (first.soon) delete room.dataset.roomBtn; else { room.dataset.roomBtn = first.handle; room.setAttribute("aria-pressed", !!(RQ.room && RQ.room.inScene(first.handle))); } }
@@ -162,6 +164,8 @@
       else if (dir === 2) { S.addToCart(h + "::0", 1); rec.bag = true; RQ.taste.add(h, 1.5); st.bagged.push(h); RQ.fly && RQ.fly($(".sv-ims img.on", c)); }
       else RQ.taste.add(h, -0.5);
       st.answers[h] = dir === -1 ? 0 : dir;
+      const said = el("Said"), nm = isSoon ? "" : (RQ.byHandle(h) || {}).name || ""; // read out by the next paint, with the next card
+      if (said) said.dataset.msg = isSoon ? (dir === -1 ? "Nej tack." : "Tack, vi räknar din röst.") : dir === 1 ? `Sparad: ${nm}.` : dir === 2 ? `I varukorgen: ${nm}.` : `Hoppade över ${nm}.`;
       const choice = dir === 1 ? "save" : dir === 2 ? "cart" : "skip";
       RQ.track && RQ.track("swipe", { item_id: h, choice });
       stat(h, choice, cfg.ctx);
@@ -225,7 +229,7 @@
     const on = (n, f) => { const b = el(n); if (b) b.addEventListener("click", f); };
     on("No", () => decide(-1)); on("Yes", () => decide(1)); on("Bag", () => decide(2)); on("Undo", undo);
     const key = (e) => {
-      if (st.over || e.target.closest("input,textarea,select") || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
+      if (st.over || !e.target.closest || e.target.closest(".sv-wrap") !== deckEl.parentNode || e.altKey || e.shiftKey || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
       if (e.key === "ArrowRight") { e.preventDefault(); decide(1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); }
       if (e.key === "ArrowUp") { e.preventDefault(); decide(2); }
@@ -340,7 +344,7 @@
       <h2 class="h2">${top.length ? top.map((s) => `<span>${esc(s.name)}</span>`).join(" <span>och</span> ") : "Vi lär oss fortfarande"}</h2>
       <p class="lead">${top.length ? esc(RQ.STYLES[top[0].id].text) : "Spara några saker du gillar, så kan butiken sortera efter dig."}</p>
       ${allDone}
-      ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
+      ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
         ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
       ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved)}
         <div class="ctrl-row sp-acts"><button class="btn" type="button" id="svAll">Lägg alla i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="svRoomAll">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div>
@@ -358,6 +362,7 @@
       <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
+      <li class="sv-tip">Pilarna fungerar när kortet är markerat. Gå dit med Tab.</li>
     </ul>`;
   // a room with fewer cards left than a full round: how many there are (0 = a normal round of ten)
   const roomLeft = (scope) => { if (!scope) return 0; const t = RQ.taste.get(), n = RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length; return n && n < ROUND ? n : 0; };
@@ -425,7 +430,7 @@
     return { both: bothP, html: `<div class="svep-result two" tabindex="-1">
       <span class="eyebrow">Svep tillsammans</span>
       <h2 class="h2">${both.length ? `Ni gillar båda ${both.length} ${both.length === 1 ? "sak" : "saker"}` : "Ni gillade olika saker den här gången"}</h2>
-      <div class="two-meter" aria-label="Hur lika ni tycker"><span class="two-names"><b class="sv-name">${esc(nA)}</b><b class="sv-name">${esc(nB)}</b></span><span class="sp-bar"><i style="width:${pct}%"></i></span><span class="two-pct">${pct} % gemensamt</span></div>
+      <div class="two-meter" role="group" aria-label="Hur lika ni tycker"><span class="two-names"><b class="sv-name">${esc(nA)}</b><b class="sv-name">${esc(nB)}</b></span><span class="sp-bar"><i style="width:${pct}%"></i></span><span class="two-pct">${pct} % gemensamt</span></div>
       ${both.length ? `<div class="sp-saved"><span class="eyebrow">Ni gillar båda</span>${savedTiles(bothP)}
         <div class="ctrl-row sp-acts"><button class="btn" type="button" id="twoAll">Lägg det ni båda gillar i varukorgen · ${kr(bothP.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="twoRoom">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div></div>` : `<p class="lead">Det är också bra att veta. Prova en runda för ett rum ni ska inreda, så blir det lättare att mötas.</p>`}
       ${group("Bara", nA, onlyA)}${group("Bara", nB === "Du" ? "" : nB, onlyB).replace("Bara · ", "Bara du · ")}

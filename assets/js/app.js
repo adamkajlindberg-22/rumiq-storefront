@@ -46,7 +46,9 @@
   };
   RQ.toast = (html, ms) => {
     const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); t.classList.add("show");
-    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), ms || 3600);
+    // a toast with a link stays 6 s, and waits while the pointer or the focus is on it (2.2.1)
+    const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":hover, :focus-within")) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); };
+    clearTimeout(toastT); toastT = setTimeout(hide, wait);
   };
   const swatches = (p) => (p.variants ? `<span class="swatches" role="img" aria-label="${p.variants.length} färger">${p.tone.slice(0, p.variants.length).map((c) => `<i style="background:${c}"></i>`).join("")}</span>` : "");
   const plus = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
@@ -67,14 +69,14 @@
       <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
       <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}</button>
       <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i Mitt rum">${roomIco}</button>
-      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
+      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <button class="qv" type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
       <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
   };
   RQ.grid = (list, cls = "", top = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
-  const crumbs = (items) => `<ol class="crumbs">${items.map(([t, h]) => `<li>${h ? `<a href="#${h}">${esc(t)}</a>` : esc(t)}</li>`).join("")}</ol>`;
+  const crumbs = (items) => `<nav aria-label="Brödsmulor"><ol class="crumbs">${items.map(([t, h], i) => `<li>${h ? `<a href="#${h}">${esc(t)}</a>` : i === items.length - 1 ? `<span aria-current="page">${esc(t)}</span>` : esc(t)}</li>`).join("")}</ol></nav>`;
   RQ.crumbs = crumbs;
   const head = (kicker, title, lead, extra = "") => `<header class="page-head wrap">${kicker}<h1 class="h1">${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ""}${extra}</header>`;
   RQ.head = head;
@@ -159,7 +161,7 @@
                 </div>
               </div>
               <div class="f-active" id="fActive"${nActive() ? "" : " hidden"}>${chips()}</div>
-              <div id="results">${results(first)}</div>
+              <h2 class="sr">Produkter</h2><div id="results">${results(first)}</div>
               <p class="example-line"><b>Exempel.</b> Produkterna visar hur butiken kommer att se ut. De går inte att köpa än, och bilderna är skapade med AI.</p>
             </div>
           </div>
@@ -294,7 +296,7 @@
       html: `<section class="wrap pcr">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
         <section class="wrap pdp">
           <div class="pg">
-            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}" aria-label="Visa större: ${esc(g.alt)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}" aria-label="Ställ in ${esc(p.name)} i Mitt rum">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
+            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
             ${isLamp ? `<button type="button" class="lightswitch" id="lightSw" aria-pressed="true" hidden><i></i><span>Lampan är tänd</span></button>` : ""}
             <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
           </div>
@@ -305,7 +307,7 @@
             <p class="short">${esc(p.short)}</p>
             ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div><p class="small vnote" id="vnote" hidden><span>Bilderna visar färgen</span> <b>${esc(vs[0].title)}</b>.</p></div>` : ""}
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
-            <p class="small qty-note" id="qtyNote" role="status"></p>
+            <p class="small qty-note" id="qtyNote" role="status"></p><p class="sr" id="qtySaid" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${RQ.payRow()}
             ${RQ.room && RQ.room.has() ? `<a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.room.thumb()}</span><span><b>Ställ in i Mitt rum</b><small>Se den hemma hos dig och handla hela rummet på en gång.</small></span>${RQ.roomIco}</a>`
               : `<button type="button" class="roomcta" data-room-setup="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.roomIco}</span><span><b>Se den i ditt rum</b><small>Ta en bild av ditt rum, så ställer vi in produkten där.</small></span>${RQ.plus}</button>`}
@@ -321,8 +323,8 @@
             <div class="example-note"><span>●</span><div><p><b>Exempelprodukt.</b> Den går inte att köpa än. Du kan prova varukorgen och kassan, men inget betalas. Bilderna är skapade med AI, så färg och detaljer kan skilja sig.</p>${RQ.notify ? RQ.notify.html(p) : ""}</div></div>
             <div class="ptabs" data-ptabs>
               <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
-              <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h3>Så använder du den</h3><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
-              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h3>Passar den hemma?</h3><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#mitt-rum-${p.handle}">Mitt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h3>Material och skötsel</h3><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h3>Mått och fakta</h3><ul class="facts" style="margin-top:0;border-top:0">
+              <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h2>Så använder du den</h2><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i färdiga looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
+              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h2>Passar den hemma?</h2><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#mitt-rum-${p.handle}">Mitt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h2>Material och skötsel</h2><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h2>Mått och fakta</h2><ul class="facts" style="margin-top:0;border-top:0">
                 <li><span>Artikel</span><span>${esc(p.sku || "RQ-" + (1001 + RQ.PRODUCTS.indexOf(p)))}</span></li>
                 <li><span>Mått</span><span class="pending">Bekräftas när produkten är verifierad</span></li>
                 <li><span>Vikt</span><span class="pending">Bekräftas</span></li>
@@ -395,7 +397,7 @@
         /* the field always shows what will be added: whole numbers from 1 to 99, corrected in the field itself */
         const qty = () => { const n = Math.round(+String(q.value).replace(",", ".")); const v = !isFinite(n) || n < 1 ? 1 : Math.min(MAXQ, n); if (String(v) !== q.value) q.value = v; qNote.textContent = n > MAXQ ? `Max ${MAXQ} per produkt.` : ""; return v; };
         q.addEventListener("change", qty);
-        $$("[data-q]", root).forEach((b) => b.addEventListener("click", () => { q.value = (Math.round(+q.value) || 1) + +b.dataset.q; qty(); }));
+        $$("[data-q]", root).forEach((b) => b.addEventListener("click", () => { q.value = (Math.round(+q.value) || 1) + +b.dataset.q; $("#qtySaid", root).textContent = `Antal: ${qty()}`; }));
         const put = () => { const want = qty(), line = S.cartLines().find((l) => l.id === variant), room = MAXQ - (line ? line.quantity : 0), n = Math.min(want, room);
           if (n < 1) { qNote.textContent = `Du har redan ${MAXQ} i varukorgen. Det är max per produkt.`; return 0; }
           S.addToCart(variant, n); q.value = 1; qNote.textContent = n < want ? `Max ${MAXQ} per produkt. Vi lade till ${n}.` : ""; return n; };
@@ -481,14 +483,21 @@
       <section class="sec kalk"><div class="wrap split"><div><span class="eyebrow">Mitt rum</span><h2 class="h2" style="margin-top:.9rem">Prova idéerna i ditt eget rum</h2><p class="lead" style="margin-top:1rem">Lägg till ett foto av ditt rum och prova produkterna där, eller svep fram din stil först.</p><div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-rum">Se det i ditt rum</a><a class="btn ghost" href="#svep">Svep fram din stil</a></div></div><div class="im"><img src="assets/img/rum/sovrum-900.webp" srcset="assets/img/rum/sovrum-900.webp 900w, assets/img/rum/sovrum-1600.webp 1600w" sizes="(max-width:900px) 100vw, 50vw" alt="" loading="lazy" decoding="async" width="1600" height="893"></div></div></section>` });
 
   /* ---------------- info + legal */
-  const infoNav = (active) => `<ul class="sidenav"><li><h4>Kundservice</h4></li>${[["kontakt", "Kontakt"], ["onska", "Önska en produkt"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}"${h === active ? ' aria-current="page"' : ""}>${t}</a></li>`).join("")}
-    <li><h4 style="margin-top:1rem">Juridisk information</h4></li>${Object.entries(RQ.LEGAL).map(([k, v]) => `<li><a class="${"juridik-" + k === active ? "on" : ""}" href="#juridik-${k}"${"juridik-" + k === active ? ' aria-current="page"' : ""}>${v.title}</a></li>`).join("")}</ul>`;
+  const infoNav = (active) => `<ul class="sidenav"><li><h2>Kundservice</h2></li>${[["kontakt", "Kontakt"], ["onska", "Önska en produkt"], ["faq", "Vanliga frågor"], ["spara-order", "Spåra min beställning"], ["frakt", "Frakt & leverans"], ["returer", "Returer & återbetalning"], ["angra", "Ångra avtalet här"], ["betalning", "Betalning"], ["sa-fungerar-det", "Så fungerar RumIQ"], ["om", "Om RumIQ"]].map(([h, t]) => `<li><a class="${h === active ? "on" : ""}" href="#${h}"${h === active ? ' aria-current="page"' : ""}>${t}</a></li>`).join("")}
+    <li><h2 style="margin-top:1rem">Juridisk information</h2></li>${Object.entries(RQ.LEGAL).map(([k, v]) => `<li><a class="${"juridik-" + k === active ? "on" : ""}" href="#juridik-${k}"${"juridik-" + k === active ? ' aria-current="page"' : ""}>${v.title}</a></li>`).join("")}</ul>`;
   RQ.infoPage = (route, kicker, title, lead, body, mount) => ({ title: `${title} · RumIQ`, html: `${head(crumbs([["Hem", "hem"], [title]]), esc(title), lead)}<section class="wrap layout-side" style="padding-bottom:6rem">${infoNav(route)}<div class="prose">${body}</div></section>`, mount });
   Object.entries(RQ.INFO).forEach(([k, v]) => {
     V[k] = () => RQ.infoPage(k, v.kicker, v.title, v.lead, v.html(), k === "kontakt" ? mountContact : null);
   });
   V.juridik = (k) => { const v = RQ.LEGAL[k]; if (!v) return null; return RQ.infoPage("juridik-" + k, "Juridisk information", v.title, v.lead, v.html()); };
   // a message under the field it belongs to (the box is made on first use), and the field marked for screen readers
+  // a form's one status line tells what is wrong: the field is marked, tied to the message and gets the focus (3.3.1)
+  RQ.badField = (el, st, msg) => {
+    if (!st.id) st.id = "st-" + Math.random().toString(36).slice(2, 7); if (!st.getAttribute("role")) st.setAttribute("role", "alert");
+    st.textContent = msg; el.setAttribute("aria-invalid", "true"); el.setAttribute("aria-describedby", st.id); el.focus();
+    el.addEventListener(el.type === "checkbox" ? "change" : "input", () => { el.removeAttribute("aria-invalid"); el.removeAttribute("aria-describedby"); }, { once: true });
+    return false;
+  };
   RQ.fieldErr = (el, msg) => {
     let box = el.parentNode.querySelector(".ferr");
     if (!box) { box = document.createElement("span"); box.className = "ferr"; box.id = "fe-" + (el.id || el.name || "f") + "-" + Math.random().toString(36).slice(2, 7); el.after(box); }
@@ -700,7 +709,7 @@
     RQ.markImages(root);
     $$(".menu a").forEach((a) => a.classList.toggle("active", rawOf(a) === raw));
     const DOCK = { butik: /^(butik|kategori|produkt|nyheter|kollektion|for-dig|favoriter|hitta-ratt|presentguiden|erbjudanden)/, upptack: /^(upptack|svep|looks?|rosta|onska|ideer|rum|magasin|artikel|inspiration)(-|$)/, mitt: /^(mitt-rum|studio)/, sparat: /^(mitt-hem|onskelista|jamfor)$/ };
-    $$("[data-dock]").forEach((a) => a.classList.toggle("on", !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw))));
+    $$("[data-dock]").forEach((a) => { const on = !!(DOCK[a.dataset.dock] && DOCK[a.dataset.dock].test(raw)); a.classList.toggle("on", on); if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     const anchor = /^faq-\d+$/.test(raw) && document.getElementById(raw);
     if (anchor) anchor.scrollIntoView();
     if (backTo) scrollBack(backTo); // after the page has started, so its own parts are in place
@@ -834,6 +843,8 @@
     $$("[data-count=cart]").forEach((b) => { const n = S.cartCount(); if (+b.dataset.n < n) { b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); } b.textContent = n || ""; b.dataset.n = n; });
     $$("[data-count=cartline]").forEach((b) => { const n = S.cartCount(); b.textContent = n ? `${n} ${n === 1 ? "produkt" : "produkter"}` : ""; });
     $$("[data-count=wish]").forEach((b) => { const n = S._wish.length; b.textContent = n || ""; b.dataset.n = n; });
+    const named = (q, base, n, one, many) => $$(q).forEach((el) => el.setAttribute("aria-label", n ? `${base}, ${n} ${n === 1 ? one : many}` : base));
+    named(".tools [data-open-cart]", "Varukorg", S.cartCount(), "vara", "varor"); named(".tools .wishlink", "Sparat i Mitt hem", S._wish.length, "sak", "saker");
     const c = S.customer(); const acc = $("#accLink"); if (acc) acc.setAttribute("aria-label", c ? "Mitt konto" : "Logga in");
   };
   const drawer = $("#cart"), scrimAll = $("#scrimAll");
@@ -841,8 +852,11 @@
   let opener = null; const remember = () => { const a = document.activeElement; opener = a && a !== document.body && !a.closest("#cart,#mnav,#search") ? a : opener; };
   drawer.setAttribute("role", "dialog"); drawer.setAttribute("aria-modal", "true"); drawer.tabIndex = -1;
   // the page behind stands still while the cart is open; the focus goes to the drawer itself (no ring on the close button after a tap)
-  const openCart = () => { remember(); renderCart(); closeLight(); $("#toast").classList.remove("show"); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); document.documentElement.style.overflow = "hidden"; setTimeout(() => drawer.focus({ preventScroll: true }), 50); };
-  const closeAll = () => { const was = drawer.classList.contains("open") || $("#search").classList.contains("open") || $("#mnav").classList.contains("open"); if (was && opener && opener.isConnected && document.activeElement && document.activeElement.closest("#cart,#mnav,#search")) { try { opener.focus({ preventScroll: true }); } catch (e) {} } opener = null; if (was) $("#toast").classList.remove("show"); drawer.classList.remove("open"); scrimAll.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); $("#search").classList.remove("open"); $("#mnav").classList.remove("open"); $("#burger").setAttribute("aria-expanded", "false"); closeMega(); closeLight(); document.documentElement.style.overflow = ""; };
+  const openCart = () => { remember(); renderCart(); closeLight(); $("#toast").classList.remove("show"); drawer.classList.add("open"); scrimAll.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); behind(true); document.documentElement.style.overflow = "hidden"; setTimeout(() => drawer.focus({ preventScroll: true }), 50); };
+  // while the cart, the search or the menu is open, the page behind cannot be reached, also not by a screen reader's reading cursor
+  const behind = (on) => ["#nav", "#view", "footer.site", "#dock"].forEach((q) => { const el = $(q); if (el) el.inert = on; });
+  RQ.behind = behind;
+  const closeAll = () => { behind(false); const was = drawer.classList.contains("open") || $("#search").classList.contains("open") || $("#mnav").classList.contains("open"); if (was && opener && opener.isConnected && document.activeElement && document.activeElement.closest("#cart,#mnav,#search")) { try { opener.focus({ preventScroll: true }); } catch (e) {} } opener = null; if (was) $("#toast").classList.remove("show"); drawer.classList.remove("open"); scrimAll.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); $("#search").classList.remove("open"); $("#mnav").classList.remove("open"); $("#burger").setAttribute("aria-expanded", "false"); closeMega(); closeLight(); document.documentElement.style.overflow = ""; };
   RQ.openCart = openCart; RQ.closeAll = closeAll;
   // keep the keyboard inside whatever layer is open (quick view, search, menu or cart)
   const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -882,8 +896,10 @@
       foot.innerHTML = ""; refocus(); return;
     }
     const sub = S.cartSubtotal(), disc = S.lookDiscounts(), net = sub - S.cartDiscount(), free = !!(S.freeShipping && S.freeShipping()), ship = S.shippingCost ? S.shippingCost("ombud") : 0, nudge = lookNudge(lines);
-    body.innerHTML = RQ.freeShipHtml(net) + (nudge ? `<div class="gap look-nudge"><p class="eyebrow">Nästan hela looken ${esc(nudge.look.name)}</p><div class="gap-i"><img src="${RQ.cut(nudge.p)}" alt="" width="42" height="42" loading="lazy"><span><b>${esc(nudge.p.name)}</b><small>Lägg till och spara ${kr(nudge.save)}</small></span><button class="btn sm ghost" type="button" data-add="${nudge.p.handle}::0" aria-label="Lägg ${esc(nudge.p.name)} i varukorgen">Lägg till</button></div></div>` : RQ.fillGapHtml(lines, net)) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close><img src="${RQ.img(l.product, 600)}" alt="" width="74" height="92" loading="lazy" decoding="async"></a><div><h4><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h4>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska antalet ${esc(l.product.name)}"${l.quantity <= 1 ? " disabled" : ""}>−</button><input value="${l.quantity}" aria-label="Antal ${esc(l.product.name)}" readonly tabindex="-1"><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka antalet ${esc(l.product.name)}"${l.quantity >= 99 ? " disabled" : ""}>+</button></div><button class="rm" type="button" data-rm="${l.id}" aria-label="Ta bort ${esc(l.product.name)}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}${l.quantity > 1 ? `<small>${kr(l.variant.price)}/st</small>` : ""}</span></div>`).join("") +
+    body.innerHTML = RQ.freeShipHtml(net) + (nudge ? `<div class="gap look-nudge"><p class="eyebrow">Nästan hela looken ${esc(nudge.look.name)}</p><div class="gap-i"><img src="${RQ.cut(nudge.p)}" alt="" width="42" height="42" loading="lazy"><span><b>${esc(nudge.p.name)}</b><small>Lägg till och spara ${kr(nudge.save)}</small></span><button class="btn sm ghost" type="button" data-add="${nudge.p.handle}::0" aria-label="Lägg ${esc(nudge.p.name)} i varukorgen">Lägg till</button></div></div>` : RQ.fillGapHtml(lines, net)) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close tabindex="-1" aria-hidden="true"><img src="${RQ.img(l.product, 600)}" alt="" width="74" height="92" loading="lazy" decoding="async"></a><div><h3><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h3>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska antalet ${esc(l.product.name)}"${l.quantity <= 1 ? " disabled" : ""}>−</button><input value="${l.quantity}" aria-label="Antal ${esc(l.product.name)}" readonly tabindex="-1"><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka antalet ${esc(l.product.name)}"${l.quantity >= 99 ? " disabled" : ""}>+</button></div><button class="rm" type="button" data-rm="${l.id}" aria-label="Ta bort ${esc(l.product.name)}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}${l.quantity > 1 ? `<small>${kr(l.variant.price)}/st</small>` : ""}</span></div>`).join("") +
       `<div class="example-note" style="margin-top:1.2rem"><span>●</span><span><b>Testläge.</b> Varukorgen innehåller exempelprodukter. Du kan prova kassan, men inget betalas och inget skickas.</span></div>`;
+    // a step with + or −: say the new number and the total (the drawer is drawn again, so its own text is not read)
+    if (had && a.dataset.line) { const l = lines.find((x) => x.id === a.dataset.line), said = $("#cartSaid"); if (l && said) said.textContent = `${l.product.name}: ${l.quantity} st. Totalt ${kr(net + ship)}.`; }
     foot.innerHTML = `<div class="sum"><span>Delsumma</span><span>${kr(sub)}</span></div>${RQ.discRows(disc)}<div class="sum small"><span>Frakt till ombud eller paketskåp</span><span>${free ? "Fri" : kr(ship)}</span></div><div class="sum total"><span>Totalt</span><span>${kr(net + ship)}</span></div><div class="sum small"><span>Varav moms (25 %)</span><span>${kr(S.vatIncluded(net + ship))}</span></div><a class="btn block" href="#kassa" data-close>Till kassan</a><button class="btn ghost block cart-room" type="button" data-cart-room>${RQ.roomIco}Se varorna i ditt rum</button>`;
     refocus();
   }
@@ -929,7 +945,7 @@
   // an empty cart or checkout is never a dead end: two looks and what you looked at last
   RQ.emptyCartHtml = (wide) => {
     const seen = (S.recentlySeen ? S.recentlySeen("") : []).slice(0, wide ? 4 : 2);
-    return `<div class="empty-cart${wide ? " wide" : ""}"><h3>Varukorgen är tom</h3><p>Börja med en färdig look. Hela looken ger ${Math.round(((window.RQ_CONFIG || {}).lookDiscount || 0) * 100)} % rabatt.</p>
+    return `<div class="empty-cart${wide ? " wide" : ""}">${wide ? "<h2>Varukorgen är tom</h2>" : "<h3>Varukorgen är tom</h3>"}<p>Börja med en färdig look. Hela looken ger ${Math.round(((window.RQ_CONFIG || {}).lookDiscount || 0) * 100)} % rabatt.</p>
       <div class="ec-looks">${RQ.LOOKS.slice(0, 2).map((l) => `<a class="ec-look" href="#look-${l.id}" data-close><span class="ec-imgs">${l.items.slice(0, 3).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="" loading="lazy">`).join("")}</span><span><b>${esc(l.name)}</b><small>${l.items.length} saker</small></span></a>`).join("")}</div>
       ${seen.length ? `<p class="eyebrow" style="margin-top:1.6rem">Senast visade</p><div class="ec-seen">${seen.map((p) => `<a href="#produkt-${p.handle}" data-close><img src="${RQ.img(p, 600)}" alt=""><span>${esc(p.name)}</span></a>`).join("")}</div>` : ""}
       ${RQ.svepNudge ? RQ.svepNudge("Vet du inte var du ska börja?", "Svep tio kort, så hittar vi det som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}
@@ -953,25 +969,29 @@
   ];
   RQ.nProd = nProd;
   const POPULAR = () => `<p class="eyebrow" style="margin-bottom:1rem">Populärt</p><div class="chips">${["Lampa", "Ek", "Lin", "Förvaring", "Badrum", "Present", "Hall", "Lugnt och varmt", "Mjukt i sovrummet"].map((t) => `<button class="chip" type="button" data-q="${t}">${t}</button>`).join("")}</div>`;
+  // the number of hits is read out from one status line that stays (a status drawn anew with the hits is often not read)
+  const said = (t) => { const el = $("#searchSaid"); if (el && el.textContent !== t) el.textContent = t; };
   const doSearch = () => {
     const q = sInput.value.trim(), tones = RQ.toneChips ? RQ.toneChips() : "", ext = RQ.flowSearch ? RQ.flowSearch(q) : null;
+    said(!q && !ext ? "" : ext ? (ext.list.length ? nProd(ext.list.length) : "Inga träffar") : "");
     $("#search").classList.toggle("has-q", !!q);
     if (!q && !ext) { sRes.innerHTML = `${POPULAR()}${tones}`; return; }
     if (ext) { sRes.innerHTML = `${tones}${ext.note ? `<p class="small s-note">${ext.note}</p>` : ""}${ext.list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(ext.list.length)}</p>${RQ.grid(ext.list)}` : `<div class="empty"><h3>Inga träffar</h3><p>Prova en annan färg eller ett annat ord.</p></div>`}`; RQ.watch(sRes); return; }
     const found = S.search(q), list = found.list, words = S._words(q), raw = S.norm(q).split(/\s+/);
-    if (found.short) { sRes.innerHTML = `<p class="small s-note" role="status">Skriv minst två bokstäver.</p>${POPULAR()}`; return; }
+    if (found.short) { sRes.innerHTML = `<p class="small s-note">Skriv minst två bokstäver.</p>${POPULAR()}`; said("Skriv minst två bokstäver."); return; }
     const arts = RQ.ARTICLES.filter((a) => S.norm(a.title + " " + a.lead).includes(S.norm(q)));
     const cats = RQ.CATEGORIES.filter((c) => S.fold(c.name).includes(S.fold(q)));
     const help = HELP.filter((h) => words.some((w) => h[2].test(w)) || (h[3] && raw.some((w) => h[3].test(w))) || h[2].test(S.fold(q)));
     const links = `${cats.map((c) => `<a class="chip" href="#kategori-${c.id}" data-close>${esc(c.name)}</a>`).join("")}${help.map((h) => `<a class="chip s-help" href="#${h[0]}" data-close>${h[1]}</a>`).join("")}`;
-    sRes.innerHTML = `${found.fixed ? `<p class="s-fix" role="status">Menade du <b>${esc(found.fixed)}</b>? Här är träffarna för det.</p>` : ""}${links ? `<div class="chips" style="margin-bottom:1.6rem">${links}</div>` : ""}
-      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem" role="status">${nProd(list.length)}</p>${RQ.grid(list)}` : help.length || cats.length ? "" : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv med egna ord vad du behöver.</p><a class="btn ghost" href="#studio-sok" data-close>Beskriv med egna ord</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
+    said(list.length ? nProd(list.length) : help.length || cats.length ? `${help.length + cats.length} ${help.length + cats.length === 1 ? "länk" : "länkar"}` : "Inga träffar");
+    sRes.innerHTML = `${found.fixed ? `<p class="s-fix">Menade du <b>${esc(found.fixed)}</b>? Här är träffarna för det.</p>` : ""}${links ? `<div class="chips" style="margin-bottom:1.6rem">${links}</div>` : ""}
+      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(list.length)}</p>${RQ.grid(list)}` : help.length || cats.length ? "" : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv med egna ord vad du behöver.</p><a class="btn ghost" href="#studio-sok" data-close>Beskriv med egna ord</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
       ${arts.length ? `<p class="eyebrow" style="margin:2.4rem 0 1rem">Från magasinet</p><div class="mag-grid">${arts.slice(0, 3).map(RQ.magCard).join("")}</div>` : ""}`;
     RQ.watch(sRes);
   };
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
-  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); setTimeout(() => { sInput.focus(); sInput.select(); }, 60); };
+  RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); behind(true); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); const into = (n) => { sInput.focus(); if (document.activeElement === sInput) sInput.select(); else if (n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 60); }; // the field may still be turning visible (reduced motion): try again on the next frames
   // keys in the search: Enter puts the keyboard away on a phone and steps into the hits, the arrows walk through them
   const sItems = () => $$("a.chip, button.chip, .card .ct a, .empty a, .mag-grid a", sRes).filter((el) => el.offsetParent);
   $("#search").addEventListener("keydown", (e) => {
@@ -1029,7 +1049,7 @@
       return; }
     if (t.matches("[data-line]")) { const l = S.cartLines().find((x) => x.id === t.dataset.line); if (l) S.setQty(l.id, l.quantity + +t.dataset.d); return; }
     if (t.matches("[data-action=cookies]")) { RQ.showCookies(true); return; }
-    if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
+    if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); behind(true); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
     if (t.id === "mnavClose") { closeAll(); return; }
     if (t.matches("a[data-after]")) RQ.ss.set("rumiq-after-login", "#" + t.dataset.after);
     if (t.matches("[data-close]") || t.matches("a[href^='#']")) { closeAll(); }
@@ -1090,7 +1110,9 @@
     });
     return { sync, anyOpen };
   })();
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !e.target.closest("input,textarea,select"))) { e.preventDefault(); RQ.openSearch(); } });
+  // the name that shows on a hotspot under the pointer or the focus can be put away with Escape (1.4.13)
+  document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; const h = document.querySelector(".hs:hover, .hs:focus-visible"); if (!h) return; h.classList.add("hush"); const off = () => h.classList.remove("hush"); h.addEventListener("mouseleave", off, { once: true }); h.addEventListener("blur", off, { once: true }); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && (e.target === document.body || e.target.id === "view"))) { e.preventDefault(); RQ.openSearch(); } });
 
   // nav state on scroll
   const nav = $("#nav"); let solid = null;
@@ -1109,7 +1131,7 @@
   $("#ckAll").addEventListener("click", () => { S.setConsent({ stats: true, mkt: true }); $("#cookie").classList.remove("show"); });
   $("#ckNeed").addEventListener("click", () => { S.setConsent({ stats: false, mkt: false }); $("#cookie").classList.remove("show"); });
   $("#ckSave").addEventListener("click", () => { S.setConsent({ stats: $("#ckStats").checked, mkt: $("#ckMkt").checked }); $("#cookie").classList.remove("show"); });
-  $("#ckMore").addEventListener("click", () => { $("#cookie .opts").hidden = !$("#cookie .opts").hidden; });
+  $("#ckMore").addEventListener("click", (e) => { const o = $("#cookie .opts"); o.hidden = !o.hidden; e.currentTarget.setAttribute("aria-expanded", !o.hidden); });
 
 
   // add-to-cart feedback: the button itself confirms, the cart count bumps
@@ -1149,9 +1171,17 @@
   function closeLight() { if (lightMenu) { lightMenu.classList.remove("open"); lampBtn.setAttribute("aria-expanded", "false"); } }
   if (lampBtn) {
     applyLight(document.documentElement.getAttribute("data-light-mode") || "dag");
-    lampBtn.addEventListener("click", (e) => { e.stopPropagation(); const open = !lightMenu.classList.contains("open"); closeMega(); lightMenu.classList.toggle("open", open); lampBtn.setAttribute("aria-expanded", open); if (open) setTimeout(() => $("[aria-checked=true]", lightMenu)?.focus(), 30); });
+    lampBtn.addEventListener("click", (e) => { e.stopPropagation(); const open = !lightMenu.classList.contains("open"); closeMega(); lightMenu.classList.toggle("open", open); lampBtn.setAttribute("aria-expanded", open); if (open) { const into = (n) => { const b = $("[aria-checked=true]", lightMenu); if (!b || !lightMenu.classList.contains("open")) return; b.focus(); if (document.activeElement !== b && n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 30); } });
     lightMenu.addEventListener("click", (e) => { const b = e.target.closest("[data-light-set]"); if (!b) return; e.stopPropagation(); applyLight(b.dataset.lightSet, true); closeLight(); lampBtn.focus(); });
     document.addEventListener("click", (e) => { if (!e.target.closest(".lampwrap")) closeLight(); });
+    // a menu: the arrows walk through the three choices, Escape closes it and the focus goes back to the lamp
+    lightMenu.addEventListener("keydown", (e) => {
+      const items = $$("[data-light-set]", lightMenu), k = items.indexOf(document.activeElement);
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeLight(); lampBtn.focus(); }
+      else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); items[(k + (e.key === "ArrowDown" ? 1 : items.length - 1)) % items.length].focus(); }
+      else if (e.key === "Home" || e.key === "End") { e.preventDefault(); items[e.key === "Home" ? 0 : items.length - 1].focus(); }
+      else if (e.key === "Tab") closeLight();
+    });
     $$("[data-light-cycle]").forEach((b) => b.addEventListener("click", () => { const order = ["dag", "kvall", "auto"]; const cur = document.documentElement.getAttribute("data-light-mode") || "dag"; applyLight(order[(order.indexOf(cur) + 1) % 3], true); }));
     setInterval(() => { if (document.documentElement.getAttribute("data-light-mode") === "auto") applyLight("auto"); }, 5 * 60 * 1000);
   }
@@ -1241,7 +1271,7 @@
 
   // language: Swedish in the code, English from the phrase dictionary (i18n.js)
   if (window.RQ_LANG === "en") {
-    $$("[data-lang-short]").forEach((b) => { b.textContent = "SV"; b.lang = "sv"; b.setAttribute("aria-label", "På svenska"); });
+    $$("[data-lang-short]").forEach((b) => { b.textContent = "SV"; b.lang = "sv"; b.setAttribute("aria-label", "SV, på svenska"); });
     $$("[data-lang-long]").forEach((b) => { b.textContent = "Svenska"; b.lang = "sv"; });
   }
   $$(".lang").forEach((b) => b.addEventListener("click", () => { S.setLang(window.RQ_LANG === "en" ? "sv" : "en"); location.reload(); }));
@@ -1252,7 +1282,7 @@
   $("#newsForm").addEventListener("submit", async (e) => { e.preventDefault(); const f = e.currentTarget, v = f.email.value.trim(), btn = $("button", f);
     let st = $("#newsStatus", f); if (!st) { st = document.createElement("p"); st.id = "newsStatus"; st.className = "status"; st.setAttribute("role", "status"); f.appendChild(st); }
     const say = (msg, err) => { st.textContent = msg; st.classList.toggle("err", !!err); };
-    if (!MAIL_OK.test(v)) { say(v ? "Skriv en giltig e-postadress, till exempel namn@exempel.se." : "Skriv din e-postadress.", true); f.email.setAttribute("aria-invalid", "true"); f.email.focus(); return; }
+    if (!MAIL_OK.test(v)) { say(v ? "Skriv en giltig e-postadress, till exempel namn@exempel.se." : "Skriv din e-postadress.", true); f.email.setAttribute("aria-invalid", "true"); f.email.setAttribute("aria-describedby", "newsStatus"); f.email.focus(); return; }
     f.email.removeAttribute("aria-invalid"); if (btn.disabled) return; btn.disabled = true; say("");
     const res = await RQ.subscribe({ email: v, lista: "Nyhetsbrev" }); btn.disabled = false;
     say(res === "sent" ? (((window.RQ_CONFIG || {}).waitlist || {}).offer ? `Tack. Du får nyhetsbrevet och ${RQ_CONFIG.waitlist.offer}.` : "Tack. Du får nyhetsbrevet.") : res === "preview" ? "Förhandsversion: adressen sparades inte här." : "Det gick inte att skicka just nu. Försök igen om en stund.", res === "error"); if (res === "sent") f.reset(); });
@@ -1263,7 +1293,7 @@
   // product tabs: Om, Mått och skötsel, Frakt och retur (arrow keys move between them)
   const tabTo = (bar, t) => { $$("[role=tab]", bar).forEach((x) => { const on = x === t; x.setAttribute("aria-selected", on); x.tabIndex = on ? 0 : -1; const pnl = document.getElementById(x.getAttribute("aria-controls")); if (pnl) pnl.hidden = !on; }); };
   document.addEventListener("click", (e) => { const t = e.target.closest("[data-ptabs] [role=tab]"); if (t) tabTo(t.parentNode, t); });
-  document.addEventListener("keydown", (e) => { const t = e.target.closest && e.target.closest("[data-ptabs] [role=tab]"); if (!t || !/^Arrow(Left|Right)$/.test(e.key)) return; const all = $$("[role=tab]", t.parentNode), i = all.indexOf(t), n = all[(i + (e.key === "ArrowRight" ? 1 : all.length - 1)) % all.length]; tabTo(t.parentNode, n); n.focus(); e.preventDefault(); });
+  document.addEventListener("keydown", (e) => { const t = e.target.closest && e.target.closest("[data-ptabs] [role=tab]"); if (!t || !/^(Arrow(Left|Right)|Home|End)$/.test(e.key)) return; const all = $$("[role=tab]", t.parentNode), i = all.indexOf(t), n = e.key === "Home" ? all[0] : e.key === "End" ? all[all.length - 1] : all[(i + (e.key === "ArrowRight" ? 1 : all.length - 1)) % all.length]; tabTo(t.parentNode, n); n.focus(); e.preventDefault(); });
 
   // pages with nothing to show yet stay out of the menus: Erbjudanden until a product is on sale, Nyheter until RQ_CONFIG.showNews
   const showFlags = () => { const c = window.RQ_CONFIG || {}, h = document.documentElement; h.toggleAttribute("data-no-offers", !RQ.PRODUCTS.some((p) => p.was)); h.toggleAttribute("data-no-news", !c.showNews); };
