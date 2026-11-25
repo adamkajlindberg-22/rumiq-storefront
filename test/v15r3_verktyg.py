@@ -209,6 +209,22 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.querySelector('#view h1').innerText").startswith(name), f"desktop en: invented names stay names: {name}")
     ok(not errs, f"desktop en: no script errors {errs[:2]}")
     ctx.close()
+
+    # ------------------------------------------------------------ konto: the preview note before the buttons, a narrow sign-in dialog, the room sheet (M14, D21, M13)
+    for mobile in (True, False):
+        tag = "phone" if mobile else "desktop"
+        ctx, pg, errs = new(b, mobile)
+        go(pg, "konto", 900)
+        ok(pg.evaluate("(() => { const n = document.querySelector('.auth-card .note'), s = document.querySelector('.sso-list'); return !!n && !!s && n.getBoundingClientRect().bottom <= s.getBoundingClientRect().top; })()"), f"{tag} konto: 'inloggningen är inte kopplad än' stands above the provider buttons")
+        go(pg, "butik", 800); pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(600)
+        ok(pg.evaluate("document.querySelector('[data-room-type-h]').hidden && document.querySelector('.sheet [data-room-type]').hidden"), f"{tag} room sheet: 'Vilket rum är det?' waits until there is a photo")
+        ok(pg.evaluate("[...document.querySelectorAll('.sheet-samples span')].every((s) => !/ i /.test(s.textContent))"), f"{tag} room sheet: the sample rooms are named the same way")
+        pg.evaluate("RQ.room.closeSetup()")
+        if not mobile:
+            go(pg, "mitt-rum", 800); pg.evaluate(SAMPLE, "vardagsrum"); pg.wait_for_timeout(300); pg.evaluate("RQ.openAI()"); pg.wait_for_timeout(1500)
+            ok(pg.evaluate("document.querySelector('#aiSheet .sheet-in').getBoundingClientRect().width") <= 560, "desktop: the 'Logga in för att skapa bilden' dialog is sized to its three lines")
+        ok(not errs, f"{tag} konto/sheet: no script errors {errs[:2]}")
+        ctx.close()
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

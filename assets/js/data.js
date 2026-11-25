@@ -213,7 +213,7 @@
 
   // Sample rooms for Studio (images generated for RumIQ; illustrations, not customer homes)
   RQ.SAMPLE_ROOMS = [
-    { id: "vardagsrum", name: "Vardagsrum i morgonljus", img: "assets/img/rum/vardagsrum-1600.webp" },
+    { id: "vardagsrum", name: "Vardagsrum", img: "assets/img/rum/vardagsrum-1600.webp" },
     { id: "sovrum", name: "Sovrum", img: "assets/img/rum/sovrum-1600.webp" },
     { id: "kok", name: "Kök", img: "assets/img/rum/kok-1600.webp" },
     { id: "hall", name: "Hall", img: "assets/img/rum/hall-1600.webp" },

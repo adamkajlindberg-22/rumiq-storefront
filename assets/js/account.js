@@ -14,7 +14,7 @@
   const BENEFITS = `<div class="auth-aside"><span class="eyebrow">Med ett gratis konto kan du</span>
     <ul class="rules" style="margin-top:1.2rem"><li>Se produkterna i en bild av ditt eget rum och spara resultatet</li><li>Samla det du sparar i egna listor, till exempel en per rum</li><li>Spara dina looks, din stil och dina samtal med stylisten</li><li>Följa och ångra beställningar med ett klick</li><li>Gå snabbare genom kassan nästa gång</li></ul>
     <p class="small" style="margin-top:1.6rem">Du kan alltid handla som gäst. Kassan kräver inget konto.</p></div>`;
-  const demoNote = () => (RQ.auth.mode === "demo" ? `<p class="note" style="margin-top:1.4rem">Förhandsversion: inloggningen är inte kopplad än. Knapparna skapar ett testkonto som bara finns i den här webbläsaren. Inga uppgifter skickas till Google, Apple, Microsoft eller oss.</p>` : "");
+  const demoNote = () => (RQ.auth.mode === "demo" ? `<p class="note" style="margin:0 0 1.2rem">Förhandsversion: inloggningen är inte kopplad än. Knapparna skapar ett testkonto som bara finns i den här webbläsaren. Inga uppgifter skickas till Google, Apple, Microsoft eller oss.</p>` : "");
 
   function authView(tab) {
     const signup = tab === "skapa";
@@ -28,6 +28,7 @@
             <div class="seg" role="tablist"><a role="tab" href="#konto" aria-selected="${!signup}">Logga in</a><a role="tab" href="#skapa-konto" aria-selected="${signup}">Skapa konto</a></div>
             ${down ? `<div class="auth-down" role="status"><h2 class="h3">Inloggningen går inte att nå just nu</h2><p>Det beror inte på dig. Försök igen om en stund. Du kan handla som gäst under tiden, och det du har sparat i den här webbläsaren ligger kvar.</p><div class="ctrl-row"><button class="btn" type="button" id="authRetry">Försök igen</button><a class="btn ghost" href="#butik">Till butiken</a></div></div>` : ""}
             <div id="authMain"${down ? " hidden" : ""}>
+              ${demoNote()}
               <div class="sso-list">${RQ.socialButtons(signup ? "Skapa konto" : "Fortsätt")}</div>
               <div class="or"><span>eller med e-post</span></div>
               <form id="codeForm" novalidate>
@@ -40,7 +41,6 @@
               </form>
             </div>
             <div id="authStep" hidden></div>
-            ${demoNote()}
           </div>
           ${BENEFITS}
         </section>`,

@@ -119,7 +119,7 @@
   let isOpen = false, ret = null, busy = false, last = null, pick = {}, chosen = null, pending = null;
   const open = () => { if (!isOpen) { ret = document.activeElement; RQ.closeAll && RQ.closeAll(); } isOpen = true; el.inert = false; el.classList.add("open"); el.setAttribute("aria-hidden", "false"); document.documentElement.classList.add("sheet-lock"); setTimeout(() => box.focus({ preventScroll: true }), 30); };
   const close = () => { if (busy) { AI.stop(); return; } isOpen = false; el.classList.remove("open"); el.setAttribute("aria-hidden", "true"); el.inert = true; document.documentElement.classList.remove("sheet-lock"); if (ret && ret.focus && document.contains(ret)) ret.focus({ preventScroll: true }); AI.hydrate(); };
-  const show = (html) => { body.innerHTML = html; box.scrollTop = 0; open(); };
+  const show = (html, narrow) => { body.innerHTML = html; el.classList.toggle("narrow", !!narrow); box.scrollTop = 0; open(); }; // narrow: a short message gets a dialog its own size
   el.addEventListener("click", (e) => { if (e.target.closest("[data-ai-close]")) close(); });
   document.addEventListener("keydown", (e) => { if (isOpen && e.key === "Escape") { e.stopPropagation(); close(); } }, true);
 
@@ -132,7 +132,7 @@
 
   const viewSignin = () => show(`<div class="ai-pad"><span class="eyebrow">AI-bild av ditt rum</span><h2 id="aiTitle" class="ai-h">Logga in för att skapa bilden.</h2>
       <p class="ai-lead">Bilderna sparas i ditt konto. Du får ${FREE_IMAGES} bilder gratis varje månad.</p>
-      <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-close>Skapa konto</a></div></div>`);
+      <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-close>Skapa konto</a></div></div>`, true);
 
   const viewConsent = () => {
     show(`<div class="ai-pad"><span class="eyebrow">Innan första bilden</span><h2 id="aiTitle" class="ai-h">Så används din bild.</h2>

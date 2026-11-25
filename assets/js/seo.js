@@ -57,7 +57,8 @@
     follow(route, ownHead) {
       want = /^(hem)?$/.test(route) ? "hem" : route;
       own = ownHead || null;
-      if (first === null) first = want;
+      // 404.html is served for every address without a page of its own (an order page after a reload): its head is not this view's, so the router's own head is used
+      if (first === null) first = /^Sidan finns inte/.test(firstTitle) ? false : want;
       apply();
     },
   };
