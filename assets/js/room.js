@@ -98,9 +98,18 @@
   /* the spot a product gets when it is put in the room: by kind, and beside what already stands there.
      Only things of the same sort are in each other's way (a candle does not push a throw off the sofa), and a
      mapped surface has an end: when the table is full the next thing is put on the floor, never in the air. */
-  const SORT = { surface: "s", cushion: "t", throw: "t", bedding: "t", floor: "f", rug: "r", window: "w", wall: "a" };
-  const spotFor = (p, list, raw, MX) => { // MX: a sample room's map instead of the customer's room (the look pictures)
-    const [kind, cm] = meta(p), M = MX || mapOf(), G = M || GENERIC;
+  const SORT = { surface: "s", cushion: "t", throw: "t", bedding: "t", floor: "f", rug: "r", window: "w", wall: "a", golv: "f", bord: "s", vagg: "a", sang: "t", soffa: "t" };
+  /* What a thing stands on, in the customer's words (the selected-item panel: "Står på: bord"). it.on holds a choice made
+     there, or the kind of spot a full table sent it to; without it, the thing's own kind decides. */
+  const SURF = { golv: "golv", vagg: "vägg", bord: "bord", sang: "säng", soffa: "soffa" };
+  const CAN = { surface: ["bord", "golv"], floor: ["golv", "bord"], cushion: ["soffa", "sang", "golv"], throw: ["soffa", "sang"], bedding: ["sang"], wall: ["vagg", "bord", "golv"], rug: ["golv"], window: ["vagg"] };
+  const soft = () => (room && room.type === "sovrum" ? "sang" : "soffa");
+  const surfOf = (it) => { const k = kindOf(RQ.byHandle(it.h)); if (SURF[it.on]) return it.on; return { surface: "bord", floor: "golv", rug: "golv", wall: "vagg", window: "vagg", bedding: "sang", cushion: soft(), throw: soft() }[it.on || k] || "bord"; };
+  /* the kind of spot that surface means for this thing (where it is put, what it stands in front of) */
+  const kindAt = (s, k) => ({ golv: k === "rug" ? "rug" : "floor", bord: "surface", vagg: k === "window" ? "window" : "wall", soffa: k === "cushion" || k === "throw" ? k : "throw", sang: k === "cushion" || k === "throw" || k === "bedding" ? k : "throw" })[s] || k;
+  const effKind = (it) => { const k = kindOf(RQ.byHandle(it.h)); return SURF[it.on] ? kindAt(it.on, k) : it.on || k; };
+  const spotFor = (p, list, raw, MX, over) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot
+    const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
     const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
@@ -137,7 +146,7 @@
   /* what stands behind what: rugs lowest, then curtains, wall, floor, textiles, things on tables */
   const RANK = { rug: 0, window: 1, wall: 2, bedding: 4, throw: 4, cushion: 5, floor: 6, surface: 6 };
   /* back to front: what lies on the floor is drawn before what stands on it */
-  const orderOf = (list) => list.map((it, i) => ({ it, i, z: it.top ? 190 + i : it.back ? -9 + i / 100 : RANK[kindOf(RQ.byHandle(it.h))] * 10 + (it.y + (kindOf(RQ.byHandle(it.h)) === "surface" && !it.on ? 12 : 0)) / 12 })).sort((a, b) => a.z - b.z || a.i - b.i).map((x) => x.it);
+  const orderOf = (list) => list.map((it, i) => { const zk = effKind(it); return { it, i, z: it.top ? 190 + i : it.back ? -9 + i / 100 : RANK[zk] * 10 + (it.y + (zk === "surface" ? 12 : 0)) / 12 }; }).sort((a, b) => a.z - b.z || a.i - b.i).map((x) => x.it);
   const PLACE = KIND, placeFor = (p) => spotFor(p, []);
 
   /* ---------------------------------------------------------------- colour */
@@ -608,6 +617,7 @@
                 </div></div>
             </div>
             <div class="rm-act" id="rmAct" role="group" aria-label="Den valda saken" hidden>
+              <div class="rm-acth"><b id="rmActName"></b><span class="rm-on"><span id="rmOnL2">Står på</span><select id="rmOn2" aria-labelledby="rmOnL2"></select><b class="rm-on1" id="rmOn2b" hidden></b></span></div>
               <button type="button" data-act="smaller">${ICO.minus}<span>Mindre</span></button>
               <button type="button" data-act="bigger">${ICO.plus}<span>Större</span></button>
               <button type="button" data-act="flip">${ICO.flip}<span>Vänd</span></button>
@@ -627,6 +637,7 @@
             ${RQ.ai ? RQ.ai.card() : ""}
             <div class="rm-sel" id="rmSel" hidden>
               <div class="rm-sel-h"><img id="rmSelImg" alt=""><div><b id="rmSelName"></b><span id="rmSelPrice"></span></div><a class="tlink" id="rmSelLink" href="#">Visa</a></div>
+              <div class="range-row rm-onrow"><span id="rmOnL">Står på</span><span class="rm-on"><select id="rmOn" aria-labelledby="rmOnL"></select><b class="rm-on1" id="rmOnb" hidden></b></span></div>
               <div class="range-row"><span>Storlek</span><input type="range" id="rmSize" min="3" max="96" step=".1" aria-label="Storlek"></div>
               <div class="range-row"><span>Ljus</span><input type="range" id="rmLight" min="60" max="135" aria-label="Ljus"></div>
               <div class="range-row rm-move" role="group" aria-label="Flytta"><span aria-hidden="true">Flytta</span><div><button type="button" class="chip" data-mv="-2,0" aria-label="Flytta åt vänster">←</button><button type="button" class="chip" data-mv="0,-2" aria-label="Flytta uppåt">↑</button><button type="button" class="chip" data-mv="0,2" aria-label="Flytta nedåt">↓</button><button type="button" class="chip" data-mv="2,0" aria-label="Flytta åt höger">→</button></div></div>
@@ -692,7 +703,9 @@
           if (!view.on) { view.z = 1; view.tx = view.ty = 0; paintView(); return; }
           const ar = room.w / room.h, W = box.clientWidth, top = (document.querySelector("header") || {}).offsetHeight || 58;
           const drawer = document.body.classList.contains("picking-room") ? R.pickerHeight() + 10 : 0; // the picker is open under the room
-          const room4 = Math.max(200, innerHeight - top - (drawer || 150)), h62 = Math.min(Math.round(innerHeight * 0.62), room4);
+          // on a short phone the room leaves space under it for the selected thing's bar (its name, Står på and the buttons) above the buy bar
+          const below = drawer ? 0 : innerHeight - (box.getBoundingClientRect().top + scrollY) - 184;
+          const room4 = Math.max(200, innerHeight - top - (drawer || 150)), h62 = Math.min(Math.round(innerHeight * 0.62), room4, below > 260 ? below : 1e4);
           view.can = h62 * ar >= W * 1.2;                       // a wide photo: there is more to see when it is shown tall
           const near = view.can && !view.whole;
           view.sh = Math.round(near ? h62 : Math.min(W / ar, room4)); view.sw = W;
@@ -737,11 +750,24 @@
           $("#rmSelLink", root).href = "#produkt-" + p.handle; { const sz = $("#rmSize", root), [a, b] = span(it.h); sz.min = a.toFixed(1); sz.max = b.toFixed(1); sz.value = it.w; sz.dataset.base = it.w0 || spotFor(p, [], true).w; sizeText(sz);
             $('[data-act="bigger"]', root).setAttribute("aria-disabled", it.w >= b - 0.05); $('[data-act="smaller"]', root).setAttribute("aria-disabled", it.w <= a + 0.05); } $("#rmLight", root).value = it.light;
           $("#rmActOrder", root).textContent = it.back ? "Lägg framför" : "Lägg bakom";
+          $("#rmActName", root).textContent = p.name; paintOn(it);
         };
+        /* "Står på: bord ▾": where the selected thing stands, and the other places it can be (one tap to correct a wrong guess) */
+        const ON_WORD = (it, s) => (s === "vagg" ? "Hänger på" : (s === "golv" && kindOf(RQ.byHandle(it.h)) === "rug") || ((s === "soffa" || s === "sang") && kindOf(RQ.byHandle(it.h)) !== "surface") ? "Ligger på" : "Står på");
+        const paintOn = (it) => { const k = kindOf(RQ.byHandle(it.h)), cur = surfOf(it), opts = [...new Set([...(CAN[k] || [cur]), cur])];
+          [["#rmOn", "#rmOnb", "#rmOnL"], ["#rmOn2", "#rmOn2b", "#rmOnL2"]].forEach(([sq, bq, lq]) => { const sel = $(sq, root), one = $(bq, root);
+            $(lq, root).textContent = ON_WORD(it, cur) + (opts.length > 1 ? "" : ":"); sel.hidden = opts.length < 2; one.hidden = opts.length > 1; one.textContent = SURF[cur];
+            sel.innerHTML = opts.map((o) => `<option value="${o}"${o === cur ? " selected" : ""}>${SURF[o]}</option>`).join(""); }); };
+        const setOn = (h, to) => { const it = R.scene().find((x) => x.h === h); if (!it || surfOf(it) === to) return; const p = RQ.byHandle(h), k = kindOf(p), patch = { on: to };
+          // in a sample room the place is known: the thing moves there (a lamp to the floor beside the sofa, a print onto the table)
+          const was = kindAt(surfOf(it), k), now = kindAt(to, k);
+          if (mapOf() && was !== now) { const sp = spotFor(p, R.scene().filter((x) => x.h !== h), true, null, now); if (sp) Object.assign(patch, { x: sp.x, y: sp.y, w: sp.w }, sp.sy ? { sy: sp.sy } : {}); }
+          R.update(h, patch); const nw = R.scene().find((x) => x.h === h); if (nw) { lookAt([nw]); learn(h, nw); } said(`${ON_WORD(it, to)} ${SURF[to]}.`); };
+        ["#rmOn", "#rmOn2"].forEach((q) => $(q, root).addEventListener("change", (e) => { if (sel) setOn(sel, e.target.value); }));
         const select = (h) => { sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); };
         const live = (h, patch) => { const el = $(`.rm-item[data-h="${h}"]`, wrap); if (!el) return; if (patch.x != null) el.style.left = patch.x + "%"; if (patch.y != null) el.style.top = patch.y + "%"; if (patch.w != null) el.style.width = patch.w + "%"; };
         /* a size you choose in your own photo teaches the room its scale: the next things follow it */
-        const learn = (h, it) => { if (mapOf()) return; const p = RQ.byHandle(h), [kind, cm] = meta(p), L = ls.get(LEARN, {}) || {}, base = spotFor(p, [], true).w;
+        const learn = (h, it) => { if (mapOf()) return; const p = RQ.byHandle(h), [, cm] = meta(p), kind = effKind(it), L = ls.get(LEARN, {}) || {}, base = spotFor(p, [], true, null, kind).w;
           L[kind] = { x: +it.x.toFixed(1), y: +it.y.toFixed(1), s: +(it.w / cm * 100).toFixed(2), w: +it.w.toFixed(1), sy: it.sy };
           if (kind !== "rug" && kind !== "window" && base > 0) L.k = +clamp(it.w / base, 0.4, 3).toFixed(2);
           ls.set(LEARN, L); };
@@ -767,7 +793,7 @@
             else if (view.on) { const r = stage.getBoundingClientRect(); pinch = { d, z: view.z, cx: (a.x + b.x) / 2 - r.left, cy: (a.y + b.y) / 2 - r.top, tx: view.tx, ty: view.ty }; canvas.classList.remove("glide"); }
             drag = pan = null; return; }
           if (el) { select(el.dataset.h); const it = R.scene().find((x) => x.h === el.dataset.h); if (!it) return; const r = canvas.getBoundingClientRect(); const kind = kindOf(RQ.byHandle(it.h));
-            drag = { h: el.dataset.h, el, sx: e.clientX, sy: e.clientY, ox: it.x, oy: it.y, ow: it.w, w: it.w, kind, r, x: it.x, y: it.y, hp: el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100, moved: false }; }
+            drag = { h: el.dataset.h, el, sx: e.clientX, sy: e.clientY, ox: it.x, oy: it.y, ow: it.w, w: it.w, kind, on: surfOf(it), r, x: it.x, y: it.y, hp: el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100, moved: false }; }
           else if (pts.size === 1) pan = { sx: e.clientX, sy: e.clientY, tx: view.tx, ty: view.ty, moved: false };
         });
         stage.addEventListener("pointermove", (e) => {
@@ -782,7 +808,7 @@
           drag.x = drag.ox + (e.clientX - drag.sx) / drag.r.width * 100;
           drag.y = drag.oy + (e.clientY - drag.sy) / drag.r.height * 100;
           // on the floor, closer to the camera is bigger: the size follows the depth
-          if (drag.kind === "floor" || drag.kind === "rug") { const hz = (mapOf() || GENERIC).h; if (drag.oy - hz > 6) drag.w = fit(drag.h, drag.ow * clamp((clamp(drag.y, 8, 104) - hz) / (drag.oy - hz), 0.35, 2.6)); }
+          if (drag.on === "golv") { const hz = (mapOf() || GENERIC).h; if (drag.oy - hz > 6) drag.w = fit(drag.h, drag.ow * clamp((clamp(drag.y, 8, 104) - hz) / (drag.oy - hz), 0.35, 2.6)); }
           [drag.x, drag.y] = inside(drag.x, drag.y, drag.w, drag.hp * drag.w / drag.ow);
           live(drag.h, { x: drag.x, y: drag.y, w: drag.w });
         });
@@ -899,7 +925,7 @@
             for (const it of R.ordered()) {
               const p = RQ.byHandle(it.h); const im = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = cutIn(p); });
               const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h;
-              if (["surface", "floor"].includes(kindOf(p))) { const g = cx.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.45); g.addColorStop(0, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.save(); cx.translate(0, y + h); cx.scale(1, 0.18); cx.translate(0, -(y + h)); cx.fillStyle = g; cx.fillRect(x - w * 0.1, y + h - w * 0.5, w * 1.2, w); cx.restore(); }
+              if (["bord", "golv"].includes(surfOf(it)) && kindOf(p) !== "rug") { const g = cx.createRadialGradient(x + w / 2, y + h, 0, x + w / 2, y + h, w * 0.45); g.addColorStop(0, "rgba(0,0,0,.28)"); g.addColorStop(1, "rgba(0,0,0,0)"); cx.save(); cx.translate(0, y + h); cx.scale(1, 0.18); cx.translate(0, -(y + h)); cx.fillStyle = g; cx.fillRect(x - w * 0.1, y + h - w * 0.5, w * 1.2, w); cx.restore(); }
               cx.save(); cx.filter = lightFilter(it.light); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(im, 0, 0, w, h); } else cx.drawImage(im, x, y, w, h); cx.restore();
             }
             const handles = R.scene().map((it) => it.h);

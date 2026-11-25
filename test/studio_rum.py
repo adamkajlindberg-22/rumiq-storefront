@@ -192,6 +192,52 @@ with sync_playwright() as p:
     ok(not pg.errs, f"[intake] no script errors: {pg.errs[:2]}")
     c.close()
 
+    # ------------------------------------------------------------ 3. the surface: "Står på: bord ▾", visible and changeable in one tap
+    ON = "(q) => { const s = document.querySelector(q); return s.hidden ? null : [...s.options].map((o) => o.text); }"
+    for W, Hh, mob in ((390, 844, True), (360, 740, True), (1440, 900, False), (1280, 720, False)):
+        tag = f"[on {W}]"
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c)
+        pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate(SAMPLE, "vardagsrum")
+        pg.evaluate("['lysa-keramiklampa', 'strand-jutematta', 'affisch-linje-ekram', 'plad-ullblandning-havre'].forEach((h) => RQ.room.add(h, true)); location.hash = '#mitt-rum'; RQ.router()"); pg.wait_for_timeout(1400); quiet(pg)
+        pg.evaluate("document.querySelector('[data-pick=lysa-keramiklampa]').click()"); pg.wait_for_timeout(600)
+        sq, lq = ("#rmOn2", "#rmOnL2") if mob else ("#rmOn", "#rmOnL")
+        ok(pg.evaluate(ON, sq) == ["bord", "golv"] and pg.evaluate(f"document.querySelector('{sq}').value") == "bord" and pg.evaluate(f"document.querySelector('{lq}').textContent") == "Står på", f"{tag} the lamp says Står på: bord, with golv as the other choice")
+        r = pg.evaluate(f"(() => {{ const r = document.querySelector('{sq}').getBoundingClientRect(); return [r.top, r.bottom, r.width, r.height]; }})()") if mob else None
+        if mob:
+            ok(r[1] <= Hh - 60 and r[3] >= 40, f"{tag} on a phone it sits with the selected thing, on the first screen, large enough to tap: {r}")
+            ok(pg.evaluate("document.getElementById('rmActName').textContent") == "Lysa keramiklampa", f"{tag} and the selected thing is named there")
+            bb = pg.evaluate("[document.querySelector('[data-act=done]').getBoundingClientRect().bottom, document.querySelector('.rm-bar').getBoundingClientRect().top]")
+            ok(bb[0] <= bb[1] + 1, f"{tag} the selected thing's buttons are not under the buy bar: {bb}")
+        before = pg.evaluate(SPOT, "lysa-keramiklampa")
+        pg.select_option(sq, "golv"); pg.wait_for_timeout(600)
+        it = pg.evaluate("RQ.room.scene().find((i) => i.h === 'lysa-keramiklampa')")
+        ok(it.get("on") == "golv" and it["y"] > 80 and pg.evaluate(f"document.querySelector('{sq}').value") == "golv", f"{tag} one choice moves it to the floor of the sample room: {before} -> {[it['x'], it['y'], it['w']]}")
+        order = pg.evaluate("[...document.querySelectorAll('.rm-item')].map((e) => e.dataset.h)")
+        ok(order.index("strand-jutematta") < order.index("lysa-keramiklampa"), f"{tag} and it stands on the rug, not under it: {order}")
+        pg.evaluate("document.getElementById('rmUndo').click()"); pg.wait_for_timeout(400)
+        ok(pg.evaluate(SPOT, "lysa-keramiklampa") == before and not pg.evaluate("RQ.room.scene().find((i) => i.h === 'lysa-keramiklampa').on"), f"{tag} Ångra takes it back to the table")
+        pg.evaluate("document.querySelector('[data-pick=affisch-linje-ekram]').click()"); pg.wait_for_timeout(500)
+        ok(pg.evaluate(ON, sq) == ["vägg", "bord", "golv"] and pg.evaluate(f"document.querySelector('{lq}').textContent") == "Hänger på", f"{tag} a print: Hänger på: vägg, or leaning on a table or the floor")
+        pg.evaluate("document.querySelector('[data-pick=strand-jutematta]').click()"); pg.wait_for_timeout(500)
+        one = "#rmOn2b" if mob else "#rmOnb"
+        ok(pg.evaluate(ON, sq) is None and pg.evaluate(f"document.querySelector('{one}').textContent") == "golv" and pg.evaluate(f"document.querySelector('{lq}').textContent") == "Ligger på:", f"{tag} a rug only lies on the floor: said, without a choice")
+        pg.evaluate("document.querySelector('[data-pick=plad-ullblandning-havre]').click()"); pg.wait_for_timeout(500)
+        ok(pg.evaluate(ON, sq) == ["soffa", "säng"] and pg.evaluate(f"document.querySelector('{sq}').value") == "soffa" and pg.evaluate(f"document.querySelector('{lq}').textContent") == "Ligger på", f"{tag} a throw lies on the sofa (or the bed)")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
+        c.close()
+    # own photo: nothing is known about where the tables are, so the choice keeps the thing where you put it; it stays after a reload
+    c = ctx_for(b, 390, 844, True); pg = new_page(c)
+    pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')")
+    pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300); put(pg, "rum.jpg", picture(1400, 900)); pg.wait_for_timeout(2000)
+    pg.evaluate("RQ.room.add('flatad-forvaringskorg', true); RQ.room.saveScene(RQ.room.scene().map((i) => ({ ...i, x: 40, y: 70 })))"); pg.wait_for_timeout(300)
+    pg.evaluate("document.querySelector('[data-pick=flatad-forvaringskorg]').click()"); pg.wait_for_timeout(400)
+    pg.select_option("#rmOn2", "bord"); pg.wait_for_timeout(400)
+    ok(pg.evaluate(SPOT, "flatad-forvaringskorg")[:2] == [40, 70] and pg.evaluate("RQ.room.scene()[0].on") == "bord", "[on own] in your own photo the basket stays where you put it, now on a table")
+    pg.reload(); pg.wait_for_timeout(1200)
+    pg.evaluate("document.querySelector('[data-pick=flatad-forvaringskorg]').click()"); pg.wait_for_timeout(400)
+    ok(pg.evaluate("document.getElementById('rmOn2').value") == "bord", "[on own] and it is remembered")
+    c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

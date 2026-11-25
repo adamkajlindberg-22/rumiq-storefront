@@ -18,5 +18,22 @@
  "Du är inloggad. Nu kan du lägga in ditt rum.": "You are signed in. Now you can add your room.",
  "Du är inloggad. Välj bilden en gång till, så är du igång.": "You are signed in. Choose the photo once more and you are all set.",
  "Inloggningen gick inte att starta. Försök igen.": "Sign-in could not start. Please try again.",
- "Läser in bilden": "Reading the photo"
+ "Läser in bilden": "Reading the photo",
+ "Står på": "Stands on",
+ "Hänger på": "Hangs on",
+ "Ligger på": "Lies on",
+ "Står på:": "Stands on:",
+ "Hänger på:": "Hangs on:",
+ "Ligger på:": "Lies on:",
+ "bord": "table",
+ "golv": "floor",
+ "vägg": "wall",
+ "säng": "bed",
+ "soffa": "sofa",
+ "Står på bord.": "Stands on the table.",
+ "Står på golv.": "Stands on the floor.",
+ "Hänger på vägg.": "Hangs on the wall.",
+ "Ligger på soffa.": "Lies on the sofa.",
+ "Ligger på säng.": "Lies on the bed.",
+ "Ligger på golv.": "Lies on the floor."
 }
