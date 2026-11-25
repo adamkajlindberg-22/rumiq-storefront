@@ -208,7 +208,8 @@ with sync_playwright() as p:
         ok(pg.evaluate("(() => { const i = document.getElementById('chatIn').getBoundingClientRect(); return i.top >= 0 && i.bottom <= innerHeight; })()"), f"{tag} stylist: the field is still on screen after several answers")
         ok(not pg.evaluate("(() => { const a = [...[...document.querySelectorAll('#log .msg.ai')].pop().querySelectorAll('.mini a')]; return a.some((x) => x.scrollWidth > x.clientWidth + 1); })()"), f"{tag} stylist: product names stay inside their columns")
         pg.evaluate("document.getElementById('maxP').value = '100'"); say("Jag behöver mjukare ljus"); a = pg.evaluate(last)
-        ok(a[1] == 0 and "Det billigaste kostar" in a[0] and "Billigare" not in a[0], f"{tag} stylist: nothing under the price is said plainly, with the cheapest price")
+        # r4: said plainly, and the nearest thing comes as a card instead of a dead end
+        ok(a[1] >= 1 and "Under 100 kr hittar jag inget" in a[0] and "Närmast" in a[0] and "Billigare" not in a[0], f"{tag} stylist: nothing under the price is said plainly, with the nearest thing as a card: {a[0][:160]!r}")
 
         # looks
         go(pg, "looks", 800)

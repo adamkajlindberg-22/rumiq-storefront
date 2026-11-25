@@ -92,10 +92,10 @@
   /* ---------------------------------------------------------------- rule-based stylist + smart search */
   const LEX = {
     rooms: { vardagsrum: ["vardagsrum", "soffa", "soffan", "tv", "living", "lounge", "sofa", "couch"], sovrum: ["sovrum", "säng", "sängen", "nattduksbord", "bedroom", "bed", "bedside"], kok: ["kök", "köket", "bänk", "matplats", "middag", "frukost", "kitchen", "dining", "dinner", "breakfast", "worktop"], badrum: ["badrum", "dusch", "handfat", "badrummet", "bathroom", "shower", "sink"], hall: ["hall", "hallen", "entré", "ytterdörr", "hallway", "entrance", "entryway"], hemmakontor: ["kontor", "skrivbord", "jobba", "hemmakontor", "arbetsplats", "office", "desk", "work", "study"], uteliv: ["balkong", "ute", "trädgård", "uteplats", "terrass", "balcony", "outdoor", "outdoors", "garden", "patio", "terrace"] },
-    needs: { ljus: ["ljus", "lampa", "lampor", "mörkt", "mörk", "läsa", "läs", "belysning", "kväll", "mysig", "mysigt", "mysigare", "stämning", "light", "lamp", "lamps", "lighting", "dark", "reading", "read", "evening", "cosy", "cozy", "atmosphere"], forvaring: ["förvaring", "rörigt", "stökigt", "ordning", "plats", "organisera", "sladdar", "kablar", "liten", "litet", "storage", "messy", "cluttered", "tidy", "organise", "organize", "cables", "small"], detaljer: ["kalt", "kallt", "kall", "tomt", "tråkigt", "personligt", "personlighet", "detaljer", "inredning", "fint", "färg", "mysig", "mysigt", "mysigare", "varmt", "varmare", "bare", "empty", "boring", "personal", "details", "decor", "colour", "color", "warm", "warmer"], rutiner: ["enklare", "vardagen", "vardagslivet", "morgon", "rutin", "praktiskt", "smidigt", "ladda", "easier", "everyday", "morning", "routine", "practical", "charge", "charging"] },
+    needs: { ljus: ["ljus", "lampa", "lampor", "mörkt", "mörk", "läsa", "läs", "belysning", "kväll", "mysig", "mysigt", "mysigare", "stämning", "flyttar", "flytten", "light", "lamp", "lamps", "lighting", "dark", "reading", "read", "evening", "cosy", "cozy", "atmosphere", "cosier", "cozier", "moving"], forvaring: ["förvaring", "rörigt", "stökigt", "ordning", "plats", "organisera", "sladdar", "kablar", "liten", "litet", "leksaker", "prylar", "grejer", "flyttar", "flytten", "storage", "messy", "cluttered", "tidy", "organise", "organize", "cables", "small", "toys", "stuff", "moving"], detaljer: ["kalt", "kallt", "kall", "tomt", "tråkigt", "personligt", "personlighet", "detaljer", "inredning", "fint", "färg", "mysig", "mysigt", "mysigare", "varmt", "varmare", "bare", "empty", "boring", "personal", "details", "decor", "colour", "color", "warm", "warmer"], rutiner: ["enklare", "vardagen", "vardagslivet", "morgon", "rutin", "praktiskt", "smidigt", "ladda", "easier", "everyday", "morning", "routine", "practical", "charge", "charging"] },
     cats: { "belysning-atmosfar": ["lampa", "lampor", "ljus", "belysning", "doftljus", "ljusstake", "ljusstakar", "lamp", "lamps", "light", "lighting", "candle", "candles", "candlestick"], "sovrum-komfort": ["pläd", "filt", "ull", "mjuk", "mjukt", "påslakan", "sängkläder", "örngott", "throw", "blanket", "wool", "soft", "bedding", "duvet"], "hem-inredning": ["kudde", "kuddar", "vas", "inredning", "gardin", "gardiner", "matta", "mattor", "cushion", "cushions", "vase", "decor", "curtain", "curtains", "rug"], "kok-matplats": ["burk", "burkar", "bräda", "skärbräda", "kök", "jar", "jars", "board", "kitchen"], "forvaring-organisering": ["korg", "låda", "förvaring", "basket", "box", "storage"], "badrum-valmaende": ["handduk", "handdukar", "tvål", "badrum", "towel", "towels", "soap", "bathroom"], "tavlor-vaggar": ["tavla", "tavlor", "affisch", "affischer", "poster", "konst", "vägg", "väggen", "ram", "art", "print", "wall", "frame"], uteliv: ["kruka", "växt", "ute", "balkong", "pot", "plant", "plants", "balcony"] },
-    styles: { skandinavisk: ["skandinavisk", "nordisk", "ljust", "naturligt", "scandinavian", "nordic", "natural"], minimalistisk: ["minimalistisk", "enkelt", "rent", "avskalat", "lugnt", "minimalist", "minimal", "simple", "clean", "calm"], klassisk: ["klassisk", "tidlös", "classic", "timeless"], mjuk: ["mysig", "mysigt", "mysigare", "ombonat", "mjukt", "varmt", "varmare", "cosy", "cozy", "soft", "warm"] },
-    colors: { "#A9B39A": ["grön", "salvia", "green", "sage"], "#9E9890": ["grå", "grått", "gråa", "grey", "gray"], "#F2EFE9": ["vit", "vitt", "white"], "#3A3936": ["grafit", "svart", "mörk", "graphite", "black", "dark"], "#B8714A": ["terrakotta", "rost", "terracotta", "rust"], "#D8C6A8": ["beige", "havre", "sand", "oat"], "#B88A5A": ["ek", "trä", "oak", "wood", "wooden"] },
+    styles: { skandinavisk: ["skandinavisk", "nordisk", "ljust", "naturligt", "scandinavian", "nordic", "natural"], minimalistisk: ["minimalistisk", "enkelt", "rent", "avskalat", "lugnt", "minimalist", "minimal", "simple", "clean", "calm"], klassisk: ["klassisk", "tidlös", "classic", "timeless"], mjuk: ["mysig", "mysigt", "mysigare", "ombonat", "mjukt", "varmt", "varmare", "cosy", "cozy", "cosier", "cozier", "soft", "warm"] },
+    colors: { "#A9B39A": ["grön", "salvia", "green", "sage"], "#9E9890": ["grå", "grått", "gråa", "grey", "gray"], "#F2EFE9": ["vit", "vitt", "white"], "#3A3936": ["grafit", "svart", "graphite", "black"], "#B8714A": ["terrakotta", "rost", "terracotta", "rust"], "#D8C6A8": ["beige", "havre", "sand", "oat"], "#B88A5A": ["ek", "trä", "oak", "wood", "wooden"] },
   };
   // every word the rules know, to catch small typos ("lmpa" is read as "lampa")
   const VOCAB = [...new Set(Object.values(LEX).flatMap((m) => Object.values(m).flat()).filter((w) => w.length >= 4 && !w.includes(" ")))];
@@ -104,16 +104,18 @@
   const sameEnd = (a, b) => { let n = 0; while (n < a.length && n < b.length && a[a.length - 1 - n] === b[b.length - 1 - n]) n++; return n; };
   const sameStart = (a, b) => { let n = 0; while (n < a.length && n < b.length && a[n] === b[n]) n++; return n; };
   // "lampa" names "Glob bordslampa", "matta" names "Strand jutematta", "kudde" names "Lin kuddfodral"
-  const namesIt = (p, w) => nameWords(p).some((n) => (w.length === 3 ? n.endsWith(w) : n.includes(w) || w.includes(n) || sameEnd(n, w) >= 5 || (sameStart(n, w) >= 4 && Math.min(n.length, w.length) <= sameStart(n, w) + 2)));
+  const stem = (w) => { const s = w.replace(/(?:erna|arna|orna|er|ar|or)$/, ""); return s.length >= 4 && s !== w ? s : null; }; // "gardiner" is "gardin"
+  const namesIt = (p, w) => nameWords(p).some((n) => (w.length === 3 ? n.endsWith(w) : n.includes(w) || w.includes(n) || (stem(w) && n.endsWith(stem(w))) || sameEnd(n, w) >= 5 || (sameStart(n, w) >= 4 && Math.min(n.length, w.length) <= sameStart(n, w) + 2)));
   const subseq = (a, b) => { let i = 0; for (const c of b) if (c === a[i]) i++; return i === a.length; }; // a inside b, in order
   const SMALL = new Set(["något", "någon", "några", "till", "från", "under", "över", "inte", "utan", "eller", "också", "bara", "lite", "mycket", "mest", "helst", "gärna", "vill", "skulle", "behöver", "söker", "letar", "efter", "finns", "har", "med", "och", "för", "som", "den", "det", "min", "mitt", "mina", "vår", "vårt", "kronor", "present", "saker", "sak", "rum", "rummet", "hemma", "hem", "bra", "fin", "fint", "snygg", "snyggt", "passar", "högst", "max", "billig", "billigt", "ungefär", "att", "jag", "kan", "ska", "vad", "hur", "var", "nya", "nytt", "stor", "små", "mer", "ett", "två", "tre", "vid", "ute", "inne", "hej", "hallå", "tack", "känns", "blir", "göra", "får", "ser", "litet", "liten", "någonting"]);
+  const OCC = { inflyttning: ["inflyttning", "flyttar", "housewarming", "moving"], fodelsedag: ["födelsedag", "fyller", "birthday"], jul: ["jul", "julklapp", "julklappar", "christmas"], tack: ["tack för", "tacka", "värdinna", "thank", "host"] };
   RQ.parseNeed = (text) => {
     const fixed = [];
     const words = S.norm(text).replace(/[.,!?;:()"]/g, " ").split(/\s+/).filter(Boolean).map((w) => {
       if (w.length < 4 || /\d/.test(w) || SMALL.has(w) || VOCAB.includes(w) || VOCAB.some((v) => v.length >= 4 && w.includes(v))) return w;
       if (RQ.PRODUCTS.some((p) => namesIt(p, w))) return w;
       // short words only when a letter is missing or two have swapped places ("lmpa"), never one letter for another ("kall" is not "hall")
-      const near = VOCAB.map((v) => [v, lev(w, v)]).filter((x) => (w.length >= 8 ? x[1] <= 2 : w.length >= 5 ? x[1] <= 1 : x[1] === 1 && (subseq(w, x[0]) || [...w].sort().join("") === [...x[0]].sort().join("")))).sort((a, b) => a[1] - b[1])[0];
+      const near = VOCAB.map((v) => [v, lev(w, v)]).filter((x) => (w.length >= 8 ? x[1] <= 2 : w.length >= 6 ? x[1] <= 1 : x[1] === 1 && (subseq(w, x[0]) || [...w].sort().join("") === [...x[0]].sort().join("")))).sort((a, b) => a[1] - b[1])[0];
       if (near) { fixed.push([w, near[0]]); return near[0]; }
       return w;
     });
@@ -122,7 +124,8 @@
     const pick = (map) => Object.keys(map).filter((k) => hit(map[k]));
     const priceM = t.match(/(?:under|max|högst|mindre än|budget|below|less than|up to)\s*(\d[\d\s]{1,6})/) || t.match(/(\d[\d\s]{1,6})\s*(?:kr|kronor|:-|sek)/);
     const named = words.filter((w) => w.length >= 3 && !SMALL.has(w) && !/\d/.test(w));
-    return { rooms: pick(LEX.rooms), needs: pick(LEX.needs), cats: pick(LEX.cats), styles: pick(LEX.styles), colors: pick(LEX.colors), max: priceM ? parseInt(priceM[1].replace(/\s/g, ""), 10) : null, gift: hit(["present", "presenter", "ge bort", "inflyttning", "värdinna", "gift", "gifts", "housewarming", "host"]), named, fixed, words };
+    const occ = Object.keys(OCC).filter((k) => hit(OCC[k]));
+    return { rooms: pick(LEX.rooms), needs: pick(LEX.needs), cats: pick(LEX.cats), styles: pick(LEX.styles), colors: pick(LEX.colors), max: priceM ? parseInt(priceM[1].replace(/\s/g, ""), 10) : null, gift: hit(["present", "presenter", "ge bort", "inflyttning", "värdinna", "födelsedag", "julklapp", "julklappar", "gift", "gifts", "housewarming", "host", "birthday"]) || /(?:^| )ge (?:min|mitt|mina|till|henne|honom|dem|en|ett) /.test(t) || occ.includes("fodelsedag") || occ.includes("jul"), occ, named, fixed, words };
   };
   RQ.rank = (q, max) => {
     const all = RQ.PRODUCTS.filter((p) => priceOk(p, max || q.max)).map((p) => {
@@ -134,6 +137,7 @@
       q.styles.forEach((st) => { if (p.styles.includes(st)) { s += 1.5; why.push(RQ.STYLES[st].name.toLowerCase() + " stil"); } });
       q.colors.forEach((c) => { if (p.tone.some((t) => dist(hex2rgb(t), hex2rgb(c)) < 60)) { s += 2; why.push("färgen"); } });
       if (q.gift && p.gift.length) { s += 2; why.push("bra present"); }
+      if (q.gift && (q.occ || []).some((o) => (p.occ || []).includes(o))) s += 1; // a birthday gift before one that suits any day
       return { p, s, why: [...new Set(why)] };
     }).filter((x) => x.s > 0).sort((a, b) => b.s - a.s || a.p.price - b.p.price);
     // weak hits (one loose colour match next to something that fits in three ways) are left out
@@ -180,47 +184,112 @@
     ek: ["Ek passar med vitt, havre och salvia. Grafit ger en skarp kontrast.", ["vit", "beige", "salvia", "grafit"]],
   };
   const COLOR_SAY = { salvia: "Vårt gröna heter salvia.", grafit: "Vårt svarta heter grafit." };
+  // colours the shop does not have: said plainly, with the nearest tone when there is one; as the room's base they still get advice
+  Object.assign(COLOR_WORDS, { rod: ["röd", "rött", "röda", "red"], bla: ["blå", "blått", "blåa", "blue", "navy"], gul: ["gul", "gult", "gula", "yellow"], rosa: ["rosa", "pink"] });
+  Object.assign(COLOR_GOES, {
+    rod: ["Rött blir lugnare med havre, vitt och ek.", ["beige", "vit", "ek"]],
+    bla: ["Blått går fint med havre, vitt och ek, och terrakotta ger en varm kontrast.", ["beige", "vit", "ek", "terrakotta"]],
+    gul: ["Gult blir mjukare med vitt, havre och ek.", ["vit", "beige", "ek"]],
+    rosa: ["Rosa passar med havre, vitt och salvia.", ["beige", "vit", "salvia"]],
+  });
+  const MISSING = { rod: ["Rött har vi inte i sortimentet just nu, men terrakotta ligger närmast.", ["terrakotta"]], bla: ["Blått har vi inte i sortimentet just nu.", []], gul: ["Gult har vi inte i sortimentet just nu.", []], rosa: ["Rosa har vi inte i sortimentet just nu.", []] };
   const COLOR_ASK = ["färg", "färger", "färgen", "färgerna", "kulör", "colour", "colours", "color", "colors"];
   // a colour right before something the shop does not sell ("grå soffa", "gröna väggar") is the room's base, not what you want to buy
   const BASE = ["soffa", "soffan", "soffor", "vägg", "väggen", "väggar", "väggarna", "golv", "golvet", "säng", "sängen", "stol", "stolar", "bord", "bordet", "fåtölj", "fåtöljen", "kök", "köket", "sofa", "couch", "wall", "walls", "floor", "bed", "chair", "chairs", "table", "armchair", "kitchen", "cabinets"];
-  const LAMP = /^(lampa|lampan|lampor|lamporna|bordslampa|golvlampa|taklampa|nattlampa|läslampa|lamp|lamps)$/;
-  const colorIn = (words) => { const found = []; words.forEach((w, i) => Object.entries(COLOR_WORDS).forEach(([k, list]) => { if (list.includes(w) && !found.some((f) => f.k === k)) found.push({ k, base: BASE.includes(words[i + 1] || "") || BASE.includes(words[i + 2] || "") }); })); return found; };
+  const LAMP = /^(lampa|lampan|lampor|lamporna|bordslampa|golvlampa|taklampa|nattlampa|läslampa|lamp|lamps|mörkt|mörk|dark)$/; // too dark means a lamp, not a candle
+  const colorIn = (words) => { const found = []; words.forEach((w, i) => Object.entries(COLOR_WORDS).forEach(([k, list]) => { if (list.includes(w) && !found.some((f) => f.k === k)) found.push({ k, base: !/^(i|in|av|of)$/.test(words[i - 1] || "") && (BASE.includes(words[i + 1] || "") || BASE.includes(words[i + 2] || "")) }); })); return found; };
+  // furniture the shop does not sell, when you ask for it ("jag vill ha en soffa", "har ni soffor"), not when it is what you decorate around
+  const FURN = /(?:^| )(?:vill ha|söker|letar efter|har ni|säljer ni|köpa|behöver|want|looking for|do you have|do you sell|buy|need)(?: (?:en|ett|nya?|nytt|a|an|some|new))? (?:soffa|soffor|stol|stolar|bord|säng|sängar|fåtölj|fåtöljer|hylla|hyllor|byrå|möbler|sofa|sofas|couch|chair|chairs|table|tables|bed|beds|armchair|shelf|furniture) /;
+  const HAVE = /^ ?(?:har ni|finns det|säljer ni|do you have|do you sell|have you got) /;
+  const GREET = /^ ?(?:hej|hejsan|hallå|tjena|tja|god morgon|god kväll|hi|hello|hey)(?: där| there)? ?$/, THANKS = /^ ?(?:tack|tack så mycket|tusen tack|thanks|thank you)(?: så mycket)? ?$/;
+  const ABROAD = ["norge", "norway", "danmark", "denmark", "finland", "utomlands", "abroad", "europa", "europe"];
+  // how to look after a material: the care text the product pages use (data.js)
+  const CARE_ASK = ["sköta", "sköter", "skötsel", "tvätta", "tvättar", "rengöra", "rengör", "hand om", "care", "wash", "clean"];
+  const MATERIAL = { lin: ["lin", "linne", "linen"], ull: ["ull", "ylle", "wool"], ek: ["ek", "trä", "oak", "wood"], keramik: ["keramik", "ceramic", "ceramics"], glas: ["glas", "glass"], bomull: ["bomull", "cotton"], jute: ["jute"], massing: ["mässing", "brass"], terrakotta: ["terrakotta", "terracotta"], stengods: ["stengods", "stoneware"], filt: ["filt", "felt"] };
+  const LIVING = ["vardagsrum", "sovrum"]; // rooms where the general advice fits better than the room's own
   RQ.stylistAnswer = (text, max) => {
     const q = RQ.parseNeed(text); if (max) q.max = max;
     const t = " " + q.words.join(" ") + " ";
     const has = (list) => list.some((w) => t.includes(" " + w));
-    const help = HELP.find((h) => has(h[0]));
+    const none = (say, extra) => ({ q: text, text: say, picks: [], help: null, unknown: false, cheaper: null, ...extra });
+    if (GREET.test(t)) return none(["Hej! Berätta vilket rum det gäller och vad du vill förändra, så föreslår jag något."], { hi: true });
+    if (THANKS.test(t)) return none(["Varsågod! Säg till om du vill ha fler förslag."]);
+    const help = HELP.find((h) => has(h[0]) || (h[3] === "frakt" && has(ABROAD)));
     // a question about delivery, returns or paying gets only that answer, with the shop's own facts and the page
-    if (help) return { q: text, text: helpFacts[help[3]](), picks: [], help: { route: help[1], label: help[2] }, unknown: false, cheaper: null };
+    if (help) return none([...(help[3] === "frakt" && has(ABROAD) ? ["Vi levererar till adresser i Sverige."] : []), ...helpFacts[help[3]]()], { help: { route: help[1], label: help[2] } });
     const namedHit = q.named.some((w) => RQ.PRODUCTS.some((p) => namesIt(p, w)));
-    const colors = colorIn(q.words), colorAsk = has(COLOR_ASK);
-    const known = q.rooms.length || q.needs.length || q.cats.length || q.styles.length || q.colors.length || colors.length || colorAsk || q.gift || namedHit;
+    if (has(CARE_ASK)) {
+      const mat = Object.keys(MATERIAL).find((k) => MATERIAL[k].some((w) => q.words.includes(w)));
+      const own = !mat && RQ.PRODUCTS.filter((p) => q.named.some((w) => namesIt(p, w)));
+      const ps = mat ? RQ.PRODUCTS.filter((p) => p.care.includes(mat)) : own || [];
+      const say = mat ? [RQ.CARE[mat]] : ps.length ? [...new Set(ps[0].care.map((k) => RQ.CARE[k]))] : [];
+      return none([...say, "Skötselråden för varje produkt står under Material och skötsel på produktsidan."], { picks: ps.slice(0, 3) });
+    }
+    const colors = colorIn(q.words), colorAsk = has(COLOR_ASK), furn = FURN.test(t);
+    const known = q.rooms.length || q.needs.length || q.cats.length || q.styles.length || q.colors.length || colors.length || colorAsk || q.gift || namedHit || furn;
     // not understood: no advice pulled from a hat and no products that only look like an answer
-    if (!known) return { q: text, text: ["Det där kan jag inte svara på än. Jag kan hjälpa dig med ljus, förvaring, färger, detaljer och presenter, rum för rum."], picks: [], help: null, unknown: true, cheaper: null };
+    if (!known) return none(["Det där kan jag inte svara på än. Jag kan hjälpa dig med ljus, förvaring, färger, detaljer och presenter, rum för rum."], { unknown: true });
     const parts = [], craft = has(CRAFT);
     if (craft) parts.push("Måla, tapetsera och renovera kan jag inte ge råd om. Men jag kan föreslå saker som passar i rummet.");
+    if (furn) parts.push("Möbler har vi inte, bara inredning och detaljer. Det här passar i rummet:");
     // what the products must be: in the room you named, a lamp when you said lamp, in the colour you asked for
     const base = colors.find((c) => c.base) || (colorAsk && colors[0]);
-    const want = base ? COLOR_GOES[base.k][1] : colorAsk && !colors.length ? ["beige", "ek", "salvia"] : colors.map((c) => c.k);
+    const asked = colors.filter((c) => !c.base), gone = asked.filter((c) => MISSING[c.k]), ok = asked.filter((c) => !MISSING[c.k]);
+    if (!base) gone.forEach((c) => parts.push(MISSING[c.k][0]));
+    const want = base ? COLOR_GOES[base.k][1] : colorAsk && !colors.length ? ["beige", "ek", "salvia"] : [...ok.map((c) => c.k), ...gone.flatMap((c) => MISSING[c.k][1])];
     const lamp = q.words.some((w) => LAMP.test(w) || /^läs/.test(w) || /^read/.test(w)); // reading light is a lamp, not a candle
-    const fits = (p) => (!q.rooms.length || q.rooms.some((r) => p.rooms.includes(r))) && (!lamp || /lampa/.test(S.norm(p.name))) && (!want.length || colorsOf(p).some((c) => want.includes(c)));
-    const fitting = (mx) => RQ.rank({ ...q, max: mx, colors: want.map((k) => (RQ.TONES.find((x) => (FAMILY[x.id] || x.id) === k) || {}).hex).filter(Boolean) }, mx).filter((x) => fits(x.p));
+    const inRoom = (p) => !q.rooms.length || q.rooms.some((r) => p.rooms.includes(r));
+    const fitsBy = (o) => (p) => (!o.room || inRoom(p)) && (!o.lamp || !lamp || /lampa/.test(S.norm(p.name))) && (!o.color || !want.length || colorsOf(p).some((c) => want.includes(c)));
+    const hexes = (o) => (o.color ? want.map((k) => (RQ.TONES.find((x) => (FAMILY[x.id] || x.id) === k) || {}).hex).filter(Boolean) : []);
+    const match = (mx, o = { room: 1, lamp: 1, color: 1 }) => RQ.rank({ ...q, max: mx, colors: hexes(o), rooms: o.room ? q.rooms : [] }, mx).filter((x) => fitsBy(o)(x.p));
+    const fitting = (mx) => match(mx);
     // asked for a thing we only have relatives of ("golvlampa" when there are table lamps): say that first
-    const exact = (w) => RQ.PRODUCTS.some((p) => nameWords(p).some((n) => n.includes(w) || (sameStart(n, w) >= 4 && sameStart(n, w) >= Math.min(n.length, w.length) - 2)));
+    const exact = (w) => RQ.PRODUCTS.some((p) => nameWords(p).some((n) => n.includes(w) || (stem(w) && n.endsWith(stem(w))) || (sameStart(n, w) >= 4 && sameStart(n, w) >= Math.min(n.length, w.length) - 2)));
     const miss = q.named.find((w) => w.length >= 7 && !exact(w) && RQ.PRODUCTS.some((p) => namesIt(p, w)));
     if (miss) parts.push(`Just ”${miss}” har vi inte i sortimentet än. Det här ligger närmast.`);
-    // one piece of advice at a time, so the answer stays short: colours when you asked about colour, then what you asked for, then the room
+    // one piece of advice at a time, so the answer stays short: colours when you asked about colour, then a gift, then what you asked for or the room
+    const room0 = q.rooms[0], roomFirst = room0 && ROOM_ADVICE[room0] && !LIVING.includes(room0) && !lamp;
     if (base) parts.push(COLOR_GOES[base.k][0]);
     else if (colorAsk && !colors.length) parts.push("Välj en bas, en varm ton och en kontrast. Till exempel havre som bas, ek för värmen och salvia eller grafit som kontrast.");
-    else if (colors.length && !q.needs.length) parts.push((COLOR_SAY[colors[0].k] && !q.words.includes(colors[0].k) ? COLOR_SAY[colors[0].k] + " " : "") + COLOR_GOES[colors[0].k][0]);
-    else if (q.needs[0] && !craft && !miss) parts.push(ADVICE[q.needs[0]]);
-    else if (q.rooms[0] && ROOM_ADVICE[q.rooms[0]]) parts.push(ROOM_ADVICE[q.rooms[0]]);
-    if (!parts.length) parts.push(q.gift ? "Här är saker som brukar bli uppskattade att få." : "Det här ur sortimentet passar det du beskriver.");
-    const ranked = fitting(q.max).slice(0, 3), picks = ranked.map((x) => x.p);
-    if (!ranked.length) { const any = fitting(null); parts.push(q.max && any.length ? `Jag hittar inget under ${kr(q.max)} som passar. Det billigaste kostar ${kr(cheapest(any.map((x) => x.p)))}.` : "Jag hittar inget i sortimentet som passar just det."); }
+    else if (ok.length && !q.needs.length) parts.push((COLOR_SAY[ok[0].k] && !q.words.includes(ok[0].k) ? COLOR_SAY[ok[0].k] + " " : "") + COLOR_GOES[ok[0].k][0]);
+    else if (gone.length || furn || craft || miss) { /* already said what matters */ }
+    else if (q.gift) parts.push("Här är saker som brukar bli uppskattade att få.");
+    else if (q.occ.includes("inflyttning")) parts.push("Grattis till flytten! Börja med ljuset och en fast plats för det du använder varje dag, så känns det som hemma fortare.");
+    else if (roomFirst) parts.push(ROOM_ADVICE[room0]);
+    else if (q.needs[0]) parts.push(ADVICE[q.needs[0]]);
+    else if (room0 && ROOM_ADVICE[room0]) parts.push(ROOM_ADVICE[room0]);
+    let ranked = fitting(q.max);
+    // the thing you named comes alone ("har ni gardiner?" shows the curtains, not a vase next to them); "ljus" is light, not only candles
+    const own = ranked.filter((x) => q.named.some((w) => !/^(ljus|light|lights)$/.test(w) && namesIt(x.p, w)));
+    if (own.length) { ranked = own; if (HAVE.test(t) && !parts.length) parts.push("Ja, det här har vi."); }
+    // a colour you named that is also in the name ("något i ek") comes first
+    const inName = (p) => ok.some((c) => COLOR_WORDS[c.k].some((w) => nameWords(p).some((n) => n === w || n.endsWith(w)) || S.norm(p.name).split(/[^a-zåäö]+/).includes(w)));
+    ranked = [...ranked.filter((x) => inName(x.p)), ...ranked.filter((x) => !inName(x.p))];
+    if (!parts.length) parts.push("Det här ur sortimentet passar det du beskriver.");
+    // three of a kind only when that is what you asked for: among equally good answers, one per category first
+    const top = ranked.length ? ranked[0].s : 0, mix = [];
+    ranked.forEach((x) => { if (mix.length < 3 && x.s >= top * 0.7 && !mix.some((m) => m.p.cat === x.p.cat)) mix.push(x); });
+    ranked.forEach((x) => { if (mix.length < 3 && !mix.includes(x)) mix.push(x); });
+    const picks = mix.map((x) => x.p);
+    let tags = null;
+    if (!picks.length) {
+      // never a dead end: the nearest thing as a card, and what fits the room within the budget without the colour
+      const cheapestOf = (l) => l.map((x) => x.p).sort((a, b) => a.price - b.price)[0];
+      const near = cheapestOf(fitting(null)) || cheapestOf(match(q.max, { lamp: 1, color: 1 })) || cheapestOf(match(null, { lamp: 1, color: 1 })) || (!lamp && cheapestOf(match(null, { room: 1 })));
+      const loose = (q.max && want.length && !lamp && match(q.max, { room: 1 }).map((x) => x.p).filter((p) => p !== near).slice(0, near ? 2 : 3)) || [];
+      if (near) picks.push(near);
+      picks.push(...loose);
+      // each card says why it is there: the nearest one, and the ones within your budget in another colour
+      if (picks.length) tags = [...(near ? ["Närmast"] : []), ...loose.map(() => `Under ${kr(q.max)}, annan färg`)];
+      parts.push(q.max && near && loose.length ? `Under ${kr(q.max)} hittar jag inget som passar helt. Här är det som ligger närmast, och det bästa i andra färger.`
+        : q.max && near ? `Under ${kr(q.max)} hittar jag inget som passar helt. Här är det som ligger närmast.`
+        : q.max && loose.length ? `Under ${kr(q.max)} hittar jag inget i just den färgen. Här är det bästa i andra färger.`
+        : near ? "Just det har vi inte än. Här är det som ligger närmast." : "Jag hittar inget i sortimentet som passar just det.");
+    }
     // "Billigare förslag" is only offered when there really is something cheaper that fits
-    const low = picks.length ? Math.min(...picks.map((p) => p.price)) : 0;
-    return { q: text, text: parts, picks, help: null, unknown: false, cheaper: low && fitting(low - 1).length ? low - 1 : null };
+    const low = picks.length && !tags ? Math.min(...picks.map((p) => p.price)) : 0;
+    const cheaper = low && fitting(low - 1).some((x) => !own.length || own.some((o) => o.p === x.p) || q.named.some((w) => namesIt(x.p, w)));
+    return { q: text, text: parts, picks, tags, help: null, unknown: false, cheaper: cheaper ? low - 1 : null };
   };
 
   const STARTERS = ["Mitt vardagsrum känns kalt, hur gör jag det mysigare?", "Jag behöver mjukare ljus vid läsfåtöljen", "Hur får jag en liten hall att kännas mer ordnad?", "Vad passar i ett litet sovrum?", "En present till en inflyttning under 500 kr"];
@@ -251,12 +320,14 @@
       let armed = false;
       const clr = $("#chatClear", root); if (clr) clr.addEventListener("click", () => { if (hist.length && !armed) { armed = true; clr.textContent = "Tryck igen för att rensa samtalet"; return; } hist = []; save(hist); RQ.router(); });
       const add = (who, html) => { const d = document.createElement("div"); d.className = "msg " + who; d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; };
-      const prods = (a) => a.picks.map((x) => (typeof x === "string" ? RQ.byHandle(x) : x)).filter(Boolean);
+      const handles = (l) => (l || []).map((x) => (typeof x === "string" ? RQ.byHandle(x) : x)).filter(Boolean);
+      const prods = (a) => handles(a.picks);
+      const mini = (ps, tags) => (ps.length ? `<div class="mini">${ps.map((p, i) => `<a href="#produkt-${p.handle}"${tags && tags[i] ? ' class="tagged"' : ""}><img src="${RQ.img(p, 600)}" alt="" loading="lazy" width="600" height="750">${tags && tags[i] ? `<small>${esc(tags[i])}</small>` : ""}<span>${esc(p.name)}</span><b>${kr(p.price)}</b></a>`).join("")}</div>` : "");
       // after an answer: put the suggestions in your room, or ask for cheaper ones
       const follow = (a) => { const ps = prods(a); if (!ps.length) return "";
         return `<div class="follow"><button class="chip" type="button" data-inroom="${ps.map((p) => p.handle).join(",")}">Ställ in i Mitt rum</button>${a.cheaper ? `<button class="chip" type="button" data-cheaper="${+a.cheaper}" data-q="${esc(a.q || "")}">Billigare förslag</button>` : ""}</div>`; };
-      const answerHtml = (a) => { const ps = prods(a), text = Array.isArray(a.text) ? a.text : [a.text];
-        return `${text.map((p) => `<p>${esc(p)}</p>`).join("")}${a.help ? `<p><a class="msg-help" href="#${esc(a.help.route)}">${esc(a.help.label)}</a></p>` : ""}${a.unknown ? `<div class="follow">${starters.slice(0, 2).map((q) => `<button class="chip" type="button" data-try="${esc(q)}">${esc(q)}</button>`).join("")}<a class="chip" href="#kontakt">Kontakta oss</a></div>` : ""}${ps.length ? `<div class="mini">${ps.map((p) => `<a href="#produkt-${p.handle}"><img src="${RQ.img(p, 600)}" alt="" loading="lazy" width="600" height="750"><span>${esc(p.name)}</span><b>${kr(p.price)}</b></a>`).join("")}</div>` : ""}${follow(a)}`; };
+      const answerHtml = (a) => { const text = Array.isArray(a.text) ? a.text : [a.text];
+        return `${text.map((p) => `<p>${esc(p)}</p>`).join("")}${a.help ? `<p><a class="msg-help" href="#${esc(a.help.route)}">${esc(a.help.label)}</a></p>` : ""}${a.unknown || a.hi ? `<div class="follow">${starters.slice(0, 2).map((q) => `<button class="chip" type="button" data-try="${esc(q)}">${esc(q)}</button>`).join("")}${a.unknown ? '<a class="chip" href="#kontakt">Kontakta oss</a>' : ""}</div>` : ""}${mini(handles(a.picks), a.tags)}${follow(a)}`; };
       hist.forEach((m) => add(m.who, m.who === "me" ? esc(m.text) : answerHtml(m.a)));
       const st = $("#starters", root); if (hist.length) st.remove();
       let busy = false;
@@ -268,7 +339,7 @@
         const q = opt.q || text;
         const me = add("me", esc(text)); const typing = add("ai", '<span class="typing"><i></i><i></i><i></i></span>');
         const a = RQ.stylistAnswer(q, opt.max || maxOf($("#maxP", root)));
-        const stored = { q, text: a.text, picks: a.picks.map((p) => p.handle), help: a.help, unknown: a.unknown, cheaper: a.cheaper };
+        const stored = { q, text: a.text, picks: a.picks.map((p) => p.handle), tags: a.tags || null, hi: !!a.hi, help: a.help, unknown: a.unknown, cheaper: a.cheaper };
         setTimeout(() => { busy = false; if (!typing.isConnected) return; typing.innerHTML = answerHtml(stored); RQ.toHashLinks && RQ.toHashLinks(typing); log.scrollTop += me.getBoundingClientRect().top - log.getBoundingClientRect().top - 10; }, 700);
         hist.push({ who: "me", text, q }, { who: "ai", a: stored });
         save(hist);
