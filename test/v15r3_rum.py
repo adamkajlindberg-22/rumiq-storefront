@@ -182,8 +182,10 @@ with sync_playwright() as p:
     # M12: in an own photo the first lamp and print start mid-picture and large enough to grab
     pg.evaluate("RQ.room.add('lysa-keramiklampa', true); RQ.room.add('affisch-linje-ekram', true)"); pg.wait_for_timeout(300)
     lamp, art = pg.evaluate(SPOT, "lysa-keramiklampa"), pg.evaluate(SPOT, "affisch-linje-ekram")
-    ok(55 <= lamp[1] <= 68 and lamp[2] >= 8, f"[M12] the first lamp stands mid-height and is not a speck: {lamp}")
-    ok(30 <= art[1] <= 50 and art[2] >= 10, f"[M12] a print hangs on the wall, mid-picture: {art}")
+    # studio review M1 (supersedes M12's mid-height spots): the site does not know where the tables or a free wall are in an own photo,
+    # so the first things stand in a tidy row on the floor, large enough to grab, and the room says "Dra sakerna dit du vill ha dem"
+    ok(lamp[1] >= 84 and lamp[2] >= 8, f"[M1] the first lamp stands on the floor line and is not a speck: {lamp}")
+    ok(art[1] >= 84 and art[2] >= 10 and abs(art[0] - lamp[0]) + abs(art[1] - lamp[1]) > 3, f"[M1] a print leans in the row, not on top of the lamp: {art}")
     c.close()
 
     # ---------------------------------------------------------------- M7: messages over the room picture, not the title

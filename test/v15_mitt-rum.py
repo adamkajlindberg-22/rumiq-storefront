@@ -311,7 +311,8 @@ with sync_playwright() as p:
     pg.click("#view [data-room-setup]"); pg.wait_for_timeout(400)
     upload(pg, "rum.jpg", picture(1400, 788)); pg.wait_for_timeout(2200)
     ok(pg.evaluate("RQ.room.scene().map((i) => i.h)") == ["lysa-keramiklampa"] and pg.evaluate("document.querySelector('.rm-item.sel').dataset.h") == "lysa-keramiklampa", "[own] the product stands in the new room and is selected")
-    ok(pg.evaluate("!document.getElementById('rmFirst').hidden && /lagom stor/.test(document.getElementById('rmFirst').innerText)"), "[own] you are told to place and size the first thing")
+    # studio review M1: in an own photo the first thing stands on the floor line (the site does not know where the tables are), and the room says so
+    ok(pg.evaluate("!document.getElementById('rmFirst').hidden && /Dra sakerna dit du vill ha dem/.test(document.getElementById('rmFirst').innerText)"), "[own] you are told to place the first thing")
     ok(pg.evaluate("scrollY") == 0, "[own] the page shows the room from the top")
     pg.tap("[data-act=bigger]"); pg.wait_for_timeout(150); pg.tap("[data-act=bigger]"); pg.wait_for_timeout(250)
     k = json.loads(pg.evaluate("localStorage.getItem('rumiq-roomlearn')")).get("k")
