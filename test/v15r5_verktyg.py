@@ -154,6 +154,26 @@ with sync_playwright() as p:
     ok(not errs, f"stylist en: no script errors {errs[:2]}")
     ctx.close()
 
+    # ------------------------------------------------------------ Hitta rätt: Med egna ord names the colour (D7), the gift price field and few results (P9)
+    for mobile in (True, False):
+        tag = "390" if mobile else "1440"
+        ctx, pg, errs = new(b, mobile)
+        go(pg, "hitta-ratt-ord", 900)
+        pg.fill("#ssIn", "något grönt och mjukt till soffan under 300 kr"); pg.press("#ssIn", "Enter"); pg.wait_for_timeout(1300)
+        got = pg.evaluate("[...document.querySelectorAll('#ssOut .ss-got .chip')].map(c => c.textContent.trim())")
+        ok("Sovrum & komfort" not in got and "Salvia" in got and "Vardagsrum" in got, f"med egna ord {tag}: a sofa is not 'Sovrum & komfort', the colour is named: {got}")
+        ok("färgen salvia" in pg.evaluate("document.getElementById('ssOut').innerText"), f"med egna ord {tag}: the reason names the colour")
+        st = pg.evaluate("(() => { const c = document.querySelector('#ssOut .ss-got .chip'); const s = getComputedStyle(c); return [c.tagName, s.backgroundColor, s.cursor]; })()")
+        ok(st[0] == "LI" and st[1] in ("rgba(0, 0, 0, 0)", "transparent") and st[2] == "default", f"med egna ord {tag}: what we understood are outline labels, not buttons: {st}")
+        go(pg, "hitta-ratt-present", 900)
+        ok(pg.input_value("#gfMax") == "" and pg.get_attribute("#gfMax", "placeholder") == "Till exempel 500", f"presentguiden {tag}: the price field is empty with a placeholder")
+        pg.click("[data-q=for] [data-v=vard]"); pg.wait_for_timeout(300); pg.click("[data-q=occ] [data-v=inflyttning]"); pg.wait_for_timeout(300)
+        pg.fill("#gfMax", "250"); pg.click("#gfGo"); pg.wait_for_timeout(1300)
+        names = pg.evaluate("[...document.querySelectorAll('#gfOut .card')].map(c => c.querySelector('a[href*=produkt]').getAttribute('href').replace(/^.*produkt-/, '').replace(/[/]$/, ''))")
+        ok(len(names) >= 3 and {"lin-kuddfodral", "forvaringslada-filt"} <= set(names) and pg.evaluate("!!document.querySelector('#gfOut a[href=\"#presentkort\"], #gfOut a[href*=presentkort]')"), f"presentguiden {tag}: fewer than three ideas get more under the limit and the gift card: {names}")
+        ok(not errs, f"hitta rätt {tag}: no script errors {errs[:2]}")
+        ctx.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

@@ -2627,6 +2627,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 @media (max-width:640px){.ss-form .field{flex-direction:column}}
 #ssOut{scroll-margin-top:.4rem} /* html's scroll-padding already keeps it clear of the header; both together put the result 170 px down */
 .ss-read{color:var(--ink2);margin-bottom:1.6rem}
+.ss-got{list-style:none;padding:0}.ss-got .chip{cursor:default;color:var(--ink);padding:.36rem .75rem;font-size:.86rem}.ss-got .chip:hover{border-color:var(--line)} /* what we understood: labels, not buttons */
 @media (max-width:640px){.imgopts.pick{grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}.imgopts.pick button span{font-size:.8rem;overflow-wrap:break-word}}
 /* 7. Stylist: questions to start from, and what to do with an answer */
 .chat .starters{display:flex;flex-wrap:wrap;gap:.4rem}

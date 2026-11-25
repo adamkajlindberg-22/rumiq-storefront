@@ -132,7 +132,9 @@
     const named = words.filter((w) => w.length >= 3 && !SMALL.has(w) && !/\d/.test(w) && !/^(ljus|ljuset|ljust|ljusa|light|lights)$/.test(w));
     const occ = Object.keys(OCC).filter((k) => hit(OCC[k]));
     const needs = pick(LEX.needs).filter((k) => k !== "ljus" || hit(LEX.needs.ljus.filter((w) => w !== "ljus")) || / ljus(?:et|en)? /.test(t)); // "ljust golv" is a colour, not a lamp
-    return { rooms: pick(LEX.rooms), needs, cats: pick(LEX.cats), styles: pick(LEX.styles), colors: pick(LEX.colors), max: priceM ? parseInt(priceM[1].replace(/\s/g, ""), 10) : null, gift: hit(["present", "presenter", "ge bort", "inflyttning", "värdinna", "födelsedag", "årsdag", "julklapp", "julklappar", "syster", "systern", "bror", "brorsan", "mamma", "pappa", "mormor", "farmor", "morfar", "farfar", "svärmor", "svärfar", "kompis", "kollega", "väninna", "sister", "brother", "mum", "mom", "dad", "mother", "father", "grandma", "grandpa", "friend", "colleague", "gift", "gifts", "housewarming", "host", "birthday"]) || /(?:^| )ge (?:min|mitt|mina|till|henne|honom|dem|en|ett) /.test(t) || occ.includes("fodelsedag") || occ.includes("jul"), occ, named, fixed, words };
+    // "mjukt till soffan" is soft, not bedding: the bedroom category only when bedding or the bedroom is named
+    const cats = pick(LEX.cats).filter((k) => k !== "sovrum-komfort" || hit(LEX.cats[k].filter((w) => !/^(mjuk|mjukt|soft)$/.test(w))) || !pick(LEX.rooms).some((r) => r !== "sovrum"));
+    return { rooms: pick(LEX.rooms), needs, cats, styles: pick(LEX.styles), colors: pick(LEX.colors), max: priceM ? parseInt(priceM[1].replace(/\s/g, ""), 10) : null, gift: hit(["present", "presenter", "ge bort", "inflyttning", "värdinna", "födelsedag", "årsdag", "julklapp", "julklappar", "syster", "systern", "bror", "brorsan", "mamma", "pappa", "mormor", "farmor", "morfar", "farfar", "svärmor", "svärfar", "kompis", "kollega", "väninna", "sister", "brother", "mum", "mom", "dad", "mother", "father", "grandma", "grandpa", "friend", "colleague", "gift", "gifts", "housewarming", "host", "birthday"]) || /(?:^| )ge (?:min|mitt|mina|till|henne|honom|dem|en|ett) /.test(t) || occ.includes("fodelsedag") || occ.includes("jul"), occ, named, fixed, words };
   };
   RQ.rank = (q, max) => {
     const all = RQ.PRODUCTS.filter((p) => priceOk(p, max || q.max)).map((p) => {
@@ -142,7 +144,7 @@
       q.cats.forEach((c) => { if (p.cat === c) { s += 4; why.push(RQ.catById(c).name.toLowerCase()); } });
       q.needs.forEach((n) => { if (p.needs.includes(n)) { s += 2; why.push(RQ.NEEDS[n].toLowerCase()); } });
       q.styles.forEach((st) => { if (p.styles.includes(st)) { s += 1.5; why.push(RQ.STYLES[st].name.toLowerCase() + " stil"); } });
-      q.colors.forEach((c) => { if (p.tone.some((t) => dist(hex2rgb(t), hex2rgb(c)) < 60)) { s += 2; why.push("färgen"); } });
+      q.colors.forEach((c) => { if (p.tone.some((t) => dist(hex2rgb(t), hex2rgb(c)) < 60)) { s += 2; why.push("färgen " + toneName(c).toLowerCase()); } }); // which colour, not only "färgen"
       if (q.gift && p.gift.length) { s += 2; why.push("bra present"); }
       if (q.gift && (q.occ || []).some((o) => (p.occ || []).includes(o))) s += 1; // a birthday gift before one that suits any day
       return { p, s, why: [...new Set(why)] };
@@ -551,11 +553,11 @@
         const named = (x) => x.why.includes("det du nämnde"), namedAll = RQ.rank({ ...q, max: null }).filter(named);
         const underNamed = q.max && namedAll.length && !r.some(named);
         if (underNamed) r = [];
-        const understood = [...q.rooms.map((x) => RQ.roomById(x).name), ...q.cats.map((x) => RQ.catById(x).name), ...q.needs.map((x) => RQ.NEEDS[x]), ...q.styles.map((x) => RQ.STYLES[x].name), ...q.colors.map((h) => toneName(h)), ...(q.max ? ["Högst " + kr(q.max)] : []), ...(q.gift ? ["Present"] : [])];
+        const understood = [...q.rooms.map((x) => RQ.roomById(x).name), ...q.cats.map((x) => RQ.catById(x).name), ...q.needs.map((x) => RQ.NEEDS[x]), ...q.styles.map((x) => RQ.STYLES[x].name), ...q.colors.map((h) => [toneName(h), h]), ...(q.max ? ["Högst " + kr(q.max)] : []), ...(q.gift ? ["Present"] : [])];
         const read = q.fixed.length ? `<p class="small ss-read">${q.fixed.map(([a, b]) => `<span>Vi läste</span> ”${esc(a)}” <span>som</span> ”${esc(b)}”.`).join(" ")}</p>` : "";
         const under = q.max && !r.length && RQ.rank({ ...q, max: null }).length; // something fits, but nothing that cheap
         const nearest = underNamed ? namedAll.map((x) => x.p) : RQ.rank({ ...q, max: null }).map((x) => x.p);
-        out.innerHTML = `${understood.length ? `<p class="eyebrow" style="margin-bottom:.8rem">Det här förstod vi</p><div class="chips" style="margin-bottom:${read ? ".8rem" : "2rem"}">${understood.map((u) => `<span class="chip on">${esc(u)}</span>`).join("")}</div>` : ""}${read}
+        out.innerHTML = `${understood.length ? `<p class="eyebrow" style="margin-bottom:.8rem">Det här förstod vi</p><ul class="chips ss-got" style="margin-bottom:${read ? ".8rem" : "2rem"}">${understood.map((u) => (Array.isArray(u) ? `<li class="chip tone"><i style="background:${u[1]}"></i>${esc(u[0])}</li>` : `<li class="chip">${esc(u)}</li>`)).join("")}</ul>` : ""}${read}
           ${r.length ? `<div class="grid">${r.slice(0, 8).map((x) => RQ.card(x.p).replace("</article>", `<p class="small" style="margin-top:.3rem">Matchar: ${esc(x.why.slice(0, 3).join(", "))}</p></article>`)).join("")}</div>`
             : under ? `<p class="eyebrow" style="margin-bottom:1.4rem"><span>Inget under</span> ${kr(q.max)}<span>. Det här ligger närmast i pris:</span></p>${RQ.grid(byPrice(nearest).slice(0, 4))}<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="ssNoMax">Visa utan maxpris</button></div>`
             : `<div class="empty"><h3>Vi hittade inget som matchar</h3><p>Prova att nämna ett rum, en sak eller vad du vill uppnå. Eller fråga stylisten.</p><a class="btn ghost" href="#studio-stylist">Fråga stylisten</a></div>`}`;
@@ -621,7 +623,7 @@
         <div class="q" id="gfQ1"><h2><span class="q-n">1</span>Vem är presenten till?</h2>${picOpts("for", Object.entries(RQ.GIFT_FOR).map(([k, v]) => [k, v, pimg(FOR_IMG[k])]), "Vem är presenten till?")}</div>
         <div class="q" id="gfQ2"><h2><span class="q-n">2</span>Tillfället</h2>${picOpts("occ", Object.entries(RQ.OCCASIONS).map(([k, v]) => [k, v, pimg(OCC_IMG[k])]), "Tillfället")}</div>
         <div class="q" id="gfQ3"><h2><span class="q-n">3</span>Mottagarens stil <small>Hoppa över om du inte vet</small></h2>${picOpts("style", ["skandinavisk", "minimalistisk", "klassisk", "mjuk"].map((k) => [k, RQ.STYLES[k].name, STYLE_IMG[k]]), "Mottagarens stil")}</div>
-        <div class="q q-max"><label>Högsta presentpris (kr)<input type="number" id="gfMax" min="1" step="50" inputmode="numeric" value="800"></label><div class="ctrl-row"><button class="btn" type="button" id="gfGo">Hitta en present</button><a class="btn ghost" href="#presentkort">Hellre ett presentkort</a></div></div>
+        <div class="q q-max"><label>Högsta presentpris (kr)<input type="number" id="gfMax" min="1" step="50" inputmode="numeric" placeholder="Till exempel 500"></label><div class="ctrl-row"><button class="btn" type="button" id="gfGo">Hitta en present</button><a class="btn ghost" href="#presentkort">Hellre ett presentkort</a></div></div>
         <div id="gfOut" class="q-out"></div></section>`,
     mount(root) {
       const a = {}, out = $("#gfOut", root), gfMax = $("#gfMax", root);
@@ -632,8 +634,10 @@
         const score = (p) => (a.for && p.gift.includes(a.for) ? 3 : 0) + (a.occ && p.occ.includes(a.occ) ? 3 : 0) + (a.style && p.styles.includes(a.style) ? 2 : 0) + (p.gift.length ? 1 : 0);
         const fits = RQ.PRODUCTS.map((p) => ({ p, s: score(p) })).filter((x) => x.s > 1).sort((x, y) => y.s - x.s), scored = fits.filter((x) => priceOk(x.p, max));
         const n = all ? scored.length : Math.min(8, scored.length); // eight: full rows of four or two (tablets show six, three by three)
+        // fewer than three ideas: more of what costs no more than your limit, and the gift card as a way out
+        const more = scored.length < 3 && max ? RQ.PRODUCTS.filter((p) => p.price <= max && !scored.some((x) => x.p === p)).sort((x, y) => (y.gift.length ? 1 : 0) - (x.gift.length ? 1 : 0) || x.price - y.price).slice(0, 4 - scored.length) : [];
         out.innerHTML = scored.length
-          ? `<p class="eyebrow" style="margin-bottom:1.4rem">${n < scored.length ? `<span>De bästa av</span> ${scored.length} <span>förslag</span>` : `${scored.length} <span>förslag</span>`}${max ? ` <span>upp till</span> ${kr(max)}` : ""}</p>${RQ.grid(scored.slice(0, n).map((x) => x.p), all ? "" : "feat")}${n < scored.length ? `<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="gfAll">Visa alla ${scored.length}</button></div>` : ""}`
+          ? `<p class="eyebrow" style="margin-bottom:1.4rem">${n < scored.length ? `<span>De bästa av</span> ${scored.length} <span>förslag</span>` : `${scored.length} <span>förslag</span>`}${max ? ` <span>upp till</span> ${kr(max)}` : ""}</p>${more.length ? `<div class="grid">${[...scored.map((x) => RQ.card(x.p)), ...more.map((p) => RQ.card(p).replace("</article>", '<p class="small" style="margin-top:.3rem">Också i din prisklass</p></article>'))].join("")}</div><div class="ctrl-row" style="justify-content:center;margin-top:2rem"><a class="btn ghost" href="#presentkort">Hellre ett presentkort</a></div>` : RQ.grid(scored.slice(0, n).map((x) => x.p), all ? "" : "feat")}${n < scored.length ? `<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="gfAll">Visa alla ${scored.length}</button></div>` : ""}`
           : fits.length ? `<p class="eyebrow" style="margin-bottom:1.4rem"><span>Inget under</span> ${kr(max)}<span>. Det här ligger närmast i pris:</span></p>${RQ.grid(byPrice(fits.map((x) => x.p)).slice(0, 4))}<div class="ctrl-row" style="justify-content:center;margin-top:2rem"><button class="btn ghost" type="button" id="gfNoMax">Visa utan maxpris</button></div>`
           : `<div class="empty">${`<h3>Inget passar riktigt</h3><p>Prova ett annat tillfälle, eller ge ett presentkort.</p><a class="btn ghost" href="#presentkort">Till presentkortet</a>`}</div>`;
         const nm = $("#gfNoMax", out); if (nm) nm.addEventListener("click", () => { gfMax.value = ""; run(true); });
