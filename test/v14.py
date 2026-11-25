@@ -219,7 +219,7 @@ with sync_playwright() as p:
     pg.evaluate("localStorage.setItem('rumiq-lang', JSON.stringify('en'))"); pg.evaluate(SAMPLE, "vardagsrum")
     pg.evaluate("['lysa-keramiklampa', 'plad-ullblandning-havre'].forEach((h) => RQ.room.add(h, true))")
     pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(900)
-    txt = pg.evaluate("document.querySelector('.rm-tools').innerText + ' | ' + document.querySelector('.rm-colors').innerText + ' | ' + document.getElementById('rmHarm').innerText + ' | ' + document.querySelector('.rm-title').innerText")
+    txt = pg.evaluate("document.querySelector('.rm-tools').innerText + ' | ' + document.querySelector('.rm-colors').innerText + ' | ' + document.getElementById('rmHarm').innerText + ' | ' + document.querySelector('.rm-title').textContent")  # r3: the intro line is hidden on a computer with a room (D11), so textContent
     ok(all(w in txt for w in ("More", "The colours in your room", "Goes together", "Things land where they belong")) and not re.search(r"[åäö]", txt), f"[en] Mitt rum is in English: {txt[:200]}")
     ctx.close()
     b.close()

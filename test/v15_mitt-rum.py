@@ -147,7 +147,7 @@ with sync_playwright() as p:
         pg.tap("[data-act=bigger]"); pg.wait_for_timeout(200)
         ok(pg.evaluate(SPOT, "lysa-keramiklampa")[2] > s1[2] and pg.evaluate("document.querySelector('.rm-item.sel').dataset.h") == "lysa-keramiklampa", f"{tag} 'Större' makes it bigger and it stays selected")
         pg.tap("[data-act=order]"); pg.wait_for_timeout(200)
-        ok(pg.evaluate("RQ.room.ordered()[0].h") == "lysa-keramiklampa" and pg.evaluate("document.getElementById('rmActOrder').innerText") == "Framåt", f"{tag} 'Bakåt' sends it to the back")
+        ok(pg.evaluate("RQ.room.ordered()[0].h") == "lysa-keramiklampa" and pg.evaluate("document.getElementById('rmActOrder').innerText") == "Lägg framför", f"{tag} 'Lägg bakom' sends it to the back")  # r3 M3: Bakåt/Framåt renamed Lägg bakom/Lägg framför
         pg.tap("[data-act=del]"); pg.wait_for_timeout(300)
         ok(not pg.evaluate("RQ.room.inScene('lysa-keramiklampa')") and "Ångra" in pg.evaluate(TOAST), f"{tag} 'Ta bort' offers an undo")
         pg.evaluate("document.querySelector('.toast [data-room-undo]').click()"); pg.wait_for_timeout(300)
@@ -207,7 +207,7 @@ with sync_playwright() as p:
         pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(700); quiet(pg)
         pg.click("#view [data-room-setup]"); pg.wait_for_timeout(400)
         tops = pg.evaluate("[...document.querySelectorAll('.sheet-samples img')].map((i) => Math.round(i.getBoundingClientRect().top))")
-        ok(len(set(tops)) == 1, f"{tag} sample thumbnails line up: {tops}")
+        ok(len(set(tops)) == -(-len(tops) // 4), f"{tag} sample thumbnails line up: {tops}")  # r3 D22: seven samples, four to a row
         ok(pg.evaluate("document.querySelector('[data-tip-touch]').hidden && !document.querySelector('[data-tip-desk]').hidden && !document.querySelector('.sheet-acts .btn:not(.cam)').classList.contains('ghost')"), f"{tag} the sheet speaks to a computer: own tip, one main button")
         # drop a photo on the sheet
         pg.evaluate("""(b64) => { const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); const dt = new DataTransfer(); dt.items.add(new File([u8], 'rum.jpg', { type: 'image/jpeg' }));

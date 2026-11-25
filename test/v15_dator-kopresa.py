@@ -84,7 +84,7 @@ with sync_playwright() as p:
             pg.hover("#utvalt .card >> nth=0", force=True); pg.wait_for_timeout(200)
             ok(pg.evaluate("!!document.querySelector('#utvalt .card img.hov').getAttribute('src')"), f"{t} the detail photo comes on hover")
             pg.evaluate("document.querySelector('.rh-fig').scrollIntoView({block:'center'})"); pg.wait_for_timeout(2800)
-            ok(pg.evaluate("(() => { const f = document.querySelector('.rh-fig'), x = f.querySelector('.ba-line').getBoundingClientRect().left; return [...f.querySelectorAll('.rh-tag')].every((t) => t.getBoundingClientRect().right <= x + 14); })()"), f"{t} every product tag is whole beside the divider")
+            ok(pg.evaluate("(() => { const f = document.querySelector('.rh-fig'), x = f.querySelector('.ba-line').getBoundingClientRect().left; return [...f.querySelectorAll('.rh-tag')].every((t) => t.getBoundingClientRect().left >= x - 14); })()"), f"{t} every product tag is whole beside the divider")  # r3 M15: after is right of the line now
             pg.evaluate("document.getElementById('homeLooks').scrollIntoView({block:'center'})"); pg.wait_for_timeout(300)
             pg.click("[data-row-nav] [data-dir='1']"); pg.wait_for_timeout(900)
             ok(pg.evaluate("document.getElementById('homeLooks').scrollLeft") > 300, f"{t} the arrow moves the looks row")
