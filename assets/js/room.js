@@ -633,7 +633,7 @@
         stage.addEventListener("pointermove", (e) => {
           if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
           if (pinch && pts.size >= 2) { const [a, b] = [...pts.values()], k = Math.hypot(a.x - b.x, a.y - b.y) / pinch.d;
-            if (pinch.w != null) { const w = fit(sel, pinch.w * k); pinch.cur = w; live(sel, { w }); $("#rmSize", root).value = w; }
+            if (pinch.w != null) { const w = fit(sel, pinch.w * k), sz = $("#rmSize", root); pinch.cur = w; live(sel, { w }); sz.value = w; sizeText(sz); }
             else { const z = clamp(pinch.z * k, 1, 3.2); view.tx = pinch.cx - (pinch.cx - pinch.tx) * z / pinch.z; view.ty = pinch.cy - (pinch.cy - pinch.ty) * z / pinch.z; view.z = z; paintView(); }
             return; }
           if (pan) { if (!pan.moved && !far(pan, e)) return; if (!pan.moved) canvas.classList.remove("glide"); pan.moved = true; if (!view.on) return; view.tx = pan.tx + e.clientX - pan.sx; if (view.z > 1.01) view.ty = pan.ty + e.clientY - pan.sy; paintView(); return; }
