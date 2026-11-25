@@ -101,7 +101,7 @@ with sync_playwright() as p:
             pg.evaluate("RQ.shop.clearCart(); scrollTo(0, 0)"); pg.goto(BASE + "produkt-sand-keramikvas/", wait_until="load"); pg.wait_for_timeout(300)
             pin = pg.evaluate("(() => { const e = document.querySelector('.pinroom'); const r = e.getBoundingClientRect(); return [getComputedStyle(e).display !== 'none', Math.round(r.bottom), Math.round(r.height), Math.round(document.querySelector('.priceline').getBoundingClientRect().height)]; })()")
             if W <= 640:
-                ok(pin[0] and pin[1] < Hh - 60 and pin[2] >= 44 and pin[3] < 40, f"{tag} Se den i ditt rum is next to the price, on the first screen, a 44 px target, the line no taller: {pin}")
+                ok(pin[0] and pin[1] < Hh - 60 and pin[2] >= 44 and pin[3] < 40, f"{tag} Prova i Mitt rum is next to the price, on the first screen, a 44 px target, the line no taller: {pin}")
             else:
                 ok(not pin[0], f"{tag} no second room link next to the price where the big card is on screen")
             # cards: three tab stops each (heart, Lägg till, the name)
@@ -110,27 +110,24 @@ with sync_playwright() as p:
             ok(len(stops) == 3, f"{tag} a card has three tab stops: {stops}")
             ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
             ctx.close()
-    # room mode: a product that does not belong in the room's type keeps its own photo (shop and product page)
+    # founder's decision (studio round): no room mode in the shop. Cards and the gallery show the product; Prova i Mitt rum opens Mitt rum with it
     for W, Hh, mobile in ((390, 844, True), (1440, 900, False)):
         tag = f"[room {W}]"
         ctx = context(b, W, Hh, mobile); pg = page(ctx)
         pg.goto(BASE, wait_until="load"); pg.evaluate(SAMPLE, "vardagsrum")
         pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(300)
-        cards = pg.evaluate("""[...document.querySelectorAll('#results .card')].map((c) => { const h = c.querySelector('[data-add]').dataset.add.split('::')[0], p = RQ.byHandle(h); return [h, p.rooms.includes('vardagsrum'), c.classList.contains('in-room'), !!c.querySelector('.hov.inroom')]; })""")
-        ok(all(c[1] == c[2] == c[3] for c in cards), f"{tag} only products for a living room are shown in it: {[c for c in cards if not c[1] == c[2] == c[3]][:2]}")
-        pg.goto(BASE + "produkt-skarbrada-ek-med-handtag/", wait_until="load"); pg.wait_for_timeout(300)
-        ok(pg.evaluate("!document.querySelector('.inroomtile')"), f"{tag} the cutting board's gallery has no living-room picture")
+        ok(pg.evaluate("!document.querySelector('#results .card.in-room, #results .inroom, [data-room-mode], option[value=match]')"), f"{tag} with a room, the shop's cards still show the product, with no room switch and no room sort")
         pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(300)
-        ok(pg.evaluate("!!document.querySelector('.inroomtile')"), f"{tag} the lamp's gallery keeps its room picture")
+        ok(pg.evaluate("!document.querySelector('.inroomtile') && !!document.querySelector('a.roomcta[href*=mitt-rum-lysa-keramiklampa]')"), f"{tag} the gallery shows the product; Prova i Mitt rum is the way in")
         if mobile:
-            pg.tap(".pinroom"); pg.wait_for_timeout(700)
-            ok(pg.evaluate("Math.abs(document.querySelector('#pgGrid').scrollLeft - document.querySelector('.inroomtile').offsetLeft) < 4"), f"{tag} Se den i ditt rum shows the room picture in the gallery")
+            pg.tap(".pinroom"); pg.wait_for_timeout(1200)
+            ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum-lysa-keramiklampa" and pg.evaluate("RQ.room.inScene('lysa-keramiklampa')"), f"{tag} Prova i Mitt rum opens Mitt rum with the lamp in it")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
         ctx.close()
     # no room: the link starts the room setup
     ctx = context(b, 390, 844, True); pg = page(ctx)
-    pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(300); pg.tap(".pinroom"); pg.wait_for_timeout(500)
-    ok(pg.evaluate("!!document.querySelector('.sheet.open [data-room-file]')"), "[390] without a room, Se den i ditt rum opens the room setup")
+    pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(300); pg.tap(".pinroom"); pg.wait_for_timeout(1200)
+    ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum-lysa-keramiklampa" and "Lysa keramiklampa" in pg.evaluate("document.querySelector('.rm-want') ? document.querySelector('.rm-want').innerText : ''"), "[390] without a room, Prova i Mitt rum opens Mitt rum, which names the lamp and offers a sample room or your own photo")
     ctx.close()
     # looks: the button says what the cart rises by, on the look page and on the cards; the cards follow the cart
     for W, Hh, mobile in ((360, 740, True), (1440, 900, False)):

@@ -6,7 +6,7 @@
    Sizes are approximate: verified product measurements do not exist yet, and the page says so. */
 (function () {
   const RQ = window.RQ, S = RQ.shop, $ = RQ.$, $$ = RQ.$$, esc = RQ.esc, kr = S.kr;
-  const KEY = "rumiq-myroom", SCENE = "rumiq-scene", MODE = "rumiq-roommode";
+  const KEY = "rumiq-myroom", SCENE = "rumiq-scene", MODE = "rumiq-roommode"; // MODE: the shop's old room mode, only cleared now
   const ls = S.store;
   // the size slider is read relative to the size the thing was put in at ("Storlek 100 %" at first, "Storlek 150 %" when made
   // half again as big), never as a bare number like 7.6, and in English when the site is
@@ -46,7 +46,7 @@
       cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[62.4, 72.6, 17], [80, 72, 17]], bedding: [],
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
-      rug: [[45, 96, 50, 0.42]], window: [[92, 83, 15, 1.13]] },
+      rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
     sovrum: { h: 55, k: 0.95, sun: 1,
       surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]],
       cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[47, 69.5, 19], [60, 69, 19]],
@@ -108,7 +108,12 @@
   /* the kind of spot that surface means for this thing (where it is put, what it stands in front of) */
   const kindAt = (s, k) => ({ golv: k === "rug" ? "rug" : "floor", bord: "surface", vagg: k === "window" ? "window" : "wall", soffa: k === "cushion" || k === "throw" ? k : "throw", sang: k === "cushion" || k === "throw" || k === "bedding" ? k : "throw" })[s] || k;
   const effKind = (it) => { const k = kindOf(RQ.byHandle(it.h)); return SURF[it.on] ? kindAt(it.on, k) : it.on || k; };
-  const spotFor = (p, list, raw, MX, over) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot
+  /* Your own photo, before you have shown where anything stands: the site does not know where the tables are, so nothing is
+     put in mid-air. Things go in a tidy row on the floor near the front (a second row a little further back when it is
+     full), "Står på: golv", and the room says "Dra sakerna dit du vill ha dem". A curtain hangs at the side, a rug lies at
+     the front, as before. Once you have moved one thing of a kind, the next follows it (LEARN). */
+  const ROWK = { surface: 1, floor: 1, cushion: 1, throw: 1, bedding: 1, wall: 1 }, ROWS = [93, 84];
+  const spotFor = (p, list, raw, MX, over, row) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
     const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
@@ -121,6 +126,11 @@
     // your own photo: the size you gave the first thing sets the scale for the rest. Before that, a photo taken on its
     // side shows less of the room across, so the same lamp is a larger share of its width
     const k = M ? 1 : L.k > 0 ? L.k : room ? clamp((1.5 * room.h / room.w) ** 0.7, 1, 1.8) : 1;
+    if (row && !M && room && ROWK[kind]) for (const y of kind === "wall" ? ROWS.slice().reverse() : ROWS) {
+      const w = clamp(cm * floorScale(y) / 100 * k, 2.5, 40), inRow = list.filter((it) => it.row && Math.abs(it.y - y) < 1);
+      const x = (inRow.length ? Math.max(...inRow.map((it) => it.x + it.w / 2)) + 2.5 : 4) + w / 2;
+      if (x + w / 2 <= 97) return { x: +x.toFixed(1), y, w: +w.toFixed(1), row: true };
+    }
     const place = (kd) => {
       const spots = G[kd] && G[kd].length ? G[kd] : null; if (!spots) return null;
       if (kd === "rug" || kd === "window") { const sp = spots[0];
@@ -165,14 +175,22 @@
     if (s === "vagg" || d0 < 6) return k; // on the wall: as far away as the line (a door is in a wall); a line at the horizon tells nothing of depth
     const a = Math.min(0.8, (HS[s] || 0) * k * (room.w / room.h) / d0); // how far above the floor it stands, in the picture
     return k * clamp((it.y - hz) / (d0 * (1 - a)), 0.3, 3); };
+  /* a sample room knows its own scale: each mapped spot says how much of the picture's width a metre is there, and the
+     floor's scale follows its horizon and slope. In % of the width per cm, at the thing's place */
+  const mapScale = (it, M) => { const kd = kindAt(surfOf(it), kindOf(RQ.byHandle(it.h)));
+    if (kd === "window") return Math.max(6, floorScale((M.window[0] || [0, it.y])[1], M)) / 100; // a curtain is as far away as the window wall's floor
+    if (kd === "floor" || kd === "rug") return Math.max(6, floorScale(it.y, M)) / 100;
+    const sp = (M[kd] || []).filter((x) => x.length >= 3); if (!sp.length) return Math.max(6, floorScale(it.y, M)) / 100;
+    return sp.slice().sort((a, b) => Math.abs(a[1] - it.y) - Math.abs(b[1] - it.y))[0][2] / 100; };
+  const scaleAt = (it) => { const M = mapOf(); return M ? mapScale(it, M) : k0() ? kAt(it) : 0; };
   /* the width (in % of the photo) a measured thing has at its place, or null */
-  const trueW = (it) => { const p = RQ.byHandle(it.h), z = sizeOf(p); if (!z || !room || !k0()) return null; const k = kAt(it), kind = kindOf(p);
+  const trueW = (it) => { const p = RQ.byHandle(it.h), z = sizeOf(p), k = z && room ? scaleAt(it) : 0; if (!k) return null; const kind = kindOf(p);
     const w = kind === "rug" ? Math.max(z.w, z.d || 0) * k // a rug lies with its long side across the room
       : z.h && (kind === "wall" || kind === "window") ? z.h * k / (meta(p)[2] * (it.sy || 1)) // a print and a curtain by their height: a hung curtain is gathered
       : z.w * k;
     return clamp(+w.toFixed(1), 1, 96); };
   /* the floor a rug covers: front edge where it lies, back edge its depth further away (a camera of usual focal length) */
-  const rugBack = (it) => { const p = RQ.byHandle(it.h), z = sizeOf(p), k = kAt(it), hz = horizon(); if (!z || !k) return null; const D = 78.5 / k, k2 = k * D / (D + Math.min(z.w, z.d || z.w));
+  const rugBack = (it) => { const p = RQ.byHandle(it.h), z = sizeOf(p), k = scaleAt(it), hz = horizon(); if (!z || !k) return null; const D = 78.5 / k, k2 = k * D / (D + Math.min(z.w, z.d || z.w));
     return { y: hz + (it.y - hz) * k2 / k, w: it.w * k2 / k }; };
 
   /* ---------------------------------------------------------------- colour */
@@ -237,25 +255,30 @@
     has: () => !!room,
     get: () => room,
     url() { if (!room) return null; if (!blobUrl) blobUrl = toBlobUrl(room.img); return blobUrl; },
-    mode: () => !!room && ls.get(MODE, true) !== false,
-    setMode(on) { ls.set(MODE, !!on); emit("mode"); },
     async saveImage(img, meta = {}) {
+      await new Promise((r) => setTimeout(r, 0)); // the tap's own feedback is drawn first
+      // a sample room is already the right size: its file is kept as it is, without drawing and encoding it again (meta.src)
+      if (meta.src && (img.naturalWidth || 0) <= 1600) { try { const blob = await (await fetch(meta.src)).blob(), data = await new Promise((ok, bad) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = bad; fr.readAsDataURL(blob); });
+        if (/^data:image\//.test(data)) return R._keep(data, img.naturalWidth, img.naturalHeight, analyse(img), meta); } catch (e) {} }
       // a panorama or a very tall strip is trimmed around its middle (to 2.2:1 or 1:2.2), so the room can be shown at a useful size
       const nw = img.naturalWidth || img.width, nh = img.naturalHeight || img.height, sw = Math.min(nw, Math.round(nh * 2.2)), sh = Math.min(nh, Math.round(nw * 2.2)), sx = Math.round((nw - sw) / 2), sy0 = Math.round((nh - sh) / 2);
       const max = 1600, k = Math.min(1, max / Math.max(sw, sh)); // long side about 1600 px, as JPEG
       const W = Math.round(sw * k), H = Math.round(sh * k);
       const cv = document.createElement("canvas"); cv.width = W; cv.height = H; cv.getContext("2d").drawImage(img, sx, sy0, sw, sh, 0, 0, W, H);
-      let data = cv.toDataURL("image/jpeg", 0.82);
-      const a = analyse(cv);
+      return R._keep(cv.toDataURL("image/jpeg", 0.82), W, H, analyse(cv), meta, cv);
+    },
+    async _keep(data, W, H, a, meta, cv) {
       const next = { img: data, w: W, h: H, pal: a.pal, light: a.light, warm: a.warm, type: meta.type || null, name: meta.name || "", sample: !!meta.sample, map: meta.map || null, at: new Date().toISOString() };
       let ok = ls.set(KEY, next);
-      if (!ok) { data = cv.toDataURL("image/jpeg", 0.62); next.img = data; ok = ls.set(KEY, next); }
+      if (!ok && cv) { data = cv.toDataURL("image/jpeg", 0.62); next.img = data; ok = ls.set(KEY, next); }
       if (!ok) { R.lastError = "Bilden fick inte plats i webbläsarens lagring. Ta bort gamla projekt under Sparat och försök igen."; if (!sheet.classList.contains("open")) RQ.toast(R.lastError); return false; }
       room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; // a new photo: the old steps belonged to the old room
-      ls.del(LEARN); ls.set(MODE, true);
+      ls.del(LEARN);
       // what stood in the old room is put where it belongs in the new one
-      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved); moved.push({ h: it.h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 }); });
+      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved, false, null, null, true), n = { h: it.h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), ...(sp.row ? { row: true, on: "golv" } : {}), flip: false, light: 100 };
+        const tw = trueW(n); if (tw) { n.w = tw; n.real = true; } moved.push(n); });
       if (moved.length) ls.set(SCENE, moved);
+      R._landRow = moved.some((it) => it.row); // the editor lets them land in their row, and shows the whole room
       emit("room"); return true;
     },
     setType(t) { if (!room) return; room.type = t; ls.set(KEY, room); emit("type"); },
@@ -277,9 +300,10 @@
     add(h, quiet) {
       const p = RQ.byHandle(h); if (!p) return false; RQ.track && RQ.track("studio_place", { item_id: h });
       const list = R.scene(); if (list.some((it) => it.h === h)) return false;
-      const sp = spotFor(p, list);
-      { const tw = trueW({ h, x: sp.x, y: sp.y, sy: sp.sy, on: sp.moved }); if (tw) { sp.w = tw; sp.real = true; } } // a known length: true scale from the start
-      list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.real ? { real: true } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
+      const sp = spotFor(p, list, false, null, null, true);
+      { const tw = trueW({ h, x: sp.x, y: sp.y, sy: sp.sy, on: sp.moved }); if (tw) { sp.w = tw; sp.real = true; // a known scale: true size from the start
+          if (kindOf(p) === "window" && room) sp.y = +Math.min(sp.y, tw * meta(p)[2] * (sp.sy || 1) * room.w / room.h - 2).toFixed(1); } } // a curtain hangs from above the picture, a little above the floor if it is shorter than the room
+      list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.real ? { real: true } : {}), ...(sp.row ? { row: true, on: "golv" } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
       if (!R.saveScene(list)) { RQ.toast(FULL); return false; }
       R.lastMoved = sp.moved ? h : null;
       if (!quiet && sp.moved) RQ.toast(`Där var det fullt, så ${esc(p.name)} står på golvet. Dra den dit du vill.`);
@@ -378,22 +402,6 @@
       for (const { p } of pool) { if (out.length >= n) break; if (!out.includes(p)) out.push(p); }
       return out;
     },
-    /* the product shown inside the customer's room, for cards and tiles: a crop of the photo around the
-       spot where the product belongs, at the size it would have there */
-    layer(p) {
-      if (!room) return "";
-      const [kind, , r] = meta(p), sp = spotFor(p, []), ar = room.w / room.h;
-      const cover = 125 * ar; // the photo's width in % of a 4:5 card when it just fills the card's height
-      const want = { rug: 170, window: 34, wall: 46, floor: 44, throw: 56, cushion: 58, bedding: 50 }[kind] || (r > 1.4 ? 30 : 42);
-      const bw = clamp(want * 100 / sp.w, cover, cover * 3.6), bh = bw / ar / 1.25;
-      const ih = sp.w * r * (sp.sy || 1) * ar; // the product's height in % of the photo's height
-      const bl = clamp(50 - sp.x / 100 * bw, 100 - bw, 0), rug = kind === "rug";
-      // a rug lies at the front of the room: its far edge a little below the middle of the card, and it runs on out of the picture at the foot
-      const bt = rug ? clamp(46 - (sp.y - ih) / 100 * bh, -bh * 0.6, 0) : clamp((kind === "wall" ? 60 : 72) - (sp.y - ih * 0.1) / 100 * bh, 100 - bh, 0), rugTop = bt + (sp.y - ih) / 100 * bh;
-      const st = `left:${(bl + sp.x / 100 * bw).toFixed(1)}%;top:${rug ? 100 : (bt + sp.y / 100 * bh).toFixed(1)}%;width:${(sp.w / 100 * bw).toFixed(1)}%${rug ? `;height:${(100 - rugTop).toFixed(1)}%` : ""}`;
-      const sq = sp.sy && sp.sy !== 1 ? `aspect-ratio:1 / ${(r * sp.sy).toFixed(3)};` : "";
-      return `<span class="inr"><img class="inr-bg" src="${R.url()}" alt="" decoding="async" style="left:${bl.toFixed(1)}%;top:${bt.toFixed(1)}%;width:${bw.toFixed(1)}%;height:${bh.toFixed(1)}%"><span class="inr-p k-${kind}" style="${st}"><img src="${cutIn(p)}" alt="" decoding="async" style="${sq}filter:${lightFilter()}"></span></span>`;
-    },
     thumb: () => (room ? `<img src="${R.url()}" alt="">` : ""),
   });
 
@@ -404,7 +412,7 @@
      Any photo goes: JPG, PNG, WebP and iPhone's HEIC/HEIF (a decoder is fetched only when such a file is chosen),
      turned the right way up, trimmed to a useful shape and kept at most 1600 px on the long side. */
   const TYPES = [["vardagsrum", "Vardagsrum"], ["sovrum", "Sovrum"], ["kok", "Kök"], ["badrum", "Badrum"], ["hall", "Hall"], ["hemmakontor", "Hemmakontor"], ["uteliv", "Uteliv"]];
-  const LEAD = "Ta en bild av rummet du vill inreda. Sedan står varje produkt du tittar på i just ditt rum.";
+  const LEAD = "Ta en bild av rummet du vill inreda. Sedan ställer du in produkterna där du vill ha dem.";
   const sheet = document.createElement("div");
   sheet.className = "sheet roomsheet"; sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true"); sheet.setAttribute("aria-labelledby", "roomSheetTitle");
   sheet.innerHTML = `<div class="sheet-scrim" data-sheet-close></div><div class="sheet-card"><span class="sheet-grip" aria-hidden="true"></span>
@@ -450,7 +458,7 @@
      so it can wait while you sign in, when a closure would be lost with the page */
   R.openSetup = (then, pl) => {
     after = then || null; plan = pl || null; back = document.activeElement; held = null;
-    chosenType = room && room.type;
+    chosenType = room && !room.sample ? room.type : null; // a sample room's type does not follow to your own photo
     $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType));
     const own = !!(room && !room.sample); $("[data-room-type-h]", sheet).hidden = !own; $("[data-room-type]", sheet).hidden = !own; // the room type is asked about a photo you have, not before (a new photo is asked in the editor)
     const touch = matchMedia("(pointer:coarse)").matches;
@@ -468,8 +476,8 @@
     close();
     const cb = after; after = null;
     if (cb) cb();
-    else if (/^(mitt-rum|studio(-rum|-analys|-kombinera)?$)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) { RQ.router(); scrollTo(0, 0); if (room.sample || !R.scene().length) RQ.toast("Klart. Här är ditt rum."); } // the editor is drawn with the new photo
-    else RQ.toast('Klart. Nu visas butiken i ditt rum. <a href="#butik">Till butiken</a>');
+    else if (/^(mitt-rum|studio(-rum|-analys|-kombinera)?$)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) { RQ.router(); scrollTo(0, 0); if (room.sample || !R.scene().length) RQ.toast(room.sample ? "Klart. Här är exempelrummet." : "Klart. Här är ditt rum."); } // the editor is drawn with the new photo
+    else RQ.toast('Klart. Ditt rum är inlagt. <a href="#mitt-rum">Öppna Mitt rum</a>');
   };
 
   /* ---- reading a photo */
@@ -550,6 +558,8 @@
       resuming = 0; let pic = null; try { pic = g.photo ? sessionStorage.getItem(GATE_IMG) : null; } catch (e) {} dropGate();
       const p = g.plan || {}, then = p.add || p.go ? () => { (p.add || []).forEach((h) => RQ.byHandle(h) && R.add(h, true)); if (p.go && routeNow() !== p.go.replace(/^#/, "")) location.hash = p.go; } : null;
       R.openSetup(then, g.plan); chosenType = g.type || chosenType;
+      { const t = document.getElementById("toast"); if (t) t.classList.remove("show"); } // the sheet says it: no second "Du är inloggad" on top of it
+      if (!pic) { const b = $(".sheet-acts .btn:not([hidden])", sheet); if (b) { b.classList.remove("nudge"); void b.offsetWidth; b.classList.add("nudge"); } } // and the next step glows once
       if (pic) { busy(true); const im = new Image(); im.onload = () => done(im, { name: "Mitt rum" }); im.onerror = () => { busy(false); hello("Du är inloggad. Välj bilden en gång till, så är du igång."); }; im.src = pic; }
       else hello("Du är inloggad. Nu kan du lägga in ditt rum.");
     };
@@ -559,6 +569,8 @@
   S.onChange((w) => { if (w === "customer" && S.customer() && readGate() && /^(konto|skapa-konto|logga-in)$/.test(routeNow())) resumeGate(); });
   document.addEventListener("DOMContentLoaded", () => setTimeout(() => { if (readGate() && S.customer()) resumeGate(); }, 300));
 
+  // the step is kept as soon as you reach for Logga in / Skapa gratis konto (the account page is drawn before the click ends)
+  ["pointerdown", "keydown"].forEach((ev) => sheet.addEventListener(ev, (e) => { if ((ev === "pointerdown" || e.key === "Enter" || e.key === " ") && e.target.closest("[data-room-gate]")) keepGate(); }));
   sheet.addEventListener("click", (e) => {
     if (e.target.closest("[data-sheet-close]")) return close();
     // your own photo: signed in first (a click on Ta en bild / Välj en bild opens the gate instead of the camera)
@@ -568,7 +580,7 @@
     if (e.target.closest("[data-check-use]")) { if (held) use(held); return; }
     if (e.target.closest("[data-check-other]")) { held = null; mode("main"); const inp = $(".sheet-acts label:not(.cam) input", sheet); inp.click(); return; }
     const t = e.target.closest("[data-room-type] [data-v]"); if (t) { chosenType = chosenType === t.dataset.v ? null : t.dataset.v; $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType)); if (room) R.setType(chosenType); return; }
-    const s = e.target.closest("[data-room-sample]"); if (s) { busy(true); const im = new Image(); im.onload = () => done(im, { sample: true, map: s.dataset.type, type: s.dataset.type, name: $("span", s).textContent }); im.onerror = () => { busy(false); fail("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); }; im.src = s.dataset.roomSample; }
+    const s = e.target.closest("[data-room-sample]"); if (s) { busy(true); const im = new Image(); im.onload = () => done(im, { sample: true, map: s.dataset.type, type: s.dataset.type, name: $("span", s).textContent, src: s.dataset.roomSample }); im.onerror = () => { busy(false); fail("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); }; im.src = s.dataset.roomSample; }
   });
   $$("[data-room-file]", sheet).forEach((inp) => inp.addEventListener("change", () => { const f = inp.files[0]; inp.value = ""; takeFile(f); }));
   // on a computer: drop a picture on the sheet, or paste one
@@ -613,10 +625,11 @@
         ${want ? `<p class="rm-want"><img src="${RQ.cut(want)}" alt=""><span><b>${esc(want.name)}</b> står i rummet så fort bilden är inne.</span></p>` : ""}
         <h2 class="h2">Börja med en bild av ditt rum.</h2>
         <p class="lead">Sedan ställer du in produkter där du vill ha dem, ser vad hela rummet kostar och handlar allt på en gång.</p>
-        <div class="ctrl-row" style="margin-top:1.6rem"><button class="btn" type="button" data-room-setup>Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button></div>
+        <div class="ctrl-row rm-empty-acts" style="margin-top:1.6rem">${S.customer() ? `<button class="btn" type="button" data-room-setup>Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button>` // signed in: your own room first; signed out: the free sample room is the main way in
+          : `<button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup>Lägg in ditt rum</button>`}</div>
         <ol class="rm-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Ställ in produkter</b><span>Från butiken, eller låt oss föreslå.</span></li><li><b>Handla looken</b><span>Allt i rummet hamnar i varukorgen med en knapp.</span></li></ol>
         <p class="small" style="margin-top:1.2rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
-      </div>${RQ.demoFig ? RQ.demoFig() : ""}</div>`;
+      </div>${RQ.demoFig ? RQ.demoFig({ bare: true }) : ""}</div>`; // the picture shows what it does; no way out of Studio in it
 
   V.myRoom = (pre) => {
     if (pre && RQ.byHandle(pre) && room && R.add(pre, true)) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
@@ -638,7 +651,7 @@
               <button type="button" class="rm-undo" id="rmUndo" aria-keyshortcuts="Control+Z" hidden>${ICO.undo}<span>Ångra</span></button>
               <button type="button" class="rm-nightchip" id="rmNightChip" aria-label="Kvällsljus är på. Stäng av" hidden>${ICO.moon}<span>Kvällsljus</span><svg class="x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
               <span class="rm-pos" id="rmPos" aria-hidden="true" hidden><i></i></span>
-              <div class="rm-emptyhint" id="rmHint" hidden>${!room.sample && !room.type ? `<p id="rmHintT">Vilket rum är det?</p><div class="chips rm-hintask">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div>` : `<p id="rmHintT">Rummet är tomt.</p>`}<button class="btn sm light" type="button" id="rmSuggest0">${ICO.wand}Inred åt mig</button></div>
+              <div class="rm-emptyhint" id="rmHint" hidden>${!room.sample && !room.type ? `<p id="rmHintT">Vilket rum är det?</p><div class="chips rm-hintask">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div>` : `<p id="rmHintT">Rummet är tomt.</p>`}<button class="btn sm light" type="button" id="rmSuggest0"${!room.sample && !room.type ? " hidden" : ""}>${ICO.wand}Inred åt mig</button></div>
               <p class="rm-first" id="rmFirst" role="status" hidden></p>
             </div>
             <div class="rm-tools">
@@ -651,7 +664,8 @@
                   <button type="button" role="menuitem" id="rmShow">${ICO.share}<span>Visa någon<small>Före och efter i en bild</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmNight" aria-checked="false">${ICO.moon}<span>Kvällsljus<small>Se lamporna lysa i rummet</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmBefore" aria-checked="false">${ICO.eye}<span>Visa före<small>Rummet utan sakerna</small></span></button>
-                  <button type="button" role="menuitem" data-measure>${ICO.ruler}<span>Känd längd i bilden<small>Rätt skala för produkter med mått</small></span></button>
+                  ${mapOf() ? "" : `<button type="button" role="menuitem" data-measure>${ICO.ruler}<span>Känd längd i bilden<small>Rätt skala för produkter med mått</small></span></button>`}
+                  <button type="button" role="menuitem" id="rmLib">${ICO.save}<span>Mina rumsbilder<small>AI-bilder och sparade rum, under Sparat</small></span></button>
                   <button type="button" role="menuitem" data-room-setup>${ICO.swap}<span>Byt rum<small>Ny bild eller ett exempelrum</small></span></button>
                 </div></div>
             </div>
@@ -714,7 +728,7 @@
         const fits = () => { const t = room.type; const list = RQ.PRODUCTS.map((p) => ({ p, m: (match(p) || 0) + (t && p.rooms.includes(t) ? 100 : 0) })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };
         /* things land softly the first time they are put in the room */
         const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const seen = new Set(R.scene().map((it) => it.h)); if (fresh0) seen.delete(fresh0);
+        const seen = new Set(R.scene().filter((it) => !(R._landRow && it.row)).map((it) => it.h)); if (fresh0) seen.delete(fresh0); R._landRow = false;
         let shown = R.total();
         const count = (to) => { // the room's price counts up while the things land
           const els = [$("#rmTotal", root)], from = shown; shown = to;
@@ -745,15 +759,14 @@
           meas["x" + hd.dataset.end] = clamp(meas["x" + hd.dataset.end] + m[0], 0, 100); meas["y" + hd.dataset.end] = clamp(meas["y" + hd.dataset.end] + m[1], 0, 100); paintRuler(); });
         lenIn.addEventListener("input", paintRuler);
         lenIn.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("#rmMDone", root).click(); } });
-        const names = (hs) => { const n = hs.map((h) => RQ.byHandle(h).name); return n.length < 2 ? n.join("") : n.slice(0, -1).join(", ") + " och " + n[n.length - 1]; };
         $("#rmMDone", root).addEventListener("click", () => { const cm = parseFloat(String(lenIn.value).replace(",", "."));
           if (!(cm >= 10 && cm <= 2000)) { RQ.toast("Skriv längden i centimeter, till exempel 200."); lenIn.focus(); return; }
           if (lenPct(meas) < 3) { RQ.toast("Dra linjen från ena änden till den andra av det du mäter."); return; }
           const K = { ...meas, cm }; measure(false); const done = R.setKnown(K);
-          RQ.toast(done.length ? `${esc(names(done))} står nu i rätt skala. Andra storlekar är ungefärliga.` : "Längden är sparad. Produkter med kända mått visas i rätt skala när du ställer in dem."); });
+          RQ.toast(done.length ? `Klart. ${done.length === 1 ? "1 sak" : done.length + " saker"} med mått står i rätt skala.` : "Klart. Produkter med mått visas i rätt skala."); });
         $("#rmMCancel", root).addEventListener("click", () => measure(false));
         $("#rmMOff", root).addEventListener("click", () => { measure(false); R.setKnown(null); RQ.toast("Längden är borttagen. Storlekarna är ungefärliga igen."); });
-        root.addEventListener("click", (e) => { if (e.target.closest("[data-measure]")) { measure(true); return; } if (e.target.closest("[data-real]") && sel) R.update(sel, { real: true }); });
+        root.addEventListener("click", (e) => { if (e.target.closest("[data-measure]")) { if (!mapOf()) measure(true); return; } if (e.target.closest("[data-real]") && sel) R.update(sel, { real: true }); });
         document.addEventListener("keydown", escMeasure = (e) => { if (e.key === "Escape" && meas) { e.preventDefault(); measure(false); } });
 
         /* ---- the view of the room. On a phone the photo is shown as tall as the screen allows and you
@@ -796,8 +809,11 @@
         const tour = (list) => { if (!view.on || list.length < 2 || calm()) return lookAt(list) ? 1 : false;
           const w = view.cw * view.z, xs = list.map((it) => it.x / 100 * w), lo = Math.min(...xs), hi = Math.max(...xs); if (hi - lo <= view.sw * 0.7) return lookAt(list) ? 1 : false;
           const c = centre(list); view.ty = clamp(view.sh / 2 - c[1] / 100 * view.ch * view.z, view.sh - view.ch * view.z, 0); view.tx = view.sw * 0.22 - lo; paintView(true);
-          setTimeout(() => { if (!canvas.isConnected || drag || pan || pinch) return; canvas.classList.add("tour"); view.tx = view.sw * 0.78 - hi; paintView(true); setTimeout(() => canvas.classList.remove("tour"), 1700); }, 620);
+          setTimeout(() => { if (!canvas.isConnected || drag || pan || pinch) return; canvas.classList.add("tour"); view.tx = view.sw * 0.78 - hi; paintView(true);
+            setTimeout(() => { canvas.classList.remove("tour"); if (canvas.isConnected && !drag && !pan && !pinch && !sel && view.can && !view.whole) wholeRoom(); }, 1700); }, 620); // and ends on the whole room
           return 2; };
+        /* the whole picture at once (for this visit; "Närmare" goes back) */
+        const wholeRoom = () => { view.whole = true; stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); };
         const centre = (list) => { if (!list.length) return [50, 50]; const xs = list.map((it) => it.x), ys = list.map((it) => it.y - (it.w * meta(RQ.byHandle(it.h))[2] * (it.sy || 1) * room.w / room.h) / 2); return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2]; };
         /* the camera glides to where something stands */
         const lookAt = (list) => { if (!view.on || !list.length) return false; const c = centre(list), w = view.cw * view.z, h = view.ch * view.z, tx = view.tx, ty = view.ty;
@@ -813,9 +829,11 @@
           const teach = news.length && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length; // own photo, nothing shown yet
           if (news.length) { const t = tour(news); wrap.style.setProperty("--pre", t ? "360ms" : "90ms"); wrap.style.setProperty("--step", t === 2 ? "300ms" : "130ms");
             const f = $("#rmFirst", root);
-            if (teach) { f.textContent = "Dra den dit den ska stå och gör den lagom stor. Nästa sak följer efter."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); }
+            if (news.some((it) => it.row) && view.on && view.can && !view.whole) wholeRoom(); // they are in a row along the front: show all of it
+            if (teach) { f.textContent = news.some((it) => it.row) ? "Dra sakerna dit du vill ha dem." : "Dra den dit den ska stå och gör den lagom stor. Nästa sak följer efter."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); }
             else if (!ls.get("rumiq-room-landed", false)) { ls.set("rumiq-room-landed", true); f.textContent = "Så här kan det se ut hemma hos dig."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); } }
           list.forEach((it) => seen.add(it.h)); [...seen].forEach((h) => { if (!list.some((it) => it.h === h)) seen.delete(h); });
+          if (!list.length) $("#rmFirst", root).hidden = true; // an empty room has its own question
           $("#rmHint", root).hidden = list.length > 0; $("#rmHold", root).hidden = !list.length; toastAt(); // nothing to compare with in an empty room (and messages move in beside it when it comes)
           { const ask = $("#rmAsk", root); if (ask) ask.hidden = !list.length && !!$(".rm-hintask", root); } // a new photo is asked about on the picture itself, where you look
           $("#rmList", root).innerHTML = list.length ? list.map((it) => { const p = RQ.byHandle(it.h); return `<li class="${sel === it.h ? "on" : ""}"><button type="button" class="rm-li" data-pick="${it.h}"><img src="${RQ.img(p, 600)}" alt=""><span><b>${esc(p.name)}</b><span>${kr(p.price)}</span></span></button><button type="button" class="iconbtn" data-del="${it.h}" aria-label="Ta bort ${esc(p.name)} ur rummet">${ICO.trash}</button></li>`; }).join("") : `<li class="rm-none">Inget i rummet än. Tryck på <b>Inred åt mig</b> eller <b>Lägg till</b>.</li>`;
@@ -826,7 +844,7 @@
           if (hm) { $("#rmHm", root).style.width = hm.score + "%"; $("#rmHmv", root).textContent = hm.word; $("#rmHmt", root).textContent = hm.tip; }
           paintSel(); paintUndo(); paintFoot(); paintScale();
         };
-        const paintScale = () => { if (!room) return; const K = room.known; $("#rmScale", root).innerHTML = K ? `Produkter med mått visas i rätt skala, utifrån din längd på ${K.cm} cm. Andra storlekar är ungefärliga. <button type="button" class="tlink" data-measure>Ändra längden</button>` : `Storleken är ungefärlig. <button type="button" class="tlink" data-measure>Känd längd i bilden</button> ger rätt skala för produkter med mått.`; };
+        const paintScale = () => { if (!room) return; const K = room.known; $("#rmScale", root).innerHTML = mapOf() ? "I exempelrummet visas produkter med mått i rätt skala. Andra storlekar är ungefärliga." : K ? `Produkter med mått visas i rätt skala, utifrån din längd på ${K.cm} cm. Andra storlekar är ungefärliga. <button type="button" class="tlink" data-measure>Ändra längden</button>` : `Storleken är ungefärlig. <button type="button" class="tlink" data-measure>Känd längd i bilden</button> ger rätt skala för produkter med mått.`; };
         const paintSel = () => {
           const it = R.scene().find((x) => x.h === sel); const panel = $("#rmSel", root); panel.hidden = !it;
           $("#rmAct", root).hidden = !it; box.classList.toggle("picking", !!it);
@@ -838,7 +856,7 @@
           $("#rmActOrder", root).textContent = it.back ? "Lägg framför" : "Lägg bakom";
           $("#rmActName", root).textContent = p.name; paintOn(it);
           // honest about size: true scale, or the measurements and how to get there, or approximate
-          const z = measures(p); $("#rmReal", root).innerHTML = !z ? "Storleken är ungefärlig." : it.real ? `${z}, i rätt skala.` : room && room.known ? `${z}. <button type="button" class="tlink" data-real>Rätt storlek</button>` : `${z}. <button type="button" class="tlink" data-measure>Visa i rätt skala</button>`;
+          const z = measures(p); $("#rmReal", root).innerHTML = !z ? "Storleken är ungefärlig." : it.real ? `${z}, i rätt skala.` : room && (room.known || mapOf()) ? `${z}. <button type="button" class="tlink" data-real>Rätt storlek</button>` : `${z}. <button type="button" class="tlink" data-measure>Visa i rätt skala</button>`;
         };
         /* "Står på: bord ▾": where the selected thing stands, and the other places it can be (one tap to correct a wrong guess) */
         const ON_WORD = (it, s) => (s === "vagg" ? "Hänger på" : (s === "golv" && kindOf(RQ.byHandle(it.h)) === "rug") || ((s === "soffa" || s === "sang") && kindOf(RQ.byHandle(it.h)) !== "surface") ? "Ligger på" : "Står på");
@@ -849,13 +867,18 @@
         const setOn = (h, to) => { const it = R.scene().find((x) => x.h === h); if (!it || surfOf(it) === to) return; const p = RQ.byHandle(h), k = kindOf(p), patch = { on: to };
           // in a sample room the place is known: the thing moves there (a lamp to the floor beside the sofa, a print onto the table)
           const was = kindAt(surfOf(it), k), now = kindAt(to, k);
-          if (mapOf() && was !== now) { const sp = spotFor(p, R.scene().filter((x) => x.h !== h), true, null, now); if (sp) Object.assign(patch, { x: sp.x, y: sp.y, w: sp.w }, sp.sy ? { sy: sp.sy } : {}); }
+          patch.row = undefined; const M = mapOf(), cm = meta(p)[1];
+          if (M && was !== now) {
+            const near = (list) => list.slice().sort((a, b) => Math.abs(a[0] - it.x) - Math.abs(b[0] - it.x))[0];
+            if (now === "floor" && M.floor.length) { const y = +Math.max(it.y + 2, near(M.floor)[1]).toFixed(1); Object.assign(patch, { y, w: +clamp(cm * floorScale(y, M) / 100, 2.5, 70).toFixed(1) }); } // straight down to the floor
+            else if (now === "wall" && M.wall.length) { const sp = near(M.wall); Object.assign(patch, { y: sp[1], w: +clamp(cm * sp[2] / 100, 2.5, 70).toFixed(1) }); } // straight up onto the wall
+            else { const sp = spotFor(p, R.scene().filter((x) => x.h !== h), true, null, now); if (sp) Object.assign(patch, { x: sp.x, y: sp.y, w: sp.w }, sp.sy ? { sy: sp.sy } : {}); } }
           R.update(h, patch); const nw = R.scene().find((x) => x.h === h); if (nw) { lookAt([nw]); learn(h, nw); } said(`${ON_WORD(it, to)} ${SURF[to]}.`); };
         ["#rmOn", "#rmOn2"].forEach((q) => $(q, root).addEventListener("change", (e) => { if (sel) setOn(sel, e.target.value); }));
         const select = (h) => { sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); };
         /* the selected thing at true scale: its measurements beside it, and for a rug the floor it covers, dashed */
         const paintFoot = (cur) => { const it = cur || (sel && R.scene().find((x) => x.h === sel)), poly = $("#rmArea polygon", root), lab = $("#rmAreaLab", root);
-          if (!it || !it.real || !k0()) { poly.setAttribute("points", ""); lab.hidden = true; return; }
+          if (!it || !it.real || !scaleAt(it)) { poly.setAttribute("points", ""); lab.hidden = true; return; }
           const p = RQ.byHandle(it.h), kind = kindOf(p), hgt = it.w * meta(p)[2] * (it.sy || 1) * room.w / room.h, f = (v) => v.toFixed(2);
           const b = kind === "rug" && rugBack(it); poly.setAttribute("points", b ? [[it.x - it.w / 2, it.y], [it.x + it.w / 2, it.y], [it.x + b.w / 2, b.y], [it.x - b.w / 2, b.y]].map(([x, y]) => `${f(x)},${f(y)}`).join(" ") : "");
           lab.hidden = false; lab.textContent = measures(p); lab.style.left = it.x + "%"; lab.style.top = (b ? (it.y + b.y) / 2 : kind === "wall" ? Math.min(98, it.y + 0.8) : it.y - hgt / 2) + "%"; lab.classList.toggle("under", kind === "wall" && !b); };
@@ -921,14 +944,14 @@
           if (pan) { const p = pan; pan = null; if (!p.moved && e.type === "pointerup") select(null); return; }
           if (drag) { const d = drag; drag = null; if (!d.moved) return;
             const it = R.scene().find((x) => x.h === d.h); if (!it) return;
-            const next = { x: +d.x.toFixed(1), y: +d.y.toFixed(1), w: +d.w.toFixed(1) };
+            const next = { x: +d.x.toFixed(1), y: +d.y.toFixed(1), w: +d.w.toFixed(1), ...(it.row ? { row: undefined, on: undefined } : {}) };
             R.update(d.h, next); learn(d.h, { ...it, ...next }); refocus(d.h); } // the room is drawn again: the moved thing keeps the focus, so the keys go on working
         };
         stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
         // the wheel changes the size only when you mean it: over the selected thing, or with Ctrl held. Otherwise the page scrolls.
         stage.addEventListener("wheel", (e) => { if (!sel || meas) return; const over = e.target.closest(".rm-item"); if (!e.ctrlKey && !(over && over.dataset.h === sel)) return; e.preventDefault(); const it = R.scene().find((x) => x.h === sel); resize(sel, it.w * (e.deltaY < 0 ? 1.06 : 1 / 1.06), "size:" + sel); }, { passive: false });
         const refocus = (h) => setTimeout(() => { const el = h && $(`.rm-item[data-h="${h}"]`, wrap); (el || $("#rmAdd", root)).focus({ preventScroll: true }); }, 0);
-        stage.addEventListener("keydown", (e) => { const el = e.target.closest(".rm-item"); if (!el) return; const it = R.scene().find((x) => x.h === el.dataset.h); if (!it) return; const d = e.shiftKey ? 4 : 1;
+        stage.addEventListener("keydown", (e) => { const el = e.target.closest(".rm-item"); if (!el) return; const it = R.scene().find((x) => x.h === el.dataset.h); if (!it) return; const d = e.shiftKey ? 5 : 1;
           const m = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, -d], ArrowDown: [0, d] }[e.key];
           if (m) { e.preventDefault(); sel = it.h; const [x, y] = inside(it.x + m[0], it.y + m[1], it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }, "key:" + it.h); refocus(it.h); said("Flyttad."); }
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(it.h); }
@@ -991,16 +1014,22 @@
           if (a === "smaller") resize(sel, it.w / 1.12); if (a === "bigger") resize(sel, it.w * 1.12); if (a === "flip") flip();
           if (a === "order") { if (it.back) R.toFront(sel); else R.toBack(sel); } if (a === "del") removeIt(sel); if (a === "done") select(null); });
         root.addEventListener("click", (e) => { const b = e.target.closest("[data-roomtype]"); if (!b) return; R.setType(b.dataset.roomtype); $$("#rmAsk, .rm-hintask", root).forEach((x) => x.remove()); const t = $("#rmHintT", root); if (t) t.textContent = "Rummet är tomt.";
-          if (b.closest("#rmHint")) $("#rmSuggest0", root).focus({ preventScroll: true }); fits(); RQ.toast("Tack. Nu föreslår vi sådant som passar där."); });
+          $("#rmSuggest0", root).hidden = false; if (b.closest("#rmHint")) $("#rmSuggest0", root).focus({ preventScroll: true }); fits();
+          if (wantSuggest) { wantSuggest = false; suggest(); } else RQ.toast("Tack. Nu föreslår vi sådant som passar där."); });
         root.addEventListener("click", (e) => {
           const pk = e.target.closest("[data-pick]"); if (pk) { select(pk.dataset.pick); const it = R.scene().find((x) => x.h === pk.dataset.pick); if (it) lookAt([it]); if (innerWidth <= 900) stage.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
           const dl = e.target.closest("[data-del]"); if (dl) removeIt(dl.dataset.del);
         });
+        let wantSuggest = false;
         const suggest = () => {
+          if (!mapOf() && !room.type) { // your own photo: which room it is comes first, then the suggestions fit
+            wantSuggest = true; const a = !$("#rmHint", root).hidden && $(".rm-hintask", root) ? $("#rmHint", root) : $("#rmAsk", root);
+            if (a) { a.classList.remove("ask-now"); void a.offsetWidth; a.classList.add("ask-now"); a.scrollIntoView({ block: "nearest", behavior: calm() ? "auto" : "smooth" }); const c = $("[data-roomtype]", a); if (c) c.focus({ preventScroll: true }); }
+            said("Välj först vilket rum det är."); return; }
           const first = !!mapOf() && !ls.get("rumiq-room-landed", false), before = R.scene(), picks = R.suggest(Math.max(1, 4 - before.length) + (before.length >= 4 ? 1 : 0));
           if (!picks.length) { RQ.toast("Nu står allt som passar här i rummet. Lägg till fler själv."); return; }
           const n = R.group(() => picks.filter((p) => R.add(p.handle, true)).length); if (!n) return; // one step: Ångra takes all of them back
-          if (first) return; // the first time, the room itself says "Så här kan det se ut hemma hos dig."
+          if (first || !mapOf()) return; // the room itself says it ("Så här kan det se ut hemma hos dig", "Dra sakerna dit du vill ha dem"): one message at a time
           RQ.toast(`${n} förslag efter rummets färger${room.type ? " och rumstyp" : ""}. Flytta och byt fritt.${mapOf() ? "" : " Dra en sak dit den ska stå, så hamnar nästa bredvid."}`); // Ångra on the room takes all of them back
         };
         $("#rmSuggest", root).addEventListener("click", suggest); $("#rmSuggest0", root).addEventListener("click", suggest);
@@ -1027,6 +1056,7 @@
           }
           return cv; };
         /* "Visa någon": before and after side by side (or one above the other for an upright photo), to share or keep */
+        $("#rmLib", root).addEventListener("click", () => { RQ.ss.set("rumiq-ai-jump", "1"); location.hash = "#mitt-hem"; }); // Sparat opens at Mina rumsbilder (the same jump as the AI sheet's link)
         $("#rmShow", root).addEventListener("click", async () => {
           if (!R.scene().length) { RQ.toast("Ställ in något i rummet först, så finns det något att visa."); return; }
           try {
@@ -1063,11 +1093,12 @@
           if (e.detail === "known") { draw(); }
           if (e.detail === "picker" && view.on) { stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); } }; // the room makes space for the drawer, and takes it back
         document.addEventListener("rq-room", onRoom);
+        const onCookie = () => { if (view.on) layout(true); toastAt(); }; document.addEventListener("rq-cookie", onCookie); // the cookie strip moved the room
         layout(); draw(); fits(); toastAt();
         // back from signing in that started at Skapa AI-bild: the AI sheet opens again (within half an hour)
         { const t = +((RQ.ss && RQ.ss.get("rumiq-ai-after")) || 0); if (t && S.customer()) { RQ.ss.set("rumiq-ai-after", ""); if (Date.now() - t < 18e5 && RQ.openAI) setTimeout(() => { if (root.isConnected) RQ.openAI(); }, 500); } }
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
-        return () => { document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
+        return () => { document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
       },
     };
   };
@@ -1118,14 +1149,15 @@
   vsheet.className = "sheet"; vsheet.setAttribute("role", "dialog"); vsheet.setAttribute("aria-modal", "true"); vsheet.setAttribute("aria-labelledby", "varTitle");
   vsheet.innerHTML = `<div class="sheet-scrim" data-var-close></div><div class="sheet-card"><span class="sheet-grip" aria-hidden="true"></span>
     <button class="iconbtn sheet-x" type="button" data-var-close aria-label="Stäng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <h2 id="varTitle">Vilken färg vill du ha?</h2><p class="lead">Bilden i rummet visar en av färgerna. Välj den du vill köpa.</p>
+    <h2 id="varTitle">Vilken färg vill du ha?</h2><p class="lead">Välj den färg du vill köpa.</p>
     <div class="varlist" id="varList"></div>
     <div class="pickfoot"><button class="btn block" type="button" id="varGo">Lägg allt i varukorgen</button></div></div>`;
   document.body.appendChild(vsheet);
   let varThen = null, varBack = null;
   const closeVar = () => { vsheet.classList.remove("open"); document.documentElement.style.overflow = ""; if (varBack && varBack.focus && document.contains(varBack)) varBack.focus({ preventScroll: true }); };
-  R.openVariants = (handles, then, lead) => { varThen = then; varBack = document.activeElement; $(".lead", vsheet).textContent = lead || "Bilden i rummet visar en av färgerna. Välj den du vill köpa."; // lead: when the things come from elsewhere than the room picture
-    $("#varList", vsheet).innerHTML = handles.map((h) => { const p = RQ.byHandle(h); return `<div class="var-row" data-h="${h}"><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b><div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${p.variants.map((v, i) => `<button type="button" class="chip" data-v="${i}" aria-pressed="${i === 0}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div></div></div>`; }).join("");
+  R.openVariants = (handles, then, lead) => { varThen = then; varBack = document.activeElement; $(".lead", vsheet).textContent = lead || "Välj den färg du vill köpa."; // lead: when the things come from elsewhere than the room picture
+    { const t = document.getElementById("toast"); if (t) t.classList.remove("show"); } // nothing left lying on top of the dimmed page
+    $("#varList", vsheet).innerHTML = handles.map((h) => { const p = RQ.byHandle(h); return `<div class="var-row" data-h="${h}"><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b>${lead ? "" : `<small class="var-shown">Bilden visar ${esc(p.variants[0])}</small>`}<div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${p.variants.map((v, i) => `<button type="button" class="chip" data-v="${i}" aria-pressed="${i === 0}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div></div></div>`; }).join("");
     vsheet.classList.add("open"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".sheet-x", vsheet).focus(), 60); };
   vsheet.addEventListener("click", (e) => { if (e.target.closest("[data-var-close]")) return closeVar();
     const c = e.target.closest("[data-v]"); if (c) { $$("[data-v]", c.parentElement).forEach((b) => b.setAttribute("aria-pressed", b === c)); return; }
@@ -1143,13 +1175,13 @@
   document.addEventListener("rq-room", (e) => {
     paint();
     // room photo or mode changed: redraw views that show products
-    if (e.detail === "room" || e.detail === "mode") { const h = (RQ.currentRoute && RQ.currentRoute()) || ""; if (!/^(mitt-rum|studio-rum|kassa|konto)/.test(h)) RQ.router(); }
+    if (e.detail === "room") { const h = (RQ.currentRoute && RQ.currentRoute()) || ""; if (!/^(mitt-rum|studio-rum|kassa|konto)/.test(h)) RQ.router(); }
   });
   document.addEventListener("DOMContentLoaded", paint);
 
   /* global clicks: put a product in the room, open the setup */
   document.addEventListener("click", (e) => {
-    const b = e.target.closest("[data-room-btn],[data-room-setup],[data-room-mode],[data-room-sample-now],[data-room-all]"); if (!b) return;
+    const b = e.target.closest("[data-room-btn],[data-room-setup],[data-room-sample-now],[data-room-all]"); if (!b) return;
     e.preventDefault();
     if (b.matches("[data-room-all]")) { // several things at once (a saved look, a wish list): into the room, then open it
       const hs = b.dataset.roomAll.split(",").filter((h) => RQ.byHandle(h)); if (!hs.length) return;
@@ -1158,12 +1190,11 @@
     }
     if (b.matches("[data-room-setup]")) { const to = b.dataset.roomSetup; R.openSetup(to ? () => (location.hash = to) : null, to ? { go: to } : null); return; }
     if (b.matches("[data-room-sample-now]")) { const to = b.dataset.roomSampleNow || "#butik", im = new Image(); b.setAttribute("aria-busy", "true");
-      im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum" }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
+      im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum", src: im.src }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
         // already on that page (the empty Mitt rum): a new hash would change nothing, so the page is drawn again here
-        if (RQ.currentRoute && RQ.currentRoute() === to.replace(/^#/, "")) { RQ.router(); scrollTo(0, 0); RQ.toast("Klart. Här är ditt rum."); } else location.hash = to; });
+        if (RQ.currentRoute && RQ.currentRoute() === to.replace(/^#/, "")) { RQ.router(); scrollTo(0, 0); RQ.toast("Klart. Här är exempelrummet."); } else location.hash = to; });
       im.onerror = () => { b.removeAttribute("aria-busy"); RQ.toast("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); };
       im.src = "assets/img/rum/vardagsrum-1600.webp"; return; }
-    if (b.matches("[data-room-mode]")) { if (!room) { R.openSetup(); return; } R.setMode(!R.mode()); return; }
     const h = b.dataset.roomBtn;
     const inPick = !!b.closest(".sheet.rmpick");
     const go = () => { if (R.inScene(h)) { R.remove(h); b.setAttribute("aria-pressed", false); RQ.toast(document.getElementById("rmUndo") ? "Borttagen ur ditt rum." : 'Borttagen ur ditt rum. <a href="#" data-room-undo>Ångra</a>'); return; } // in Mitt rum the Ångra button is on the room

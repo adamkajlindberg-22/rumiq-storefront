@@ -107,8 +107,8 @@ with sync_playwright() as p:
         ok(tools == ["Lägg till", "Inred åt mig", "Spara", "Mer"], f"{tag} toolbar is Lägg till, Inred åt mig, Spara, Mer: {tools}")
         ok(pg.evaluate("document.getElementById('rmMenu').hidden"), f"{tag} Mer is closed to begin with")
         pg.click("#rmMore")
-        # studio brief: Mer also holds Visa någon (before and after to share) and Känd längd i bilden (true scale)
-        ok(pg.evaluate("!document.getElementById('rmMenu').hidden && document.querySelectorAll('#rmMenu button').length === 6"), f"{tag} Mer opens with six choices")
+        # studio brief: Mer also holds Visa någon (before and after to share); Känd längd i bilden only for an own photo (a sample room knows its scale)
+        ok(pg.evaluate("!document.getElementById('rmMenu').hidden && document.querySelectorAll('#rmMenu button').length === (RQ.room.mapOf() ? 6 : 7)"), f"{tag} Mer opens with its choices")
         pg.click("#rmNight"); pg.wait_for_timeout(100)
         ok(pg.evaluate("document.getElementById('rmStage').classList.contains('night') && document.getElementById('rmMenu').hidden"), f"{tag} Kväll dims the room and closes the menu")
         pg.click("#rmMore"); pg.click("#rmBefore")
@@ -133,17 +133,9 @@ with sync_playwright() as p:
         pg.goto(BASE + "butik/"); pg.wait_for_timeout(500)
         ok(pg.evaluate("!document.querySelector('#view a[href*=jamfor], .mnav a[href*=jamfor], footer a[href*=jamfor]')"), f"{tag} Jämför is out of the menus")
 
-        # 3. shop cards: the product photo is in the card, but with "Visa i Mitt rum" on the room is what you see first
-        #    (v15 r3, phone review M6: the switch's promise is the room; hover or a swipe shows the photo)
-        first = pg.evaluate("(() => { const ph = document.querySelector('.card.in-room .ph'); return [ph.children[0].tagName, ph.children[0].getAttribute('src'), ph.children[1].className]; })()")
-        ok(first[0] == "IMG" and "/img/p/" in first[1] and "inroom" in first[2], f"{tag} product photo and room both in the card")
-        vis = pg.evaluate("(() => { const c = document.querySelector('.card.in-room'), ph = c.querySelector('.ph'), r = ph.getBoundingClientRect(), s = ph.children[1], q = s.getBoundingClientRect(); return [Math.abs(q.left - r.left) < 2, getComputedStyle(s).opacity]; })()")
-        ok(vis[0] and vis[1] == "1", f"{tag} the room is what you see first: {vis}")
-        if mobile:
-            pg.evaluate("document.querySelector('.card.in-room .ph').scrollLeft = 9999"); pg.wait_for_timeout(400)
-            ok(pg.evaluate("document.querySelector('.card.in-room').dataset.i") == "1", f"{tag} swiping to the photo moves the dots")
-        box = pg.evaluate("(() => { const c = document.querySelector('.card.in-room .inr'), p = c.querySelector('.inr-p').getBoundingClientRect(), r = c.getBoundingClientRect(); return [p.width / r.width, (p.left + p.width / 2 - r.left) / r.width]; })()")
-        ok(0.12 < box[0] < 0.95 and 0.1 < box[1] < 0.9, f"{tag} the product sits inside the room crop: {box}")
+        # 3. shop cards: always the product's own photo (founder's decision, studio round: the room mode in the shop is gone)
+        first = pg.evaluate("(() => { const ph = document.querySelector('#results .card .ph'); return [ph.children[0].tagName, ph.children[0].getAttribute('src') || '', !document.querySelector('.card.in-room, .inroom, [data-room-mode]')]; })()")
+        ok(first[0] == "IMG" and "/img/" in first[1] and first[2], f"{tag} a card shows the product photo, never the room, and the shop has no room switch: {first}")
 
         # 5. Hitta rätt and the stylist
         pg.goto(BASE + "hitta-ratt/"); pg.wait_for_timeout(500)

@@ -313,8 +313,6 @@ main{min-height:60vh}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:.8rem 1rem;margin-bottom:1.4rem}
 .toolbar .count{font-size:.9rem;color:var(--muted)}
 .tb-l{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .9rem;min-width:0}
-.rm-hint{font-size:.9rem;color:var(--ink2)}
-@media (hover:none){.rm-hint{display:none}}
 .toolbar .select{width:auto;min-width:11.5rem}
 .list-more{margin-top:clamp(3rem,6vw,4.5rem)}
 .list-more .h3{margin-bottom:1.4rem}
@@ -968,17 +966,13 @@ details.pw[open] summary::after{content:" −"}
   .f-foot{display:flex;align-items:center;gap:1.2rem;padding:.8rem 1.25rem calc(.8rem + env(safe-area-inset-bottom));border-top:1px solid var(--line2);flex:none}
   .f-foot .btn{flex:1}
   html.f-open{overflow:hidden}
-  /* one toolbar row: filter, room switch, sort */
+  /* one toolbar row: filter, sort */
   .toolbar .tb-l{display:none}
   .toolbar .tb-r{flex:1;min-width:0;flex-wrap:nowrap;gap:.5rem}
-  .toolbar .select{flex:1;min-width:0;height:2.75rem}
-  .toolbar .roomtoggle{order:0;flex:none;height:2.75rem;padding:0 .55rem 0 .3rem;gap:.45rem}
-  .toolbar .roomtoggle .rt-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .toolbar .roomtoggle .rt-s{display:inline;white-space:nowrap}
+  .toolbar .select{flex:0 1 15rem;min-width:0;height:2.75rem;margin-left:auto} /* filter left, sort right (no room switch between them any more) */
 }
-/* phones: the room switch says what it does (words, no picture); tablets: sort keeps its own width at the end of the row */
-@media (max-width:640px){.toolbar .roomtoggle{padding-left:.85rem}.toolbar .roomtoggle .rt-img{display:none}}
-@media (max-width:400px){.toolbar .tb-r{gap:.4rem}.toolbar .tb-filter{padding:0 .75rem}.toolbar .roomtoggle{padding:0 .4rem 0 .7rem}.toolbar .select{padding:0 1.9rem 0 .75rem;background-position:right .65rem center}}
+/* tablets: sort keeps its own width at the end of the row */
+@media (max-width:400px){.toolbar .tb-r{gap:.4rem}.toolbar .tb-filter{padding:0 .75rem}.toolbar .select{padding:0 1.9rem 0 .75rem;background-position:right .65rem center}}
 @media (min-width:641px) and (max-width:1100px){.toolbar .select{flex:0 1 15rem;margin-left:auto}}
 @media (min-width:641px) and (max-width:1100px){.filters{max-width:34rem;margin-inline:auto}} /* on a tablet the sheet keeps a phone's width, centred */
 @media (max-width:900px){
@@ -1118,14 +1112,6 @@ details.pw[open] summary::after{content:" −"}
 body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));visibility:hidden;transition:transform .45s var(--ease),visibility 0s .45s}
 
 /* cards in room mode: the product stands in the customer's room */
-.inr{position:absolute;inset:0;display:block;overflow:hidden}
-.card .ph .inr img,.pg-item .inr img{height:auto}
-.inr .inr-bg{position:absolute;max-width:none;object-fit:fill}
-.inr-p{position:absolute;transform:translate(-50%,-100%);display:block}
-.inr-p img{width:100%!important;height:auto!important;object-fit:contain!important;filter:none;transform:none!important}
-.inr-p.k-surface::after,.inr-p.k-floor::after{content:"";position:absolute;left:8%;right:8%;bottom:-3%;height:9%;background:radial-gradient(closest-side,rgba(0,0,0,.32),transparent);z-index:-1}
-.inr-p.k-wall{filter:drop-shadow(-3px 5px 6px rgba(20,14,8,.26))}.inr-p.k-rug img{object-fit:fill!important}.inr-p.k-rug[style*="height"] img{height:100%!important;object-fit:cover!important;object-position:50% 0} /* a card: the rug runs on out at the foot */.inr-p.k-throw,.inr-p.k-cushion,.inr-p.k-bedding{filter:drop-shadow(-2px 3px 3px rgba(20,14,8,.22))}
-.card.in-room .ph .hov{z-index:2}
 .card .rbtn{position:absolute;right:.45rem;top:3rem;z-index:2;color:#22252A;width:2.5rem;height:2.5rem}
 .card .rbtn:hover{background:rgba(247,247,244,.7)}
 .card .rbtn svg{width:1.2rem;height:1.2rem}
@@ -1133,20 +1119,9 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 .card .fav::before,.card .rbtn::before{content:"";position:absolute;inset:.2rem;border-radius:50%;background:rgba(247,247,244,.64);z-index:-1}
 .card .rbtn[aria-pressed=true]::before{display:none}
 .card .rbtn[aria-pressed=true]{background:#22252A;color:#F7F7F4}
-.card .fm{font-weight:600;color:var(--accent)}
 
 /* shop toolbar toggle */
 .tb-r{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
-.roomtoggle{display:inline-flex;align-items:center;gap:.6rem;height:2.6rem;padding:0 .7rem 0 .3rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-size:.92rem;font-weight:600;color:var(--ink)}
-.roomtoggle .rt-s{display:none}
-.roomtoggle .rt-img{width:2rem;height:2rem;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--sunk)}
-.roomtoggle .rt-img img{width:100%;height:100%;object-fit:cover}
-.roomtoggle .rt-img svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.6}
-.roomtoggle .sw{width:2.1rem;height:1.25rem;border-radius:999px;background:var(--line);position:relative;transition:background .3s}
-.roomtoggle .sw::after{content:"";position:absolute;top:.15rem;left:.15rem;width:.95rem;height:.95rem;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .35s var(--spring)}
-.roomtoggle[aria-pressed=true]{border-color:var(--ink)}
-.roomtoggle[aria-pressed=true] .sw{background:var(--accent)}
-.roomtoggle[aria-pressed=true] .sw::after{transform:translateX(.85rem)}
 
 /* product page */
 .roomcta{display:flex;align-items:center;gap:.9rem;width:100%;margin-top:1.1rem;padding:.75rem .9rem .75rem .75rem;border:1px solid var(--line);border-radius:var(--r);background:color-mix(in srgb,var(--paper) 55%,transparent);text-decoration:none;color:var(--ink);text-align:left;transition:background .3s}
@@ -1157,8 +1132,6 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 .roomcta .rc-img svg{margin:0}
 .roomcta b{display:block;font-weight:600;font-size:1rem}
 .roomcta small{display:block;color:var(--muted);font-size:.86rem;line-height:1.4;margin-top:.1rem}
-.pg-item.inroomtile{cursor:pointer}
-.pg-item.inroomtile .zhint{opacity:1}
 
 /* bottom sheet */
 .sheet{position:fixed;inset:0;z-index:300;visibility:hidden;pointer-events:none}
@@ -1237,7 +1210,8 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-item{position:absolute;transform:translate(-50%,-100%);cursor:grab;touch-action:none;outline:none}
 .rm-item img{width:100%;pointer-events:none;transition:filter .3s}
 /* the frame is an outline, so lamps (whose ::before is the glow) get it too */
-.rm-item.sel,.rm-item:focus-visible{outline:2px dashed #F7F7F4;outline-offset:5px;border-radius:3px;box-shadow:0 0 0 5px rgba(20,22,26,.2),0 0 0 8px rgba(20,22,26,.12)}
+.rm-item.sel,.rm-item:focus-visible{outline:2px dashed #F7F7F4;outline-offset:5px;border-radius:3px}
+.rm-item.sel:not(:focus-visible){filter:drop-shadow(0 0 1.2px rgba(20,22,26,.6))} /* the dashed frame keeps a thin dark edge on light walls, without a grey box behind the thing */
 .rm-item:focus-visible{outline:2px solid #22252A;outline-offset:5px;box-shadow:0 0 0 9px rgba(247,247,244,.92)} /* the keyboard ring shows on light walls and dark floors alike */
 .rm-item:active{cursor:grabbing}
 .rm-stage.before .rm-items{opacity:0;transition:opacity .2s}
@@ -1271,6 +1245,13 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-on1{font-weight:600;color:var(--ink);font-size:.9rem}
 .rm-onrow{margin-top:.5rem}
 .rm-acth{display:none}
+.var-shown{display:block;color:var(--muted);font-size:.85rem;margin:.1rem 0 .35rem}
+/* back from signing in: the next step glows once; Inred åt mig on an own photo first asks which room it is */
+.sheet-acts .btn.nudge{animation:sheetNudge 1.6s var(--ease) 2}
+@keyframes sheetNudge{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 0%,transparent)}40%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 35%,transparent)}}
+.ask-now{animation:askNow 1.4s var(--ease) 1}
+@keyframes askNow{0%,100%{box-shadow:0 0 0 0 transparent}35%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 45%,transparent)}}
+@media (prefers-reduced-motion:reduce){.sheet-acts .btn.nudge,.ask-now{animation:none}}
 /* Känd längd i bilden: the line you draw, its two ends, its length; the things fade back while you draw */
 .rm-stage.measuring .rm-items{opacity:.35;pointer-events:none;transition:opacity .25s}
 .rm-stage.measuring :is(.rm-hold,.rm-undo,.rm-nightchip,.rm-first,.rm-emptyhint),.rm-stagewrap.measuring :is(.rm-tools,.rm-act,.rm-ask){display:none}
@@ -2068,11 +2049,22 @@ body.on-home footer.site .news{display:none}
 .cookie .row #ckMore{background:none;border:0;padding:0 .2rem;text-decoration:underline;text-underline-offset:3px;min-height:2.75rem}
 .cookie .opts{grid-column:1/-1}
 @media (max-width:700px){.cookie{grid-template-columns:1fr;padding:.8rem .9rem}.cookie p{font-size:.82rem}.cookie .row{display:flex;gap:.5rem}.cookie .row .btn{flex:1;padding-inline:.6rem}}
+/* Studio pages (Mitt rum, the tools): a slim strip right under the header that takes its own room and scrolls with the page,
+   so it never covers the room, its toolbar or the buy bar */
+body.on-studio .cookie{position:absolute;top:var(--nav-h);bottom:auto;left:0;right:0;width:auto;max-width:none;transform:translateY(-140%);opacity:0;border-radius:0;border-width:0 0 1px;box-shadow:none;padding:.45rem var(--gutter);display:none;align-items:center;gap:.3rem 1rem;z-index:55}
+body.on-studio .cookie.show{display:flex;flex-wrap:wrap;transform:none;opacity:1}
+body.on-studio .cookie p{flex:1 1 20rem;margin:0;font-size:.8rem;line-height:1.35}
+body.on-studio .cookie .row{display:flex;gap:.4rem;flex:0 1 auto}
+body.on-studio .cookie .row .btn{min-height:2.4rem;font-size:.82rem;padding-inline:.75rem;white-space:nowrap;flex:0 0 auto}
+body.on-studio .cookie .opts{flex-basis:100%}
+body.on-studio:has(.cookie.show) .view{padding-top:calc(var(--nav-h) + var(--ck-h,0px))}
 /* Mitt rum before a photo: text left, the result right */
 .rm-empty{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(1.5rem,4vw,4rem);align-items:center;background-image:none}
 :root[data-light=kvall] .rm-empty{background-image:none}
 .rm-empty .rh-fig{margin:0}
-@media (max-width:1100px){.rm-empty{grid-template-columns:1fr}.rm-empty .rh-fig{order:-1}.rm-empty .rh-card{left:1rem;right:1rem}}
+@media (max-width:1100px){.rm-empty{grid-template-columns:1fr}.rm-empty .rh-fig{order:-1}}
+@media (max-width:640px){.rm-empty .rh-fig{order:0}.rm-empty-acts{flex-direction:column;align-items:stretch}} /* a phone: the way in first, high and above the dock; the picture after it */
+@media (max-width:1100px){.rm-empty .rh-card{left:1rem;right:1rem}}
 @media (min-width:901px) and (max-width:1100px) and (orientation:landscape){.rm-empty{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2rem}.rm-empty .rh-fig{order:0}.rm-empty .bav .rh-card{position:static;margin-top:.7rem;box-shadow:none;border:1px solid var(--line);justify-content:space-between}} /* a landscape tablet: the button beside the picture, on the first screen */
 footer.site .bottom > span:last-child{align-items:center}
 footer.site .bottom .bottom-link{color:var(--muted);text-decoration:underline;text-underline-offset:.2em;font-size:.86rem;line-height:inherit}
@@ -2731,22 +2723,6 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-colors h3{font-size:var(--t-card);font-weight:600}
 .rm-colors p{margin-top:.25rem;color:var(--ink2);font-size:.95rem}
 @media (max-width:640px){.rm-colors{grid-template-columns:minmax(0,1fr);gap:.8rem}}
-/* 5. Shop cards with "Visa i Mitt rum" on: the room is what the switch promises, so it shows first.
-      Pointer: the product photo comes on hover. Touch: swipe sideways to the photo. */
-.card.in-room .ph .hov.inroom{position:absolute;inset:0;display:block;opacity:1;z-index:2;transition:opacity .2s linear}
-.inr-tag{position:absolute;left:.5rem;top:.5rem;z-index:3;padding:.22rem .55rem;border-radius:999px;background:rgba(247,247,244,.94);color:#22252A;font-size:.72rem;font-weight:600;font-style:normal;line-height:1.3}
-.ph-dots{display:none}
-@media (hover:hover){.card.in-room:hover .ph .hov.inroom{opacity:0}}
-@media (hover:none){
-  .card.in-room .ph{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
-  .card.in-room .ph::-webkit-scrollbar{display:none}
-  .card.in-room .ph > img.fade{flex:0 0 100%;scroll-snap-align:start}
-  .card.in-room .ph .hov.inroom{position:relative;inset:auto;flex:0 0 100%;opacity:1;scroll-snap-align:start;order:-1}
-  .card.in-room{position:relative}
-  .card.in-room .ph-dots{position:absolute;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:.3rem;pointer-events:none;top:calc((100cqw) * 1.25 - 1rem)}
-  .ph-dots i{width:.38rem;height:.38rem;border-radius:50%;background:rgba(247,247,244,.6);box-shadow:0 0 0 1px rgba(34,37,42,.28)}
-  .card.in-room:not([data-i="1"]) .ph-dots i:first-child,.card.in-room[data-i="1"] .ph-dots i:last-child{background:#22252A;box-shadow:0 0 0 1.5px rgba(247,247,244,.9)}
-}
 .rh-item img{display:block;height:auto}
 /* 6. Hitta rätt: answers you choose with a picture */
 .imgopts.pick{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr));gap:.6rem;max-width:44rem;max-height:none;overflow:visible}

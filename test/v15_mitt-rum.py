@@ -377,13 +377,12 @@ with sync_playwright() as p:
         comp = pg.evaluate("RQ.ai.composite(600)")
         pg.evaluate("document.getElementById('rmSave').click()"); pg.wait_for_timeout(1200)
         saved = pg.evaluate("RQ.shop.projects()[0].img")
-        layers = pg.evaluate("RQ.PRODUCTS.map((p) => RQ.room.layer(p).replace(/blob:[^\"]+/g, 'B')).join('|')")
+        layers = ""  # the shop-card crops are gone with the room mode (founder's decision, studio round)
         got[nm] = (drawn, comp, saved, layers); ctx.close()
     ok(all(abs(got["phone"][0][it["h"]][i] - (it["x"], it["y"], it["w"])[i]) < 0.3 for it in SCENE for i in range(3)), f"[same] phone draws every thing at its stored place: {got['phone'][0]}")
     ok(got["phone"][0] == got["desktop"][0], "[same] phone and desktop draw the things at the same places")
     ok(got["phone"][1] == got["desktop"][1], "[same] the AI guide picture is the same from phone and desktop")
     ok(got["phone"][2] == got["desktop"][2], "[same] the saved picture is the same from phone and desktop")
-    ok(got["phone"][3] == got["desktop"][3], "[same] the shop-card crops are the same on phone and desktop")
 
     # ------------------------------------------------------------ AI sheet and Studio Plus
     for W, Hh, mob in ((390, 844, True), (1440, 900, False)):

@@ -158,8 +158,8 @@ with sync_playwright() as p:
     for W, Hh in ((390, 844), (360, 740)):
         t = f"[shop {W}]"
         ctx, pg = page(b, W, Hh, phone=True); go(pg, "butik", 1100)
-        s = pg.evaluate("""(() => { const R = (q) => document.querySelector(q).getBoundingClientRect(); const tb = R('.toolbar'); return { tbH: tb.height, right: Math.max(R('#sort').right, R('.roomtoggle').right, R('#toggleFilters').right), wrapR: tb.right, card: R('#results .card').top, sw: document.documentElement.scrollWidth, iw: innerWidth }; })()""")
-        ok(s["tbH"] < 60 and s["right"] <= s["wrapR"] + 1 and s["sw"] == s["iw"], f"{t} filter, room switch and sort on one row inside the page: {s}")
+        s = pg.evaluate("""(() => { const R = (q) => document.querySelector(q).getBoundingClientRect(); const tb = R('.toolbar'); return { tbH: tb.height, right: Math.max(R('#sort').right, R('#toggleFilters').right), wrapR: tb.right, card: R('#results .card').top, sw: document.documentElement.scrollWidth, iw: innerWidth }; })()""")
+        ok(s["tbH"] < 60 and s["right"] <= s["wrapR"] + 1 and s["sw"] == s["iw"], f"{t} filter and sort on one row inside the page (no room switch: founder's decision): {s}")
         ok(s["card"] < 300, f"{t} the first product starts high: {s['card']}")
         pg.tap("#toggleFilters"); pg.wait_for_timeout(600)
         s = pg.evaluate("""(() => { const f = document.getElementById('filters'), r = f.getBoundingClientRect(); return { show: f.classList.contains('show'), bottom: Math.round(r.bottom), vh: innerHeight, top: r.top, exp: document.getElementById('toggleFilters').getAttribute('aria-expanded'), opt: f.querySelector('.f-opt').getBoundingClientRect().height, btn: document.getElementById('fShow').textContent, lock: getComputedStyle(document.documentElement).overflow }; })()""")

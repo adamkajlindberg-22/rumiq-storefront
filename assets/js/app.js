@@ -106,25 +106,23 @@
   /* first: "eager" or "high" for the cards at the top of a list (the pictures a visitor sees first are fetched at once, "high" with priority) */
   /* does the product belong in the customer's room? (a room of unknown type takes everything; a cutting board never lands on the living-room table) */
   RQ.suits = (p) => { const r = RQ.room && RQ.room.get(), t = r && r.type; return !t || p.rooms.includes(t); };
-  // "% färgmatch" is said only where it is good news (60 % or more); below that the card shows its colours as usual (the order still follows the match)
+  // a card is the product, always its own photo (the founder's decision: the room lives in Mitt rum, not on the cards)
   RQ.card = (p, first) => {
-    const R = RQ.room, on = R && R.mode() && RQ.suits(p), m = on ? R.match(p) : null;
+    const R = RQ.room;
     const print = RQ.isPrint && RQ.isPrint(p);
     const photo = print ? `<img class="fade cutph" src="${RQ.cut(p)}" alt="${esc(p.name)}" ${first ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="461" height="600">`
       : `<img class="fade" src="${RQ.img(p, 600)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="${esc(p.name)}" ${first === "high" ? 'fetchpriority="high"' : first === "eager" ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="600" height="750">`;
-    // with "Visa i Mitt rum" on, the room is the picture shown (CSS puts it first; hover or a swipe shows the product photo)
     // three tab stops per card, in reading order: heart, Lägg till, the name. Room and Snabbtitt are mouse shortcuts (the product page has both), so they stay out of the tab order
-    const ph = on ? `${photo}<span class="hov inroom">${R.layer(p)}<i class="inr-tag">I ditt rum</i></span>`
-      : `${photo}<img class="hov fade" data-src="${print ? RQ.img(p, 600) : `assets/img/d/${p.handle}-600.webp`}" alt="" decoding="async" width="600" height="750" onerror="this.remove()">`;
+    const ph = `${photo}<img class="hov fade" data-src="${print ? RQ.img(p, 600) : `assets/img/d/${p.handle}-600.webp`}" alt="" decoding="async" width="600" height="750" onerror="this.remove()">`;
     return `
-    <article class="card${on ? " in-room" : ""}" style="--tone:${p.tone[0]}22">
-      <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
+    <article class="card" style="--tone:${p.tone[0]}22">
+      <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>
       <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}</button>
       <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" tabindex="-1" aria-label="Ställ in ${esc(p.name)} i Mitt rum">${roomIco}</button>
       <button class="qv" type="button" data-sheet="${p.handle}" tabindex="-1" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
-      <p class="sub">${m >= 60 ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
+      <p class="sub">${swatches(p)}</p>
     </article>`;
   };
   RQ.grid = (list, cls = "", top = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
@@ -183,8 +181,7 @@
     /* how many products a choice would show, given the other groups' choices (the counts follow the filters) */
     const countOf = (k, id) => all.filter((p) => passBut(p, k) && has[k](p, id)).length;
     const listFor = (srt) => {
-      let l = srt === "dig" && RQ.taste ? RQ.taste.sort(base()) : base(srt === "match" ? "rel" : srt);
-      if (srt === "match" && RQ.room && RQ.room.has()) l = [...l].sort((a, b) => (RQ.room.match(b) || 0) - (RQ.room.match(a) || 0));
+      const l = srt === "dig" && RQ.taste ? RQ.taste.sort(base()) : base(srt);
       return l.filter(pass);
     };
     const nActive = () => FKEYS.reduce((n, k) => n + st[k].length, 0);
@@ -222,12 +219,11 @@
             </aside><div class="f-scrim" data-f-close></div>` : ""}
             <div>
               <div class="toolbar">
-                <span class="tb-l"><span class="count" id="count" role="status">${nProd(first.length)}</span>${RQ.room && RQ.room.mode() ? '<span class="rm-hint">Korten visar det som passar i ditt rum.</span>' : ""}</span>
+                <span class="tb-l"><span class="count" id="count" role="status">${nProd(first.length)}</span></span>
                 <div class="tb-r">
                   ${groups ? `<button class="chip tb-filter" type="button" id="toggleFilters" aria-expanded="false" aria-controls="filters">${fIco}<span>Filter</span><b id="fN"${nActive() ? "" : " hidden"}>${nActive()}</b></button>` : ""}
-                  <button class="roomtoggle" type="button" data-room-mode aria-pressed="${!!(RQ.room && RQ.room.mode())}"><span class="rt-img" data-room-thumb data-empty='${roomIco}'>${RQ.room && RQ.room.has() ? RQ.room.thumb() : roomIco}</span><span class="rt-t">${RQ.room && RQ.room.has() ? "Visa i Mitt rum" : "Se allt i ditt rum"}</span><span class="rt-s" aria-hidden="true">${RQ.room && RQ.room.has() ? "I mitt rum" : "I ditt rum"}</span><i class="sw" aria-hidden="true"></i></button>
                   ${noSort ? "" : `<label class="sr" for="sort">Sortera</label>
-                  <select class="select" id="sort"><option value="rel">Relevans</option><option value="pop">Popularitet</option><option value="asc">Pris: lågt till högt</option><option value="desc">Pris: högt till lågt</option><option value="new">Senaste</option>${RQ.room && RQ.room.has() ? '<option value="match">Passar mitt rum</option>' : ""}${RQ.taste && RQ.taste.has() ? '<option value="dig">För dig</option>' : ""}</select>`}
+                  <select class="select" id="sort"><option value="rel">Relevans</option><option value="pop">Popularitet</option><option value="asc">Pris: lågt till högt</option><option value="desc">Pris: högt till lågt</option><option value="new">Senaste</option>${RQ.taste && RQ.taste.has() ? '<option value="dig">För dig</option>' : ""}</select>`}
                 </div>
               </div>
               <div class="f-active" id="fActive"${nActive() ? "" : " hidden"}>${chips()}</div>
@@ -361,16 +357,16 @@
       offers: { "@type": "Offer", priceCurrency: "SEK", price: p.price, availability: "https://schema.org/PreOrder" } };
     const look = [p, ...pairs.slice(0, 3)];
     const shown = gal.filter((g) => g.k !== "off");
-    /* phones: the room moment on the first screen, next to the price (the big card below says the same further down).
-       With a room it shows the in-room picture in the gallery, or opens Mitt rum; without one it starts the room setup */
-    const hasRoom = RQ.room && RQ.room.has(), roomSlide = hasRoom && RQ.suits(p);
-    const pinroom = `<${hasRoom && !roomSlide ? `a href="#mitt-rum-${p.handle}"` : `button type="button" ${roomSlide ? "data-pinroom" : `data-room-setup="#mitt-rum-${p.handle}"`}`} class="pinroom">${RQ.roomIco}<span>Se den i ditt rum</span></${hasRoom && !roomSlide ? "a" : "button"}>`;
+    /* the way into Studio, on the first screen next to the price: Mitt rum opens with the product in it (in your room, or
+       on the page that lets you pick a sample room or your own photo when you have none yet) */
+    const hasRoom = RQ.room && RQ.room.has();
+    const pinroom = `<a class="pinroom" href="#mitt-rum-${p.handle}">${RQ.roomIco}<span>Prova i Mitt rum</span></a>`;
     return {
       title: `${p.name} · RumIQ`,
       html: `<section class="wrap pcr">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
         <section class="wrap pdp">
           <div class="pg">
-            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}${i === 0 && RQ.room && RQ.room.has() && RQ.suits(p) ? `<button type="button" class="pg-item inroomtile" data-goroom="${p.handle}">${RQ.room.layer(p, true)}<span class="tag">I ditt rum</span><span class="zhint">${RQ.roomIco}Öppna i Mitt rum</span></button>` : ""}`).join("")}</div>
+            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}`).join("")}</div>
             ${isLamp ? `<button type="button" class="lightswitch" id="lightSw" aria-pressed="true" hidden><i></i><span>Lampan är tänd</span></button>` : ""}
             <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
           </div>
@@ -383,8 +379,7 @@
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
             <p class="small qty-note" id="qtyNote" role="status"></p><p class="sr" id="qtySaid" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${RQ.payRow()}
-            ${RQ.room && RQ.room.has() ? `<a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.room.thumb()}</span><span><b>Ställ in i Mitt rum</b><small>Se den hemma hos dig och handla hela rummet på en gång.</small></span>${RQ.roomIco}</a>`
-              : `<button type="button" class="roomcta" data-room-setup="#mitt-rum-${p.handle}"><span class="rc-img">${RQ.roomIco}</span><span><b>Se den i ditt rum</b><small>Ta en bild av ditt rum, så ställer vi in produkten där.</small></span>${RQ.plus}</button>`}
+            <a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${hasRoom ? RQ.room.thumb() : RQ.roomIco}</span><span><b>Prova i Mitt rum</b><small>${hasRoom ? "Se den hemma hos dig och handla hela rummet på en gång." : "I ett exempelrum eller i en bild av ditt eget rum."}</small></span>${RQ.roomIco}</a>
             ${RQ.p3d ? RQ.p3d.card(p) : ""}
             <div class="pactions">
               <button type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}<span aria-hidden="true">${S.isWished(p.handle) ? "Sparad" : "Spara"}</span></button>
@@ -429,19 +424,17 @@
       mount(root) {
         let variant = vs[0].id;
         const grid = $("#pgGrid", root);
-        const items = () => $$(".pg-item:not(.inroomtile):not(.pg-film)", grid);
+        const items = () => $$(".pg-item:not(.pg-film)", grid);
         const lbList = () => items().map((b) => { const g = gal[+b.dataset.gi]; const im = $("img", b); return { src: im.currentSrc || im.src, thumb: g.thumb, alt: im.alt, cut: !!g.cut }; });
         // open the lightbox on click, loupe on hover (fine pointers only)
-        const pin = $("[data-pinroom]", root); if (pin) pin.addEventListener("click", () => { const t = $(".inroomtile", grid); if (!t) { location.hash = "#mitt-rum-" + p.handle; return; }
-          if (grid.scrollWidth > grid.clientWidth + 4) grid.scrollTo({ left: t.offsetLeft - grid.offsetLeft, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); else t.scrollIntoView({ block: "nearest" }); });
-        grid.addEventListener("click", (e) => { const t = e.target.closest(".inroomtile"); if (t) { location.hash = "#mitt-rum-" + p.handle; return; } const b = e.target.closest(".pg-item:not(.pg-film)"); if (!b) return; RQ.lightbox.open(lbList(), items().indexOf(b), p.name); });
+        grid.addEventListener("click", (e) => { const b = e.target.closest(".pg-item:not(.pg-film)"); if (!b) return; RQ.lightbox.open(lbList(), items().indexOf(b), p.name); });
         const fine = matchMedia("(hover:hover) and (pointer:fine)").matches && innerWidth > 900;
         if (fine) {
           // the loupe starts only once the pointer really moves on a picture: arriving from a card with the pointer already there must show the whole picture
           let zt = null, at = null;
           grid.addEventListener("mousemove", (e) => { const b = e.target.closest(".pg-item"); if (!b) return; const r = b.getBoundingClientRect(); b.style.setProperty("--zx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); b.style.setProperty("--zy", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%");
             if (!at) at = [e.clientX, e.clientY];
-            if (Math.abs(e.clientX - at[0]) + Math.abs(e.clientY - at[1]) < 4 || zt || b.classList.contains("zooming") || b.classList.contains("inroomtile")) return;
+            if (Math.abs(e.clientX - at[0]) + Math.abs(e.clientY - at[1]) < 4 || zt || b.classList.contains("zooming")) return;
             zt = setTimeout(() => { zt = null; b.classList.add("zooming"); }, 380); });
           grid.addEventListener("mouseout", (e) => { const b = e.target.closest(".pg-item"); if (!b || b.contains(e.relatedTarget)) return; clearTimeout(zt); zt = null; b.classList.remove("zooming"); });
         }
@@ -785,6 +778,7 @@
     root.className = "view" + (isHome ? " home" : "") + (first ? " first" : "");
     document.body.classList.toggle("on-home", isHome);
     document.body.classList.toggle("on-product", /^produkt-/.test(raw));
+    document.body.classList.toggle("on-studio", /^(mitt-rum|studio)/.test(raw)); // the cookie choice is a slim strip there (site.css)
     document.body.classList.toggle("on-checkout", /^kassa$/.test(raw));
     root.innerHTML = view.html;
     toPathLinks(root);
@@ -931,8 +925,6 @@
     const img = $(".ph img", a.closest(".card")); if (img) img.style.viewTransitionName = "pimg";
   }, true);
 
-  /* shop cards in room mode on touch screens: the dots follow the swipe between photo and room */
-  document.addEventListener("scroll", (e) => { const t = e.target; if (t.classList && t.classList.contains("ph")) { const c = t.closest(".card.in-room"); if (c) c.dataset.i = Math.round(t.scrollLeft / Math.max(1, t.clientWidth)); } }, { capture: true, passive: true });
 
   /* images fade in on their tone colour once decoded */
   document.addEventListener("load", (e) => { const t = e.target; if (t.tagName === "IMG" && t.classList.contains("fade")) t.classList.add("ok"); }, true);
@@ -1086,7 +1078,7 @@
     if (ext) { sRes.innerHTML = `${tones}${ext.note ? `<p class="small s-note">${ext.note}</p>` : ""}${ext.list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(ext.list.length)}</p>${RQ.grid(ext.list)}` : `<div class="empty"><h3>Inga träffar</h3><p>Prova en annan färg eller ett annat ord.</p></div>`}`; RQ.watch(sRes); pick(); return; }
     const found = S.search(q), words = S._words(q), raw = S.norm(q).split(/\s+/);
     // with the room switch on the cards show "% färgmatch": then the best match comes first (the search order breaks ties)
-    const R = RQ.room, list = R && R.mode() ? found.list.map((p, k) => [p, R.match(p) || 0, k]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map((x) => x[0]) : found.list;
+    const list = found.list;
     if (found.short) { sRes.innerHTML = `<p class="small s-note">Skriv minst två bokstäver.</p>${POPULAR()}`; said("Skriv minst två bokstäver."); return; }
     const arts = RQ.ARTICLES.filter((a) => S.norm(a.title + " " + a.lead).includes(S.norm(q)));
     const cats = RQ.CATEGORIES.filter((c) => S.fold(c.name).includes(S.fold(q)));
@@ -1241,17 +1233,21 @@
   window.addEventListener("scroll", navCheck, { passive: true });
   RQ.navCheck = navCheck;
 
-  // cookie banner
+  // cookie banner. On Studio pages a slim strip under the header that makes room for itself, so it never covers a tool;
+  // its height is --ck-h, and the room editor is told when it comes and goes (rq-cookie)
+  let ckH = -1; const ckSize = () => requestAnimationFrame(() => { const b = $("#cookie"), h = b.classList.contains("show") && document.body.classList.contains("on-studio") ? b.offsetHeight : 0; if (h === ckH) return; ckH = h; document.documentElement.style.setProperty("--ck-h", h + "px"); document.dispatchEvent(new CustomEvent("rq-cookie")); });
+  addEventListener("resize", () => { if ($("#cookie").classList.contains("show")) ckSize(); });
+  new MutationObserver(ckSize).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   RQ.showCookies = (force) => {
     const box = $("#cookie");
     const c = S.consent();
     if (c && !force) return;
-    box.classList.add("show");
+    box.classList.add("show"); ckSize();
     $("#ckStats").checked = !!(c && c.stats); $("#ckMkt").checked = !!(c && c.mkt);
   };
-  $("#ckAll").addEventListener("click", () => { S.setConsent({ stats: true, mkt: true }); $("#cookie").classList.remove("show"); });
-  $("#ckNeed").addEventListener("click", () => { S.setConsent({ stats: false, mkt: false }); $("#cookie").classList.remove("show"); });
-  $("#ckSave").addEventListener("click", () => { S.setConsent({ stats: $("#ckStats").checked, mkt: $("#ckMkt").checked }); $("#cookie").classList.remove("show"); });
+  $("#ckAll").addEventListener("click", () => { S.setConsent({ stats: true, mkt: true }); $("#cookie").classList.remove("show"); ckSize(); });
+  $("#ckNeed").addEventListener("click", () => { S.setConsent({ stats: false, mkt: false }); $("#cookie").classList.remove("show"); ckSize(); });
+  $("#ckSave").addEventListener("click", () => { S.setConsent({ stats: $("#ckStats").checked, mkt: $("#ckMkt").checked }); $("#cookie").classList.remove("show"); ckSize(); });
   $("#ckMore").addEventListener("click", (e) => { const o = $("#cookie .opts"); o.hidden = !o.hidden; e.currentTarget.setAttribute("aria-expanded", !o.hidden); });
 
 
@@ -1425,7 +1421,7 @@
     RQ.router(); navCheck();
     /* the first screen of the home page belongs to the offer: on the home page the cookie bar waits until the
        visitor has scrolled past it or gone to another page; everywhere else it shows after a moment */
-    if (!document.body.classList.contains("on-home")) { setTimeout(() => RQ.showCookies(false), 1200); return; }
+    if (!document.body.classList.contains("on-home")) { setTimeout(() => RQ.showCookies(false), document.body.classList.contains("on-studio") ? 0 : 1200); return; } // Studio: at once, before you start, not in the middle of it
     let done = false; const go = () => { if (done) return; done = true; window.removeEventListener("scroll", onScroll); left.disconnect(); RQ.showCookies(false); };
     const onScroll = () => { if (window.scrollY > window.innerHeight * 0.6) go(); };
     const left = new MutationObserver(() => { if (!document.body.classList.contains("on-home")) go(); });

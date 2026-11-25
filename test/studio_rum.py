@@ -110,7 +110,8 @@ with sync_playwright() as p:
         hit = (lambda s: pg.tap(s)) if mob else (lambda s: pg.click(s))
         pg.goto(BASE + "produkt-lysa-keramiklampa/"); pg.wait_for_timeout(1000); quiet(pg)
         pg.evaluate("RQ.room.add('sand-keramikvas', true)")  # something already chosen before the room exists
-        pg.evaluate("document.querySelector('.roomcta, .pinroom').click()"); pg.wait_for_timeout(600)
+        pg.evaluate("document.querySelector('.roomcta, .pinroom').click()"); pg.wait_for_timeout(1000)  # Prova i Mitt rum: Mitt rum with the lamp
+        pg.evaluate("document.querySelector('#view [data-room-setup]').click()"); pg.wait_for_timeout(600)
         hit(".roomsheet.open .sheet-acts label" + (".cam" if mob else ":not(.cam)")); pg.wait_for_timeout(600)
         ok(pg.evaluate(MODE) == "gate" and pg.evaluate(TITLE) == "Logga in för att lägga in ditt rum", f"{tag} signed out, Ta en bild / Välj en bild opens the calm sign-in sheet")
         ok(pg.choosers == 0, f"{tag} and no camera or file chooser opens before signing in")
@@ -120,9 +121,9 @@ with sync_playwright() as p:
         ok(bt[1] <= Hh and bt[2] >= 44, f"{tag} Logga in is on the first screen and large enough to tap: {bt}")
         hit(".roomsheet.open [data-room-gate]:first-child"); pg.wait_for_timeout(900)
         g = json.loads(pg.evaluate("sessionStorage.getItem('rumiq-room-gate')") or "{}")
-        ok(pg.evaluate("RQ.currentRoute()") == "konto" and g.get("route") == "produkt-lysa-keramiklampa" and g.get("plan", {}).get("go") == "#mitt-rum-lysa-keramiklampa", f"{tag} the step and what comes next are kept while you sign in: {g}")
+        ok(pg.evaluate("RQ.currentRoute()") == "konto" and g.get("route") == "mitt-rum-lysa-keramiklampa", f"{tag} the step is kept while you sign in: {g}")
         sign_in_on_page(pg)
-        ok(pg.evaluate("RQ.currentRoute()") == "produkt-lysa-keramiklampa" and pg.evaluate("document.querySelector('.roomsheet').classList.contains('open')") and pg.evaluate(MODE) == "main", f"{tag} after signing in you are back on the same page with the sheet open")
+        ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum-lysa-keramiklampa" and pg.evaluate("document.querySelector('.roomsheet').classList.contains('open')") and pg.evaluate(MODE) == "main", f"{tag} after signing in you are back on the same page with the sheet open")
         ok("inloggad" in pg.evaluate("document.querySelector('.sheet-hello').textContent") and pg.evaluate("!document.querySelector('.sheet-hello').hidden"), f"{tag} and told you can go on")
         put(pg, "rum.jpg", picture(1400, 900)); pg.wait_for_timeout(2200)
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum-lysa-keramiklampa" and set(pg.evaluate("RQ.room.scene().map((i) => i.h)")) == {"sand-keramikvas", "lysa-keramiklampa"}, f"{tag} the photo goes in, and everything chosen is still chosen: {pg.evaluate('RQ.room.scene().map((i) => i.h)')}")
@@ -216,6 +217,7 @@ with sync_playwright() as p:
         pg.select_option(sq, "golv"); pg.wait_for_timeout(600)
         it = pg.evaluate("RQ.room.scene().find((i) => i.h === 'lysa-keramiklampa')")
         ok(it.get("on") == "golv" and it["y"] > 80 and pg.evaluate(f"document.querySelector('{sq}').value") == "golv", f"{tag} one choice moves it to the floor of the sample room: {before} -> {[it['x'], it['y'], it['w']]}")
+        ok(it["x"] == before[0], f"{tag} straight down, at the same place across (review minor 8): {before[0]} -> {it['x']}")
         order = pg.evaluate("[...document.querySelectorAll('.rm-item')].map((e) => e.dataset.h)")
         ok(order.index("strand-jutematta") < order.index("lysa-keramiklampa"), f"{tag} and it stands on the rug, not under it: {order}")
         pg.evaluate("document.getElementById('rmUndo').click()"); pg.wait_for_timeout(400)
@@ -242,70 +244,74 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.getElementById('rmOn2').value") == "bord", "[on own] and it is remembered")
     c.close()
 
-    # ------------------------------------------------------------ 2. real size: "Känd längd i bilden", true scale, perspective, honest otherwise
+    # ------------------------------------------------------------ 2. real size: sample rooms know their scale; your own photo gets "Känd längd i bilden"
     data = (ROOT / "assets/js/data.js").read_text()
     sized = re.findall(r'handle: "([a-z0-9-]+)"[^{]*?(?:\{[^}]*\}[^{]*?)*?size: \{ w: (\d+), (?:h|d): (\d+) \}', data)
-    PRODS = {h: (w, x) for h, w, x in sized}
-    ok(set(PRODS) == {"affisch-linje-ekram", "affisch-horisont-ekram", "strand-jutematta", "dagsljus-linnegardin-2-pack"}, f"[real] only products whose text states their measurements have them: {sorted(PRODS)}")
+    ok({h for h, _, _ in sized} == {"affisch-linje-ekram", "affisch-horisont-ekram", "strand-jutematta", "dagsljus-linnegardin-2-pack"}, f"[real] only products whose text states their measurements have them: {sorted(h for h, _, _ in sized)}")
+    OWN = io.BytesIO(); __import__("PIL.Image").Image.open(ROOT / "assets/img/rum/vardagsrum-1600.webp").convert("RGB").save(OWN, "JPEG", quality=85)
     for W, Hh, mob in ((1440, 900, False), (1280, 720, False), (390, 844, True), (360, 740, True)):
         tag = f"[real {W}]"
         c = ctx_for(b, W, Hh, mob); pg = new_page(c); cdp = c.new_cdp_session(pg) if mob else None
+        # a sample room: measured products are at true scale from the start, from the room's own scale; no line to draw
         pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); pg.evaluate(SAMPLE, "vardagsrum")
-        pg.evaluate("['lysa-keramiklampa', 'strand-jutematta', 'affisch-linje-ekram'].forEach((h) => RQ.room.add(h, true)); location.hash = '#mitt-rum'; RQ.router()"); pg.wait_for_timeout(1400); quiet(pg)
-        lamp0, rug0 = pg.evaluate(SPOT, "lysa-keramiklampa"), pg.evaluate(SPOT, "strand-jutematta")
-        ok(pg.evaluate("document.getElementById('rmScale').textContent").startswith("Storleken är ungefärlig."), f"{tag} without a known length: Storleken är ungefärlig")
+        pg.evaluate("['lysa-keramiklampa', 'affisch-linje-ekram'].forEach((h) => RQ.room.add(h, true)); location.hash = '#mitt-rum'; RQ.router()"); pg.wait_for_timeout(1400); quiet(pg)
+        pr = pg.evaluate("RQ.room.scene().find((i) => i.h === 'affisch-linje-ekram')")
+        ok(pr.get("real") and abs(pr["w"] - 70 * 0.17 / 1.3) < 0.15, f"{tag} sample room: the print is at true scale from the room's own scale: {pr['w']}")
+        ok(pg.evaluate("document.getElementById('rmScale').textContent").startswith("I exempelrummet visas produkter med mått i rätt skala.") and not pg.evaluate("document.querySelector('[data-measure]')"), f"{tag} and no length to draw in a sample room, said plainly")
         pg.evaluate("document.querySelector('[data-pick=lysa-keramiklampa]').click()"); pg.wait_for_timeout(300)
         ok(pg.evaluate("document.getElementById('rmReal').textContent") == "Storleken är ungefärlig.", f"{tag} a product without measurements says its size is approximate")
+        # your own photo: approximate until you draw a known length
+        pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email'); RQ.room.openSetup()"); pg.wait_for_timeout(300)
+        put(pg, "rum.jpg", OWN.getvalue()); pg.wait_for_timeout(2200); quiet(pg)
+        pg.evaluate("RQ.room.saveScene([{ h: 'lysa-keramiklampa', x: 70, y: 70, w: 8, flip: false, light: 100 }, { h: 'strand-jutematta', x: 45, y: 96, w: 50, sy: 0.42, flip: false, light: 100 }, { h: 'affisch-linje-ekram', x: 30, y: 45, w: 9, on: 'vagg', flip: false, light: 100 }])"); pg.wait_for_timeout(400)
+        lamp0, rug0 = pg.evaluate(SPOT, "lysa-keramiklampa"), pg.evaluate(SPOT, "strand-jutematta")
+        ok(pg.evaluate("document.getElementById('rmScale').textContent").startswith("Storleken är ungefärlig."), f"{tag} own photo without a known length: Storleken är ungefärlig")
         pg.evaluate("document.querySelector('[data-pick=affisch-linje-ekram]').click()"); pg.wait_for_timeout(300)
         ok(pg.evaluate("document.getElementById('rmReal').textContent") == "50 × 70 cm. Visa i rätt skala", f"{tag} a print shows its stated 50 × 70 cm and offers true scale")
         pg.evaluate("document.querySelector('#rmScale [data-measure]').click()"); pg.wait_for_timeout(600)
         ok(pg.evaluate("!document.getElementById('rmRuler').hidden && !document.getElementById('rmMeasure').hidden && document.getElementById('rmStage').classList.contains('measuring')"), f"{tag} Känd längd i bilden: a line to drag and a length to type")
         ok(pg.evaluate("document.getElementById('rmLen').value") == "200" and "dörr" in pg.evaluate("document.getElementById('rmRHint').textContent"), f"{tag} a door, about 200 cm, is the suggested example")
         cv = pg.evaluate("(() => { const r = document.getElementById('rmCanvas').getBoundingClientRect(), s = document.getElementById('rmStage').getBoundingClientRect(); return [r.left, r.top, r.width, r.height, s.left, s.width]; })()")
-        x = max(cv[4] + 40, min(cv[4] + cv[5] - 40, cv[0] + cv[2] * 0.4)); ya, yb = cv[1] + cv[3] * 0.3, cv[1] + cv[3] * 0.82
+        h1 = pg.evaluate("(() => { const r = document.querySelector('.rm-rh').getBoundingClientRect(); return r.left + r.width / 2; })()")
+        x = max(cv[4] + 40, min(cv[4] + cv[5] - 40, cv[0] + cv[2] * 0.4)); x = x if abs(x - h1) > 60 else h1 + 90  # not on the first line's handle
+        ya, yb = cv[1] + cv[3] * 0.3, cv[1] + cv[3] * 0.82
         if mob:
             touch(cdp, "touchStart", [(x, ya)]); pg.wait_for_timeout(40)
-            for i in range(1, 9):
-                touch(cdp, "touchMove", [(x, ya + (yb - ya) * i / 8)]); pg.wait_for_timeout(16)
+            for k in range(1, 9):
+                touch(cdp, "touchMove", [(x, ya + (yb - ya) * k / 8)]); pg.wait_for_timeout(16)
             touch(cdp, "touchEnd", []); pg.wait_for_timeout(200)
         else:
             pg.mouse.move(x, ya); pg.mouse.down(); pg.mouse.move(x, yb, steps=8); pg.mouse.up(); pg.wait_for_timeout(200)
         m = pg.evaluate("(() => { const l = document.querySelector('#rmRuler line'); return ['x1','y1','x2','y2'].map((k) => +l.getAttribute(k)); })()")
         ok(abs(m[1] - 30) < 1 and abs(m[3] - 82) < 1 and abs(m[0] - m[2]) < 0.5, f"{tag} the line follows the {'finger' if mob else 'mouse'}: {m}")
         pg.fill("#rmLen", "200"); pg.click("#rmMDone"); pg.wait_for_timeout(700)
-        K = pg.evaluate("RQ.room.get().known"); sc = {it["h"]: it for it in pg.evaluate("RQ.room.scene()")}
-        k0 = ((K["x2"] - K["x1"]) ** 2 + ((K["y2"] - K["y1"]) * 893 / 1600) ** 2) ** 0.5 / 200
+        K = pg.evaluate("RQ.room.get().known") or {"x1": 0, "x2": 0, "y1": 0, "y2": 1, "cm": 0}; sc = {it["h"]: it for it in pg.evaluate("RQ.room.scene()")}
+        ar = pg.evaluate("RQ.room.get().h / RQ.room.get().w")
+        k0 = ((K["x2"] - K["x1"]) ** 2 + ((K["y2"] - K["y1"]) * ar) ** 2) ** 0.5 / 200
         ok(K and K["cm"] == 200 and abs(K["y2"] - 82) < 1, f"{tag} the length is kept with the photo: {K}")
         ok(sc["affisch-linje-ekram"].get("real") and abs(sc["affisch-linje-ekram"]["w"] - 70 * k0 / 1.3) < 0.15, f"{tag} the print is drawn at 70 cm high on the wall at the line's scale: {sc['affisch-linje-ekram']['w']} vs {70 * k0 / 1.3:.2f}")
-        hz, d0 = 58, K["y2"] - 58
+        hz, d0 = 48, K["y2"] - 48
         ok(sc["strand-jutematta"].get("real") and abs(sc["strand-jutematta"]["w"] - min(96, 230 * k0 * max(0.3, min(3, (rug0[1] - hz) / d0)))) < 0.15, f"{tag} the rug, 230 cm across, with perspective at its place: {sc['strand-jutematta']['w']}")
         ok(not sc["lysa-keramiklampa"].get("real") and pg.evaluate(SPOT, "lysa-keramiklampa") == lamp0, f"{tag} a product without measurements keeps its approximate size")
         ok("rätt skala" in pg.evaluate("document.getElementById('rmScale').textContent") and "200 cm" in pg.evaluate("document.getElementById('rmScale').textContent"), f"{tag} the caption says which sizes are true and which approximate")
-        ok("i rätt skala" in pg.evaluate("document.querySelector('.toast.show') ? document.querySelector('.toast.show').innerText : ''"), f"{tag} and a toast names what is now at true scale")
-        # perspective: the rug moved further away gets smaller, in proportion to its distance below the horizon; the print on the wall does not
+        tt = pg.evaluate("document.querySelector('.toast.show') ? document.querySelector('.toast.show').innerText : ''")
+        ok("i rätt skala" in tt and len(tt) < 60, f"{tag} and a short toast says how many are now at true scale: {tt!r}")
         pg.evaluate("RQ.room.update('strand-jutematta', { y: 80 }); RQ.room.update('affisch-linje-ekram', { y: 40 })"); pg.wait_for_timeout(300)
         rw, pw = pg.evaluate(SPOT, "strand-jutematta")[2], pg.evaluate(SPOT, "affisch-linje-ekram")[2]
         ok(abs(rw - 230 * k0 * (80 - hz) / d0) < 0.15 and rw < sc["strand-jutematta"]["w"], f"{tag} further back on the floor, smaller: {rw}")
         ok(abs(pw - sc["affisch-linje-ekram"]["w"]) < 0.05, f"{tag} higher on the wall, the same size: {pw}")
-        # selected: the floor it covers, dashed, and its measurements
         pg.evaluate("document.querySelector('[data-pick=strand-jutematta]').click()"); pg.wait_for_timeout(400)
         pts = pg.evaluate("document.querySelector('#rmArea polygon').getAttribute('points')").split()
         ok(len(pts) == 4 and pg.evaluate("!document.getElementById('rmAreaLab').hidden && document.getElementById('rmAreaLab').textContent") == "160 × 230 cm", f"{tag} the rug's floor area is outlined with its measurements: {pts}")
         ok(pg.evaluate("getComputedStyle(document.querySelector('#rmArea polygon')).strokeDasharray") not in ("none", ""), f"{tag} dashed")
-        # a size of your own leaves true scale, and one tap brings it back
         tw = pg.evaluate(SPOT, "strand-jutematta")[2]
-        pg.evaluate("document.querySelector('[data-act=smaller]').click()" if mob else "document.querySelector('[data-act=smaller]').click()"); pg.wait_for_timeout(300)
+        pg.evaluate("document.querySelector('[data-act=smaller]').click()"); pg.wait_for_timeout(300)
         ok(not pg.evaluate("RQ.room.scene().find((i) => i.h === 'strand-jutematta').real") and "Rätt storlek" in pg.evaluate("document.getElementById('rmReal').textContent"), f"{tag} made smaller by hand: no longer said to be true scale, Rätt storlek offered")
         ok(pg.evaluate("document.getElementById('rmAreaLab').hidden"), f"{tag} and the measurements are not shown on it")
         pg.evaluate("document.querySelector('#rmReal [data-real]').click()"); pg.wait_for_timeout(300)
         ok(abs(pg.evaluate(SPOT, "strand-jutematta")[2] - tw) < 0.05, f"{tag} Rätt storlek brings the true size back")
-        # a measured product put in afterwards starts at true scale
-        pg.evaluate("RQ.room.add('affisch-horisont-ekram', true)"); pg.wait_for_timeout(300)
-        it = pg.evaluate("RQ.room.scene().find((i) => i.h === 'affisch-horisont-ekram')")
-        ok(it.get("real") and abs(it["w"] - 70 * k0 / 1.3) < 0.15, f"{tag} a print put in afterwards is at true scale at once: {it['w']}")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         if W == 1440:
-            # it is remembered with the photo; the keys move the line's ends; Escape leaves; Ta bort brings approximate sizes back
             pg.reload(); pg.wait_for_timeout(1200)
             ok(pg.evaluate("RQ.room.get().known.cm") == 200 and pg.evaluate("RQ.room.scene().find((i) => i.h === 'strand-jutematta').real"), f"{tag} the length and the true scale stay after a reload")
             pg.focus("#rmMore"); pg.keyboard.press("Enter"); pg.wait_for_timeout(200)
@@ -331,9 +337,12 @@ with sync_playwright() as p:
         lanes = pg.evaluate("[...document.querySelectorAll('.rm-item.land')].map((e) => [parseFloat(e.style.left), +getComputedStyle(e).getPropertyValue('--i')]).sort((a, b) => a[1] - b[1]).map((x) => x[0])")
         ok(len(lanes) >= 3 and lanes == sorted(lanes), f"{tag} Inred åt mig: the things land one after the other from left to right: {lanes}")
         if mob:
-            a0 = pg.evaluate("document.getElementById('rmCanvas').getBoundingClientRect().left"); pg.wait_for_timeout(2600)
+            a0 = pg.evaluate("document.getElementById('rmCanvas').getBoundingClientRect().left"); pg.wait_for_timeout(1500)
             a1 = pg.evaluate("document.getElementById('rmCanvas').getBoundingClientRect().left")
             ok(a1 < a0 - 100, f"{tag} and the camera glides across the room after them: {round(a0)} -> {round(a1)}")
+            pg.wait_for_timeout(1800)
+            wv = pg.evaluate("[document.getElementById('rmCanvas').getBoundingClientRect().width, document.getElementById('rmStage').getBoundingClientRect().width]")
+            ok(wv[0] <= wv[1] + 1, f"{tag} and ends on the whole room (review minor 9): {wv}")
         else:
             pg.wait_for_timeout(1500)
         ok(pg.evaluate("!document.getElementById('rmFirst').hidden && /hemma hos dig/.test(document.getElementById('rmFirst').textContent)") and not pg.evaluate("document.querySelector('.toast.show')"), f"{tag} the first time, one warm line on the room and no toast beside it")
@@ -346,6 +355,78 @@ with sync_playwright() as p:
             ok(dl.value.suggested_filename == "mitt-rum-fore-efter.jpg" and im.size == (1200, 2 * 670 + 16), f"{tag} Visa någon: a before and after picture to show someone: {dl.value.suggested_filename} {im.size}")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
+
+    # ------------------------------------------------------------ review round: own photo without floating things, the empty page, the cookie strip, messages
+    from PIL import Image
+    KOK = io.BytesIO(); Image.open(ROOT / "assets/img/rum/kok-1600.webp").convert("RGB").save(KOK, "JPEG", quality=85)
+    for W, Hh, mob in ((390, 844, True), (360, 740, True), (1440, 900, False), (1280, 720, False)):
+        tag = f"[review {W}]"
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c)
+        # M3: signed out, the empty Mitt rum's main button is the free sample room, high and above the dock; no way out of Studio in its picture
+        pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(1300)
+        btns = pg.evaluate("[...document.querySelectorAll('.rm-empty-acts .btn')].map((b) => [b.textContent.trim(), b.classList.contains('ghost'), b.getBoundingClientRect().bottom])")
+        dock = pg.evaluate("(() => { const d = document.querySelector('.dock'); const r = d && d.getBoundingClientRect(); return r && r.height && getComputedStyle(d).visibility !== 'hidden' ? r.top : innerHeight; })()")
+        ok(btns[0][0] == "Prova med ett exempelrum" and not btns[0][1] and btns[1][0] == "Lägg in ditt rum" and btns[1][1], f"{tag} signed out: Prova med ett exempelrum is the main button, Lägg in ditt rum the second: {btns}")
+        ok(btns[0][2] <= dock, f"{tag} and it is on the first screen, above the dock: {round(btns[0][2])} <= {round(dock)}")
+        ok(not pg.evaluate("[...document.querySelectorAll('.rm-empty .rh-card a')].length"), f"{tag} the picture on the empty page has no Till butiken")
+        # M4: the cookie choice is a slim strip under the header that never covers the room's tools
+        ck = pg.evaluate("(() => { const c = document.getElementById('cookie'); const r = c.getBoundingClientRect(); return [c.classList.contains('show'), r.top, r.bottom, getComputedStyle(c).position]; })()")
+        ok(ck[0] and ck[3] == "absolute" and ck[2] - ck[1] <= (110 if mob else 70), f"{tag} the cookie choice is a strip under the header: {ck}")
+        pg.evaluate(SAMPLE, "vardagsrum"); pg.evaluate("location.hash = '#mitt-rum'; RQ.router()"); pg.wait_for_timeout(1200)
+        tools = pg.evaluate("(() => { const r = document.querySelector('.rm-tools').getBoundingClientRect(); return [r.top, r.bottom]; })()"); ckr = pg.evaluate("(() => { const r = document.getElementById('cookie').getBoundingClientRect(); return [r.top, r.bottom]; })()")
+        ok(ckr[1] <= pg.evaluate("document.getElementById('rmStage').getBoundingClientRect().top") + 1 and (tools[1] < ckr[0] or tools[0] > ckr[1]), f"{tag} and it covers neither the room nor its tools: strip {ckr}, tools {tools}")
+        # M1: your own photo: what came from the sample room stands in a row on the floor, in view, and the room says what to do
+        pg.evaluate("['lysa-keramiklampa', 'flatad-forvaringskorg', 'affisch-horisont-ekram', 'dagsljus-linnegardin-2-pack'].forEach((h) => RQ.room.add(h, true)); RQ.shop.signIn('test@example.com', 'Test', 'email'); RQ.room.openSetup()"); pg.wait_for_timeout(400)
+        put(pg, "kok.jpg", KOK.getvalue()); pg.wait_for_timeout(2600)
+        sc = {it["h"]: it for it in pg.evaluate("RQ.room.scene()")}
+        rows = [sc[h] for h in ("lysa-keramiklampa", "flatad-forvaringskorg", "affisch-horisont-ekram")]
+        ok(all(r.get("row") and r.get("on") == "golv" and r["y"] >= 84 for r in rows), f"{tag} own photo: the things stand in a row on the floor, said to stand on golv: {[(r['x'], r['y']) for r in rows]}")
+        ys = sorted(r["y"] for r in rows if r["y"] == 93); xs = sorted((r["x"] - r["w"] / 2, r["x"] + r["w"] / 2) for r in rows if r["y"] == 93)
+        ok(all(a[1] <= b[0] for a, b in zip(xs, xs[1:])), f"{tag} a tidy row: none in front of another: {xs}")
+        ok(sc["dagsljus-linnegardin-2-pack"]["x"] >= 80, f"{tag} the curtain hangs at the side: {sc['dagsljus-linnegardin-2-pack']['x']}")
+        ok(pg.evaluate("!document.getElementById('rmFirst').hidden && document.getElementById('rmFirst').textContent") == "Dra sakerna dit du vill ha dem.", f"{tag} with one line: Dra sakerna dit du vill ha dem")
+        vis = pg.evaluate("(() => { const s = document.getElementById('rmStage').getBoundingClientRect(); return [...document.querySelectorAll('.rm-item')].every((e) => { const r = e.getBoundingClientRect(); return r.left >= s.left - 2 && r.right <= s.right + 2; }); })()")
+        ok(vis, f"{tag} and the whole room is shown, so every one of them is in view")
+        # dragged out of the row: it stands where you put it, its own kind again
+        pg.evaluate("RQ.room.update('lysa-keramiklampa', { x: 60, y: 60, row: undefined, on: undefined })"); pg.wait_for_timeout(300)
+        ok(pg.evaluate("RQ.room.scene().find((i) => i.h === 'lysa-keramiklampa').on") is None, f"{tag} out of the row it is no longer said to stand on the floor")
+        # minor 4 + 5: Inred åt mig on an own photo without a room type asks first, then suggests; one message at a time
+        pg.evaluate("RQ.room.saveScene([])"); pg.wait_for_timeout(300); quiet(pg)
+        ok(pg.evaluate("document.getElementById('rmSuggest0').hidden && !!document.querySelector('#rmHint .rm-hintask')"), f"{tag} the empty own photo asks which room it is before offering Inred åt mig")
+        pg.click("#rmSuggest"); pg.wait_for_timeout(500)
+        ok(pg.evaluate("RQ.room.scene().length") == 0 and pg.evaluate("!!document.querySelector('.ask-now')"), f"{tag} Inred åt mig waits for the room type and points at the question")
+        pg.click("#rmHint [data-roomtype=kok]"); pg.wait_for_timeout(1800)
+        ok(pg.evaluate("RQ.room.get().type") == "kok" and pg.evaluate("RQ.room.scene().length") >= 2, f"{tag} choosing Kök runs the suggestions at once")
+        ok(not pg.evaluate("document.querySelector('.toast.show')") and pg.evaluate("document.getElementById('rmFirst').textContent") == "Dra sakerna dit du vill ha dem.", f"{tag} one message only, on the room")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
+        c.close()
+    # minor 3: a sample room is called an example room; polish 1: no grey box behind the selected thing; polish 6: the curtain reaches above the picture; polish 7: Shift+arrow moves 5 %
+    c = ctx_for(b, 1440, 900, False); pg = new_page(c)
+    pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(900); pg.click("#view [data-room-sample-now]"); pg.wait_for_timeout(1800)
+    ok("Klart. Här är exempelrummet." in pg.evaluate("[...document.querySelectorAll('.toast.show')].map((t) => t.innerText).join(' ')"), "[review] a sample room is called the example room")
+    pg.evaluate("RQ.room.add('dagsljus-linnegardin-2-pack', true); RQ.room.add('lysa-keramiklampa', true)"); pg.wait_for_timeout(400)
+    top = pg.evaluate("(() => { const e = document.querySelector('.rm-item[data-h=dagsljus-linnegardin-2-pack]').getBoundingClientRect(), s = document.getElementById('rmStage').getBoundingClientRect(); return e.top - s.top; })()")
+    ok(top < 0, f"[review] the sample living room's curtain reaches above the picture (no hard top edge): {round(top)}")
+    pg.evaluate("document.querySelector('[data-pick=lysa-keramiklampa]').click()"); pg.wait_for_timeout(300)
+    ok(pg.evaluate("getComputedStyle(document.querySelector('.rm-item.sel')).boxShadow") == "none", "[review] the selected thing has no grey box behind it")
+    x0 = pg.evaluate(SPOT, "lysa-keramiklampa")[0]; pg.focus(".rm-item[data-h=lysa-keramiklampa]"); pg.keyboard.press("Shift+ArrowLeft"); pg.wait_for_timeout(200)
+    ok(abs(pg.evaluate(SPOT, "lysa-keramiklampa")[0] - (x0 - 5)) < 0.01, "[review] Shift+arrow moves 5 %")
+    c.close()
+    # minor 6 + 7: back from signing in, one message and the next step glows; the account page says you come back; Google and the like on the gate when the sign-in server is live
+    c = ctx_for(b, 390, 844, True); pg = new_page(c)
+    pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(800); pg.click("#view [data-room-setup]"); pg.wait_for_timeout(400)
+    pg.evaluate("document.querySelector('.roomsheet .sheet-acts label.cam').click()"); pg.wait_for_timeout(400)
+    pg.tap(".roomsheet.open [data-room-gate]:first-child"); pg.wait_for_timeout(900)
+    ok("tillbaka till ditt rum" in pg.evaluate("document.getElementById('view').innerText"), "[review] the sign-in page says you come back to your room")
+    sign_in_on_page(pg)
+    ok(not pg.evaluate("document.querySelector('.toast.show')") and "inloggad" in pg.evaluate("document.querySelector('.sheet-hello').textContent"), "[review] back from signing in: the sheet says it, no toast on top")
+    ok(pg.evaluate("!!document.querySelector('.roomsheet .sheet-acts .btn.nudge')"), "[review] and Ta en bild glows once")
+    pg.evaluate("RQ.room.closeSetup(); RQ.shop.signOut(); RQ.auth.start = () => Promise.resolve(); RQ.auth.mode = 'supabase'; RQ.auth.socials = ['google', 'apple', 'azure']; window.__sso = []; RQ.auth.social = (p) => { window.__sso.push(p); return new Promise(() => {}); }; 1")
+    pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300); pg.evaluate("document.querySelector('.roomsheet .sheet-acts label.cam').click()"); pg.wait_for_timeout(400)
+    ok(pg.evaluate("[...document.querySelectorAll('.roomsheet .sheet-sso [data-sso]')].map((b) => b.textContent.trim())") == ["Fortsätt med Google", "Fortsätt med Apple", "Fortsätt med Microsoft"] and pg.evaluate("!document.querySelector('.roomsheet .sheet-sso').hidden"), "[review] with the sign-in server live, Google, Apple and Microsoft are on the gate (minor 7)")
+    pg.tap(".roomsheet .sheet-sso [data-sso=google]"); pg.wait_for_timeout(300)
+    ok(pg.evaluate("window.__sso") == ["google"] and json.loads(pg.evaluate("sessionStorage.getItem('rumiq-room-gate')"))["route"] == "mitt-rum", "[review] one tap starts Google, with the step kept for the way back")
+    c.close()
 
     b.close()
 

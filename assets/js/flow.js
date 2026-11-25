@@ -181,7 +181,7 @@
           <button class="btn" type="button" id="shAdd" data-add="${p.handle}::${ask ? "" : 0}">Lägg i varukorgen</button>
           <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${ICO.heart}</button>
         </div>
-        <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i Mitt rum</span></button>
+        <a class="btn ghost block sh-room" href="#mitt-rum-${p.handle}">${RQ.roomIco}<span>Prova i Mitt rum</span></a>
         ${RQ.delivery.html(p)}
         <a class="sh-more" href="#produkt-${p.handle}">Se hela produkten ${ICO.arrow}</a>
       </div>`;

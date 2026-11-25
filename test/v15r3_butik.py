@@ -108,17 +108,13 @@ with sync_playwright() as p:
             pg.evaluate(SAMPLE, "vardagsrum")
             pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(200)
             got = pg.evaluate(FIRST_SLIDE)
-            ok(got[0] == 4 and got[1] == 0, f"{tag} with a room the lamp has four pictures and opens on the first: {got}")
-            # M6: the shop's room switch has visible words; when on, every card shows the room first
+            ok(got[0] == 3 and got[1] == 0, f"{tag} with a room the lamp still has its own three pictures (no room picture: founder's decision) and opens on the first: {got}")
+            # founder's decision (studio round): the shop has no room switch any more; the cards show the product, the sort menu keeps its words
             pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(250)
-            t = pg.evaluate("""() => { const t = document.querySelector('#view .roomtoggle'), vis = [...t.querySelectorAll('.rt-t, .rt-s')].filter((e) => e.offsetWidth > 2 && getComputedStyle(e).position !== 'absolute');
-              const tb = document.querySelector('#view .toolbar').getBoundingClientRect(), s = document.getElementById('sort');
-              return [vis.map((e) => e.textContent).join(''), t.getAttribute('aria-pressed'), Math.round(tb.height), s.scrollWidth <= s.clientWidth + 1 || s.clientWidth > 90, Math.round(s.getBoundingClientRect().width)]; }""")
-            ok(t[0] in ("I mitt rum", "Visa i Mitt rum") and t[1] == "true" and t[2] < 60, f"{tag} the room switch says what it does and is on: {t}")
-            ok(t[3] and t[4] <= 260, f"{tag} the sort menu shows its words and keeps a sensible width: {t[4]} px")
-            # (r4: a product that does not belong in the room's type keeps its own photo, so only the cards that suit the room are checked)
-            room1 = pg.evaluate("""() => [...document.querySelectorAll('#results .card.in-room')].slice(0, 4).map((c) => { const ph = c.querySelector('.ph').getBoundingClientRect(), r = c.querySelector('.hov.inroom'), q = r.getBoundingClientRect(); return Math.abs(q.left - ph.left) < 2 && getComputedStyle(r).opacity === '1'; })""")
-            ok(room1 and all(room1), f"{tag} with the switch on, the cards show the room first: {room1}")
+            t = pg.evaluate("""() => { const tb = document.querySelector('#view .toolbar').getBoundingClientRect(), s = document.getElementById('sort');
+              return [!document.querySelector('#view .roomtoggle, [data-room-mode]'), Math.round(tb.height), s.scrollWidth <= s.clientWidth + 1 || s.clientWidth > 90, Math.round(s.getBoundingClientRect().width), !document.querySelector('#results .card.in-room')]; }""")
+            ok(t[0] and t[1] < 60 and t[4], f"{tag} no room switch in the shop, and the cards show the product: {t}")
+            ok(t[2] and t[3] <= 260, f"{tag} the sort menu shows its words and keeps a sensible width: {t[3]} px")
             # M18 + D22: a phone card's photo has heart and Lägg till only; elsewhere the four buttons tab in reading order
             btns = pg.evaluate("[...document.querySelector('#results .card').querySelectorAll('button')].filter((b) => b.offsetParent).map((b) => b.className.replace('iconbtn ', ''))")
             if W <= 640:
@@ -140,14 +136,15 @@ with sync_playwright() as p:
             names = pg.evaluate("[...document.querySelectorAll('#searchRes [data-room-tone]')].map((e) => e.dataset.toneName)")
             ok(len(names) == 5 and len(set(names)) == 5 and not any("Rumsfärg" in x for x in names), f"{tag} the room's colours have names: {names}")
             pg.keyboard.type("lampa"); pg.wait_for_timeout(500)
-            m = pg.evaluate("[...document.querySelectorAll('#searchRes .card .fm')].map((e) => parseInt(e.textContent))")
-            ok(len(m) >= 3 and m == sorted(m, reverse=True), f"{tag} lamps sorted by colour match: {m}")
+            # (founder's decision, studio round: search keeps its own order, not the room's colour match)
+            m = pg.evaluate("[document.querySelectorAll('#searchRes .card .fm').length, (document.querySelector('#searchRes .card a[href*=produkt-]') || {}).getAttribute ? document.querySelector('#searchRes .card a[href*=produkt-]').getAttribute('href').split('produkt-')[1] : '']")
+            ok(m[0] == 0 and m[1], f"{tag} lamps in the search's own order, without a colour match: {m}")
             fine = W >= 1280
             ok(pg.evaluate("document.querySelectorAll('#searchRes .s-pick').length") == (1 if fine else 0), f"{tag} the hit Enter opens is marked (mouse and keyboard only)")
             pg.keyboard.press("Enter"); pg.wait_for_timeout(600)
             got = pg.evaluate("[location.pathname, document.getElementById('search').classList.contains('open')]")
             if fine:
-                ok(got[0].endswith("/produkt-lysa-keramiklampa/") and not got[1], f"{tag} Enter opens the first hit: {got}")
+                ok(got[0].endswith("/produkt-" + m[1].strip("/") + "/") and not got[1], f"{tag} Enter opens the first hit: {got}")
                 pg.evaluate("RQ.openSearch()"); pg.wait_for_timeout(400)
             else:
                 ok(got[1] and pg.evaluate("document.activeElement.id") != "searchInput", f"{tag} on a touch screen Enter puts the keyboard away and keeps the hits: {got}")

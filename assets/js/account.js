@@ -29,6 +29,7 @@
             ${down ? `<div class="auth-down" role="status"><h2 class="h3">Inloggningen går inte att nå just nu</h2><p>Det beror inte på dig. Försök igen om en stund. Du kan handla som gäst under tiden, och det du har sparat i den här webbläsaren ligger kvar.</p><div class="ctrl-row"><button class="btn" type="button" id="authRetry">Försök igen</button><a class="btn ghost" href="#butik">Till butiken</a></div></div>` : ""}
             <div id="authMain"${down ? " hidden" : ""}>
               ${demoNote()}
+              ${RQ.ss && RQ.ss.get("rumiq-room-gate") ? `<p class="note" style="margin:0 0 1.2rem">När du har loggat in kommer du tillbaka till ditt rum, med allt du hade valt.</p>` : ""}
               <div class="sso-list">${RQ.socialButtons(signup ? "Skapa konto" : "Fortsätt")}</div>
               <div class="or"><span>eller med e-post</span></div>
               <form id="codeForm" novalidate>

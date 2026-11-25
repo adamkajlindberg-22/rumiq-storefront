@@ -48,7 +48,7 @@
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
             <div class="band settle"><h1>Rätt saker.<br>Ett lugnare hem.</h1><p class="sub">Noga utvald belysning, textil och förvaring, och verktyg som låter dig se allt i ditt eget rum innan du köper.</p>
-              <div class="row">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a>` : `<button class="btn" type="button" data-room-setup="#butik">Se butiken i ditt rum</button>`}<a class="btn ghost" href="#butik">Upptäck butiken</a></div></div>
+              <div class="row">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a>` : `<a class="btn" href="#mitt-rum">Prova i Mitt rum</a>`}<a class="btn ghost" href="#butik">Upptäck butiken</a></div></div>
           </div>
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>
         </div>
@@ -71,10 +71,10 @@
       <section class="sec roomhero" id="ditt-rum">
         <div class="wrap rh">
           <div class="rh-copy">
-            <h2 class="display">Hela butiken i ditt rum.</h2>
-            <p class="lead">Ta en bild av ditt rum en gång. Sedan står varje produkt du tittar på i just ditt rum, i ditt eget ljus. Ställ in det du gillar, se vad hela rummet kostar och handla allt med en knapp.</p>
-            <ol class="rh-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Bläddra i ditt rum</b><span>Butiken visar varje produkt hemma hos dig.</span></li><li><b>Handla looken</b><span>Allt du ställt in hamnar i varukorgen på en gång.</span></li></ol>
-            <div class="ctrl-row" style="margin-top:2rem">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a><a class="btn ghost" href="#butik">Butiken i ditt rum</a>` : `<button class="btn" type="button" data-room-setup="#butik">Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#butik">Prova med ett exempelrum</button>`}</div>
+            <h2 class="display">Prova produkterna i ditt rum.</h2>
+            <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Ställ in det du gillar, se vad hela rummet kostar och handla allt med en knapp.</p>
+            <ol class="rh-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Ställ in produkter</b><span>Från butiken, eller låt oss föreslå.</span></li><li><b>Handla looken</b><span>Allt du ställt in hamnar i varukorgen på en gång.</span></li></ol>
+            <div class="ctrl-row" style="margin-top:2rem">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a><a class="btn ghost" href="#butik">Till butiken</a>` : `<button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup="#mitt-rum">Lägg in ditt rum</button>`}</div>
             <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
           </div>
           ${demoFig()}
@@ -99,7 +99,7 @@
   };
 
   /* the "whole shop in your room" demo: the customer's own room and scene if they have one, otherwise a sample */
-  function demoFig() {
+  function demoFig(o) { // o.bare: without the card's button (Mitt rum's empty page keeps you in Studio)
     const R = RQ.room, mine = R.has() && R.scene().length;
     /* sample: a real photo pair (same room before and after), with small product tags in the "after" half. Before is on the
        left and after on the right, so the pair is shown mirrored: the things stand on the right (x below is in the mirrored photo) */
@@ -116,7 +116,7 @@
     return `<figure class="rh-fig bav" style="--ba:${start}%">${stage}
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
       <input class="ba-range" type="range" min="0" max="100" value="${start}" aria-label="Jämför rummet före och efter. Dra åt vänster för att visa fler produkter."></div>
-      <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total).replace(/ (?=kr$)/, "\u00a0")}</span></span><a class="btn sm" href="${mine ? "#mitt-rum" : "#butik"}">${mine ? "Fortsätt" : "Till butiken"}</a></figcaption></figure>`;
+      <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total).replace(/ (?=kr$)/, "\u00a0")}</span></span>${o && o.bare ? "" : `<a class="btn sm" href="${mine ? "#mitt-rum" : "#butik"}">${mine ? "Fortsätt" : "Till butiken"}</a>`}</figcaption></figure>`;
   }
 
   /* Why RumIQ: four reasons to trust a new shop, every figure read from RQ_CONFIG */

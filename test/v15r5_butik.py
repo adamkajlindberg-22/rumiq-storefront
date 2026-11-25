@@ -118,9 +118,9 @@ with sync_playwright() as p:
             if W in (390, 1440) and not evening:
                 # the lamp switch leaves with the first picture (phones: the gallery is a carousel)
                 pg.evaluate(SAMPLE, "vardagsrum"); pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(1300)
-                if mobile:
-                    pg.evaluate("document.querySelector('.inroomtile').scrollIntoView({inline:'start', block:'nearest'})"); pg.wait_for_timeout(700)
-                    ok(pg.evaluate("getComputedStyle(document.querySelector('#lightSw')).visibility") == "hidden", f"{tag} on the I ditt rum slide the lamp switch is away")
+                if mobile:  # (the I ditt rum slide is gone, founder's decision: the second picture stands in for it)
+                    pg.evaluate("document.querySelectorAll('#pgGrid .pg-item')[1].scrollIntoView({inline:'start', block:'nearest'})"); pg.wait_for_timeout(700)
+                    ok(pg.evaluate("getComputedStyle(document.querySelector('#lightSw')).visibility") == "hidden", f"{tag} on another slide the lamp switch is away")
                     pg.evaluate("document.querySelector('#pgGrid').scrollTo({left: 0})"); pg.wait_for_timeout(700)
                 ok(pg.evaluate("getComputedStyle(document.querySelector('#lightSw')).visibility") == "visible", f"{tag} on the first picture the lamp switch is there")
                 # Mitt rum with a room: the header cart is there too
@@ -245,10 +245,9 @@ with sync_playwright() as p:
         ok((dots == 0) if W < 620 else (dots > 0), f"{tag} demo dots: none on a phone, named on a large screen ({dots})")
         groups = pg.evaluate("(() => { const out = {}; let h = ''; [...document.querySelectorAll('#mnav > *')].forEach((e) => { if (e.tagName === 'H4') h = e.textContent; else e.querySelectorAll ? [...(e.matches('a') ? [e] : e.querySelectorAll('a'))].forEach((a) => (out[a.getAttribute('href')] = h)) : 0; }); return [out['for-dig/'], out['rum/']]; })()")
         ok(groups == ["Upptäck", "Butik"], f"{tag} the menu groups För dig and Handla efter rum as the dock does: {groups}")
-        pg.evaluate(SAMPLE, "vardagsrum"); pg.evaluate("RQ.room.setMode(true)")
-        pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(700)
-        fm = pg.evaluate("[...document.querySelectorAll('#results .card .fm')].map((e) => parseInt(e.textContent))")
-        ok(fm and min(fm) >= 60, f"{tag} % färgmatch only where it is 60 % or more: {fm}")
+        # (% färgmatch on the shop's cards is gone with the room mode, founder's decision: the cards show the product's colours)
+        pg.evaluate(SAMPLE, "vardagsrum"); pg.goto(BASE + "butik/", wait_until="load"); pg.wait_for_timeout(700)
+        ok(pg.evaluate("!document.querySelector('#results .card .fm') && !!document.querySelector('#results .card .sub')"), f"{tag} with a room the cards still show the product's colours, no colour match")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
         ctx.close()
     b.close()

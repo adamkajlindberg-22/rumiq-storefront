@@ -205,7 +205,7 @@ with sync_playwright() as p:
     ok(pg.evaluate("RQ.room.scene().find((x) => x.h === 'lysa-keramiklampa').x") < x0, "[mitt rum] the arrow buttons move the chosen thing (no dragging needed)")
     ok(pg.evaluate("document.querySelector('#rmHold').getAttribute('aria-label').startsWith(document.querySelector('#rmHold span').textContent)"), "[mitt rum] Håll för före is named by its visible words")
     go(pg, "butik", 700)
-    ok(pg.evaluate("(() => { const t = document.querySelector('.toolbar .roomtoggle'); return t.textContent.trim().length > 3 && getComputedStyle(t.querySelector('.rt-t')).display !== 'none'; })()"), "[butik 390] the room toggle keeps its name when its words are hidden")
+    ok(pg.evaluate("!document.querySelector('.toolbar .roomtoggle') && document.getElementById('sort').labels.length > 0"), "[butik 390] the toolbar has no room toggle any more (founder's decision); sort keeps its label")
     ctx.close()
 
     # ------------------------------------------------------------ headings and names

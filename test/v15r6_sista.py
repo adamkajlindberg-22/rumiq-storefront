@@ -208,17 +208,11 @@ with sync_playwright() as p:
     ok(e == ["In the cart", "To add"], f"[C4 en] English: {e}")
     ctx.close()
 
-    # ------------------------------------------------------------ C6: the jute rug fills the foot of its in-room card
-    for W, Hh, mob in SIZES:
-        for r in ("vardagsrum", "sovrum"):
-            ctx, pg, errs = new(b, mob, W, Hh)
-            room(pg, [], r)
-            go(pg, "butik", 800)
-            if pg.evaluate("document.querySelector('[data-room-mode]').getAttribute('aria-pressed')") != "true":
-                pg.evaluate("document.querySelector('[data-room-mode]').click()"); pg.wait_for_timeout(900)
-            g = pg.evaluate("(() => { const c = document.querySelector('a[href*=strand-jutematta]').closest('.card'), i = c.querySelector('.inr'), p = i && i.querySelector('.inr-p'); if (!p) return null; const o = i.getBoundingClientRect(), q = p.getBoundingClientRect(); return [Math.round((q.top - o.top) / o.height * 100), Math.round((q.bottom - o.top) / o.height * 100)]; })()")
-            ok(g and 38 <= g[0] <= 55 and g[1] >= 99, f"[C6 {W} {r}] the rug starts near the middle of the card and runs out at its foot: {g}")
-            ctx.close()
+    # ------------------------------------------------------------ C6 (in-room cards) removed: the founder took the room mode out of the shop (studio round);
+    # the rug's card shows its own photo. One check that it does, with a room:
+    ctx, pg, errs = new(b, True, 390, 844); room(pg, [], "vardagsrum"); go(pg, "butik", 800)
+    ok(pg.evaluate("(() => { const c = document.querySelector('a[href*=strand-jutematta]').closest('.card'); return !c.querySelector('.inr') && /img\\/p\\//.test(c.querySelector('.ph img').src); })()"), "[C6] with a room, the rug's card shows its own photo")
+    ctx.close()
 
     # ------------------------------------------------------------ C7: the AI row says the cart's colour
     for W, Hh, mob in ((390, 844, True), (1440, 900, False)):
