@@ -1127,6 +1127,8 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 .sheet-acts .btn{flex:1;min-width:10rem}
 .sheet-acts svg{width:1.2rem;height:1.2rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .sheet-tip{margin-top:.7rem}
+/* a button that is a label around a hidden file input (Ta en bild, Välj en bild): the ring shows on the button */
+label.btn:has(> input.sr:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
 .sheet-samples{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;align-items:start}
 .sheet-err{margin-top:.9rem;padding:.7rem .9rem;border-radius:var(--r-s);background:color-mix(in srgb,var(--danger) 9%,var(--paper));border:1px solid color-mix(in srgb,var(--danger) 35%,transparent);color:var(--ink);font-weight:500;font-size:.95rem}
 .sheet-err[hidden]{display:none}
