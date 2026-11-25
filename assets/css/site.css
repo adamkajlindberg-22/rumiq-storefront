@@ -1956,6 +1956,8 @@ body.on-checkout .tools{grid-column:3}
   .sv-legend span{color:var(--muted);font-size:.92rem}
   .svep:not(:has(.svep-result)) .sv-after{display:block;color:var(--muted);margin-top:.9rem}
 }
+/* the key hints only where there is a keyboard and a mouse, not on touch tablets */
+@media (hover:none),(pointer:coarse){.sv-keys,.sv-legend li.sv-tip{display:none}}
 
 /* ---------------------------------------------------------------- Svep v8: rooms, together, home taster, nudges */
 .sv-scope{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem}
