@@ -101,6 +101,10 @@ with sync_playwright() as p:
                 pg.goto(BASE + "produkt-" + prod + "/", wait_until="load"); pg.wait_for_timeout(200)
                 got = pg.evaluate(FIRST_SLIDE)
                 ok(got[1] == 0, f"{tag} {prod} opens on its first picture: {got}")
+            # D2: Passar ihop shows whole 4:5 pictures, not slivers
+            pg.evaluate("document.querySelector('#view .look').scrollIntoView({block:'center'})"); pg.wait_for_timeout(150)
+            rat = pg.evaluate("[...document.querySelectorAll('#view .look-item img')].map((i) => { const r = i.getBoundingClientRect(); return +(r.height / r.width).toFixed(2); })")
+            ok(rat and all(1.2 <= x <= 1.3 for x in rat), f"{tag} Passar ihop pictures are 4:5: {rat}")
             pg.evaluate(SAMPLE, "vardagsrum")
             pg.goto(BASE + "produkt-lysa-keramiklampa/", wait_until="load"); pg.wait_for_timeout(200)
             got = pg.evaluate(FIRST_SLIDE)
