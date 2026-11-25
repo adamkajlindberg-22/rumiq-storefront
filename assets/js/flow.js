@@ -573,12 +573,16 @@
     const figs = $$(".bav", root), offs = [];
     figs.forEach((fig) => {
       const r = $(".ba-range", fig); if (!r) return;
-      const set = (v) => fig.style.setProperty("--ba", v + "%");
+      // before on the left, after on the right; a label steps aside while the line passes over it
+      const st = $(".rh-stage", fig) || fig, lb = $(".ba-before", fig), la = $(".ba-now", fig), s0 = +r.value;
+      const set = (v) => { fig.style.setProperty("--ba", v + "%"); const x = v / 100 * st.clientWidth;
+        if (lb) lb.classList.toggle("off", x < lb.offsetLeft + lb.offsetWidth + 10); if (la) la.classList.toggle("off", x > la.offsetLeft - 10); };
+      set(s0);
       const onIn = () => { fig.classList.add("touched"); set(r.value); };
       r.addEventListener("input", onIn); offs.push(() => r.removeEventListener("input", onIn));
       if (!reduced() && "IntersectionObserver" in window) {
         const io = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io.disconnect(); if (fig.classList.contains("touched")) return;
-          let t0 = 0; const run = (t) => { if (fig.classList.contains("touched")) return; if (!t0) t0 = t; const k = Math.min(1, (t - t0) / 1600); const v = Math.round(58 - 38 * Math.sin(k * Math.PI)); r.value = v; set(v); if (k < 1) requestAnimationFrame(run); };
+          let t0 = 0; const run = (t) => { if (fig.classList.contains("touched")) return; if (!t0) t0 = t; const k = Math.min(1, (t - t0) / 1600); const v = Math.round(s0 + Math.min(48, 94 - s0) * Math.sin(k * Math.PI)); r.value = v; set(v); if (k < 1) requestAnimationFrame(run); };
           setTimeout(() => requestAnimationFrame(run), 400); }, { threshold: 0.6 });
         io.observe(fig); offs.push(() => io.disconnect());
       }

@@ -1801,14 +1801,16 @@ html.sheet-lock{overflow:hidden}
 
 /* before/after in "Hela butiken i ditt rum" */
 .bav .rh-stage{touch-action:pan-y}
-.ba-after{position:absolute;inset:0;clip-path:inset(0 calc(100% - var(--ba)) 0 0)}
+.ba-after{position:absolute;inset:0;clip-path:inset(0 0 0 var(--ba))} /* after is right of the line */
+.rh-flip{transform:scaleX(-1)}
 .ba-line{position:absolute;top:0;bottom:0;left:var(--ba);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 12px rgba(0,0,0,.25);pointer-events:none}
 .ba-line i{position:absolute;top:50%;left:50%;width:2.6rem;height:2.6rem;margin:-1.3rem 0 0 -1.3rem;border-radius:50%;background:#fff;box-shadow:var(--shadow)}
 .ba-line i::before,.ba-line i::after{content:"";position:absolute;top:50%;width:.45rem;height:.45rem;border:solid #22252A;border-width:0 0 2px 2px;margin-top:-.23rem}
 .ba-line i::before{left:.65rem;transform:rotate(45deg)}
 .ba-line i::after{right:.65rem;transform:rotate(-135deg)}
 .ba-tag{position:absolute;top:1rem;padding:.3rem .65rem;border-radius:99px;background:rgba(20,20,18,.55);color:#fff;font-size:.78rem;font-weight:560;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:none}
-.ba-before{right:1rem}.ba-now{left:1rem}
+.ba-before{left:1rem}.ba-now{right:1rem}
+.ba-tag{transition:opacity .2s}.ba-tag.off{opacity:0}
 .bav .ba-range{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;-webkit-appearance:none;appearance:none}
 .bav:has(.ba-range:focus-visible) .ba-line i{outline:3px solid var(--accent);outline-offset:3px}
 
@@ -1934,6 +1936,7 @@ body.on-checkout .tools{grid-column:3}
 .lk .pending,li .pending{color:#5a5c59}
 :root[data-light=kvall] .lk .pending,:root[data-light=kvall] li .pending{color:#3d3f3c}
 @media (max-width:900px){.bav .rh-card{position:static;margin-top:.7rem;box-shadow:none;border:1px solid var(--line)}}
+@media (min-width:901px){.bav .rh-card{left:1rem;right:auto}} /* over the before half, so the things on the right stay in view */
 
 .price.sale,.pprice.sale{color:var(--terra,#B8714A)}
 .low30{display:block;font-size:.78rem;color:var(--muted);margin-top:.15rem}
