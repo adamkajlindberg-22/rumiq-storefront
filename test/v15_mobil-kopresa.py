@@ -97,10 +97,15 @@ with sync_playwright() as p:
             ok(ev("document.querySelector('#searchRes .card .price').getBoundingClientRect().bottom") <= 480, f"{tag} search: with the keyboard up a whole first row (name and price) is visible")
             pg.set_viewport_size({"width": W, "height": Hh}); pg.wait_for_timeout(150)
         else:
-            pg.focus("#searchInput"); pg.keyboard.press("Enter"); pg.wait_for_timeout(120)
-            ok(ev("!!document.activeElement.closest('#searchRes .card')"), f"{tag} search: Enter steps into the hits")
+            # v15 r3 (desktop review D14): Enter opens the first hit, which is marked; the arrow keys still walk the hits
+            pg.focus("#searchInput"); pg.keyboard.press("ArrowDown"); pg.wait_for_timeout(120)
+            ok(ev("!!document.activeElement.closest('#searchRes .card')"), f"{tag} search: ArrowDown steps into the hits")
             pg.keyboard.press("ArrowDown"); a2 = ev("document.activeElement.textContent"); pg.keyboard.press("ArrowUp"); pg.keyboard.press("ArrowUp")
             ok(ev("document.activeElement.id") == "searchInput" and a2, f"{tag} search: arrow keys walk the hits and back to the field")
+            first = ev("document.querySelector('#searchRes .card.s-pick h3 a').getAttribute('href')")
+            pg.keyboard.press("Enter"); pg.wait_for_timeout(500)
+            ok(first and ev("location.pathname").endswith("/" + first.lstrip("#").rstrip("/") + "/") and not ev("document.getElementById('search').classList.contains('open')"), f"{tag} search: Enter opens the marked first hit")
+            pg.goto(BASE + "butik/"); pg.wait_for_timeout(500); tap(".searchbtn"); pg.wait_for_timeout(450)
 
         # ------------------------------------------------------------ layers and Back
         pg.go_back(); pg.wait_for_timeout(450)

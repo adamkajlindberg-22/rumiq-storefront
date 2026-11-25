@@ -74,7 +74,7 @@
         const py = y + th * fy, el = (document.elementsFromPoint(x + tw * fx, py) || []).find((e) => e !== t && !t.contains(e));
         if (!el || el.closest(".sheet-scrim")) continue;
         const need = el.closest(NEED);
-        if ((trig && (el === trig || trig.contains(el) || el.contains(trig))) || el.closest(FIELD) || (need && ((zone && zone.contains(el)) || (band && !panelEl && py > band[0] && py < band[1])))) n++; }
+        if ((trig && (el === trig || trig.contains(el))) || el.closest(FIELD) || (need && ((zone && zone.contains(el)) || (band && !panelEl && py > band[0] && py < band[1])))) n++; }
       return n; };
     let best = spots[0], bn = Infinity;
     for (const sp of spots) { if (sp[1] < 0 || sp[1] + th > H || sp[0] < 0) continue; const n = hits(sp); if (n < bn) { best = sp; bn = n; } if (!n) break; }
