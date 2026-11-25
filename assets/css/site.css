@@ -820,6 +820,7 @@ details.pw[open] summary::after{content:" −"}
 .stat:hover{border-color:var(--ink)}
 .stat b{font-weight:500;font-size:2.3rem;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
 .stat span{font-size:.88rem;color:var(--muted)}
+@media (max-width:640px){.stat{padding:.75rem .9rem;gap:.1rem}.stat b{font-size:1.7rem}} /* four counts take half a phone screen, not a whole one */
 .switch{display:flex;align-items:center;gap:.8rem;color:var(--ink);font-size:.98rem;cursor:pointer}
 .switch input{position:absolute;opacity:0;width:1px;height:1px}
 .switch span{flex:none;width:2.6rem;height:1.5rem;border-radius:999px;background:var(--field);position:relative;transition:background .3s}
@@ -1701,6 +1702,7 @@ html.sheet-lock{overflow:hidden}
 #view{overflow-x:clip} /* a card nudging sideways (svHintX) must never widen the page, not even for a moment */
 @keyframes svHint{0%,100%{transform:none}18%{transform:translateX(26px) rotate(3deg)}36%{transform:none}54%{transform:translateX(-26px) rotate(-3deg)}72%{transform:none}86%{transform:translateY(-22px)}}
 .svep-result{max-width:46rem}
+.svep-result > .lead{text-wrap:balance} /* no lone "med." on its own line */
 .sp-grid{display:grid;gap:1.4rem;width:100%;margin-top:.6rem;text-align:left}
 @media (min-width:760px){.sp-grid{grid-template-columns:1.4fr 1fr;align-items:start}}
 .sp-mix{display:grid;gap:.55rem}
