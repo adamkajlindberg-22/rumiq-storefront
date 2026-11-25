@@ -284,7 +284,7 @@
   let isOpen = false, ret = null, busy = false, last = null, pick = {}, chosen = null, pending = null;
   const open = () => { if (!isOpen) { ret = document.activeElement; RQ.closeAll && RQ.closeAll(); } isOpen = true; el.inert = false; el.classList.add("open"); el.setAttribute("aria-hidden", "false"); document.documentElement.classList.add("sheet-lock"); setTimeout(() => { const f = document.activeElement; if (!f || f === document.body || !box.contains(f)) box.focus({ preventScroll: true }); }, 30); }; // a control that was given focus on purpose keeps it (a version, a compare chip)
   const close = () => { if (busy) { AI.stop(); return; } isOpen = false; el.classList.remove("open"); el.setAttribute("aria-hidden", "true"); el.inert = true; document.documentElement.classList.remove("sheet-lock"); if (ret && ret.focus && document.contains(ret)) ret.focus({ preventScroll: true }); AI.hydrate(); };
-  const show = (html, narrow) => { body.innerHTML = html; el.classList.toggle("narrow", !!narrow); box.scrollTop = 0; open(); }; // narrow: a short message gets a dialog its own size
+  const show = (html, narrow, wide) => { body.innerHTML = html; el.classList.toggle("narrow", !!narrow); el.classList.toggle("wide", !!wide); box.scrollTop = 0; open(); }; // narrow: a short message gets a dialog its own size; wide: the picture as large as the window allows
   el.addEventListener("click", (e) => { if (e.target.closest("[data-ai-close]")) close(); });
   // the cart opens over the page, so the picture steps aside first (Visa varukorgen here, or Visa in the toast)
   document.addEventListener("click", (e) => { if (isOpen && !busy && e.target.closest && e.target.closest("[data-open-cart]")) close(); }, true);
@@ -366,7 +366,7 @@
     const items = scene.map((it) => ({ ...it, v: 0 }));
     const key = AI.projectKey(), rm = RQ.room.get();
     busy = true;
-    show(`<div class="ai-pad ai-wait"><div class="ai-spin" aria-hidden="true"></div><h2 id="aiTitle" class="ai-h">Skapar din bild…</h2><p class="ai-lead" role="status">Det brukar ta 15–40 sekunder. Ha sidan öppen så länge.</p><figure class="ai-fig shimmer"><img src="${before}" alt=""></figure><button class="btn ghost sm" type="button" id="aiStop">Avbryt</button></div>`);
+    show(`<div class="ai-pad ai-wait"><div class="ai-spin" aria-hidden="true"></div><h2 id="aiTitle" class="ai-h">Skapar din bild…</h2><p class="ai-lead" role="status">Det brukar ta 15–40 sekunder. Ha sidan öppen så länge.</p><figure class="ai-fig shimmer"><img src="${before}" alt=""></figure><button class="btn ghost sm" type="button" id="aiStop">Avbryt</button></div>`, false, true);
     $("#aiStop", body).addEventListener("click", () => AI.stop());
     // the server says its first picture failed the quality check and it makes one more (the customer pays for one)
     const onStage = (stage) => { if (stage !== "retry" || !busy) return; const h = $("#aiTitle", body), p = $(".ai-wait .ai-lead", body); box.classList.add("ai-retrying"); if (h) h.textContent = "Vi gör ett nytt försök…"; if (p) p.textContent = "Det första förslaget höll inte måttet, så vi gör om det. Det kostar ingen extra bild."; };
@@ -433,10 +433,10 @@
       <div class="ai-stage">${baHtml(v, other, fresh ? 100 : 30, many).replace("<figure ", '<figure id="aiBa" ')}${versHtml(list, view.cur, view.cmp)}</div>
       <div class="ai-pad"><span class="eyebrow">${v.demo ? "Förhandsvisning" : many ? `Version ${v.n} av ${list.length}` : "Klar"}</span><h2 id="aiTitle" class="ai-h">${v.demo ? "Så här fungerar det." : "Ditt rum, med sakerna på plats."}</h2>
         ${v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
-        <div class="ai-row"><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span>Visa någon</span></button></div>
+        <div class="ai-row ai-buybar"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Visa någon</span></button></div>
         ${productsList(items)}
         <div class="ai-row small-row"><button class="tlink" type="button" id="aiAgain">Skapa igen${v.demo ? "" : `<span class="ai-cost"> · 1 bild</span>`}</button><button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
-        ${savedLine(v)}</div></div>`);
+        ${savedLine(v)}</div></div>`, false, true);
     const fig = $("[data-ba]", body), ctl = baWire(fig, other);
     if (fresh) reveal(fig, ctl, 30);
     $$("[data-ver]", body).forEach((b) => b.addEventListener("click", () => { view.cur = +b.dataset.ver; if (view.cmp === view.cur) view.cmp = -1; viewResult(); focusBack(`[data-ver="${view.cur}"]`); }));

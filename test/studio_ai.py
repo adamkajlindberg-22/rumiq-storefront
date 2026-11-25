@@ -146,6 +146,12 @@ with sync_playwright() as p:
         pics = pg.evaluate(PICS)
         ok(len(pics) == 1 and pics[0]["items"] == ",".join(h + "::0" for h in FOUR) and pics[0]["after"] and pg.evaluate(ROOMS) == 1, f"{tag} IndexedDB holds the picture, its products and colours, and the before photo once: {pics}")
         ok(pg.evaluate("document.getElementById('aiBuy').getBoundingClientRect().top < document.querySelector('.ai-prods').getBoundingClientRect().top"), f"{tag} Köp allt comes before the list")
+        if mob:  # the phone: Köp allt and the total in reach at once, in a bar under the picture, never over it
+            bar = pg.evaluate("(() => { const b = document.querySelector('.ai-buybar').getBoundingClientRect(), f = document.getElementById('aiBa').getBoundingClientRect(), k = document.getElementById('aiBuy').getBoundingClientRect(); return [k.bottom <= innerHeight, b.top >= f.bottom - 1, document.querySelector('.ai-buysum').innerText.replace(/[\\u00a0\\u202f]/g, ' ')]; })()")
+            ok(bar[0] and bar[1] and "2 737 kr" in bar[2], f"{tag} Köp allt with the total is on the first screen, below the picture: {bar}")
+        else:  # the desktop: the picture far larger than the old 510 px, at the photo's shape
+            wid = pg.evaluate("document.getElementById('aiBa').getBoundingClientRect().width")
+            ok(wid >= 740, f"{tag} the picture is shown large on a desktop: {wid:.0f} px")
         shot(pg, f"demo-{W}-result")
         # keyboard on the slider
         pg.evaluate("document.querySelector('.ai-result [data-ba] input').focus()"); pg.keyboard.press("ArrowRight"); pg.wait_for_timeout(100)
