@@ -2484,9 +2484,9 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 }
 .rh-item img{display:block;height:auto}
 /* 6. Hitta rätt: answers you choose with a picture */
-.imgopts.pick{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr));gap:.6rem;max-width:44rem}
+.imgopts.pick{grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr));gap:.6rem;max-width:44rem;max-height:none;overflow:visible}
 .imgopts.pick button img{aspect-ratio:1;height:auto}
-.imgopts.pick button span{font-size:.86rem;margin-top:.35rem;line-height:1.25;color:var(--ink);hyphens:auto;overflow-wrap:anywhere}
+.imgopts.pick button span{font-size:.86rem;margin-top:.35rem;line-height:1.25;color:var(--ink);hyphens:manual;overflow-wrap:break-word}
 .imgopts.pick button[aria-pressed=true] span{font-weight:650}
 .imgopts.pick button[aria-pressed=true]::after{content:"";position:absolute;right:.4rem;top:.4rem;width:1.35rem;height:1.35rem;border-radius:50%;background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F7F7F4' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/70% no-repeat}
 .quiz .q :is(h2,h3) small{display:block;margin-top:.2rem;font-size:.9rem;font-weight:400;letter-spacing:0;color:var(--ink2)}
@@ -2503,6 +2503,9 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .imgopts.pick button[aria-pressed=true]{box-shadow:none}
 .imgopts.pick button[aria-pressed=true]::after{background-color:#22252A;box-shadow:0 0 0 2px #F7F7F4}
 @media (min-width:900px){.imgopts.pick{grid-template-columns:repeat(auto-fill,minmax(8.4rem,1fr));max-width:66rem;gap:.8rem}.imgopts.pick button span{font-size:.92rem}}
+/* wide screens: each question is one row of pictures across the page, the same height in every row, so no tile is left alone and the right side is not empty */
+@media (min-width:900px){.quiz .q:has(> .imgopts.pick){max-width:none}.imgopts.pick{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);max-width:none;gap:1rem}.imgopts.pick button img{aspect-ratio:auto;height:clamp(8rem,12.5vw,13rem)}}
+@media (min-width:641px) and (max-width:899px){.imgopts.pick{grid-template-columns:repeat(4,minmax(0,1fr));max-width:none}} /* tablets: four to a row, seven rooms as four and three */
 .ss-form{max-width:52rem;display:grid;gap:.7rem;padding:1.2rem;border:1px solid var(--line2);border-radius:var(--r);background:var(--paper)}
 .ss-form label{font-weight:560;color:var(--ink)}
 .ss-form .field{display:flex;gap:.5rem}

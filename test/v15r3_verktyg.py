@@ -160,6 +160,22 @@ with sync_playwright() as p:
             ok(not pg.evaluate("[...document.querySelectorAll('.sv-liked span')].some(s => /[a-zåäö]-$/m.test(s.innerText) && !/(bords|organisatör|linne|förvarings)/i.test(s.innerText))"), "phone Svep result: saved names break where words meet")
         ok(not errs, f"phone {w} Svep: no script errors {errs[:2]}")
         ctx.close()
+
+    # ------------------------------------------------------------ Hitta rätt: picture answers without an orphan or an empty right side (D20)
+    for w, h, mobile in ((1440, 900, False), (1920, 1080, False), (1024, 768, False), (820, 1180, True), (360, 740, True)):
+        ctx, pg, errs = new(b, mobile, w, h)
+        for route in ("hitta-ratt", "hitta-ratt-present"):
+            go(pg, route, 900)
+            g = pg.evaluate("""[...document.querySelectorAll('.imgopts.pick')].map((g) => { const r = g.getBoundingClientRect(), bs = [...g.children].map((b) => b.getBoundingClientRect()), rows = [...new Set(bs.map((b) => Math.round(b.top)))];
+              const per = rows.map((t) => bs.filter((b) => Math.round(b.top) === t).length); const right = Math.max(...bs.map((b) => b.right));
+              return { rows: per, fill: (right - r.left) / (g.parentElement.getBoundingClientRect().width), clipped: [...g.querySelectorAll('span')].some((s) => s.getBoundingClientRect().bottom > r.bottom + 1 && getComputedStyle(g).overflowY !== 'visible') }; })""")
+            for x in g:
+                if w >= 900:
+                    ok(len(x["rows"]) == 1 and x["fill"] > 0.97, f"{w} {route}: each question is one full row of pictures: {x}")
+                else:
+                    ok(all(n >= 3 for n in x["rows"]) and not x["clipped"], f"{w} {route}: no picture alone on a row, no label cut: {x}")
+        ok(not errs, f"{w} Hitta rätt: no script errors {errs[:2]}")
+        ctx.close()
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

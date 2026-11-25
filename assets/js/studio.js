@@ -18,7 +18,7 @@
   const FOR_IMG = { van: "svamp-uppladdningsbar-lampa", familj: "forradsburkar-glas-ek-3-pack", vard: "glod-doftljus-keramik" };
   const OCC_IMG = { inflyttning: "terrakottakruka-rafflad", fodelsedag: "sand-keramikvas", jul: "stilla-ljusstake-massing-2-pack", tack: "plad-ullblandning-havre" };
   const picOpts = (q, list, label) => `<div class="imgopts pick" data-q="${q}" role="group" aria-label="${esc(label)}">${list.map(([v, t, img]) => `<button type="button" data-v="${v}" aria-pressed="false"><img src="${img}" alt="" loading="lazy" width="600" height="750"><span>${esc(t)}</span></button>`).join("")}</div>`;
-  const roomOpts = () => picOpts("room", RQ.ROOMS.map((r) => [r.id, r.name, `assets/img/rum/${r.id}-600.webp`]), "Vilket rum?");
+  const roomOpts = () => picOpts("room", RQ.ROOMS.map((r) => [r.id, r.name.replace("Hemmakontor", "Hemma\u00adkontor"), `assets/img/rum/${r.id}-600.webp`]), "Vilket rum?"); // narrow tiles break "Hemma-kontor", never "Hemmakon-tor"
   // answers and the result are kept for this tab, so looking at a product and going back does not empty the page
   const keep = { get(k) { try { return JSON.parse(RQ.ss.get(k) || "null"); } catch (e) { return null; } }, set(k, v) { RQ.ss.set(k, JSON.stringify(v)); } };
   // after an answer the result is what you see: scrolled to under the header, with focus on its heading
