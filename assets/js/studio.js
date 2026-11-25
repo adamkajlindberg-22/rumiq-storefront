@@ -303,7 +303,7 @@
       if (DOUBLE_W.test(x)) { asks.push({ double: 1 }); return; }
       if (SHAPE_W.test(x)) { asks.push({ shape: /^(rekt|rect)/.test(x) ? "rekt" : /^(kvad|fyrk|square)/.test(x) ? "kvadrat" : "rund" }); return; }
       if (SIZE_W.test(x) && (productWord(w[i + 1]) || productWord(w[i + 2]))) { asks.push({ size: SMALL_W.test(x) ? "liten" : "stor" }); return; }
-      if (productWord(x) && !/^(ljus|ljuset|ljust|ljusa|light|lights|doft|scent)$/.test(x)) thing.push(x);
+      if (productWord(x) && !/^(ljus|ljuset|ljust|ljusa|light|lights|doft|scent)$/.test(x) && !/pack|paket|förpackning|^set|^ingår/.test(x)) thing.push(x); // "pack" is in "3-pack", not a thing
     });
     const two = tt.match(/(\d+(?:[.,]\d+)?)\s*(?:x|×|\*|gånger|by)\s*(\d+(?:[.,]\d+)?)\s*(cm|m|meter|metre|meters|metres)?\b/);
     const toCm = (n, unit, other) => { const v = parseFloat(String(n).replace(",", ".")); return /^m/.test(unit || "") || (v < 10 && other < 10) ? Math.round(v * 100) : Math.round(v); };
@@ -438,6 +438,9 @@
     const lamp0 = q.words.some((w) => LAMP.test(w) || /^läs/.test(w) || /^read/.test(w));
     const ask = askedOf(text, colors, lamp0, q.max), asking = ASKFOR.test(rt) || raw.length <= 5;
     const ownAll = asking && !furn ? byPrice(RQ.PRODUCTS.filter((p) => ask.thing.some((w) => namesIt(p, w)))) : [];
+    // how many come in one ("how many candle holders come in a pack?"): what the pack holds
+    if (HOWMANY.test(rt) && /(?:^| )(?:pack|paket|förpackning|förpackningen|ingår|set|setet|come in|comes in)(?: |$)/.test(rt)) { const ps = byPrice(RQ.PRODUCTS.filter((p) => askedOf(text, colors, false, null).thing.some((w) => namesIt(p, w)))).slice(0, 2);
+      if (ps.length) return none(ps.map((p) => (packOf(p) > 1 ? `I ${p.name} ingår ${packOf(p)} st.` : `${p.name} säljs en och en.`)), { picks: ps }); }
     // how many of a thing we have ("hur många lampor har ni?"): the count and all of them
     if (ownAll.length && HOWMANY.test(rt) && /(?:^| )(?:har ni|finns det|säljer ni|do you have|do you sell|have you got)(?: |$)/.test(rt)) return none([ownAll.length === 1 ? "Just nu har vi en, den här:" : `Just nu har vi ${ownAll.length} sådana:`], { picks: ownAll.slice(0, 4) });
     let only = null, sure = true;
@@ -454,6 +457,10 @@
     if (rent) return none(["När du hyr gör textilier, lampor och tavlor som lutar mot väggen mest, och inget av det kräver hål. En sladdlös lampa kan stå var som helst."], { help: { route: "artikel-hyresvanlig-inredning", label: "Hyresvänlig inredning" }, picks: within(["affisch-linje-ekram", "plad-ullblandning-havre", "svamp-uppladdningsbar-lampa"]) });
     // the cheapest of what you asked about, or of everything
     if (word(CHEAP)) {
+      // the cheapest of the thing you named ("vilken lampa under 300 kr är billigast?"): only that thing, and a plain no when none is that cheap
+      const kind0 = byPrice(RQ.PRODUCTS.filter((p) => ask.thing.some((w) => namesIt(p, w)))), kin = kind0.filter((p) => priceOk(p, q.max));
+      if (kind0.length && !kin.length) return none([lamp0 ? `Under ${kr(q.max)} har vi ingen lampa.` : `Under ${kr(q.max)} har vi ${kind0.length > 1 ? "dem" : "den"} inte.`, `Billigast är ${kind0[0].name}, ${kr(kind0[0].price)}.`], { picks: kind0.slice(0, 1), tags: ["Billigast"] });
+      if (kin.length) return none([`Billigast är ${kin[0].name}, ${kr(kin[0].price)}.`], { picks: kin.slice(0, 3) });
       const r = known ? RQ.rank(q, q.max) : [], top = r.length ? r[0].s : 0;
       const ps = byPrice(r.length ? r.filter((x) => x.s >= top * 0.7).map((x) => x.p) : RQ.PRODUCTS.filter((p) => priceOk(p, q.max))).slice(0, 3);
       if (ps.length) return none([r.length ? `Billigast är ${ps[0].name}, ${kr(ps[0].price)}.` : "Det billigaste vi har just nu:"], { picks: ps });
@@ -541,13 +548,14 @@
       const low = byPrice(RQ.PRODUCTS.filter((p) => isLamp(p) && (!q.rooms.length || inRoom(p))))[0] || byPrice(RQ.PRODUCTS.filter(isLamp))[0];
       const col = want.length ? byPrice(fitting(null).map((x) => x.p))[0] : null;
       picks.push(low); tags = ["Billigast"];
-      parts.push(`Under ${kr(q.max)} har vi ingen lampa. Billigast är ${low.name}, ${kr(low.price)}.`);
-      if (col && col !== low) { picks.push(col); tags.push("Passar färgerna"); parts.push(`I färgerna som passar är ${col.name} billigast, ${kr(col.price)}.`); }
+      const say = [`Under ${kr(q.max)} har vi ingen lampa. Billigast är ${low.name}, ${kr(low.price)}.`];
+      if (col && col !== low) { picks.push(col); tags.push("Passar färgerna"); say.push(`I färgerna som passar är ${col.name} billigast, ${kr(col.price)}.`); }
+      if (HAVE.test(t)) parts.splice(0, parts.length, ...say); else parts.push(...say); // "har ni …?" is answered first, without advice in front
     }
     if (!picks.length && lamp && q.rooms.length) {
       // a lamp for a room none of ours is made for: the bathroom gets a plain no, other rooms the lamps that can stand there
       const ls = byPrice(RQ.PRODUCTS.filter((p) => isLamp(p) && priceOk(p, q.max)));
-      if (q.rooms.includes("badrum")) { parts.push("Lampor för badrum har vi inte."); const c = RQ.PRODUCTS.filter((p) => p.rooms.includes("badrum") && p.cat === "belysning-atmosfar" && priceOk(p, q.max)); if (c.length) { parts.push("För stämningen finns det här:"); picks.push(...c.slice(0, 2)); } }
+      if (q.rooms.includes("badrum")) { if (HAVE.test(t)) parts.length = 0; parts.push("Lampor för badrum har vi inte."); const c = RQ.PRODUCTS.filter((p) => p.rooms.includes("badrum") && p.cat === "belysning-atmosfar" && priceOk(p, q.max)); if (c.length) { parts.push("För stämningen finns det här:"); picks.push(...c.slice(0, 2)); } }
       else if (ls.length) { parts.push("Ingen av våra lampor är tänkt just för det rummet, men de kan stå där också."); picks.push(...ls.slice(0, 3)); }
     }
     if (!picks.length) [GIFT_SAY, FITS_SAY].forEach((x) => { const i = parts.indexOf(x); if (i > -1) parts.splice(i, 1); }); // "here are…" only when there is something to show

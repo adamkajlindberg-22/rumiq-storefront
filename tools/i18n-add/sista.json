@@ -110,5 +110,7 @@
  "I varukorgen: Sand": "In the cart: Sand",
  "bilden visar Sand": "the picture shows Sand",
  "till i din prisklass": "more in your price range",
- "Utan prisgränsen:": "Without the price limit:"
+ "Utan prisgränsen:": "Without the price limit:",
+ "I {PA} ingår {0} st.": "{PA} holds {0}.",
+ "{PA} säljs en och en.": "{PA} is sold one by one."
 }
