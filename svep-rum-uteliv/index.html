@@ -29,7 +29,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=deefd8e0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=d6debd17">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -99,13 +99,13 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <div class="sv-head"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="upptack/">Upptäck</a></li><li><a href="svep/">Svep</a></li><li><span aria-current="page">Uteliv</span></li></ol></nav><h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           <nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="svep/">Hela butiken</a><a class="chip" href="svep-rum-vardagsrum/">Vardagsrum</a><a class="chip" href="svep-rum-sovrum/">Sovrum</a><a class="chip" href="svep-rum-kok/">Kök</a><a class="chip" href="svep-rum-badrum/">Badrum</a><a class="chip" href="svep-rum-hall/">Hall</a><a class="chip" href="svep-rum-hemmakontor/">Hemmakontor</a><a class="chip" href="svep-rum-uteliv/" aria-current="true">Uteliv</a></nav>
           <ul class="sv-legend">
-      <li><kbd aria-hidden="true">→</kbd><div><b>Spara</b><span>Hamnar under Sparat och lär oss din stil.</span></div></li>
-      <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
-      <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
-      <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
+      <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar under Sparat och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">←</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></i><div><b>Hoppa över</b><span><em class="sv-tc">Svep åt vänster. </em>Du får se mindre av sådant framöver.</span></div></li>
+      <li><kbd aria-hidden="true">↑</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></i><div><b>Lägg i varukorgen</b><span><em class="sv-tc">Svep uppåt. </em>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
+      <li><kbd aria-hidden="true">⌫</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg></i><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
       <li class="sv-tip">Pilarna fungerar direkt, så länge du inte har markerat en annan knapp.</li>
     </ul>
-          <p class="small sv-after">Klicka på bildens kanter för fler bilder, eller mitt på bilden för att läsa mer. <span>2</span> <span>kort för</span> <span>uteliv</span>, <span>sedan får du din stilprofil.</span></p>
+          <p class="small sv-after">Tryck på bildens kanter för fler bilder, eller mitt på bilden för att läsa mer. <span>2</span> <span>kort för</span> <span>uteliv</span>, <span>sedan får du din stilprofil.</span></p>
           <a class="sv-two-link" href="svep-ihop/"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="16.5" cy="9.5" r="2.4"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14.5 19a4.3 4.3 0 0 1 6.5-3.6"></path></svg><span>Inreder ni tillsammans? <b>Svep tillsammans</b></span></a></div>
         <div class="sv-wrap">
       <div class="sv-prog" aria-hidden="true"><i id="svBar" style="width: 0%;"></i></div>
@@ -180,8 +180,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0894abee"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bc99d8ff"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
-<script src="assets/js/i18n.min.js?v=d763c092"></script>
-<script src="assets/js/site.min.js?v=8dc067a8"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0c5b682a"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bf7e882d"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
+<script src="assets/js/i18n.min.js?v=0def31f4"></script>
+<script src="assets/js/site.min.js?v=b3128339"></script>
 </body>
 </html>

@@ -33,7 +33,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=deefd8e0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=d6debd17">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -109,7 +109,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <div class="pinfo">
             <a class="eyebrow" href="kategori-badrum-valmaende/">Badrum &amp; välmående</a>
             <h1>Tvålpump stengods</h1>
-            <div class="priceline"><span class="pprice">229 kr</span><span class="vat">inkl. moms</span></div><p class="ship-note">Frakt 49 kr till ombud och paketskåp, fri frakt från 799 kr.</p>
+            <div class="priceline"><span class="pprice">229 kr</span><span class="vat">inkl. moms</span><button type="button" data-room-setup="#mitt-rum-tvalpump-stengods" class="pinroom"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><span>Se den i ditt rum</span></button></div><p class="ship-note">Frakt 49 kr till ombud och paketskåp, fri frakt från 799 kr.</p>
             <p class="short">Tvålpump i stengods för handtvål eller diskmedel.</p>
             
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
@@ -165,8 +165,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#F2EFE922">
       <a class="ph" href="produkt-vaffelhandduk-bomull/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/vaffelhandduk-bomull-600.webp" srcset="assets/img/p/vaffelhandduk-bomull-600.webp 600w, assets/img/p/vaffelhandduk-bomull-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Våffelhandduk bomull" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/vaffelhandduk-bomull-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="vaffelhandduk-bomull" aria-pressed="false" aria-label="Spara Våffelhandduk bomull"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="vaffelhandduk-bomull" aria-pressed="false" aria-label="Ställ in Våffelhandduk bomull i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
-      <button class="qv" type="button" data-sheet="vaffelhandduk-bomull" aria-label="Snabbtitt på Våffelhandduk bomull"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
+      <button class="iconbtn rbtn" type="button" data-room-btn="vaffelhandduk-bomull" aria-pressed="false" tabindex="-1" aria-label="Ställ in Våffelhandduk bomull i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
+      <button class="qv" type="button" data-sheet="vaffelhandduk-bomull" tabindex="-1" aria-label="Snabbtitt på Våffelhandduk bomull"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="vaffelhandduk-bomull::0" aria-label="Lägg till Våffelhandduk bomull i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-vaffelhandduk-bomull/">Våffelhandduk bomull</a></h3><span class="price">299 kr</span></div>
       <p class="sub"><span class="swatches" role="img" aria-label="2 färger"><i style="background:#F2EFE9"></i><i style="background:#D9C7AA"></i></span></p>
@@ -217,8 +217,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0894abee"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bc99d8ff"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
-<script src="assets/js/i18n.min.js?v=d763c092"></script>
-<script src="assets/js/site.min.js?v=8dc067a8"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0c5b682a"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bf7e882d"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
+<script src="assets/js/i18n.min.js?v=0def31f4"></script>
+<script src="assets/js/site.min.js?v=b3128339"></script>
 </body>
 </html>

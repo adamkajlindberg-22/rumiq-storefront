@@ -29,7 +29,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=deefd8e0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=d6debd17">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -101,7 +101,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <section class="wrap quiz" style="padding-bottom:5rem">
         <div class="q" id="gfQ1"><h2><span class="q-n">1</span>Vem är presenten till?</h2><div class="imgopts pick" data-q="for" role="group" aria-label="Vem är presenten till?"><button type="button" data-v="van" aria-pressed="false"><img src="assets/img/p/svamp-uppladdningsbar-lampa-600.webp" alt="" loading="lazy" width="600" height="750"><span>En vän</span></button><button type="button" data-v="familj" aria-pressed="false"><img src="assets/img/p/forradsburkar-glas-ek-3-pack-600.webp" alt="" loading="lazy" width="600" height="750"><span>Familjen</span></button><button type="button" data-v="vard" aria-pressed="false"><img src="assets/img/p/glod-doftljus-keramik-600.webp" alt="" loading="lazy" width="600" height="750"><span>En värd</span></button></div></div>
         <div class="q" id="gfQ2"><h2><span class="q-n">2</span>Tillfället</h2><div class="imgopts pick" data-q="occ" role="group" aria-label="Tillfället"><button type="button" data-v="inflyttning" aria-pressed="false"><img src="assets/img/p/terrakottakruka-rafflad-600.webp" alt="" loading="lazy" width="600" height="750"><span>Inflyttning</span></button><button type="button" data-v="fodelsedag" aria-pressed="false"><img src="assets/img/p/sand-keramikvas-600.webp" alt="" loading="lazy" width="600" height="750"><span>Födelsedag</span></button><button type="button" data-v="jul" aria-pressed="false"><img src="assets/img/p/stilla-ljusstake-massing-2-pack-600.webp" alt="" loading="lazy" width="600" height="750"><span>Jul</span></button><button type="button" data-v="tack" aria-pressed="false"><img src="assets/img/p/plad-ullblandning-havre-600.webp" alt="" loading="lazy" width="600" height="750"><span>Ett tack</span></button></div></div>
-        <div class="q"><h2><span class="q-n">3</span>Mottagarens stil <small>Hoppa över om du inte vet</small></h2><div class="imgopts pick" data-q="style" role="group" aria-label="Mottagarens stil"><button type="button" data-v="skandinavisk" aria-pressed="false"><img src="assets/img/stil/skandinavisk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Skandinavisk</span></button><button type="button" data-v="minimalistisk" aria-pressed="false"><img src="assets/img/stil/minimalistisk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Minimalistisk</span></button><button type="button" data-v="klassisk" aria-pressed="false"><img src="assets/img/stil/klassisk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Klassisk</span></button><button type="button" data-v="mjuk" aria-pressed="false"><img src="assets/img/stil/mjuk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Mjuk och ombonad</span></button></div></div>
+        <div class="q" id="gfQ3"><h2><span class="q-n">3</span>Mottagarens stil <small>Hoppa över om du inte vet</small></h2><div class="imgopts pick" data-q="style" role="group" aria-label="Mottagarens stil"><button type="button" data-v="skandinavisk" aria-pressed="false"><img src="assets/img/stil/skandinavisk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Skandinavisk</span></button><button type="button" data-v="minimalistisk" aria-pressed="false"><img src="assets/img/stil/minimalistisk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Minimalistisk</span></button><button type="button" data-v="klassisk" aria-pressed="false"><img src="assets/img/stil/klassisk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Klassisk</span></button><button type="button" data-v="mjuk" aria-pressed="false"><img src="assets/img/stil/mjuk-600.webp" alt="" loading="lazy" width="600" height="750"><span>Mjuk och ombonad</span></button></div></div>
         <div class="q q-max"><label>Högsta presentpris (kr)<input type="number" id="gfMax" min="1" step="50" inputmode="numeric" value="800"></label><div class="ctrl-row"><button class="btn" type="button" id="gfGo">Hitta en present</button><a class="btn ghost" href="presentkort/">Hellre ett presentkort</a></div></div>
         <div id="gfOut" class="q-out"></div></section></main>
 
@@ -147,8 +147,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0894abee"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bc99d8ff"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
-<script src="assets/js/i18n.min.js?v=d763c092"></script>
-<script src="assets/js/site.min.js?v=8dc067a8"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0c5b682a"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bf7e882d"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
+<script src="assets/js/i18n.min.js?v=0def31f4"></script>
+<script src="assets/js/site.min.js?v=b3128339"></script>
 </body>
 </html>

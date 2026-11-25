@@ -29,7 +29,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=deefd8e0">
+<link rel="stylesheet" href="assets/css/site.min.css?v=d6debd17">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -98,9 +98,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <main id="view" class="view first" tabindex="-1"><header class="page-head wrap"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><span aria-current="page">Sparat</span></li></ol></nav><span class="eyebrow">Ditt privata bibliotek</span><h1 class="h1">Sparat</h1><p class="lead">Det du har sparat, dina rum och mått, din stil och dina looks, samlat så att du kan fortsätta där du slutade.</p>
           <nav class="jump-nav" aria-label="På sidan"><a href="#mh-fav" class="on" aria-current="true">Produkter (0)</a><a href="#mh-matt">Mina rum och mått (0)</a><a href="#mh-stil">Min stil</a><a href="#mh-rum">Rumsprojekt (0)</a><a href="#mh-looks">Looks (0)</a><a href="#mh-art">Artiklar (0)</a></nav></header>
         <section class="wrap mh" style="padding-bottom:5rem;display:grid;gap:3.2rem">
-          <div id="mh-fav"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Produkter</span></div></div><div class="mh-none"><p><b>Inget sparat än.</b> <span>Tryck på hjärtat på en produkt, så hamnar den här.</span></p><a class="link" href="butik/">Till butiken</a></div><a class="sv-nudge" href="svep/"><span class="sv-nudge-cards" aria-hidden="true"><img src="assets/img/p/affisch-horisont-ekram-600.webp" alt="" loading="lazy" style="--k:0"><img src="assets/img/p/vila-paslakanset-linne-600.webp" alt="" loading="lazy" style="--k:1"><img src="assets/img/p/strand-jutematta-600.webp" alt="" loading="lazy" style="--k:2"></span>
+          <div id="mh-fav"><div class="sec-row"><div class="sec-head"><h2 class="h3">Produkter</h2></div></div><div class="mh-none"><p><b>Inget sparat än.</b> <span>Tryck på hjärtat på en produkt, så hamnar den här.</span></p><a class="link" href="butik/">Till butiken</a></div><a class="sv-nudge" href="svep/"><span class="sv-nudge-cards" aria-hidden="true"><img src="assets/img/p/affisch-horisont-ekram-600.webp" alt="" loading="lazy" style="--k:0"><img src="assets/img/p/vila-paslakanset-linne-600.webp" alt="" loading="lazy" style="--k:1"><img src="assets/img/p/strand-jutematta-600.webp" alt="" loading="lazy" style="--k:2"></span>
       <span class="sv-nudge-tx"><b>Osäker på vad du gillar?</b><small>Svep tio kort, så sparas det du gillar här och butiken sorterar sig efter dig.</small><span class="tlink">Svep fram din stil</span></span></a></div>
-          <div id="mh-matt"><div class="sec-head"><span class="eyebrow">Mina rum och mått</span></div>
+          <div id="mh-matt"><div class="sec-head"><h2 class="h3">Mina rum och mått</h2></div>
         <p class="lead" style="max-width:40rem">Lägg in dina rum och några mått en gång. Sedan säger varje produktsida om den passar och ryms hos dig.</p>
         <div class="hr-list" id="hrList"></div>
         <button class="btn ghost" type="button" id="hrOpen" aria-expanded="false" aria-controls="hrForm">Lägg till ditt första rum</button>
@@ -117,11 +117,11 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <p class="small">Mät det fria golvet där en matta kan ligga, väggen där en tavla kan hänga och fönstret utan karm. Inga mått är obligatoriska.</p>
           <div class="ctrl-row"><button class="btn" type="submit">Spara rummet</button><button class="btn ghost" type="button" id="hrCancel">Avbryt</button></div>
           <p class="status" id="hrStatus" role="status"></p></form></div>
-          <div id="mh-stil"><div class="sec-head"><span class="eyebrow">Min stil</span></div><div class="mh-none"><p><b>Ingen stil än.</b> <span>Svep tio kort, så får du din stilprofil.</span></p><a class="link" href="svep/">Svep fram din stil</a></div></div>
-          <div id="mh-rum"><div class="sec-row"><div class="sec-head"><span class="eyebrow">Rumsprojekt</span></div></div>
+          <div id="mh-stil"><div class="sec-head"><h2 class="h3">Min stil</h2></div><div class="mh-none"><p><b>Ingen stil än.</b> <span>Svep tio kort, så får du din stilprofil.</span></p><a class="link" href="svep/">Svep fram din stil</a></div></div>
+          <div id="mh-rum"><div class="sec-row"><div class="sec-head"><h2 class="h3">Rumsprojekt</h2></div></div>
             <div class="mh-none"><p><b>Inga rumsprojekt än.</b> <span>Ställ in saker i ett foto av ditt rum och spara resultatet.</span></p><a class="link" href="mitt-rum/">Till Mitt rum</a></div></div>
-          <div id="mh-looks"><div class="sec-head"><span class="eyebrow">Sparade looks</span></div><div class="mh-none"><p><b>Inga looks än.</b> <span>Spara en färdig look, eller bygg en egen i Mitt rum.</span></p><a class="link" href="looks/">Se alla looks</a></div></div>
-          <div id="mh-art"><div class="sec-head"><span class="eyebrow">Sparade artiklar</span></div><div class="mh-none"><p><b>Inga sparade artiklar.</b> <span>Spara en artikel i magasinet, så hamnar den här.</span></p><a class="link" href="magasin/">Till magasinet</a></div></div>
+          <div id="mh-looks"><div class="sec-head"><h2 class="h3">Sparade looks</h2></div><div class="mh-none"><p><b>Inga looks än.</b> <span>Spara en färdig look, eller bygg en egen i Mitt rum.</span></p><a class="link" href="looks/">Se alla looks</a></div></div>
+          <div id="mh-art"><div class="sec-head"><h2 class="h3">Sparade artiklar</h2></div><div class="mh-none"><p><b>Inga sparade artiklar.</b> <span>Spara en artikel i magasinet, så hamnar den här.</span></p><a class="link" href="magasin/">Till magasinet</a></div></div>
           <div class="panel"><h3 class="h3">Dina uppgifter</h3><p class="small" style="margin-top:.5rem">I förhandsversionen finns allt du sparat bara i den här webbläsaren. Inget skickas till oss. Du kan ta bort allt när du vill.</p><button class="btn ghost sm" type="button" id="clearAll" style="margin-top:1rem">Rensa allt sparat</button><p class="small" id="clearNote" role="status" style="margin-top:.6rem"></p></div>
         </section></main>
 
@@ -167,8 +167,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0894abee"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bc99d8ff"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
-<script src="assets/js/i18n.min.js?v=d763c092"></script>
-<script src="assets/js/site.min.js?v=8dc067a8"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=0c5b682a"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=bf7e882d"; window.RQ_HEADS_SRC = "assets/heads.json?v=14542499";</script>
+<script src="assets/js/i18n.min.js?v=0def31f4"></script>
+<script src="assets/js/site.min.js?v=b3128339"></script>
 </body>
 </html>
