@@ -185,7 +185,8 @@
   const autosave = () => S.store.get("rumiq-ai-autosave", true) !== false;
   // how many pictures the library holds, kept beside it so Sparat can put Mina rumsbilder first without waiting for IndexedDB
   const libCount = () => { const n = S.store.get("rumiq-ai-n", 0); return n > 0 ? Math.floor(n) : 0; };
-  const recount = () => Lib.list().then((r) => { S.store.set("rumiq-ai-n", r.pics.length); return r.pics.length; }).catch(() => 0);
+  const setCount = (n) => (n > 0 ? S.store.set("rumiq-ai-n", n) : S.store.del("rumiq-ai-n")); // nothing kept when the library is empty ("Rensa allt" leaves no trace)
+  const recount = () => Lib.list().then((r) => { setCount(r.pics.length); return r.pics.length; }).catch(() => 0);
   const remoteLib = () => !!((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary && live() && !!S.customer();
 
   /* the room project: one per room photo. Versions (every picture made in the same room) belong to it, and so does a
@@ -511,7 +512,7 @@
   const libPaint = (focusSel) => {
     const host = libState.host; if (!host || !host.isConnected) return;
     const gs = libState.groups, n = gs.reduce((s, g) => s + g.list.length, 0);
-    if (!remoteLib()) S.store.set("rumiq-ai-n", n);
+    if (!remoteLib()) setCount(n);
     host.removeAttribute("aria-busy");
     host.innerHTML = gs.length ? gs.map(libCard).join("") : `<div class="mh-none"><p><b>Inga rumsbilder än.</b> <span>Varje AI-bild du skapar i Mitt rum hamnar här, med bilden före.</span></p><a class="link" href="#mitt-rum">Till Mitt rum</a></div>`;
     $$("[data-ai-count]").forEach((c) => (c.textContent = `Mina rumsbilder (${n})`));
@@ -585,7 +586,7 @@
       sw.addEventListener("change", () => { S.store.set("rumiq-ai-autosave", sw.checked); $("#aiLibNote", root).textContent = libNote() + (sw.checked ? "" : " Nya AI-bilder sparas inte förrän du slår på det igen."); });
       libLoad().then(() => { if (RQ.ss.get("rumiq-ai-jump")) { RQ.ss.set("rumiq-ai-jump", ""); jump(); } });
     },
-    clear: () => { S.store.set("rumiq-ai-n", 0); return Lib.clear().then(recount).catch(() => {}); },
+    clear: () => { setCount(0); return Lib.clear().then(recount).catch(() => {}); },
     groups: libGroups,
     count: libCount,
   };
