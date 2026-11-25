@@ -610,7 +610,7 @@
         const span = (h) => { const p = RQ.byHandle(h); if (!p) return [2.5, 96]; const b = spotFor(p, [], true).w, own = !mapOf(); return [Math.max(2.5, b * (own ? 0.35 : 0.5)), Math.min(96, b * (own ? 4 : 2))]; };
         const fit = (h, w) => { const [a, b] = span(h); return clamp(w, a, b); };
         const resize = (h, w, tag) => { const it = R.scene().find((x) => x.h === h); if (!it) return; w = +fit(h, w).toFixed(1); if (w === it.w) return; R.update(h, { w }, tag); learn(h, { ...it, w }); };
-        const removeIt = (h) => { const p = RQ.byHandle(h); if (sel === h) sel = null; R.remove(h); RQ.toast(`${esc(p.name)} är borttagen. <a href="#" data-room-undo>Ångra</a>`); };
+        const removeIt = (h) => { const p = RQ.byHandle(h); if (sel === h) sel = null; R.remove(h); RQ.toast(`${esc(p.name)} är borttagen.`); }; // Ångra is the button on the room, one is enough
 
         // gestures: one finger on a thing moves it, one finger on the room pans it sideways (up and down scrolls the page),
         // two fingers resize the selected thing or, with nothing selected, zoom the room
@@ -733,7 +733,7 @@
           const before = R.scene(), picks = R.suggest(Math.max(1, 4 - before.length) + (before.length >= 4 ? 1 : 0));
           if (!picks.length) { RQ.toast("Nu står allt som passar här i rummet. Lägg till fler själv."); return; }
           const n = R.group(() => picks.filter((p) => R.add(p.handle, true)).length); if (!n) return; // one step: Ångra takes all of them back
-          RQ.toast(`${n} förslag efter rummets färger${room.type ? " och rumstyp" : ""}. Flytta och byt fritt.${mapOf() ? "" : " Dra en sak dit den ska stå, så hamnar nästa bredvid."} <a href="#" data-room-undo="Ångrat. Förslagen är borttagna.">Ångra</a>`);
+          RQ.toast(`${n} förslag efter rummets färger${room.type ? " och rumstyp" : ""}. Flytta och byt fritt.${mapOf() ? "" : " Dra en sak dit den ska stå, så hamnar nästa bredvid."}`); // Ångra on the room takes all of them back
         };
         $("#rmSuggest", root).addEventListener("click", suggest); $("#rmSuggest0", root).addEventListener("click", suggest);
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });
@@ -877,7 +877,7 @@
     if (b.matches("[data-room-mode]")) { if (!room) { R.openSetup(); return; } R.setMode(!R.mode()); return; }
     const h = b.dataset.roomBtn;
     const inPick = !!b.closest(".sheet.rmpick");
-    const go = () => { if (R.inScene(h)) { R.remove(h); b.setAttribute("aria-pressed", false); RQ.toast('Borttagen ur ditt rum. <a href="#" data-room-undo>Ångra</a>'); return; }
+    const go = () => { if (R.inScene(h)) { R.remove(h); b.setAttribute("aria-pressed", false); RQ.toast(document.getElementById("rmUndo") ? "Borttagen ur ditt rum." : 'Borttagen ur ditt rum. <a href="#" data-room-undo>Ångra</a>'); return; } // in Mitt rum the Ångra button is on the room
       const ok = R.add(h, inPick); b.setAttribute("aria-pressed", ok); if (ok && inPick && R.lastMoved === h) RQ.toast("Där var det fullt, så den står på golvet. Dra den dit du vill."); };
     if (!room) R.openSetup(() => { R.add(h); }); else go();
   });

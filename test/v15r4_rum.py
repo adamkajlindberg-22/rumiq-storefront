@@ -113,6 +113,18 @@ with sync_playwright() as p:
         ok(t0 and t1 and t1 != t0 and t1.startswith("Storlek "), f"{tag} the slider's spoken value changes during a pinch: {t0} -> {t1}")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
+    # ---------------------------------------------------------------- one Ångra at a time in Mitt rum: the button on the room
+    for W, Hh, mob in ((390, 844, True), (1440, 900, False)):
+        tag = f"[one undo {W}]"
+        c, pg = room_page(b, W, Hh, mob)
+        pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900)
+        ok(pg.is_visible("#rmUndo") and not pg.evaluate("!!document.querySelector('.toast.show [data-room-undo]')"), f"{tag} after Inred åt mig only the Ångra button on the room shows")
+        h = pg.evaluate("RQ.room.scene()[0].h"); pg.evaluate(f"document.querySelector('[data-del=\"{h}\"]').click()"); pg.wait_for_timeout(300)
+        ok(pg.is_visible("#rmUndo") and not pg.evaluate("!!document.querySelector('.toast.show [data-room-undo]')"), f"{tag} after Ta bort only the Ångra button on the room shows")
+        n0 = pg.evaluate("RQ.room.scene().length"); pg.click("#rmUndo"); pg.wait_for_timeout(300)
+        ok(pg.evaluate("RQ.room.scene().length") == n0 + 1, f"{tag} the button brings it back")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
+        c.close()
 #CHECKS
     b.close()
 

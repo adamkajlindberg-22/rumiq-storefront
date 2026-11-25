@@ -117,7 +117,7 @@ with sync_playwright() as p:
         ok(pg.is_hidden("#rmUndo"), f"{tag} no Ångra before anything has changed")
         x, y = mid(pg, "#rmSuggest"); tap(pg, cdp, x, y); pg.wait_for_timeout(1400)
         ok(pg.evaluate("RQ.room.scene().length") >= 3, f"{tag} Inred åt mig places things")
-        ok(pg.evaluate("!!document.querySelector('.toast.show [data-room-undo]')"), f"{tag} the Inred åt mig toast has an Ångra link")
+        ok(not pg.evaluate("!!document.querySelector('.toast.show [data-room-undo]')"), f"{tag} the Inred åt mig toast has no second Ångra (r4: the button on the room is the one Ångra)")
         ok(pg.is_visible("#rmUndo"), f"{tag} the Ångra button is on the room")
         h = pg.evaluate(VISIBLE_ITEM); s0 = pg.evaluate(SPOT, h)
         x, y = mid(pg, f'.rm-item[data-h="{h}"]'); swipe(pg, cdp, x, y, x - 40, y - 20)
