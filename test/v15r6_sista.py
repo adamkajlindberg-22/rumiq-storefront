@@ -275,7 +275,9 @@ with sync_playwright() as p:
         pg.goto(BASE + "butik/"); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(1400)
         sc = pg.evaluate("RQ.room.scene().map((it) => [it.h, it.x, it.y, it.w])")
         lamps = [s for s in sc if s[0] in ("glob-bordslampa-opalglas", "lysa-keramiklampa", "sand-keramikvas")]
-        ok(all(abs(s[1] - 50) > 20 for s in lamps), f"[C10 own {W}] in an own photo things for a table stand at the sides, not on the seat in the middle: {lamps}")
+        # studio review M1 (supersedes C10's side spots): with unknown surfaces they stand in a tidy row on the floor line, never on a seat or in mid-air
+        tidy = all(a[1] <= b[0] + 0.01 for y in {s[2] for s in sc} for rowd in [sorted((s[1] - s[3] / 2, s[1] + s[3] / 2) for s in sc if s[2] == y)] for a, b in zip(rowd, rowd[1:]))
+        ok(all(s[2] >= 84 for s in lamps) and tidy, f"[C10 own {W}] in an own photo things for a table stand in a tidy row on the floor, not on a seat: {lamps}")
         ok(all(s[1] - s[3] / 2 >= 1.5 and s[1] + s[3] / 2 <= 98.5 for s in lamps), f"[C10 own {W}] and whole inside the picture: {lamps}")
         ok(not errs, f"[C10 own {W}] no script errors {errs[:2]}")
         ctx.close()
