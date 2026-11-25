@@ -228,8 +228,12 @@
     deckEl.addEventListener("pointerdown", pdown); deckEl.addEventListener("click", tap); addEventListener("pointermove", move); addEventListener("pointerup", pup); addEventListener("pointercancel", cancel);
     const on = (n, f) => { const b = el(n); if (b) b.addEventListener("click", f); };
     on("No", () => decide(-1)); on("Yes", () => decide(1)); on("Bag", () => decide(2)); on("Undo", undo);
+    // the arrows work as soon as a round starts: in the deck, or when the focus is on no control at all (the page itself)
     const key = (e) => {
-      if (st.over || !e.target.closest || e.target.closest(".sv-wrap") !== deckEl.parentNode || e.altKey || e.shiftKey || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
+      const free = e.target === document.body || e.target.id === "view";
+      if (st.over || !e.target.closest || (!free && e.target.closest(".sv-wrap") !== deckEl.parentNode) || e.altKey || e.shiftKey || RQ.sheet.isOpen() || document.querySelector(".drawer.open, #search.open, #mnav.open, dialog[open], .sheet.open")) return;
+      if (free && e.key === "ArrowUp") return; // on the page itself ↑ scrolls, it never buys anything by surprise
+      if (free && /^Arrow(Right|Left)$|^Backspace$/.test(e.key)) deckEl.focus({ preventScroll: true });
       if (e.key === "ArrowRight") { e.preventDefault(); decide(1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); }
       if (e.key === "ArrowUp") { e.preventDefault(); decide(2); }
@@ -237,6 +241,8 @@
     };
     if (cfg.keys) addEventListener("keydown", key);
     if (cfg.finished) finish(); else paint();
+    // with a keyboard and a mouse the round starts in the deck, so the arrows work at once (not on touch screens, where it would only draw a ring)
+    if (cfg.keys && !st.over && matchMedia("(hover:hover) and (pointer:fine)").matches && !RQ.sheet.isOpen()) deckEl.focus({ preventScroll: true });
     return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", pup); removeEventListener("pointercancel", cancel); removeEventListener("keydown", key); };
   }
 
@@ -375,7 +381,7 @@
       <li><kbd aria-hidden="true">←</kbd><div><b>Hoppa över</b><span>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><div><b>Lägg i varukorgen</b><span>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
-      <li class="sv-tip">Pilarna fungerar när kortet är markerat. Gå dit med Tab.</li>
+      <li class="sv-tip">Pilarna fungerar direkt, så länge du inte har markerat en annan knapp.</li>
     </ul>`;
   // a room with fewer cards left than a full round: how many there are (0 = a normal round of ten)
   const roomLeft = (scope) => { if (!scope) return 0; const t = RQ.taste.get(), n = RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length; return n && n < ROUND ? n : 0; };

@@ -124,6 +124,25 @@ with sync_playwright() as p:
         ok("/mitt-rum" in pg.evaluate("location.pathname + location.hash") and f"{len(scene)} saker står nu i rummet" in toast and "Sparat" in toast, f"{tag} Svep to room: an honest toast in Mitt rum: {toast!r}")
         ok(not errs, f"{tag} Svep to room: no script errors {errs[:2]}")
         ctx.close()
+
+    # ------------------------------------------------------------ Svep: the arrows work as soon as a round starts (D5)
+    for w, h in ((1440, 900), (1280, 720)):
+        tag = f"desktop {w}"
+        ctx, pg, errs = new(b, False, w, h)
+        go(pg, "svep", 900)
+        ok(pg.evaluate("document.activeElement.id") == "svDeck", f"{tag} Svep: the deck has the focus when the round starts")
+        pg.keyboard.press("ArrowRight"); pg.wait_for_timeout(600)
+        ok(pg.evaluate("document.getElementById('svCount').textContent").startswith("2 av"), f"{tag} Svep: → saves the first card without any Tab")
+        pg.evaluate("document.activeElement.blur()"); pg.keyboard.press("ArrowLeft"); pg.wait_for_timeout(600)
+        ok(pg.evaluate("document.getElementById('svCount').textContent").startswith("3 av"), f"{tag} Svep: ← works with the focus on the page itself")
+        pg.focus(".sv-scope a"); pg.keyboard.press("ArrowRight"); pg.wait_for_timeout(500)
+        ok(pg.evaluate("document.getElementById('svCount').textContent").startswith("3 av"), f"{tag} Svep: the arrows stay off while another control has the focus")
+        ok(not errs, f"{tag} Svep keys: no script errors {errs[:2]}")
+        ctx.close()
+    ctx, pg, errs = new(b, True)
+    go(pg, "svep", 900)
+    ok(pg.evaluate("document.activeElement.id") != "svDeck", "phone Svep: no focus ring forced on a touch screen")
+    ctx.close()
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
