@@ -2385,7 +2385,7 @@ a,button,input,select,textarea,label,[role=button]{touch-action:manipulation}
   ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
   .sv-card,.fade,.card .ph img,.jr-room,.jr-room.on,.mnav,.mnav.open,.drawer,.drawer.open,.sheet-in,.toast,.toast.show,.buybar,.btn{transition:none}
 }
-@media (max-width:560px){.sec.why{padding-block:2.6rem}.why .sec-head p{margin-top:.4rem}.why-foot{margin-top:1rem;font-size:.88rem}}
+@media (max-width:560px){.sec.why{padding-block:2.6rem}.looks-sec + .sec.why{padding-top:0}.why .sec-head p{margin-top:.4rem}.why-foot{margin-top:1rem;font-size:.88rem}}
 /* ============ v13 ============ */
 /* 1. Start picture on phones and tablets in the light theme: the photo keeps its colour, the words are
       white on a warm dark fade at the bottom (before: a white veil washed out the lower half) */
