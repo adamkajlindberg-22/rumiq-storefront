@@ -53,7 +53,7 @@ rooms = {k: v[1] for k, v in heads.items() if re.match(r"^rum-[a-z]+$", k)}
 ok(sum("Tryck på prickarna" in d for d in rooms.values()) <= 1, "room descriptions use each room's own tip")
 ok(len(set(rooms.values())) == len(rooms), "every room description is its own")
 lin = prods.get("produkt-lin-kuddfodral", "")
-ok("Lin har en levande yta" in lin and re.search(r"\d kr\.", lin), f"a thin short text gets the product's own story: {lin}")
+ok(("Lin har en levande yta" in lin or "mjukare för varje tvätt" in lin) and re.search(r"\d kr\.", lin), f"a thin short text gets the product's own story: {lin}")  # r5: Lin kuddfodral's short text is no longer thin (D15), it says the story's point itself
 
 with sync_playwright() as p:
     b = p.chromium.launch()

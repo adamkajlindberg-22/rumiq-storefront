@@ -221,7 +221,7 @@ with sync_playwright() as p:
         pg.evaluate("RQ.shop.cartLines().forEach(l => RQ.shop.setQty(l.id, 0))")
         go(pg, "look-sov-gott", 800)
         ok(pg.evaluate("[...document.querySelectorAll('.lp-stage .hs')].every(h => RQ.LOOKS.find(l => l.id === 'sov-gott').items.includes(h.dataset.hs))"), f"{tag} look page: every dot in the picture belongs to the look")
-        for i in range(3): pg.evaluate("(i) => document.querySelectorAll('.lp-item [data-add]')[i].click()", i); pg.wait_for_timeout(250)
+        for i in range(3): pg.evaluate("(i) => { const a = document.querySelectorAll('.lp-item')[i].querySelector('[data-add]'); if (a) a.click(); }", i); pg.wait_for_timeout(250)  # r5: a row in the cart says I varukorgen instead of +, so the rows are counted, not the + buttons
         ok("3" in pg.evaluate("document.getElementById('lpBuy').innerText") and "369" in pg.evaluate("document.getElementById('lpBuy').innerText"), f"{tag} look page: with three of four in the cart it says what the last one saves")
         ok(not pg.evaluate("[...document.querySelectorAll('.lp-item')].some(r => r.scrollWidth > r.clientWidth + 1)"), f"{tag} look page: the 'added' state stays inside its row")
         pg.wait_for_timeout(1900); pg.evaluate("document.querySelector('#lpBuy [data-look-add]').click()"); pg.wait_for_timeout(500)

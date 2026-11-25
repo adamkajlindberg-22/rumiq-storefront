@@ -503,7 +503,7 @@
         const lt = $("#lookTotal", root); let lookOff = null;
         if (lt) {
           // the button counts only what is not in the cart yet; once all of the chosen lies there, it shows the cart
-          const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)), b = $("#lookAdd", root); lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); if (b.classList.contains("done")) return;
+          const upd = () => { const sel = $$("[data-look]:checked", root).map((x) => RQ.byHandle(x.dataset.look)), b = $("#lookAdd", root); if (!b || !b.isConnected) return; lt.textContent = kr(sel.reduce((s, x) => s + x.price, 0)); if (b.classList.contains("done")) return; // the page may have gone meanwhile
             const n = sel.filter((x) => !S.cartLines().some((l) => l.product.handle === x.handle)).length, all = sel.length && !n; b.toggleAttribute("data-open-cart", !!all); b.classList.toggle("ghost", !!all);
             b.textContent = !sel.length ? "Välj minst en produkt" : all ? "Visa varukorgen" : `Lägg ${n} ${n === 1 ? "produkt" : "produkter"} i varukorgen`; b.disabled = !sel.length; };
           root.addEventListener("change", (e) => { if (e.target.matches("[data-look]")) upd(); });
