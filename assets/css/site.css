@@ -1485,7 +1485,8 @@ html.sheet-lock{overflow:hidden}
 .journey .hs-cap{margin-top:.2rem}
 /* the note about the pictures stands with each room on wide screens; on phones, where the room fills the screen, it comes after the walk */
 .jr-cap-after{display:none}
-@media (max-width:900px){.jr-cap{display:none}.jr-cap-after{display:block;margin-top:.8rem}}
+@media (max-width:900px){.jr-cap{display:none}.jr-cap-after{display:block;margin-top:.8rem}
+  .up-top ~ .jr-cap-after{margin-top:calc(.8rem - var(--dock-h))}.up-top ~ .jr-cap-after + .sec{padding-top:3rem}} /* Upptäck: the note sits right under the last room, not after an empty band */
 @media (max-width:1400px){.jr-dots{right:.6rem}}
 @media (max-width:900px){
   .journey{height:calc(var(--n) * 80svh + 100svh)}
@@ -1657,7 +1658,12 @@ html.sheet-lock{overflow:hidden}
 .vote-mail label{font-weight:560}
 .vote-mail .field{display:flex;gap:.4rem;margin-top:.5rem}
 .vote-mail input{flex:1;min-width:0;height:var(--field-h-s);min-height:var(--field-h-s);border:1px solid var(--field);border-radius:var(--r-btn);padding:0 var(--field-px);background:var(--paper);color:var(--ink);font:inherit}
-@media (max-width:900px){.play{grid-template-columns:1fr}.svt{grid-template-columns:1fr;justify-items:start}.svt-cards{width:7rem;height:8.6rem;margin-left:1rem}}
+@media (max-width:900px){.play{grid-template-columns:1fr}}
+@media (max-width:640px){
+  /* phones: the cards beside the heading, the text and button under both, so the card has no empty half (wider screens keep cards beside all of it) */
+  .svt{grid-template-columns:auto 1fr;column-gap:1.3rem;row-gap:.55rem;align-items:end;padding:1.3rem 1.3rem 1.4rem}.svt-tx{display:contents}
+  .svt-cards{grid-row:1/3;width:5.6rem;height:6.9rem;margin:.3rem 0 .5rem .5rem}.svt-tx .eyebrow{grid-column:2}.svt-tx h3{grid-column:2;align-self:start;font-size:1.4rem}
+  .svt-tx p,.svt-tx .btn{grid-column:1/-1}.svt-tx .btn{justify-self:start;margin-top:.3rem}}
 
 /* tone chips in search, looks on product page */
 .tone-row{margin-top:1.6rem}
@@ -1745,7 +1751,8 @@ html.sheet-lock{overflow:hidden}
 .sp-look-ims img{width:3.2rem;height:3.2rem;object-fit:contain;margin-left:-.6rem}
 .sp-look-ims img:first-child{margin-left:0}
 .sp-look b{display:block;font-size:1.05rem;margin:.15rem 0}
-.sp-look small{color:var(--muted);font-size:.85rem}
+.sp-look small{display:block;color:var(--muted);font-size:.85rem;line-height:1.5}
+.sp-links{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:.4rem}
 #svShare svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6;margin-right:.4rem;vertical-align:-3px}
 .svep-result .tlink{margin-top:.4rem}
 @media (max-width:640px){.sv-ctrl{gap:.6rem}.sp-row{grid-template-columns:6.8rem 1fr 2.6rem}.sp-acts{flex-direction:column;align-items:stretch;width:100%}.sp-acts .btn{justify-content:center;text-align:center}.sp-look{grid-template-columns:1fr}.sp-look-ims img{width:3.6rem;height:3.6rem}}
@@ -2207,6 +2214,7 @@ html[data-no-offers] [data-show=offers],html[data-no-news] [data-show=news]{disp
 .fr-ai{display:inline-flex;gap:.5rem;align-items:center;margin-left:.6rem;color:var(--ink2);font-size:.92rem;text-decoration:none}
 .fr-ai svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
 .fr-ai b{font-weight:600;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:640px){.fr-ai{margin:.35rem 0 0;flex-basis:100%}} /* on its own line under the tabs it starts at the same edge */
 .own-look{display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:center;margin-top:2rem;padding:1.2rem 1.4rem;border:1px dashed var(--line);border-radius:var(--r);text-decoration:none;color:inherit;max-width:36rem;transition:border-color .3s}
 .own-look:hover{border-color:var(--ink)}
 .ol-plus{display:grid;place-items:center;width:2.8rem;height:2.8rem;border-radius:50%;background:var(--ink);color:var(--bg);font-size:1.4rem;font-weight:500}
@@ -2631,6 +2639,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 @media (max-width:640px){.ss-form .field{flex-direction:column}}
 #ssOut{scroll-margin-top:.4rem} /* html's scroll-padding already keeps it clear of the header; both together put the result 170 px down */
 .ss-read{color:var(--ink2);margin-bottom:1.6rem}
+.ss-got{list-style:none;padding:0}.ss-got .chip{cursor:default;color:var(--ink);padding:.36rem .75rem;font-size:.86rem}.ss-got .chip:hover{border-color:var(--line)} /* what we understood: labels, not buttons */
 @media (max-width:640px){.imgopts.pick{grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem}.imgopts.pick button span{font-size:.8rem;overflow-wrap:break-word}}
 /* 7. Stylist: questions to start from, and what to do with an answer */
 .chat .starters{display:flex;flex-wrap:wrap;gap:.4rem}

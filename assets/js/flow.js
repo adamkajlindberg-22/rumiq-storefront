@@ -637,7 +637,7 @@
       <section class="wrap up-top">${RQ.svepTeaser()}</section>
       ${RQ.journey.html()}
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Looks</h2><p>Saker som hör ihop, med ett tryck.</p></div><a class="link" href="#looks">Alla looks</a></div><div class="looks-row">${RQ.LOOKS.map(RQ.lookCard).join("")}</div></div></section>
-      <section class="wrap" style="margin-bottom:4rem">${RQ.voteTeaser()}</section>
+      <section class="wrap">${RQ.voteTeaser()}</section>
       <section class="sec"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Magasin</h2><p>Korta texter om ljus, material, färg och vardag.</p></div><a class="link" href="#magasin">Alla artiklar</a></div><div class="mag-grid">${RQ.ARTICLES.slice(0, 3).map(RQ.magCard).join("")}</div></div></section>`,
     mount: (root) => RQ.journey.mount(root),
   });
