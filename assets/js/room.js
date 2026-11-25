@@ -86,8 +86,9 @@
   };
   /* A room we have not seen before: sensible spots for each kind, until the customer shows where things stand. */
   // a photo from the doorway: tables and sofa seats are about mid-height, the wall above them; the first things land there, large enough to grab
+  // nothing says where the tables are: things that stand on one go to the sides, where a side table stands by a sofa, never on the seat in the middle
   const GENERIC = { h: 48, k: 0.9, sun: 1,
-    surface: [[50, 63, 38], [32, 63, 38], [68, 63, 38]], cushion: [[50, 68, 24], [36, 68, 24]], throw: [[60, 71, 24], [40, 71, 24]], bedding: [[50, 70, 24]],
+    surface: [[86, 63, 38], [14, 63, 38]], cushion: [[50, 68, 24], [36, 68, 24]], throw: [[50, 76, 24], [40, 76, 24]], bedding: [[50, 70, 24]],
     wall: [[50, 40, 22], [30, 40, 22], [70, 40, 22]], floor: [[22, 92], [78, 92], [50, 94], [36, 90], [64, 90]],
     rug: [[50, 98, 56, 0.45]], window: [[86, 92, 15, 1]] };
   const FALLBACK = { cushion: ["throw", "floor"], throw: ["cushion", "floor"], bedding: ["throw", "cushion", "floor"], surface: ["floor"], wall: [], floor: [] };
@@ -121,7 +122,7 @@
       const free = spots.find((sp) => !taken(sp[0], sp[1], width(sp), kd)); if (free) return { x: free[0], y: free[1], w: +width(free).toFixed(1) };
       // every mapped spot is taken: the free place on the same surface nearest to one of them (a second lamp goes to the
       // other end of the side table, not to the floor), as long as that is still on the surface
-      for (const sp of spots) { const w = width(sp), row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]), lo = Math.max(3, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), hi = Math.min(97, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30)); // its foot stays on the surface
+      for (const sp of spots) { const w = width(sp), row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]), lo = Math.max(M ? 3 : 2 + w / 2, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), hi = Math.min(M ? 97 : 98 - w / 2, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30)); // its foot stays on the surface (and in your own photo, all of it inside the picture)
         for (let d = 0.5; d <= hi - lo; d += 0.5) for (const x of [sp[0] + d, sp[0] - d]) if (x >= lo && x <= hi && !taken(x, sp[1], w, kd)) return { x: +x.toFixed(1), y: sp[1], w: +w.toFixed(1) }; }
       return null;
     };
