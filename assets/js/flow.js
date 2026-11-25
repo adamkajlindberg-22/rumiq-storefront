@@ -71,11 +71,11 @@
   };
   const baseConfirm = RQ.confirmAdd;
   RQ.confirmAdd = (btn, name) => { baseConfirm(btn, name); RQ.fly(flySource(btn)); };
-  const addMany = (handles, btn, label) => {
+  const addMany = (handles, btn, label, said) => {
     if (btn && btn.classList && btn.classList.contains("done")) return 0; // the same button again within a moment: a double tap, not a second order
     handles.forEach((h) => S.addToCart(h + "::0", 1));
     const n = handles.length;
-    RQ.toast(`${label ? esc(label) + ": " : ""}${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen. <a href="#" data-open-cart>Visa</a>`);
+    RQ.toast(`${said || `${label ? esc(label) + ": " : ""}${n} ${n === 1 ? "produkt" : "produkter"} ligger i varukorgen.`} <a href="#" data-open-cart>Visa</a>`);
     if (btn && btn.classList) { btn.classList.add("done"); clearTimeout(btn._t); btn._t = setTimeout(() => btn.classList.remove("done"), 1600); }
     return n;
   };
@@ -138,7 +138,8 @@
   const sIn = $(".sheet-in", sheetEl), sBody = $(".sheet-body", sheetEl);
   let sOpen = false, sReturn = null;
 
-  const sheetHtml = (p) => {
+  /* ask: opened from a card's + on a product with several colours, so the colour is asked for (as Mitt rum does), not picked for you */
+  const sheetHtml = (p, ask) => {
     const cat = RQ.catById(p.cat), vs = p.variants || [];
     return `<figure class="sh-img"><img src="${RQ.img(p, 900)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(min-width:900px) 30rem, 100vw" alt="${esc(p.name)}"></figure>
       <div class="sh-tx">
@@ -146,9 +147,9 @@
         <h2 id="shTitle">${esc(p.name)}</h2>
         <p class="sh-price">${kr(p.price)}</p>
         <p class="sh-short">${esc(p.short)}</p>
-        ${vs.length ? `<div class="sh-v" role="radiogroup" aria-label="Variant">${vs.map((v, i) => `<button type="button" class="chip" role="radio" aria-checked="${i === 0}" data-shv="${i}">${esc(v)}</button>`).join("")}</div>` : ""}
+        ${vs.length ? `${ask ? '<p class="sh-ask" id="shAsk">Vilken färg vill du ha?</p>' : ""}<div class="sh-v" role="radiogroup" aria-label="${ask ? "Vilken färg vill du ha?" : "Variant"}">${vs.map((v, i) => `<button type="button" class="chip" role="radio" aria-checked="${!ask && i === 0}" data-shv="${i}">${esc(v)}</button>`).join("")}</div>` : ""}
         <div class="sh-act">
-          <button class="btn" type="button" id="shAdd" data-add="${p.handle}::0">Lägg i varukorgen</button>
+          <button class="btn" type="button" id="shAdd" data-add="${p.handle}::${ask ? "" : 0}">Lägg i varukorgen</button>
           <button class="iconbtn sh-fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${ICO.heart}</button>
         </div>
         <button class="btn ghost block sh-room" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(RQ.room && RQ.room.inScene(p.handle))}">${RQ.roomIco}<span>Ställ in i Mitt rum</span></button>
@@ -163,7 +164,7 @@
     open(handle, opts = {}) {
       const p = RQ.byHandle(handle); if (!p) return;
       RQ.closeAll && RQ.closeAll();
-      sBody.innerHTML = sheetHtml(p); sBody.scrollTop = 0; sIn.scrollTop = 0;
+      sBody.innerHTML = sheetHtml(p, opts.ask && p.variants && p.variants.length > 1); sBody.scrollTop = 0; sIn.scrollTop = 0;
       sReturn = opts.from || document.activeElement;
       if (!sOpen) { try { history.pushState({ rqSheet: 1 }, "", location.href); } catch (e) {} }
       sOpen = true;
@@ -190,7 +191,9 @@
   sheetEl.addEventListener("click", (e) => {
     if (e.target.closest("[data-sheet-close]")) { RQ.sheet.close(); return; }
     const v = e.target.closest("[data-shv]");
-    if (v) { $$("[data-shv]", sheetEl).forEach((x) => x.setAttribute("aria-checked", x === v)); const add = $("#shAdd", sheetEl); add.dataset.add = add.dataset.add.split("::")[0] + "::" + v.dataset.shv; return; }
+    if (v) { $$("[data-shv]", sheetEl).forEach((x) => x.setAttribute("aria-checked", x === v)); const add = $("#shAdd", sheetEl); add.dataset.add = add.dataset.add.split("::")[0] + "::" + v.dataset.shv; const q = $("#shAsk", sheetEl); if (q) { q.classList.remove("need"); q.textContent = "Vilken färg vill du ha?"; } return; }
+    const ad = e.target.closest("#shAdd");
+    if (ad && /::$/.test(ad.dataset.add)) { e.stopPropagation(); const q = $("#shAsk", sheetEl); if (q) { q.textContent = "Välj en färg först."; q.classList.add("need"); } const c = $("[data-shv]", sheetEl); if (c) c.focus(); return; }
     const a = e.target.closest("a[href^='#']");
     if (a && a.getAttribute("href").length > 1) { e.preventDefault(); RQ.sheet.close(a.getAttribute("href")); return; }
     if (e.target.closest("[data-room-btn]") && !(RQ.room && RQ.room.has())) RQ.sheet.close();
@@ -376,10 +379,13 @@
   RQ.lookNet = lookNet;
   const inCart = (h) => S.cartLines().some((l) => l.product.handle === h);
   // what is already in the cart is not added again: a look is one of each
-  const addMissing = (handles, btn, label) => {
+  const addMissing = (handles, btn, label, look) => {
     const miss = handles.filter((h) => !inCart(h));
     if (!miss.length) { RQ.toast(`${esc(label)} <span>ligger redan i varukorgen.</span> <a href="#" data-open-cart>Visa</a>`); return []; }
-    return addMany(miss, btn, label) ? miss : [];
+    // a ready-made look: the whole look is now in the cart, and what it saves (not "1 produkt", which reads as if only one thing were there)
+    const off = look ? lookTotal(look) - lookNet(look) : 0;
+    const said = look ? `<span>${esc(look.name)}</span> <span>ligger i varukorgen.</span>${off ? ` <span>Du sparar</span> ${kr(off)}.` : ""}` : "";
+    return addMany(miss, btn, label, said) ? miss : [];
   };
   // a ready-made look whose things these are (a saved look keeps its discount and its name)
   const lookOf = (handles) => RQ.LOOKS.find((l) => l.items.length === handles.length && l.items.every((h) => handles.includes(h)));
@@ -401,7 +407,7 @@
   }).join("");
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-look-add]");
-    if (b) { const l = lookById(b.dataset.lookAdd); const added = addMissing(l.items, b, l.name); const host = b.closest(".lc, .look-page"); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
+    if (b) { const l = lookById(b.dataset.lookAdd); const added = addMissing(l.items, b, l.name, l); const host = b.closest(".lc, .look-page"); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
     const mb = e.target.closest("[data-look-buy]"); if (mb) { addMissing(mb.dataset.lookBuy.split(",").filter(Boolean), mb, mb.dataset.lookName || "Looken"); return; }
     const s = e.target.closest("[data-look-save]");
     if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad i Mitt hem"; RQ.toast(`Looken sparades. <a href="#mitt-hem">Visa i Mitt hem</a>`); }
@@ -436,8 +442,8 @@
       const miss = l.items.filter((h) => !inCart(h)), have = l.items.length - miss.length, saved = S.looks().some((x) => x.name === l.name);
       const save = `<button class="btn ghost" type="button" data-look-save="${l.id}"${saved ? " disabled" : ""}>${saved ? "Sparad i Mitt hem" : "Spara looken"}</button>`;
       if (!miss.length) return `<p class="lp-in" role="status"><span>Hela looken ligger i varukorgen.</span>${off ? ` <span>Rabatten är avdragen:</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-open-cart>Visa varukorgen</button>${save}</div>`;
-      if (have) { const rest = miss.reduce((s, h) => s + RQ.byHandle(h).price, 0) - off;
-        return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>finns i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}"><span>Lägg till resten</span> · ${kr(Math.max(0, rest))}</button>${save}</div>`; }
+      if (have) { const rest = miss.reduce((s, h) => s + RQ.byHandle(h).price, 0); // what the rest costs; the saving is said on its own line
+        return `<p class="lp-in" role="status">${have} <span>av</span> ${l.items.length} <span>finns i varukorgen.</span>${off ? ` <span>Lägg till resten så sparar du</span> ${kr(off)}.` : ""}</p><div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Lägg till resten · ${kr(rest)}</button>${save}</div>`; }
       return `<div class="ctrl-row"><button class="btn" type="button" data-look-add="${l.id}">Handla looken · ${kr(net)}</button>${save}</div>`;
     };
     return {
@@ -458,7 +464,8 @@
         // the caption only speaks of dots when one is actually in the cropped picture
         const cap = () => { const c = $("#lpCap", root); if (c) c.textContent = $$(".lp-stage .hs", root).some((h) => !h.hidden) ? CAP_DOTS : CAP_NONE; };
         cap(); setTimeout(cap, 400); addEventListener("resize", cap);
-        const offCart = S.onChange((w) => { const el = $("#lpBuy", root); if (el && (w === "cart" || w === "all" || w === "looks")) { const had = el.contains(document.activeElement); el.innerHTML = buy(); if (had) { const b = $(".btn", el); b && b.focus({ preventScroll: true }); } } });
+        // the block is drawn again in place: the page stays where it is (no jump when the pressed button is replaced)
+        const offCart = S.onChange((w) => { const el = $("#lpBuy", root); if (el && (w === "cart" || w === "all" || w === "looks")) { const had = el.contains(document.activeElement), y = scrollY; el.innerHTML = buy(); if (had) { const b = $(".btn", el); b && b.focus({ preventScroll: true }); } if (Math.abs(scrollY - y) > 1) scrollTo(scrollX, y); } });
         return () => { offHs && offHs(); offCart && offCart(); removeEventListener("resize", cap); };
       },
     };
@@ -641,13 +648,13 @@
     const chip = (hex, name, extra = "") => { const rgb = typeof hex === "string" ? hex2rgb(hex) : hex, on = st.tone && dist(st.tone, rgb) < 1; return `<button type="button" class="chip tone${on ? " on" : ""}" data-tone="${rgb.join(",")}" data-tone-name="${esc(name)}" aria-pressed="${!!on}"${extra}><i style="background:rgb(${rgb.join(",")})"></i>${esc(name)}</button>`; };
     const toRgb = (c) => hex2rgb(c.hex || c);
     return `<div class="tone-row"><p class="eyebrow">Sök på färg</p><div class="chips">${RQ.TONES.map((t) => chip(t.hex, t.name)).join("")}</div>
-      ${pal.length ? `<p class="eyebrow" style="margin-top:1rem">Färger från mitt rum</p><div class="chips">${pal.map((c, k) => chip(toRgb(c), `Rumsfärg ${k + 1}`, ' data-room-tone')).join("")}</div>` : ""}</div>`;
+      ${pal.length ? `<p class="eyebrow" style="margin-top:1rem">Färger från mitt rum</p><div class="chips">${pal.map((c, k, all) => chip(toRgb(c), RQ.toneNames(all.map((x) => x.hex || x))[k], ' data-room-tone')).join("")}</div>` : ""}</div>`;
   };
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-tone]");
     if (t) { const rgb = t.dataset.tone.split(",").map(Number), st = RQ.searchState; if (st.tone && dist(st.tone, rgb) < 1) { st.tone = null; st.toneName = ""; } else { st.tone = rgb; st.toneName = t.dataset.toneName; } RQ.doSearch && RQ.doSearch(); return; }
     const r = e.target.closest("[data-tone-room]");
-    if (r) { const R = RQ.room; if (R && R.has() && R.get().pal && R.get().pal.length) { const c = R.get().pal[0]; RQ.searchState.tone = hex2rgb(c.hex || c); RQ.searchState.toneName = "Rumsfärg 1"; } setTimeout(() => RQ.doSearch && RQ.doSearch(), 80); }
+    if (r) { const R = RQ.room; if (R && R.has() && R.get().pal && R.get().pal.length) { const c = R.get().pal[0]; RQ.searchState.tone = hex2rgb(c.hex || c); RQ.searchState.toneName = RQ.toneName(c.hex || c); } setTimeout(() => RQ.doSearch && RQ.doSearch(), 80); }
   }, true);
 
   /* ------------------------------------------------------------------ header compaction */

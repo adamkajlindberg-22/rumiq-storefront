@@ -195,7 +195,7 @@
             <div class="panel"><h2 class="h3">4. Betalning</h2><p style="margin-top:.6rem;color:var(--ink2)">När butiken öppnar betalar du i Shopifys kassa. Vi ser aldrig dina kortuppgifter. I testläget hoppar vi över betalningen.</p>${RQ.payRow ? RQ.payRow() : ""}
               <label class="check" style="margin-top:1rem"><input type="checkbox" name="terms" required aria-describedby="coe-terms"> <span>Jag godkänner <a href="#juridik-villkor">köpvillkoren</a> och har läst om min <a href="#juridik-angerratt">ångerrätt</a>.</span></label><span class="ferr" id="coe-terms" hidden></span>
               <div class="co-final"><div class="sum"><span>Frakt</span><span data-co="ship"></span></div><div class="sum total"><span>Totalt</span><span data-co="total"></span></div></div>
-              <button class="btn block" type="submit" style="margin-top:1.2rem">Lägg testorder</button><p class="status err" id="coStatus" role="alert"></p></div>
+              <button class="btn block" type="submit" style="margin-top:1.2rem"><span><span>Lägg testorder</span> · <span data-co="total"></span></span></button><p class="status err" id="coStatus" role="alert"></p></div>
           </form>
           <aside class="panel co-sum" id="coSum">${summary()}</aside>
         </section>`,

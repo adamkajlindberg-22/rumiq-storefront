@@ -305,12 +305,13 @@ main{min-height:60vh}
 .f-chip{display:inline-flex;align-items:center;gap:.35rem;padding-right:.55rem}
 .f-chip svg{width:.85rem;height:.85rem;fill:none;stroke:currentColor;stroke-width:1.8}
 .f-active .tlink{font-size:.9rem;margin-left:.3rem}
+/* a choice that would show nothing with the other filters: still there, but quiet */
+.f-opt.f-zero{color:var(--muted)}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:.8rem 1rem;margin-bottom:1.4rem}
 .toolbar .count{font-size:.9rem;color:var(--muted)}
 .tb-l{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .9rem;min-width:0}
 .rm-hint{font-size:.9rem;color:var(--ink2)}
 @media (hover:none){.rm-hint{display:none}}
-@media (hover:hover){#results.peek .card.in-room .ph .hov.inroom{opacity:1;transition:opacity .5s var(--ease)}}
 .toolbar .select{width:auto;min-width:11.5rem}
 .list-more{margin-top:clamp(3rem,6vw,4.5rem)}
 .list-more .h3{margin-bottom:1.4rem}
@@ -414,7 +415,7 @@ html:has(.cookie.show) .buybar.show:not(.rm-bar){transform:translateY(110%);visi
 .look{display:grid;grid-template-columns:minmax(0,1fr) 19rem;gap:1.5rem;align-items:start}
 .look-items{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}
 .look-item{display:grid;gap:.35rem;cursor:pointer;position:relative;color:var(--ink);font-size:.95rem}
-.look-item img{border-radius:var(--r-img);aspect-ratio:4/5;object-fit:cover;width:100%;transition:opacity .3s,filter .3s;background:var(--img-bg)}
+.look-item img{border-radius:var(--r-img);aspect-ratio:4/5;object-fit:cover;width:100%;height:auto;transition:opacity .3s,filter .3s;background:var(--img-bg)}
 .look-item input{position:absolute;top:.6rem;left:.6rem;width:1.2rem;height:1.2rem;accent-color:var(--ink)}
 .look-item input:not(:checked) ~ img{opacity:.4;filter:saturate(.3)}
 .look-item .nm{font-weight:560;line-height:1.25;margin-top:.4rem}
@@ -666,6 +667,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .line :is(h3,h4){font-weight:560;font-size:.98rem;line-height:1.3;letter-spacing:-.01em}
 .line :is(h3,h4) a{text-decoration:none}
 .line .v{font-size:.85rem;color:var(--muted)}
+.line .lk-tag{color:var(--accent);font-weight:560}
 .line .qty{margin-top:.55rem;height:calc(2.75rem + 2px)}
 .line .qty button{width:2.75rem;flex:none}
 .line .qty input{width:2.4rem;flex:none;pointer-events:none}
@@ -689,12 +691,22 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 /* the field and the close button stay at the top while the hits scroll under them */
 .search .sbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:1rem;padding:clamp(1rem,4vh,3.4rem) 0 0;background:var(--bg)}
 .search .sbar::after{content:"";position:absolute;left:0;right:0;top:100%;height:1.2rem;background:linear-gradient(var(--bg),transparent);pointer-events:none}
+/* the bar's ground runs edge to edge, so no lighter strip shows beside it on wide screens */
+.search .sbar{box-shadow:0 0 0 50vw var(--bg);clip-path:inset(0 -50vw -1.2rem)}
+.search .sbar::after{left:-50vw;right:-50vw}
 .search .sfield{flex:1;min-width:0;display:flex;align-items:center;gap:.9rem;border-bottom:1px solid var(--ink);padding-bottom:.4rem}
 .search.has-q .hint{display:none}
 .s-fix{margin:0 0 1.2rem;color:var(--ink2)}
 .s-fix b{color:var(--ink);font-weight:600}
 .search .sfield svg{width:1.7rem;height:1.7rem;fill:none;stroke:var(--muted);stroke-width:1.5;flex:none}
 .search input{font-size:clamp(1.7rem,4.2vw,3.2rem);font-weight:500;letter-spacing:-.035em;border:0!important;border-radius:0;background:transparent!important;padding:.4rem 0;box-shadow:none!important}
+/* the field is an underline: focus makes it a thicker green line (no box inside the line) */
+.search .sfield{transition:border-color .2s}
+.search .sfield:focus-within{border-bottom:3px solid var(--accent);padding-bottom:calc(.4rem - 2px)}
+.search input:focus-visible{outline:0}
+/* the hit that Enter opens */
+.search .card.s-pick h3 a{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:.3em}
+.search a.chip.s-pick{border-color:var(--accent)}
 input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none;appearance:none}
 .search .close{flex:none;background:var(--sunk)}
 .search input::-webkit-search-cancel-button{display:none}
@@ -934,7 +946,12 @@ details.pw[open] summary::after{content:" −"}
   .toolbar .select{flex:1;min-width:0;height:2.75rem}
   .toolbar .roomtoggle{order:0;flex:none;height:2.75rem;padding:0 .55rem 0 .3rem;gap:.45rem}
   .toolbar .roomtoggle .rt-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .toolbar .roomtoggle .rt-s{display:inline;white-space:nowrap}
 }
+/* phones: the room switch says what it does (words, no picture); tablets: sort keeps its own width at the end of the row */
+@media (max-width:640px){.toolbar .roomtoggle{padding-left:.85rem}.toolbar .roomtoggle .rt-img{display:none}}
+@media (max-width:400px){.toolbar .tb-r{gap:.4rem}.toolbar .tb-filter{padding:0 .75rem}.toolbar .roomtoggle{padding:0 .4rem 0 .7rem}.toolbar .select{padding:0 1.9rem 0 .75rem;background-position:right .65rem center}}
+@media (min-width:641px) and (max-width:1100px){.toolbar .select{flex:0 1 15rem;margin-left:auto}}
 @media (min-width:641px) and (max-width:1100px){.filters{max-width:34rem;margin-inline:auto}} /* on a tablet the sheet keeps a phone's width, centred */
 @media (max-width:900px){
   .shop-head .lead{font-size:1rem}
@@ -951,6 +968,9 @@ details.pw[open] summary::after{content:" −"}
   .dock a,.dock button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;border:0;background:none;text-decoration:none;color:var(--muted);font-size:.75rem;font-weight:600;position:relative;-webkit-tap-highlight-color:transparent;letter-spacing:0}
   .dock svg{width:1.4rem;height:1.4rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
   .dock .on{color:var(--ink)}
+  /* you are here: the page's item is ink, a little bolder, with a short accent line under it */
+  .dock a.on::after{content:"";position:absolute;left:50%;bottom:.28rem;width:1.3rem;height:3px;margin-left:-.65rem;border-radius:3px;background:var(--accent)}
+  .dock a.on svg{stroke-width:2}
   .dock .badge{top:.45rem;right:calc(50% - 1.2rem)}
   .dock.away{transform:translateY(calc(100% + 1.5rem))}
   .dock.away:focus-within{transform:none}
@@ -1024,7 +1044,7 @@ details.pw[open] summary::after{content:" −"}
   .pcr .crumbs{flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
   .pcr .crumbs li:last-child{display:none}
   .pdp{padding-top:.7rem}
-  .pg-item,.pg-item:first-child,.pg-item.wide,.pg-item:nth-child(even):last-child{aspect-ratio:1/1;max-height:50svh}
+  .pg-item,.pg-item:first-child,.pg-item.wide,.pg-item:nth-child(even):last-child{grid-column:auto;aspect-ratio:1/1;max-height:50svh} /* in the swipe row no slide spans: a spanning last slide would be placed first */
   .pg-dots{margin-top:.6rem}
   .pinfo .eyebrow{font-size:.84rem}
   .pinfo h1{font-size:1.75rem;margin:.3rem 0 .5rem}
@@ -1064,7 +1084,7 @@ details.pw[open] summary::after{content:" −"}
 .dock-room .dr-img{width:2.3rem;height:2.3rem;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--fill);color:var(--on-fill);margin-top:-1.1rem;box-shadow:0 0 0 4px color-mix(in srgb,var(--paper) 92%,transparent),0 8px 18px -8px rgba(0,0,0,.45)}
 .dock-room .dr-img img{width:100%;height:100%;object-fit:cover}
 .dock-room .dr-img svg{width:1.15rem!important;height:1.15rem!important}
-.dock-room.on .dr-img{box-shadow:0 0 0 4px color-mix(in srgb,var(--paper) 92%,transparent),0 0 0 6px var(--fill)}
+.dock-room.on .dr-img{box-shadow:0 0 0 4px color-mix(in srgb,var(--paper) 92%,transparent),0 0 0 6px var(--accent)}
 .dock .dock-room .badge{top:-.6rem;right:calc(50% - 1.75rem);background:var(--glow);color:#22252A}
 body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));visibility:hidden;transition:transform .45s var(--ease),visibility 0s .45s}
 
@@ -1089,6 +1109,7 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 /* shop toolbar toggle */
 .tb-r{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
 .roomtoggle{display:inline-flex;align-items:center;gap:.6rem;height:2.6rem;padding:0 .7rem 0 .3rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);font-size:.92rem;font-weight:600;color:var(--ink)}
+.roomtoggle .rt-s{display:none}
 .roomtoggle .rt-img{width:2rem;height:2rem;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--sunk)}
 .roomtoggle .rt-img img{width:100%;height:100%;object-fit:cover}
 .roomtoggle .rt-img svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.6}
@@ -1241,7 +1262,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rh-card > span span{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums}
 
 @media (max-width:1100px){
-  .roompill span:not(.rp-img):not(.badge){display:none}
+  .roompill span:not(.rp-img):not(.badge){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap} /* hidden to the eye, kept as the link's name */
   .roompill{padding:0 .3rem;margin-right:.2rem}
 }
 @media (max-width:900px){
@@ -1315,6 +1336,9 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .card .qv svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .card:hover .qv,.card .qv:focus-visible{opacity:1;transform:none}
 @media (hover:none),(max-width:640px){.card .qv{opacity:1;transform:none;width:2.4rem;padding:0;justify-content:center}.card .qv span{display:none}}
+/* phones: a 170 px photo carries only the two everyday actions, heart and Lägg till. Snabbtitt is the product page one tap away,
+   the room is the switch above the list and the product page's Ställ in i Mitt rum. */
+@media (max-width:640px){.card .qv,.card .rbtn{display:none}}
 /* fingers: the four round buttons on a card answer to 44 px although they are drawn smaller, and heart and room stand apart
    (::after, an invisible edge: ::before is the light backing behind heart and room) */
 @media (hover:none),(max-width:640px){
@@ -1340,6 +1364,8 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .sh-price{font-size:1.2rem;font-weight:560;font-variant-numeric:tabular-nums}
 .sh-short{color:var(--ink2);max-width:34rem}
 .sh-v{display:flex;gap:.4rem;flex-wrap:wrap}
+.sh-ask{margin:0 0 .5rem;font-weight:600;color:var(--ink)}
+.sh-ask.need{color:var(--danger)}
 .sh-act{display:flex;gap:.5rem;align-items:center;margin-top:.3rem}
 .sh-act .btn{flex:1}
 .sh-fav{border:1px solid var(--line);width:3.25rem;height:3.25rem}
@@ -1947,7 +1973,7 @@ body.on-checkout .tools{grid-column:3}
 .gap .eyebrow{margin-bottom:.6rem}
 .gap-i{display:grid;grid-template-columns:2.6rem 1fr auto;gap:.8rem;align-items:center;padding:.35rem 0}
 .gap-i img{width:2.6rem;height:2.6rem;object-fit:contain}
-.gap-i span{display:grid;line-height:1.25}.gap-i b{font-weight:500;font-size:.9rem}.gap-i small{color:var(--muted);font-size:.8rem}
+.gap-i span{display:grid;line-height:1.25}.gap-i b{font-weight:500;font-size:.9rem}.gap-i small{color:var(--muted);font-size:.8rem;text-wrap:balance}
 
 /* Svep on desktop: keep the deck and its buttons above the fold */
 @media (min-width:901px){
@@ -2497,17 +2523,17 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-colors h3{font-size:var(--t-card);font-weight:600}
 .rm-colors p{margin-top:.25rem;color:var(--ink2);font-size:.95rem}
 @media (max-width:640px){.rm-colors{grid-template-columns:minmax(0,1fr);gap:.8rem}}
-/* 5. Shop cards with "Visa i mitt rum" on: the product photo first, the room second.
-      Pointer: the room fades in on hover. Touch: swipe sideways between the two. */
-.card.in-room .ph .hov.inroom{position:absolute;inset:0;display:block;opacity:0;z-index:2;transition:opacity .2s linear}
+/* 5. Shop cards with "Visa i Mitt rum" on: the room is what the switch promises, so it shows first.
+      Pointer: the product photo comes on hover. Touch: swipe sideways to the photo. */
+.card.in-room .ph .hov.inroom{position:absolute;inset:0;display:block;opacity:1;z-index:2;transition:opacity .2s linear}
 .inr-tag{position:absolute;left:.5rem;top:.5rem;z-index:3;padding:.22rem .55rem;border-radius:999px;background:rgba(247,247,244,.94);color:#22252A;font-size:.72rem;font-weight:600;font-style:normal;line-height:1.3}
 .ph-dots{display:none}
-@media (hover:hover){.card.in-room:hover .ph .hov.inroom{opacity:1}}
+@media (hover:hover){.card.in-room:hover .ph .hov.inroom{opacity:0}}
 @media (hover:none){
   .card.in-room .ph{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
   .card.in-room .ph::-webkit-scrollbar{display:none}
   .card.in-room .ph > img.fade{flex:0 0 100%;scroll-snap-align:start}
-  .card.in-room .ph .hov.inroom{position:relative;inset:auto;flex:0 0 100%;opacity:1;scroll-snap-align:start}
+  .card.in-room .ph .hov.inroom{position:relative;inset:auto;flex:0 0 100%;opacity:1;scroll-snap-align:start;order:-1}
   .card.in-room{position:relative}
   .card.in-room .ph-dots{position:absolute;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:.3rem;pointer-events:none;top:calc((100cqw) * 1.25 - 1rem)}
   .ph-dots i{width:.38rem;height:.38rem;border-radius:50%;background:rgba(247,247,244,.6);box-shadow:0 0 0 1px rgba(34,37,42,.28)}

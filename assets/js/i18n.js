@@ -39,7 +39,7 @@
       [/^Hej (.+)$/, (m) => "Hi " + m[1]],
       [/^Hela looken (.+)$/, (m) => { const a = one(m[1]); return a ? "Whole look " + a : null; }],
       [/^Sparad i (.+)\.$/, (m) => "Saved in " + (one(m[1]) || m[1]) + "."],
-      [/^Inga träffar på "(.*)"$/, (m) => `No results for "${m[1]}"`],
+      [/^Inga träffar på [”"](.*)[”"]$/, (m) => `No results for “${m[1]}”`],
       [/^Inloggad med (.+) \(testkonto\)\.$/, (m) => `Signed in with ${m[1]} (test account).`],
       [/^Köpet ångrades redan (.+)\.$/, (m) => `The purchase was already cancelled ${m[1]}.`],
       [/^På den riktiga sajten öppnas (\w+?)s egen inloggning, och du kommer tillbaka hit inloggad\. I förhandsversionen skapar vi ett testkonto i stället\.$/, (m) => `On the real site ${m[1]}'s own sign-in opens, and you come back here signed in. In the preview we create a test account instead.`],

@@ -97,10 +97,15 @@ with sync_playwright() as p:
             ok(ev("document.querySelector('#searchRes .card .price').getBoundingClientRect().bottom") <= 480, f"{tag} search: with the keyboard up a whole first row (name and price) is visible")
             pg.set_viewport_size({"width": W, "height": Hh}); pg.wait_for_timeout(150)
         else:
-            pg.focus("#searchInput"); pg.keyboard.press("Enter"); pg.wait_for_timeout(120)
-            ok(ev("!!document.activeElement.closest('#searchRes .card')"), f"{tag} search: Enter steps into the hits")
+            # v15 r3 (desktop review D14): Enter opens the first hit, which is marked; the arrow keys still walk the hits
+            pg.focus("#searchInput"); pg.keyboard.press("ArrowDown"); pg.wait_for_timeout(120)
+            ok(ev("!!document.activeElement.closest('#searchRes .card')"), f"{tag} search: ArrowDown steps into the hits")
             pg.keyboard.press("ArrowDown"); a2 = ev("document.activeElement.textContent"); pg.keyboard.press("ArrowUp"); pg.keyboard.press("ArrowUp")
             ok(ev("document.activeElement.id") == "searchInput" and a2, f"{tag} search: arrow keys walk the hits and back to the field")
+            first = ev("document.querySelector('#searchRes .card.s-pick h3 a').getAttribute('href')")
+            pg.keyboard.press("Enter"); pg.wait_for_timeout(500)
+            ok(first and ev("location.pathname").endswith("/" + first.lstrip("#").rstrip("/") + "/") and not ev("document.getElementById('search').classList.contains('open')"), f"{tag} search: Enter opens the marked first hit")
+            pg.goto(BASE + "butik/"); pg.wait_for_timeout(500); tap(".searchbtn"); pg.wait_for_timeout(450)
 
         # ------------------------------------------------------------ layers and Back
         pg.go_back(); pg.wait_for_timeout(450)
@@ -216,8 +221,9 @@ with sync_playwright() as p:
         if mobile:
             pg.goto(BASE + "butik/"); pg.wait_for_timeout(500)
             ok(float(ev("getComputedStyle(document.querySelector('#dock a')).fontSize").replace("px", "")) >= 12, f"{tag} dock: labels are 12 px")
-            hit = ev("(() => { const c = document.querySelector('#results .card'); c.scrollIntoView({ block: 'center' }); const f = c.querySelector('.fav').getBoundingClientRect(), r = c.querySelector('.rbtn').getBoundingClientRect(); const at = (x, y) => { const e = document.elementFromPoint(x, y); return e && e.closest('button') ? e.closest('button').className : ''; }; return [at(f.left + 18, f.top - 3), at(r.left + 18, r.bottom + 3), r.top - f.bottom]; })()")
-            ok("fav" in hit[0] and "rbtn" in hit[1] and hit[2] >= 4, f"{tag} cards: heart and room answer to 44 px and stand apart: {hit}")
+            # v15 r3 (phone review M18): a phone card's photo carries only heart and Lägg till; both answer to 44 px
+            hit = ev("(() => { const c = document.querySelector('#results .card'); c.scrollIntoView({ block: 'center' }); const f = c.querySelector('.fav').getBoundingClientRect(), r = c.querySelector('.qadd').getBoundingClientRect(); const at = (x, y) => { const e = document.elementFromPoint(x, y); return e && e.closest('button') ? e.closest('button').className : ''; }; return [at(f.left + 18, f.top - 3), at(r.left + 18, r.bottom + 3), r.top - f.bottom, [...c.querySelectorAll('button')].filter((b) => b.offsetParent).length]; })()")
+            ok("fav" in hit[0] and "qadd" in hit[1] and hit[2] >= 4 and hit[3] == 2, f"{tag} cards: heart and Lägg till answer to 44 px, stand apart and are the only buttons: {hit}")
             ev("scrollTo(0, 99999)"); pg.wait_for_timeout(700)
             end = ev("(() => { const f = document.querySelector('footer.site').getBoundingClientRect(), l = document.querySelector('footer.site .bottom').getBoundingClientRect(), d = document.getElementById('dock'); return [Math.round(innerHeight - f.bottom), d.classList.contains('away'), l.bottom <= d.getBoundingClientRect().top]; })()")
             ok(end[0] <= 1 and not end[1] and end[2], f"{tag} page end: the footer reaches the bottom, the dock is back and covers no link: {end}")

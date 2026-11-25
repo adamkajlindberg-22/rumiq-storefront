@@ -42,10 +42,47 @@
         break;
       }
     });
+    // the dock counts while it is slid away on scrolling: it comes back while the toast is still up
+    const d = $("#dock"); if (d && d.offsetHeight && getComputedStyle(d).visibility !== "hidden" && !$("#cart.open")) top = Math.min(top, d.offsetTop);
     return Math.max(0, Math.round(H - top));
   };
+  /* where the toast goes: above the bars at the bottom, unless that covers what the customer needs next: the control just used
+     and the card, form or sheet it sits in, or any form field. Then: the space above an open sheet, just under the header, or (on
+     a wide screen) a bottom corner. An open sheet or drawer at the side keeps the toast beside it. Mitt rum places its own (CSS). */
+  let toastBy = null, toastByAt = 0;
+  const by = (e) => { toastBy = e.target; toastByAt = Date.now(); };
+  document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
+  const FIELD = "input:not([type=hidden]),select,textarea,form button";
+  const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
+  const toastPlace = (t) => {
+    ["top", "bottom", "left", "right"].forEach((k) => t.style.removeProperty(k));
+    if (document.getElementById("rmStage")) return;
+    const W = innerWidth, H = innerHeight, tw = t.offsetWidth, th = t.offsetHeight, m = 12;
+    const panelEl = $$(".sheet.open .sheet-in, .sheet.open .sheet-card, #cart.open").find((e) => e.getBoundingClientRect().height), panel = panelEl ? panelEl.getBoundingClientRect() : null;
+    const side = panel && panel.left > W * 0.3 && panel.top < H * 0.2 ? panel.left : W; // free width left of a side panel
+    const trig = toastBy && Date.now() - toastByAt < 4000 && document.contains(toastBy) ? toastBy : null;
+    const zone = panelEl || (trig && [".card", ".sh-act", "form", ".look", "li"].map((q) => trig.closest(q)).find((z) => z && z.getBoundingClientRect().height < H * 0.7)) || null;
+    const tr = trig && trig.getBoundingClientRect(), band = tr ? [tr.top - 40, tr.bottom + 170] : null; // the control just used and what comes right after it
+    const nav = $("#nav"), navB = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
+    const cx = (side - tw) / 2, bottomY = H - toastLift() - m - 2 - th;
+    const spots = [[cx, bottomY]];
+    if (panel && side === W && panel.top > th * 0.6) spots.push([cx, Math.max(6, Math.min((panel.top - th) / 2, panel.top - th - 6))]); // above a sheet from below, over the dimmed page
+    if (!panel) spots.push([cx, navB + m]);
+    if (W >= 1100) spots.push([24, bottomY], [side - tw - 24, bottomY]);
+    const hits = ([x, y]) => { let n = 0;
+      for (const fx of [0.06, 0.5, 0.94]) for (const fy of [0.15, 0.85]) {
+        const py = y + th * fy, el = (document.elementsFromPoint(x + tw * fx, py) || []).find((e) => e !== t && !t.contains(e));
+        if (!el || el.closest(".sheet-scrim")) continue;
+        const need = el.closest(NEED);
+        if ((trig && (el === trig || trig.contains(el))) || el.closest(FIELD) || (need && ((zone && zone.contains(el)) || (band && !panelEl && py > band[0] && py < band[1])))) n++; }
+      return n; };
+    let best = spots[0], bn = Infinity;
+    for (const sp of spots) { if (sp[1] < 0 || sp[1] + th > H || sp[0] < 0) continue; const n = hits(sp); if (n < bn) { best = sp; bn = n; } if (!n) break; }
+    if (best === spots[0] && side === W) return; // the usual place: the stylesheet's own centring and safe-area margin
+    t.style.top = Math.round(best[1]) + "px"; t.style.bottom = "auto"; t.style.left = Math.round(best[0]) + "px"; t.style.right = "auto";
+  };
   RQ.toast = (html, ms) => {
-    const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); t.classList.add("show");
+    const t = $("#toast"); t.innerHTML = html; t.style.setProperty("--toast-lift", toastLift() + "px"); toastPlace(t); t.classList.add("show");
     // a toast with a link stays 6 s, and waits while the pointer or the focus is on it (2.2.1)
     const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":hover, :focus-within")) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); };
     clearTimeout(toastT); toastT = setTimeout(hide, wait);
@@ -61,7 +98,8 @@
     const print = RQ.isPrint && RQ.isPrint(p);
     const photo = print ? `<img class="fade cutph" src="${RQ.cut(p)}" alt="${esc(p.name)}" ${first ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="461" height="600">`
       : `<img class="fade" src="${RQ.img(p, 600)}" srcset="${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="${esc(p.name)}" ${first === "high" ? 'fetchpriority="high"' : first === "eager" ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="600" height="750">`;
-    // with "Visa i mitt rum" on, the product photo still comes first; the room is the second picture (hover, or swipe on a phone)
+    // with "Visa i Mitt rum" on, the room is the picture shown (CSS puts it first; hover or a swipe shows the product photo)
+    // tab order follows the picture: heart and room top right, then Snabbtitt (bottom left) before Lägg till (bottom right)
     const ph = on ? `${photo}<span class="hov inroom">${R.layer(p)}<i class="inr-tag">I ditt rum</i></span>`
       : `${photo}<img class="hov fade" data-src="${print ? RQ.img(p, 600) : `assets/img/d/${p.handle}-600.webp`}" alt="" decoding="async" width="600" height="750" onerror="this.remove()">`;
     return `
@@ -69,8 +107,8 @@
       <a class="ph" href="#produkt-${p.handle}" tabindex="-1" aria-hidden="true">${ph}</a>${on ? '<span class="ph-dots" aria-hidden="true"><i></i><i></i></span>' : ""}
       <button class="iconbtn fav" type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}</button>
       <button class="iconbtn rbtn" type="button" data-room-btn="${p.handle}" aria-pressed="${!!(R && R.inScene(p.handle))}" aria-label="Ställ in ${esc(p.name)} i Mitt rum">${roomIco}</button>
-      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <button class="qv" type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
+      <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
       <p class="sub">${m ? `<span class="fm" title="Hur väl produktens färger passar ditt rum">${m} % färgmatch</span>` : swatches(p)}</p>
     </article>`;
@@ -95,13 +133,27 @@
     if (hue >= 60 && hue <= 170) return "gron"; if (hue < 26 && sat > 0.3) return "terrakotta"; return l > 0.72 ? "beige" : "brun";
   };
   RQ.colours = (p) => p._fam || (p._fam = [...new Set((p.tone || []).map(famOf))]);
+  /* a readable name for a colour picked from the customer's room photo (the search's room colour chips); the words differ from the
+     shop's own colour chips (Havre, Sand, Ek ...), so the two rows never show one name for two colours */
+  RQ.toneName = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    const sat = d ? d / (1 - Math.abs(2 * l - 1)) : 0, hue = !d ? 0 : ((mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4) * 60 + 360) % 360;
+    const by = (bands) => bands.find(([min]) => l >= min)[1];
+    if (sat < 0.1) return by([[0.84, "Kritvit"], [0.6, "Ljusgrå"], [0.38, "Stengrå"], [0.2, "Mörkgrå"], [0, "Kol"]]);
+    if (hue < 25 && sat > 0.3 && l > 0.3 && l < 0.7) return "Tegel";
+    if (hue < 50 || hue >= 330) return by([[0.84, "Benvit"], [0.7, "Ljusbeige"], [0.55, "Beige"], [0.42, "Kamel"], [0.3, "Nötbrun"], [0, "Mörkbrun"]]);
+    if (hue < 75) return by([[0.6, "Ljus oliv"], [0.3, "Oliv"], [0, "Mörk oliv"]]);
+    if (hue < 170) return by([[0.6, "Ljusgrön"], [0.35, "Grön"], [0, "Mossgrön"]]);
+    if (hue < 260) return sat < 0.25 ? by([[0.5, "Ljus blågrå"], [0, "Blågrå"]]) : by([[0.6, "Ljusblå"], [0.3, "Blå"], [0, "Marinblå"]]);
+    return by([[0.55, "Rosa"], [0, "Plommon"]]);
+  };
+  RQ.toneNames = (hexes) => { const seen = {}; return hexes.map((h) => { const n = RQ.toneName(h); seen[n] = (seen[n] || 0) + 1; return seen[n] > 1 ? `${n} (${seen[n]})` : n; }); };
   const FKEYS = ["cat", "room", "price", "tone"];
   const fIco = '<svg viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
   const xIco = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   const nProd = (n) => `${n} ${n === 1 ? "produkt" : "produkter"}`;
   RQ.nProd = nProd;
 
-  let modeAt = 0; document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("[data-room-mode]")) modeAt = Date.now(); }, true);
   // Shop listing used by #butik, #kategori-x, #rum-x, #kollektion-x, #nyheter, #favoriter
   function shopView({ title, kicker, lead, cat = null, room = null, col = null, sort = "rel", banner = null, extraTop = "", extraBottom = "", trail, only = null, noSort = false }) {
     /* what the visitor chose on this list is kept for the visit, so Back from a product shows the same list */
@@ -110,8 +162,12 @@
     const st = { sort: noSort ? sort : saved.sort || sort }; FKEYS.forEach((k) => (st[k] = Array.isArray(saved[k]) ? saved[k].slice() : []));
     const base = (srt = "rel") => { const l = S.list({ cat, room, col, sort: srt }); return only ? l.filter(only) : l; };
     const all = base();
-    const pass = (p) => (!st.cat.length || st.cat.includes(p.cat)) && (!st.room.length || p.rooms.some((r) => st.room.includes(r)))
-      && (!st.price.length || SPANS.some(([id, , lo, hi]) => st.price.includes(id) && p.price >= lo && p.price < hi)) && (!st.tone.length || RQ.colours(p).some((c) => st.tone.includes(c)));
+    /* one test per filter group; choices inside a group add up (or), groups narrow each other (and) */
+    const has = { cat: (p, id) => p.cat === id, room: (p, id) => p.rooms.includes(id), price: (p, id) => SPANS.some(([x, , lo, hi]) => x === id && p.price >= lo && p.price < hi), tone: (p, id) => RQ.colours(p).includes(id) };
+    const passBut = (p, skip) => FKEYS.every((k) => k === skip || !st[k].length || st[k].some((id) => has[k](p, id)));
+    const pass = (p) => passBut(p, null);
+    /* how many products a choice would show, given the other groups' choices (the counts follow the filters) */
+    const countOf = (k, id) => all.filter((p) => passBut(p, k) && has[k](p, id)).length;
     const listFor = (srt) => {
       let l = srt === "dig" && RQ.taste ? RQ.taste.sort(base()) : base(srt === "match" ? "rel" : srt);
       if (srt === "match" && RQ.room && RQ.room.has()) l = [...l].sort((a, b) => (RQ.room.match(b) || 0) - (RQ.room.match(a) || 0));
@@ -119,7 +175,7 @@
     };
     const nActive = () => FKEYS.reduce((n, k) => n + st[k].length, 0);
     /* the groups a list can be narrowed by: only choices that exist in this list, and not the one the page itself is about */
-    const opt = (name, id, label, n, sw) => `<label class="f-opt${sw ? " f-sw" : ""}"><input type="checkbox" name="${name}" value="${id}"${st[name].includes(id) ? " checked" : ""}>${sw ? `<i style="background:${sw}"></i>` : ""}<span>${esc(label)}</span><span class="count">${n}</span></label>`;
+    const opt = (name, id, label, n, sw) => { const on = st[name].includes(id), c = countOf(name, id); return `<label class="f-opt${sw ? " f-sw" : ""}${!c && !on ? " f-zero" : ""}"><input type="checkbox" name="${name}" value="${id}"${on ? " checked" : ""}>${sw ? `<i style="background:${sw}"></i>` : ""}<span>${esc(label)}</span><span class="count">${c}</span></label>`; };
     const group = (name, legend, rows) => (rows.filter(Boolean).length > 1 ? `<fieldset class="f-group" data-f="${name}"><legend>${legend}</legend><div class="f-opts">${rows.filter(Boolean).join("")}</div></fieldset>` : "");
     const groups = [
       cat ? "" : group("cat", "Kategori", RQ.CATEGORIES.map((c) => { const n = all.filter((p) => p.cat === c.id).length; return n ? opt("cat", c.id, c.name, n) : ""; })),
@@ -152,10 +208,10 @@
             </aside><div class="f-scrim" data-f-close></div>` : ""}
             <div>
               <div class="toolbar">
-                <span class="tb-l"><span class="count" id="count" role="status">${nProd(first.length)}</span>${RQ.room && RQ.room.mode() ? '<span class="rm-hint">Peka på en bild så ser du den i ditt rum.</span>' : ""}</span>
+                <span class="tb-l"><span class="count" id="count" role="status">${nProd(first.length)}</span>${RQ.room && RQ.room.mode() ? '<span class="rm-hint">Korten visar allt i ditt rum.</span>' : ""}</span>
                 <div class="tb-r">
                   ${groups ? `<button class="chip tb-filter" type="button" id="toggleFilters" aria-expanded="false" aria-controls="filters">${fIco}<span>Filter</span><b id="fN"${nActive() ? "" : " hidden"}>${nActive()}</b></button>` : ""}
-                  <button class="roomtoggle" type="button" data-room-mode aria-pressed="${!!(RQ.room && RQ.room.mode())}"><span class="rt-img" data-room-thumb data-empty='${roomIco}'>${RQ.room && RQ.room.has() ? RQ.room.thumb() : roomIco}</span><span class="rt-t">${RQ.room && RQ.room.has() ? "Visa i Mitt rum" : "Se allt i ditt rum"}</span><i class="sw" aria-hidden="true"></i></button>
+                  <button class="roomtoggle" type="button" data-room-mode aria-pressed="${!!(RQ.room && RQ.room.mode())}"><span class="rt-img" data-room-thumb data-empty='${roomIco}'>${RQ.room && RQ.room.has() ? RQ.room.thumb() : roomIco}</span><span class="rt-t">${RQ.room && RQ.room.has() ? "Visa i Mitt rum" : "Se allt i ditt rum"}</span><span class="rt-s" aria-hidden="true">${RQ.room && RQ.room.has() ? "I mitt rum" : "I ditt rum"}</span><i class="sw" aria-hidden="true"></i></button>
                   ${noSort ? "" : `<label class="sr" for="sort">Sortera</label>
                   <select class="select" id="sort"><option value="rel">Relevans</option><option value="pop">Popularitet</option><option value="asc">Pris: lågt till högt</option><option value="desc">Pris: högt till lågt</option><option value="new">Senaste</option>${RQ.room && RQ.room.has() ? '<option value="match">Passar mitt rum</option>' : ""}${RQ.taste && RQ.taste.has() ? '<option value="dig">För dig</option>' : ""}</select>`}
                 </div>
@@ -170,12 +226,12 @@
         const sel = $("#sort", root), aside = $("#filters", root), tf = $("#toggleFilters", root), form = $("#fForm", root);
         if (sel) { if (![...sel.options].some((o) => o.value === st.sort)) st.sort = sort; sel.value = st.sort; }
         /* the room switch was just turned on: every card shows its room picture for a moment, so the switch is seen to do something */
-        if (RQ.room && RQ.room.mode() && Date.now() - modeAt < 1500) { const r = $("#results", root); r.classList.add("peek"); setTimeout(() => r.classList.remove("peek"), 2200); }
         const paint = () => {
           const list = listFor(st.sort), n = nActive();
           $("#results", root).innerHTML = results(list); $("#count", root).textContent = nProd(list.length);
           const fa = $("#fActive", root); fa.innerHTML = chips(); fa.hidden = !n;
-          if (aside) { $("#fShow", root).textContent = `Visa ${nProd(list.length)}`; const b = $("#fN", root); b.textContent = n; b.hidden = !n; }
+          if (aside) { $("#fShow", root).textContent = `Visa ${nProd(list.length)}`; const b = $("#fN", root); b.textContent = n; b.hidden = !n;
+            $$("input", form).forEach((i) => { const c = countOf(i.name, i.value), o = i.closest(".f-opt"); $(".count", o).textContent = c; o.classList.toggle("f-zero", !c && !i.checked); }); }
           RQ.ss.set(key, JSON.stringify({ sort: st.sort, cat: st.cat, room: st.room, price: st.price, tone: st.tone }));
           RQ.markImages(root); RQ.watch(root);
         };
@@ -361,10 +417,13 @@
         grid.addEventListener("click", (e) => { const t = e.target.closest(".inroomtile"); if (t) { location.hash = "#mitt-rum-" + p.handle; return; } const b = e.target.closest(".pg-item:not(.pg-film)"); if (!b) return; RQ.lightbox.open(lbList(), items().indexOf(b), p.name); });
         const fine = matchMedia("(hover:hover) and (pointer:fine)").matches && innerWidth > 900;
         if (fine) {
-          let zt = null;
-          grid.addEventListener("mousemove", (e) => { const b = e.target.closest(".pg-item"); if (!b) return; const r = b.getBoundingClientRect(); b.style.setProperty("--zx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); b.style.setProperty("--zy", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%"); });
-          grid.addEventListener("mouseover", (e) => { const b = e.target.closest(".pg-item:not(.inroomtile)"); if (!b || b.classList.contains("zooming")) return; clearTimeout(zt); zt = setTimeout(() => b.classList.add("zooming"), 380); });
-          grid.addEventListener("mouseout", (e) => { const b = e.target.closest(".pg-item"); if (!b || b.contains(e.relatedTarget)) return; clearTimeout(zt); b.classList.remove("zooming"); });
+          // the loupe starts only once the pointer really moves on a picture: arriving from a card with the pointer already there must show the whole picture
+          let zt = null, at = null;
+          grid.addEventListener("mousemove", (e) => { const b = e.target.closest(".pg-item"); if (!b) return; const r = b.getBoundingClientRect(); b.style.setProperty("--zx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); b.style.setProperty("--zy", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%");
+            if (!at) at = [e.clientX, e.clientY];
+            if (Math.abs(e.clientX - at[0]) + Math.abs(e.clientY - at[1]) < 4 || zt || b.classList.contains("zooming") || b.classList.contains("inroomtile")) return;
+            zt = setTimeout(() => { zt = null; b.classList.add("zooming"); }, 380); });
+          grid.addEventListener("mouseout", (e) => { const b = e.target.closest(".pg-item"); if (!b || b.contains(e.relatedTarget)) return; clearTimeout(zt); zt = null; b.classList.remove("zooming"); });
         }
         // drop images that do not exist yet (lazy images never fire an error off screen)
         items().slice(1).forEach((b) => { const t = new Image(); t.onerror = () => { b.remove(); paintDots(); }; t.src = $("img", b).getAttribute("src"); });
@@ -587,11 +646,16 @@
     const stop = () => { settle++; };
     ["wheel", "touchstart", "keydown", "pointerdown"].forEach((t) => window.addEventListener(t, stop, { once: true, passive: true }));
     // the page may still grow above this point (a toolbar, pictures): hold the place for a second, until the customer moves
-    const step = () => { if (id !== settle) return; if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); if (n++ < 14) setTimeout(step, 70); };
+    // a second pass: when the page is still shorter than the place (pictures above not laid out yet), keep holding until it is reached
+    const step = () => { if (id !== settle) return; if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); n++; if (n < 14 || (n < 40 && Math.abs(window.scrollY - y) > 1)) setTimeout(step, 70); };
     step();
+    if (document.readyState !== "complete") window.addEventListener("load", () => { if (id === settle && Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y); }, { once: true });
   };
 
-  window.addEventListener("pagehide", () => { if (current != null) RQ.ss.set("rumiq-scroll", JSON.stringify([current, Math.round(window.scrollY)])); });
+  // a full page load (Back from another site, Back after a reload, a reload) finds the place again: one place per page, kept for the visit
+  const savedScrolls = () => { try { const v = JSON.parse(RQ.ss.get("rumiq-scroll") || "{}"); return v && !Array.isArray(v) && typeof v === "object" ? v : {}; } catch (e) { return {}; } };
+  window.addEventListener("pagehide", () => { if (current == null) return; const all = savedScrolls(); scrolls.forEach((y, r) => { all[r] = Math.round(y); }); all[current] = Math.round(window.scrollY);
+    const keys = Object.keys(all); keys.slice(0, Math.max(0, keys.length - 30)).forEach((k) => delete all[k]); RQ.ss.set("rumiq-scroll", JSON.stringify(all)); });
 
   /* One polite voice for route changes: screen readers hear the new page's name, and the keyboard starts at its top. */
   const live = document.createElement("p");
@@ -688,7 +752,7 @@
     paintHead(raw, view, root, found && !view.crashed);
     let backTo = moved && popNav ? scrolls.get(raw) || 0 : 0;
     if (first) { // a reload, or Back from another site, lands where the customer was
-      try { const nav = performance.getEntriesByType("navigation")[0], was = JSON.parse(RQ.ss.get("rumiq-scroll") || "null"); if (nav && /reload|back_forward/.test(nav.type) && Array.isArray(was) && was[0] === raw && was[1] > 0) backTo = was[1]; } catch (e) {}
+      try { const nav = performance.getEntriesByType("navigation")[0], was = savedScrolls(); if (nav && /reload|back_forward/.test(nav.type) && was[raw] > 0) backTo = was[raw]; } catch (e) {}
     }
     if (moved) { settle++; if (!backTo) window.scrollTo(0, 0); }
     popNav = false;
@@ -896,7 +960,9 @@
       foot.innerHTML = ""; refocus(); return;
     }
     const sub = S.cartSubtotal(), disc = S.lookDiscounts(), net = sub - S.cartDiscount(), free = !!(S.freeShipping && S.freeShipping()), ship = S.shippingCost ? S.shippingCost("ombud") : 0, nudge = lookNudge(lines);
-    body.innerHTML = RQ.freeShipHtml(net) + (nudge ? `<div class="gap look-nudge"><p class="eyebrow">Nästan hela looken ${esc(nudge.look.name)}</p><div class="gap-i"><img src="${RQ.cut(nudge.p)}" alt="" width="42" height="42" loading="lazy"><span><b>${esc(nudge.p.name)}</b><small>Lägg till och spara ${kr(nudge.save)}</small></span><button class="btn sm ghost" type="button" data-add="${nudge.p.handle}::0" aria-label="Lägg ${esc(nudge.p.name)} i varukorgen">Lägg till</button></div></div>` : RQ.fillGapHtml(lines, net)) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close tabindex="-1" aria-hidden="true"><img src="${RQ.img(l.product, 600)}" alt="" width="74" height="92" loading="lazy" decoding="async"></a><div><h3><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h3>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska antalet ${esc(l.product.name)}"${l.quantity <= 1 ? " disabled" : ""}>−</button><input value="${l.quantity}" aria-label="Antal ${esc(l.product.name)}" readonly tabindex="-1"><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka antalet ${esc(l.product.name)}"${l.quantity >= 99 ? " disabled" : ""}>+</button></div><button class="rm" type="button" data-rm="${l.id}" aria-label="Ta bort ${esc(l.product.name)}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}${l.quantity > 1 ? `<small>${kr(l.variant.price)}/st</small>` : ""}</span></div>`).join("") +
+    // the things that make up a whole look carry its name, so removing one is not a surprise
+    const inLook = {}; disc.forEach((d) => d.look.items.forEach((h) => { if (!inLook[h]) inLook[h] = d.look.name; }));
+    body.innerHTML = RQ.freeShipHtml(net) + (nudge ? `<div class="gap look-nudge"><p class="eyebrow">Nästan hela looken ${esc(nudge.look.name)}</p><div class="gap-i"><img src="${RQ.cut(nudge.p)}" alt="" width="42" height="42" loading="lazy"><span><b>${esc(nudge.p.name)}</b><small>Lägg till och spara ${kr(nudge.save)}</small></span><button class="btn sm ghost" type="button" data-add="${nudge.p.handle}::0" aria-label="Lägg ${esc(nudge.p.name)} i varukorgen">Lägg till</button></div></div>` : RQ.fillGapHtml(lines, net)) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close tabindex="-1" aria-hidden="true"><img src="${RQ.img(l.product, 600)}" alt="" width="74" height="92" loading="lazy" decoding="async"></a><div><h3><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h3>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}${inLook[l.product.handle] ? `<div class="v lk-tag"><span>Ingår i looken</span> <span>${esc(inLook[l.product.handle])}</span></div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska antalet ${esc(l.product.name)}"${l.quantity <= 1 ? " disabled" : ""}>−</button><input value="${l.quantity}" aria-label="Antal ${esc(l.product.name)}" readonly tabindex="-1"><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka antalet ${esc(l.product.name)}"${l.quantity >= 99 ? " disabled" : ""}>+</button></div><button class="rm" type="button" data-rm="${l.id}" aria-label="Ta bort ${esc(l.product.name)}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}${l.quantity > 1 ? `<small>${kr(l.variant.price)}/st</small>` : ""}</span></div>`).join("") +
       `<div class="example-note" style="margin-top:1.2rem"><span>●</span><span><b>Testläge.</b> Varukorgen innehåller exempelprodukter. Du kan prova kassan, men inget betalas och inget skickas.</span></div>`;
     // a step with + or −: say the new number and the total (the drawer is drawn again, so its own text is not read)
     if (had && a.dataset.line) { const l = lines.find((x) => x.id === a.dataset.line), said = $("#cartSaid"); if (l && said) said.textContent = `${l.product.name}: ${l.quantity} st. Totalt ${kr(net + ship)}.`; }
@@ -976,8 +1042,10 @@
     said(!q && !ext ? "" : ext ? (ext.list.length ? nProd(ext.list.length) : "Inga träffar") : "");
     $("#search").classList.toggle("has-q", !!q);
     if (!q && !ext) { sRes.innerHTML = `${POPULAR()}${tones}`; return; }
-    if (ext) { sRes.innerHTML = `${tones}${ext.note ? `<p class="small s-note">${ext.note}</p>` : ""}${ext.list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(ext.list.length)}</p>${RQ.grid(ext.list)}` : `<div class="empty"><h3>Inga träffar</h3><p>Prova en annan färg eller ett annat ord.</p></div>`}`; RQ.watch(sRes); return; }
-    const found = S.search(q), list = found.list, words = S._words(q), raw = S.norm(q).split(/\s+/);
+    if (ext) { sRes.innerHTML = `${tones}${ext.note ? `<p class="small s-note">${ext.note}</p>` : ""}${ext.list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(ext.list.length)}</p>${RQ.grid(ext.list)}` : `<div class="empty"><h3>Inga träffar</h3><p>Prova en annan färg eller ett annat ord.</p></div>`}`; RQ.watch(sRes); pick(); return; }
+    const found = S.search(q), words = S._words(q), raw = S.norm(q).split(/\s+/);
+    // with the room switch on the cards show "% färgmatch": then the best match comes first (the search order breaks ties)
+    const R = RQ.room, list = R && R.mode() ? found.list.map((p, k) => [p, R.match(p) || 0, k]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map((x) => x[0]) : found.list;
     if (found.short) { sRes.innerHTML = `<p class="small s-note">Skriv minst två bokstäver.</p>${POPULAR()}`; said("Skriv minst två bokstäver."); return; }
     const arts = RQ.ARTICLES.filter((a) => S.norm(a.title + " " + a.lead).includes(S.norm(q)));
     const cats = RQ.CATEGORIES.filter((c) => S.fold(c.name).includes(S.fold(q)));
@@ -985,10 +1053,13 @@
     const links = `${cats.map((c) => `<a class="chip" href="#kategori-${c.id}" data-close>${esc(c.name)}</a>`).join("")}${help.map((h) => `<a class="chip s-help" href="#${h[0]}" data-close>${h[1]}</a>`).join("")}`;
     said(list.length ? nProd(list.length) : help.length || cats.length ? `${help.length + cats.length} ${help.length + cats.length === 1 ? "länk" : "länkar"}` : "Inga träffar");
     sRes.innerHTML = `${found.fixed ? `<p class="s-fix">Menade du <b>${esc(found.fixed)}</b>? Här är träffarna för det.</p>` : ""}${links ? `<div class="chips" style="margin-bottom:1.6rem">${links}</div>` : ""}
-      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(list.length)}</p>${RQ.grid(list)}` : help.length || cats.length ? "" : `<div class="empty"><h3>Inga träffar på "${esc(q)}"</h3><p>Prova ett annat ord, eller beskriv med egna ord vad du behöver.</p><a class="btn ghost" href="#studio-sok" data-close>Beskriv med egna ord</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
+      ${list.length ? `<p class="eyebrow" style="margin-bottom:1rem">${nProd(list.length)}</p>${RQ.grid(list)}` : help.length || cats.length ? "" : `<div class="empty"><h3>Inga träffar på ”${esc(q)}”</h3><p>Prova ett annat ord, eller beskriv med egna ord vad du behöver.</p><a class="btn ghost" href="#studio-sok" data-close>Beskriv med egna ord</a></div>${RQ.svepNudge ? RQ.svepNudge("Hittar du inte rätt ord?", "Svep i stället. Tio kort, så visar vi vad som passar dig.").replace('class="sv-nudge"', 'class="sv-nudge" data-close') : ""}`}
       ${arts.length ? `<p class="eyebrow" style="margin:2.4rem 0 1rem">Från magasinet</p><div class="mag-grid">${arts.slice(0, 3).map(RQ.magCard).join("")}</div>` : ""}`;
     RQ.watch(sRes);
+    pick();
   };
+  // with a mouse and keyboard, Enter opens the first hit: it is marked so you can see what Enter will open
+  const pick = () => { const fine = matchMedia("(hover:hover) and (pointer:fine)").matches; $$(".s-pick", sRes).forEach((e) => e.classList.remove("s-pick")); const f = fine && sInput.value.trim() ? sItems().find((el) => el.matches(".card .ct a")) || sItems().find((el) => el.matches("a.chip")) : null; if (f) (f.closest(".card") || f).classList.add("s-pick"); return f; };
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
   RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); behind(true); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); const into = (n) => { sInput.focus(); if (document.activeElement === sInput) sInput.select(); else if (n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 60); }; // the field may still be turning visible (reduced motion): try again on the next frames
@@ -996,7 +1067,7 @@
   const sItems = () => $$("a.chip, button.chip, .card .ct a, .empty a, .mag-grid a", sRes).filter((el) => el.offsetParent);
   $("#search").addEventListener("keydown", (e) => {
     const items = sItems(), i = items.indexOf(document.activeElement), inField = e.target === sInput;
-    if (e.key === "Enter" && inField) { e.preventDefault(); clearTimeout(sT); doSearch(); const first = $(".card .ct a", sRes) || sItems()[0]; if (matchMedia("(pointer:coarse)").matches || !first) sInput.blur(); else first.focus(); return; }
+    if (e.key === "Enter" && inField) { e.preventDefault(); clearTimeout(sT); doSearch(); const first = pick(); if (first) first.click(); else sInput.blur(); return; }
     if (e.key === "ArrowDown" && inField && items.length) { e.preventDefault(); ($(".card .ct a", sRes) || items[0]).focus(); return; }
     if (i < 0 || !/^Arrow(Down|Up|Left|Right)$/.test(e.key)) return;
     e.preventDefault(); const n = i + (/Down|Right/.test(e.key) ? 1 : -1);
@@ -1025,7 +1096,11 @@
     $$(".menu > li > a, .menu > li > button").forEach((el, i) => { const on = !!hit && hit[1] === i; el.classList.toggle("active", on); if (el.tagName === "A") { if (on) el.setAttribute("aria-current", "page"); else el.removeAttribute("aria-current"); } });
     $$(".tools > a[aria-label], .tools > button[aria-label], #lampBtn").forEach((el) => { const t = el.getAttribute("aria-label"); if (el.title !== t) el.title = t; });
     const rp = $(".roompill"); if (rp && !rp.title) rp.title = "Mitt rum";
+    pillName();
   };
+  // the Mitt rum link says what its number is ("Mitt rum, 4 saker i rummet"), also where only the picture and the number show
+  const pillName = () => { const rp = $(".roompill"), n = rp ? +($(".badge", rp) || {}).textContent || 0 : 0; if (rp) rp.setAttribute("aria-label", n ? `Mitt rum, ${n} ${n === 1 ? "sak" : "saker"} i rummet` : "Mitt rum"); };
+  if (window.MutationObserver && $(".roompill .badge")) new MutationObserver(pillName).observe($(".roompill .badge"), { childList: true, characterData: true, subtree: true });
   RQ.navMark = navMark;
   if (window.MutationObserver) new MutationObserver(navMark).observe($("#view"), { childList: true });
   document.addEventListener("DOMContentLoaded", navMark);
@@ -1035,14 +1110,19 @@
     const t = e.target.closest("[data-wish],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-undo-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
     if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad i Mitt hem. <a href="#mitt-hem">Visa</a>' : "Borttagen ur Mitt hem"); return; }
-    if (t.matches("[data-add]")) { S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
+    if (t.matches("[data-add]")) {
+      // a card's + on a product with several colours asks which colour (in the quick view), as Mitt rum does, instead of choosing one
+      const qp = t.classList.contains("qadd") && RQ.byHandle(t.dataset.add.split("::")[0]);
+      if (qp && qp.variants && qp.variants.length > 1 && RQ.sheet) { RQ.sheet.open(qp.handle, { from: t, ask: true }); return; }
+      S.addToCart(t.dataset.add, 1); const pr = RQ.byHandle(t.dataset.add.split("::")[0]); RQ.confirmAdd(t, pr ? pr.name : ""); return; }
     if (t.matches("[data-open-cart]")) { e.preventDefault(); openCart(); return; }
     if (t.matches("[data-open-search]")) { e.preventDefault(); RQ.openSearch(); return; }
     if (t.matches("[data-q]") && t.closest("#searchRes")) { sInput.value = t.dataset.q; doSearch(); return; }
     if (t.matches("[data-rm]")) { // nothing leaves the cart for good by one tap: the toast offers to put it back
-      const l = S.cartLines().find((x) => x.id === t.dataset.rm), at = S._cart.findIndex((x) => x.v === t.dataset.rm);
+      const l = S.cartLines().find((x) => x.id === t.dataset.rm), at = S._cart.findIndex((x) => x.v === t.dataset.rm), off0 = S.cartDiscount();
       S.setQty(t.dataset.rm, 0);
-      if (l) { undoRm = { v: l.id, q: l.quantity, at }; RQ.toast(`<span>${esc(l.product.name)} togs bort.</span> <button type="button" data-undo-rm>Ångra</button>`, 7000); }
+      const lost = off0 - S.cartDiscount(); // a look that is no longer whole loses its discount: say so, Ångra brings both back
+      if (l) { undoRm = { v: l.id, q: l.quantity, at }; RQ.toast(`<span><span>${esc(l.product.name)} togs bort.</span>${lost > 0 ? ` <span>Utan den är looken inte hel, så rabatten på</span> ${kr(lost)} <span>försvinner.</span>` : ""}</span> <button type="button" data-undo-rm>Ångra</button>`, lost > 0 ? 9000 : 7000); }
       return; }
     if (t.matches("[data-undo-rm]")) { const u = undoRm; undoRm = null; $("#toast").classList.remove("show");
       if (u && !S._cart.some((x) => x.v === u.v)) { S._cart.splice(Math.min(Math.max(0, u.at), S._cart.length), 0, { v: u.v, q: u.q }); S.setQty(u.v, u.q); const b = $(`[data-rm="${u.v}"]`, drawer); if (b && drawer.classList.contains("open")) b.focus({ preventScroll: true }); }

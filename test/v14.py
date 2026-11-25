@@ -132,14 +132,15 @@ with sync_playwright() as p:
         pg.goto(BASE + "butik/"); pg.wait_for_timeout(500)
         ok(pg.evaluate("!document.querySelector('#view a[href*=jamfor], .mnav a[href*=jamfor], footer a[href*=jamfor]')"), f"{tag} Jämför is out of the menus")
 
-        # 3. shop cards: photo first, room second
+        # 3. shop cards: the product photo is in the card, but with "Visa i Mitt rum" on the room is what you see first
+        #    (v15 r3, phone review M6: the switch's promise is the room; hover or a swipe shows the photo)
         first = pg.evaluate("(() => { const ph = document.querySelector('.card.in-room .ph'); return [ph.children[0].tagName, ph.children[0].getAttribute('src'), ph.children[1].className]; })()")
-        ok(first[0] == "IMG" and "/img/p/" in first[1] and "inroom" in first[2], f"{tag} product photo first, room second")
-        vis = pg.evaluate("(() => { const c = document.querySelector('.card.in-room'), ph = c.querySelector('.ph'), r = ph.getBoundingClientRect(), i = ph.children[0].getBoundingClientRect(), s = ph.children[1]; return [Math.abs(i.left - r.left) < 2, getComputedStyle(s).opacity, s.getBoundingClientRect().left - r.left]; })()")
-        ok(vis[0] and (vis[1] == "0" or vis[2] > 50), f"{tag} the photo is what you see first: {vis}")
+        ok(first[0] == "IMG" and "/img/p/" in first[1] and "inroom" in first[2], f"{tag} product photo and room both in the card")
+        vis = pg.evaluate("(() => { const c = document.querySelector('.card.in-room'), ph = c.querySelector('.ph'), r = ph.getBoundingClientRect(), s = ph.children[1], q = s.getBoundingClientRect(); return [Math.abs(q.left - r.left) < 2, getComputedStyle(s).opacity]; })()")
+        ok(vis[0] and vis[1] == "1", f"{tag} the room is what you see first: {vis}")
         if mobile:
             pg.evaluate("document.querySelector('.card.in-room .ph').scrollLeft = 9999"); pg.wait_for_timeout(400)
-            ok(pg.evaluate("document.querySelector('.card.in-room').dataset.i") == "1", f"{tag} swiping to the room moves the dots")
+            ok(pg.evaluate("document.querySelector('.card.in-room').dataset.i") == "1", f"{tag} swiping to the photo moves the dots")
         box = pg.evaluate("(() => { const c = document.querySelector('.card.in-room .inr'), p = c.querySelector('.inr-p').getBoundingClientRect(), r = c.getBoundingClientRect(); return [p.width / r.width, (p.left + p.width / 2 - r.left) / r.width]; })()")
         ok(0.12 < box[0] < 0.95 and 0.1 < box[1] < 0.9, f"{tag} the product sits inside the room crop: {box}")
 
