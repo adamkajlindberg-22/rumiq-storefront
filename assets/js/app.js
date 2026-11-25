@@ -648,7 +648,8 @@
   // fetch them quietly once the page is idle, so the next tap is instant
   window.addEventListener("load", () => setTimeout(() => (window.requestIdleCallback || setTimeout)(() => RQ.loadTools().catch(() => {})), 2500));
   // "/varukorg" (typed, shared or opened in a new tab): the shop with the cart open on top
-  V.cartLink = () => { const v = V.butik(); return { ...v, mount(root) { const un = v.mount ? v.mount(root) : null, t = setTimeout(() => RQ.openCart(), 80); return () => { clearTimeout(t); if (typeof un === "function") un(); }; } }; };
+  // the address becomes the shop's at once, so closing the cart leaves you in the shop and a reload does not open it again
+  V.cartLink = () => { const v = V.butik(); return { ...v, mount(root) { const un = v.mount ? v.mount(root) : null, t = setTimeout(() => { if (current === "varukorg") { current = "butik"; try { history.replaceState(history.state, "", pathFor("butik")); } catch (e) {} } RQ.openCart(); }, 80); return () => { clearTimeout(t); if (typeof un === "function") un(); }; } }; };
   V.studio = () => V.myRoom(); // Studio is no longer its own place: the tools live in Mitt rum, Svep, Hitta rätt and Looks
 
   /* ---------------------------------------------------------------- router */
