@@ -2555,7 +2555,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .pickbar{margin:.5rem 0 .6rem;grid-template-columns:minmax(0,1fr);gap:.5rem}
   .pickbar .chips{margin:0 calc(-1*var(--gutter));padding:0 var(--gutter)}
   .pickbar input{height:2.6rem;min-height:0;padding-top:0;padding-bottom:0}
-  .sheet.rmpick .pickgrid{display:flex;gap:.5rem;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;margin:0 calc(-1*var(--gutter));padding:0 var(--gutter) .3rem;scrollbar-width:none;flex:none}
+  .sheet.rmpick .pickgrid{display:flex;gap:.5rem;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scroll-padding-inline:var(--gutter);margin:0 calc(-1*var(--gutter));padding:0 var(--gutter) .3rem;scrollbar-width:none;flex:none}
   .sheet.rmpick .pickgrid::-webkit-scrollbar{display:none}
   .sheet.rmpick .pickgrid button{flex:0 0 7.6rem;scroll-snap-align:start;padding:.4rem .4rem .5rem;display:flex;flex-direction:column;gap:.15rem}
   .sheet.rmpick .pickgrid .pg-cut{aspect-ratio:auto;height:4.6rem;margin-bottom:.15rem;flex:none}
