@@ -251,7 +251,7 @@ with sync_playwright() as p:
         ok(pg.evaluate("__x") == 0 and pg.evaluate("RQ.homeRooms.list().length") == 1, f"{tag} Mitt hem: a room name is text in the toast")
         pg.evaluate("RQ.PRODUCTS.slice(0, 5).forEach(p => RQ.shop.toggleWish(p.handle)); localStorage.setItem('rumiq-style', JSON.stringify({ style: 'finns-inte' }))")
         go(pg, "mitt-hem", 800)
-        ok(pg.evaluate("!!document.querySelector('#mh-fav .grid')") and pg.evaluate("document.querySelector('.mh > div').id") == "mh-fav", f"{tag} Mitt hem: draws with an unknown stored style, the saved things come first")
+        ok(pg.evaluate("!!document.querySelector('#mh-fav .grid')") and pg.evaluate("[...document.querySelectorAll('.mh > div')].slice(0, 2).map((d) => d.id).join()") == "mh-rum,mh-fav", f"{tag} Mitt hem: draws with an unknown stored style, the rooms (studio2: the overview) and then the saved things come first")
         link = pg.evaluate("new URL('delad/', document.baseURI).href + '#delad-' + RQ.sharedList.enc(RQ.shop.wishlist().map(p => p.handle), '')")
         ok(re.search(r"#delad-[0-9a-z]{4}(\.[0-9a-z]{4}){4}$", link) is not None and pg.evaluate("(l) => RQ.sharedList.dec(l.split('#delad-')[1]).hs.join() === RQ.shop.wishlist().map(p => p.handle).join()", link), f"{tag} shared list: products travel by their own number and come back the same")
         ok(pg.evaluate("RQ.sharedList.dec('4.3.2.1.0').hs.length") == 5, f"{tag} shared list: an older link still opens")

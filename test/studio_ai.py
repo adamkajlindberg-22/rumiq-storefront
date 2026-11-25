@@ -201,8 +201,9 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.getElementById('aiAuto').checked && document.getElementById('aiAuto').getAttribute('role') === 'switch'"), f"{tag} 'Spara mina AI-bilder automatiskt' is a switch, on by default")
         ok(pg.evaluate("document.querySelector('.ai-lcard [data-lib-buy]').innerText.replace(/[\\u00a0\\u202f]/g, ' ')") == "Köp allt · 2 737 kr", f"{tag} the card's Köp allt says the total: {pg.evaluate('document.querySelector(\".ai-lcard [data-lib-buy]\").innerText')}")
         order = pg.evaluate("[[...document.querySelectorAll('.mh > [id]')].map((e) => e.id), [...document.querySelectorAll('.jump-nav a')].map((a) => a.getAttribute('href'))]")
-        ok(order[0][0] == "mh-bilder" and order[1][0].endswith("mh-bilder") and order[0].index("mh-rum") > order[0].index("mh-fav"), f"{tag} with pictures, Mina rumsbilder comes first in Sparat and in its menu, the empty parts after: {order}")
-        ok("Mina rumsbilder" in pg.evaluate("document.querySelector('#mh-rum .mh-why').innerText"), f"{tag} Rumsprojekt says how it differs from Mina rumsbilder")
+        ok(order[0][0] == "mh-bilder" and order[1][0].endswith("mh-bilder") and "mh-fav" in order[0], f"{tag} with pictures, Mina rumsbilder comes first in Sparat and in its menu, the empty parts after: {order}")
+        # studio2: Rumsprojekt is merged into Mina rum (one place); the old part is gone
+        ok(pg.evaluate("!document.querySelector('.mh-why') && document.querySelector('#mh-rum h2').innerText") == "Mina rum", f"{tag} one place for rooms: Mina rum (Rumsprojekt merged into it)")
         small = pg.evaluate("[...document.querySelectorAll('.ai-lcard .small-row .tlink, .ai-lcard .chip, .ai-auto')].map((e) => [e.textContent.trim(), Math.round(e.getBoundingClientRect().height)]).filter((x) => x[1] < 44)")
         ok(not small, f"{tag} the library's links, chips and switch row are 44 px targets: {small}")
         shot(pg, f"demo-{W}-library")
@@ -233,9 +234,9 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.ai.projectKey()") == key0, f"{tag} ...under the same project, so the next picture is its next version")
         # a Rumsprojekt saved now belongs to the same project and points to its pictures
         pg.evaluate("RQ.shop.saveProject({ title: 'Mitt rum med Lysa', img: '', handles: ['lysa-keramiklampa'] })")
-        ok(pg.evaluate("RQ.shop.projects()[0].studio") == key0, f"{tag} a saved Rumsprojekt carries its room project")
+        ok(pg.evaluate("RQ.shop.projects()[0].studio") == key0 and pg.evaluate("RQ.hem.rooms().some((r) => r.pkey === '" + key0 + "')"), f"{tag} Spara in Mitt rum lands in a room in Mina rum, under the same room project")
         go(pg, "mitt-hem", 1500)
-        ok("1 AI-bild av rummet" in pg.evaluate("(document.querySelector('[data-ai-proj]:not([hidden])') || {}).innerText || ''"), f"{tag} the Rumsprojekt card links to its AI pictures")
+        ok(pg.evaluate("document.querySelectorAll('.hem-card').length") >= 1, f"{tag} the saved room shows as a card in Mina rum")
         # the switch off: the next picture is not kept unless asked
         pg.evaluate("document.getElementById('aiAuto').click()"); pg.wait_for_timeout(200)
         ok(pg.evaluate("RQ.shop.store.get('rumiq-ai-autosave', true)") is False and "sparas inte" in pg.evaluate("document.getElementById('aiLibNote').innerText"), f"{tag} switching off is remembered and said")

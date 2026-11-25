@@ -15,7 +15,7 @@
   /* ------------------------------------------------------------------ the page */
   const styleChips = (cur, attr) => Object.entries(RQ.STYLES).map(([k, s]) => `<button type="button" class="chip" ${attr}="${k}" aria-pressed="${cur === k}">${esc(s.name)}</button>`).join("");
   const typeOpts = (cur) => ["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor", "uteliv"].map((t) => `<option value="${t}"${t === cur ? " selected" : ""}>${esc(typeName(t))}</option>`).join("");
-  const firstRoom = () => `<div class="hem-first" id="hemFirst"><span class="eyebrow">Börja här</span><h3 class="h2">Skapa ditt första rum</h3>
+  const firstRoom = () => `<div class="hem-first" id="hemFirst"><span class="eyebrow">Börja här</span><h3 class="h3">Skapa ditt första rum</h3>
       <p class="lead">Ge rummet ett namn och välj vilket slags rum det är. Allt du gör sedan, bilder, produkter och listor, hamnar där.</p>
       <form class="hem-first-f" id="hemFirstF" novalidate>
         <label>Rummets namn<input name="label" maxlength="40" placeholder="Vardagsrum" autocomplete="off"></label>
@@ -28,7 +28,7 @@
       <li><b>Lista och budget per rum</b><span>Se vad som är kvar att köpa och vad det kostar.</span></li>
       <li><b>Med dig mellan enheter</b><span>När kontot är aktivt. I dag sparas allt i den här webbläsaren.</span></li></ul>`;
   const roomCard = (r, big) => { const its = H.items(r), m = H.money(r);
-    return `<article class="hem-card${big ? " big" : ""}" data-room-card="${esc(r.id)}"><button type="button" class="hem-card-im" data-hem-open="${esc(r.id)}" aria-label="Öppna ${esc(H.name(r))}"><img src="${sampleImg(r.type)}" alt="" data-room-pic="${esc(r.id)}" loading="lazy"></button>
+    return `<article class="hem-card${big ? " big" : ""}" data-room-card="${esc(r.id)}"><button type="button" class="hem-card-im" data-hem-open="${esc(r.id)}" aria-label="Öppna ${esc(H.name(r))}"><img src="${esc(H.picture(r) || sampleImg(r.type))}" alt="" data-room-pic="${esc(r.id)}" loading="lazy"></button>
       <div class="hem-card-tx"><h3 class="h3"><button type="button" class="hem-card-name" data-hem-open="${esc(r.id)}">${esc(H.name(r))}</button></h3>
         <p class="hem-prog" data-room-prog="${esc(r.id)}">${progHtml(r, 0)}</p>
         <p class="small">${its.length ? `${its.length} ${its.length === 1 ? "produkt" : "produkter"} · ${kr(m.total)}${r.budget ? ` · budget ${kr(r.budget)}` : ""}` : typeName(r.type)}</p>

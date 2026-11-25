@@ -206,7 +206,8 @@ with sync_playwright() as p:
     go(pg, "mitt-hem", 900)
     heads = pg.evaluate("[...document.querySelectorAll('.mh .sec-head .h3')].filter(h => h.offsetHeight > 0).map(h => h.textContent)")
     # studio ai: Sparat has a seventh part, Mina rumsbilder (the AI picture library)
-    ok(heads[:2] == ["Produkter", "Mina rum och mått"] and len(heads) == 7 and "Mina rumsbilder" in heads, f"sparat: every part has a visible heading: {heads}")
+    # studio2 ai: Sparat is the customer's home: Mina rum first (rooms with their measurements), seven parts
+    ok(heads[0] == "Mina rum" and len(heads) == 7 and "Mina rumsbilder" in heads and "Produkter" in heads, f"sparat: every part has a visible heading: {heads}")
     ctx.close()
     ctx, pg, errs = new(b, False)
     go(pg, "onska", 900)
