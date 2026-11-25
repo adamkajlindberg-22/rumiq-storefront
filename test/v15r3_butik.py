@@ -292,6 +292,18 @@ with sync_playwright() as p:
             ok(btn() == f"Lägg testorder · {tot()}", f"{tag} and follows the delivery choice: {btn()!r}")
         ctx.close()
 
+    # M11: the dock marks where you are (ink, and an accent line under the item; a ring around Mitt rum)
+    for W, Hh, evening in ((390, 844, False), (360, 740, True)):
+        tag = f"[dock {W}{' kväll' if evening else ''}]"
+        ctx = context(b, W, Hh, True, evening); pg = page(ctx)
+        for r, key in (("butik/", "butik"), ("mitt-hem/", "sparat"), ("mitt-rum/", "mitt")):
+            pg.goto(BASE + r, wait_until="load"); pg.wait_for_timeout(300)
+            got = pg.evaluate("""(k) => { const a = document.querySelector(`#dock [data-dock=${k}]`), acc = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+              const line = getComputedStyle(a, '::after'), others = [...document.querySelectorAll('#dock [data-dock]')].filter((x) => x !== a && getComputedStyle(x, '::after').content !== 'none').length;
+              return [a.getAttribute('aria-current'), line.content !== 'none' && line.height === '3px', others]; }""", key)
+            ok(got == ["page", True, 0], f"{tag} {key}: the dock item is marked, and only it: {got}")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"
