@@ -89,7 +89,7 @@
   const GENERIC = { h: 48, k: 0.9, sun: 1,
     surface: [[50, 63, 38], [32, 63, 38], [68, 63, 38]], cushion: [[50, 68, 24], [36, 68, 24]], throw: [[60, 71, 24], [40, 71, 24]], bedding: [[50, 70, 24]],
     wall: [[50, 40, 22], [30, 40, 22], [70, 40, 22]], floor: [[22, 92], [78, 92], [50, 94], [36, 90], [64, 90]],
-    rug: [[50, 98, 56, 0.45]], window: [[86, 84, 15, 1]] };
+    rug: [[50, 98, 56, 0.45]], window: [[86, 92, 15, 1]] };
   const FALLBACK = { cushion: ["throw", "floor"], throw: ["cushion", "floor"], bedding: ["throw", "cushion", "floor"], surface: ["floor"], wall: [], floor: [] };
   const LEARN = "rumiq-roomlearn";
   const mapOf = () => (room && MAPS[room.map || (room.sample ? room.type : "")]) || null;
@@ -100,7 +100,8 @@
   const SORT = { surface: "s", cushion: "t", throw: "t", bedding: "t", floor: "f", rug: "r", window: "w", wall: "a" };
   const spotFor = (p, list, raw, MX) => { // MX: a sample room's map instead of the customer's room (the look pictures)
     const [kind, cm] = meta(p), M = MX || mapOf(), G = M || GENERIC;
-    const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && SORT[it.on || kindOf(q)] === SORT[k || kind] && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
+    // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
+    const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
@@ -112,7 +113,10 @@
     const k = M ? 1 : L.k > 0 ? L.k : room ? clamp((1.5 * room.h / room.w) ** 0.7, 1, 1.8) : 1;
     const place = (kd) => {
       const spots = G[kd] && G[kd].length ? G[kd] : null; if (!spots) return null;
-      if (kd === "rug" || kd === "window") { const sp = spots[0]; return { x: sp[0], y: sp[1], w: sp[2], sy: sp[3] }; }
+      if (kd === "rug" || kd === "window") { const sp = spots[0];
+        // a curtain in your own photo is a tall panel by the side, from near the ceiling to the floor (80 % of the picture), whatever its shape
+        if (kd === "window" && !M && room) { const w = clamp(80 / (meta(p)[2] * room.w / room.h), 8, 40); return { x: +Math.min(sp[0], 99 - w / 2).toFixed(1), y: sp[1], w: +w.toFixed(1), sy: sp[3] }; }
+        return { x: sp[0], y: sp[1], w: sp[2], sy: sp[3] }; }
       const width = (sp) => clamp(cm * (sp[2] || floorScale(sp[1], M)) / 100 * k, 2.5, 70);
       const free = spots.find((sp) => !taken(sp[0], sp[1], width(sp), kd)); if (free) return { x: free[0], y: free[1], w: +width(free).toFixed(1) };
       // every mapped spot is taken: the free place on the same surface nearest to one of them (a second lamp goes to the
@@ -124,7 +128,9 @@
     let sp = place(kind), moved = false;
     if (!sp) for (const fk of FALLBACK[kind] || []) { if ((sp = place(fk))) { moved = fk; break; } }
     if (!sp && M && kind !== "rug" && kind !== "window" && kind !== "wall" && G.floor && G.floor.length) { const f = G.floor[G.floor.length - 1]; sp = { x: f[0], y: f[1], w: +clamp(cm * floorScale(f[1], M) / 100, 2.5, 70).toFixed(1) }; moved = "floor"; } // nowhere left: on the floor, to be moved by hand
-    if (!sp) { const s0 = (G[kind] && G[kind][0]) || GENERIC[kind][0] || GENERIC.surface[0]; sp = kind === "rug" || kind === "window" ? { x: s0[0], y: s0[1], w: s0[2], sy: s0[3] } : { x: s0[0], y: s0[1], w: +clamp(cm * (s0[2] || floorScale(s0[1], M)) / 100 * k, 2.5, 70).toFixed(1) }; }
+    if (!sp) { const roomy = (o) => Math.min(99, ...list.filter((it) => SORT[it.on || kindOf(RQ.byHandle(it.h))] === SORT[kind] || kindOf(RQ.byHandle(it.h)) === "window").map((it) => Math.abs(it.x - o[0])));
+      const s0 = (G[kind] && G[kind].length && kind !== "rug" && kind !== "window" ? G[kind].slice().sort((a, b) => roomy(b) - roomy(a))[0] : G[kind] && G[kind][0]) || GENERIC[kind][0] || GENERIC.surface[0]; // full everywhere: where there is most room
+      sp = kind === "rug" || kind === "window" ? { x: s0[0], y: s0[1], w: s0[2], sy: s0[3] } : { x: s0[0], y: s0[1], w: +clamp(cm * (s0[2] || floorScale(s0[1], M)) / 100 * k, 2.5, 70).toFixed(1) }; }
     return moved ? { ...sp, moved } : sp;
   };
   /* what stands behind what: rugs lowest, then curtains, wall, floor, textiles, things on tables */
