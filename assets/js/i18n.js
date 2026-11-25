@@ -1,17 +1,19 @@
 /* Language layer. Swedish is written in the code; English comes from i18n-en.js, a phrase
-   dictionary that is applied to the page after each render. Swedish visitors never load it.
+   dictionary that is applied to the page after each render. Swedish visitors load it only if they
+   write to the stylist in English (RQ_toEn).
    Switch language with RQ.setLang("en" | "sv"); the choice is kept in this browser. */
 (function () {
   const read = () => { try { return JSON.parse(localStorage.getItem("rumiq-lang")) || ""; } catch (e) { return ""; } };
   const LANG = read() === "en" ? "en" : "sv";
   window.RQ_LANG = LANG;
   document.documentElement.lang = LANG;
-  if (LANG === "en") document.write('<script src="assets/js/i18n-en.js"><\/script>');
+  const SRC = "assets/js/i18n-en.js";
+  if (LANG === "en") document.write('<script src="' + SRC + '"><\/script>');
 
   window.RQ_setLang = (l) => { try { localStorage.setItem("rumiq-lang", JSON.stringify(l === "en" ? "en" : "sv")); } catch (e) {} location.reload(); };
-  if (LANG !== "en") return;
-
-  document.addEventListener("DOMContentLoaded", () => {
+  // the translator, built from the dictionary: for the English site after each render, and on the Swedish site
+  // only when someone writes to the stylist in English (RQ_toEn loads the dictionary then, never before)
+  function make() {
     const EN = window.RQ_EN || { dict: {}, prods: [] };
     const D = EN.dict;
     // product names: data.js says each product's English name (field en), so a name is written in one place;
@@ -95,6 +97,18 @@
       const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
       let n; while ((n = w.nextNode())) { if (n.nodeType === 3) doText(n); else doEl(n); }
     }
+    return { translate, walk, doText, doEl, ATTR };
+  }
+  let made = null, wait = null;
+  window.RQ_toEn = (el) => {
+    wait = wait || new Promise((ok, no) => { if (window.RQ_EN) return ok(); const sc = document.createElement("script"); sc.src = SRC; sc.onload = ok; sc.onerror = () => { wait = null; no(); }; document.head.appendChild(sc); });
+    return wait.then(() => { made = made || make(); if (el) made.walk(el); });
+  };
+  if (LANG !== "en") return;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    made = make();
+    const { translate, walk, doText, doEl, ATTR } = made;
     const fixTitle = () => { const t = translate(document.title); if (t && t !== document.title) document.title = t; };
 
     walk(document.body); fixTitle();

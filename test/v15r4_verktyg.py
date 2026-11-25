@@ -107,7 +107,7 @@ with sync_playwright() as p:
     a = A("Hur tar jag hand om linne?")
     ok("40 °C" in a["text"] and a["picks"] and all("lin" in n.lower() for n in a["names"]), f"stylist: linen care gets the care text and linen things: {a['names']}")
     a = A("Jag vill ha en soffa")
-    ok("Möbler har vi inte" in a["text"] and a["picks"], f"stylist: furniture we do not sell is said plainly: {a['text'][:60]!r}")
+    ok("inga möbler" in a["text"] and a["text"].startswith("Soffor har vi inte") and a["picks"], f"stylist: furniture we do not sell is said plainly (r5: names the thing asked for): {a['text'][:60]!r}")
     a = A("Något rött till vardagsrummet")
     ok("Rött har vi inte" in a["text"] and a["picks"] and all("vardagsrum" in r for r in a["rooms"]), f"stylist: a colour we lack is said, with the nearest tone in the room: {a['names']}")
     a = A("Har ni gardiner?")
