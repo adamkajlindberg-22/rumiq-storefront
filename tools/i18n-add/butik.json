@@ -51,5 +51,10 @@
  "rosa": "pink",
  "Plommon": "Plum",
  "plommon": "plum",
- "Välj en färg först.": "Choose a colour first."
+ "Välj en färg först.": "Choose a colour first.",
+ "Ingår i looken": "Part of the look",
+ "Utan den är looken inte hel, så rabatten på": "Without it the look is not complete, so the discount of",
+ "försvinner.": "no longer applies.",
+ "Lägg till resten · {0} kr": "Add the rest · {0} kr",
+ "Lägg till resten": "Add the rest"
 }

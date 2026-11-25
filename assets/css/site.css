@@ -667,6 +667,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .line :is(h3,h4){font-weight:560;font-size:.98rem;line-height:1.3;letter-spacing:-.01em}
 .line :is(h3,h4) a{text-decoration:none}
 .line .v{font-size:.85rem;color:var(--muted)}
+.line .lk-tag{color:var(--accent);font-weight:560}
 .line .qty{margin-top:.55rem;height:calc(2.75rem + 2px)}
 .line .qty button{width:2.75rem;flex:none}
 .line .qty input{width:2.4rem;flex:none;pointer-events:none}
@@ -1952,7 +1953,7 @@ body.on-checkout .tools{grid-column:3}
 .gap .eyebrow{margin-bottom:.6rem}
 .gap-i{display:grid;grid-template-columns:2.6rem 1fr auto;gap:.8rem;align-items:center;padding:.35rem 0}
 .gap-i img{width:2.6rem;height:2.6rem;object-fit:contain}
-.gap-i span{display:grid;line-height:1.25}.gap-i b{font-weight:500;font-size:.9rem}.gap-i small{color:var(--muted);font-size:.8rem}
+.gap-i span{display:grid;line-height:1.25}.gap-i b{font-weight:500;font-size:.9rem}.gap-i small{color:var(--muted);font-size:.8rem;text-wrap:balance}
 
 /* Svep on desktop: keep the deck and its buttons above the fold */
 @media (min-width:901px){

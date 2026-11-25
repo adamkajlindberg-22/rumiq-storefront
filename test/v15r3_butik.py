@@ -218,6 +218,36 @@ with sync_playwright() as p:
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
         ctx.close()
 
+    # M9 + D15: the rest of a look says what it costs, adding it says the whole look is in, look things are named in the cart,
+    # removing one says the discount goes (and Ångra brings it back), the page does not jump
+    for W, Hh, mobile in ((360, 740, True), (390, 844, True), (1280, 720, False), (1440, 900, False)):
+        tag = f"[look {W}]"
+        ctx = context(b, W, Hh, mobile); pg = page(ctx)
+        pg.goto(BASE + "look-mjuk-kvall/", wait_until="load"); pg.wait_for_timeout(300)
+        items = pg.evaluate("RQ.LOOKS.find((l) => l.id === 'mjuk-kvall').items")
+        for h in items[:-1]:
+            pg.evaluate("(h) => RQ.shop.addToCart(h + '::0', 1)", h)
+        pg.wait_for_timeout(300)
+        pg.evaluate("document.getElementById('lpBuy').scrollIntoView({block:'center'})"); pg.wait_for_timeout(200)
+        want = pg.evaluate("(h) => RQ.byHandle(h).price", items[-1])
+        txt = pg.evaluate("document.querySelector('#lpBuy [data-look-add]').textContent")
+        ok(txt == f"Lägg till resten · {want} kr", f"{tag} Lägg till resten says what the rest costs, one space: {txt!r}")
+        y0 = pg.evaluate("scrollY"); pg.click("#lpBuy [data-look-add]"); pg.wait_for_timeout(600)
+        ok(abs(pg.evaluate("scrollY") - y0) <= 2, f"{tag} the page stays where it is after the click")
+        toast = pg.evaluate("document.getElementById('toast').textContent")
+        ok(toast.startswith("Mjuk kväll ligger i varukorgen. Du sparar 269 kr."), f"{tag} the toast says the whole look is in and what it saves: {toast!r}")
+        pg.evaluate("document.querySelector('[data-open-cart]').click()"); pg.wait_for_timeout(600)
+        tags = pg.evaluate("[...document.querySelectorAll('#cart .lk-tag')].map((e) => e.textContent)")
+        ok(tags == ["Ingår i looken Mjuk kväll"] * 4, f"{tag} the look's things are named in the cart: {tags}")
+        pg.click(f"#cart [data-rm='{items[0]}::0']"); pg.wait_for_timeout(400)
+        toast = pg.evaluate("document.getElementById('toast').textContent")
+        ok("rabatten på 269 kr försvinner" in toast and "Ångra" in toast, f"{tag} removing a look thing says the discount goes: {toast!r}")
+        ok(pg.evaluate("document.querySelectorAll('#cart .lk-tag').length") == 0, f"{tag} no look tags once the look is not whole")
+        pg.click("#toast [data-undo-rm]"); pg.wait_for_timeout(400)
+        ok(pg.evaluate("RQ.shop.cartDiscount()") == 269, f"{tag} Ångra brings the discount back")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
+        ctx.close()
+
     # D12: the loupe waits until the pointer moves on the picture
     for W, Hh, mobile in [x for x in SIZES if not x[2]]:
         tag = f"[{W}]"
