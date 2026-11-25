@@ -343,8 +343,10 @@
       const want = { rug: 170, window: 34, wall: 46, floor: 44, throw: 56, cushion: 58, bedding: 50 }[kind] || (r > 1.4 ? 30 : 42);
       const bw = clamp(want * 100 / sp.w, cover, cover * 3.6), bh = bw / ar / 1.25;
       const ih = sp.w * r * (sp.sy || 1) * ar; // the product's height in % of the photo's height
-      const bl = clamp(50 - sp.x / 100 * bw, 100 - bw, 0), bt = clamp((kind === "wall" ? 60 : 72) - (sp.y - ih * 0.1) / 100 * bh, 100 - bh, 0);
-      const st = `left:${(bl + sp.x / 100 * bw).toFixed(1)}%;top:${(bt + sp.y / 100 * bh).toFixed(1)}%;width:${(sp.w / 100 * bw).toFixed(1)}%`;
+      const bl = clamp(50 - sp.x / 100 * bw, 100 - bw, 0), rug = kind === "rug";
+      // a rug lies at the front of the room: its far edge a little below the middle of the card, and it runs on out of the picture at the foot
+      const bt = rug ? clamp(46 - (sp.y - ih) / 100 * bh, -bh * 0.6, 0) : clamp((kind === "wall" ? 60 : 72) - (sp.y - ih * 0.1) / 100 * bh, 100 - bh, 0), rugTop = bt + (sp.y - ih) / 100 * bh;
+      const st = `left:${(bl + sp.x / 100 * bw).toFixed(1)}%;top:${rug ? 100 : (bt + sp.y / 100 * bh).toFixed(1)}%;width:${(sp.w / 100 * bw).toFixed(1)}%${rug ? `;height:${(100 - rugTop).toFixed(1)}%` : ""}`;
       const sq = sp.sy && sp.sy !== 1 ? `aspect-ratio:1 / ${(r * sp.sy).toFixed(3)};` : "";
       return `<span class="inr"><img class="inr-bg" src="${R.url()}" alt="" decoding="async" style="left:${bl.toFixed(1)}%;top:${bt.toFixed(1)}%;width:${bw.toFixed(1)}%;height:${bh.toFixed(1)}%"><span class="inr-p k-${kind}" style="${st}"><img src="${cutIn(p)}" alt="" decoding="async" style="${sq}filter:${lightFilter()}"></span></span>`;
     },

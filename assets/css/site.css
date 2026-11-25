@@ -1124,7 +1124,7 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 .inr-p{position:absolute;transform:translate(-50%,-100%);display:block}
 .inr-p img{width:100%!important;height:auto!important;object-fit:contain!important;filter:none;transform:none!important}
 .inr-p.k-surface::after,.inr-p.k-floor::after{content:"";position:absolute;left:8%;right:8%;bottom:-3%;height:9%;background:radial-gradient(closest-side,rgba(0,0,0,.32),transparent);z-index:-1}
-.inr-p.k-wall{filter:drop-shadow(-3px 5px 6px rgba(20,14,8,.26))}.inr-p.k-rug img{object-fit:fill!important}.inr-p.k-throw,.inr-p.k-cushion,.inr-p.k-bedding{filter:drop-shadow(-2px 3px 3px rgba(20,14,8,.22))}
+.inr-p.k-wall{filter:drop-shadow(-3px 5px 6px rgba(20,14,8,.26))}.inr-p.k-rug img{object-fit:fill!important}.inr-p.k-rug[style*="height"] img{height:100%!important;object-fit:cover!important;object-position:50% 0} /* a card: the rug runs on out at the foot */.inr-p.k-throw,.inr-p.k-cushion,.inr-p.k-bedding{filter:drop-shadow(-2px 3px 3px rgba(20,14,8,.22))}
 .card.in-room .ph .hov{z-index:2}
 .card .rbtn{position:absolute;right:.45rem;top:3rem;z-index:2;color:#22252A;width:2.5rem;height:2.5rem}
 .card .rbtn:hover{background:rgba(247,247,244,.7)}
