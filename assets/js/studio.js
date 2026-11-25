@@ -347,7 +347,7 @@
       else if (a.unscented && one(a)) { out.push("Utan doft har vi den inte."); short = true; }
       else if (a.max && one(a)) out.push(`Under ${kr(a.max)} har vi ${many ? "dem" : "den"} inte.`, many ? `Billigast är ${byPrice(ps)[0].name}, ${kr(byPrice(ps)[0].price)}.` : `${p.name} kostar ${kr(p.price)}.`);
       else if (a.mat === "ull" && ps.some((x) => meets(x, a) === null)) out.push(`${D} vi har är i ullblandning, inte i ren ull.`);
-      else if ((a.size || a.shape) && ps.some((x) => meets(x, a) === null)) sizeInfo = sizeInfo || a;
+      else if ((a.size || a.shape || a.len || a.dims) && ps.some((x) => meets(x, a) === null)) sizeInfo = sizeInfo || a; // a size we cannot vouch for: where it will be said
     });
     if (sizeInfo) {
       if (single) out.push(`${D} finns bara i ${single[0]} × ${single[1]} cm.`);
