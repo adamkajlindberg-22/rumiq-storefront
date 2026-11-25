@@ -672,7 +672,7 @@
           if (drag) { const d = drag; drag = null; if (!d.moved) return;
             const it = R.scene().find((x) => x.h === d.h); if (!it) return;
             const next = { x: +d.x.toFixed(1), y: +d.y.toFixed(1), w: +d.w.toFixed(1) };
-            R.update(d.h, next); learn(d.h, { ...it, ...next }); }
+            R.update(d.h, next); learn(d.h, { ...it, ...next }); refocus(d.h); } // the room is drawn again: the moved thing keeps the focus, so the keys go on working
         };
         stage.addEventListener("pointerup", up); stage.addEventListener("pointercancel", up);
         // the wheel changes the size only when you mean it: over the selected thing, or with Ctrl held. Otherwise the page scrolls.
