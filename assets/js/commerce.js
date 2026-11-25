@@ -170,17 +170,17 @@
     cartCount: () => S.cartLines().reduce((s, l) => s + l.quantity, 0),
     cartSubtotal: () => S.cartLines().reduce((s, l) => s + l.lineTotal, 0),
     /* A complete look in the cart is 10 % cheaper (RQ_CONFIG.lookDiscount). One unit of each product
-       counts towards one look at most; the largest discounts are taken first. */
-    lookDiscounts() {
+       counts towards one look at most; the largest discounts are taken first. extra: handles to count as one more each (what a button would add) */
+    lookDiscounts(extra = []) {
       const rate = +((window.RQ_CONFIG || {}).lookDiscount || 0); if (!rate || !RQ.LOOKS) return [];
-      const left = {}; S.cartLines().forEach((l) => { left[l.product.handle] = (left[l.product.handle] || 0) + l.quantity; });
+      const left = {}; S.cartLines().forEach((l) => { left[l.product.handle] = (left[l.product.handle] || 0) + l.quantity; }); extra.forEach((h) => { left[h] = (left[h] || 0) + 1; });
       const price = (h) => (RQ.byHandle(h) || { price: 0 }).price;
       const cands = RQ.LOOKS.map((L) => ({ look: L, amount: Math.round(L.items.reduce((s, h) => s + price(h), 0) * rate) })).sort((a, b) => b.amount - a.amount);
       const out = [];
       for (const c of cands) { while (c.look.items.every((h) => left[h] > 0)) { c.look.items.forEach((h) => left[h]--); out.push(c); } }
       return out;
     },
-    cartDiscount: () => S.lookDiscounts().reduce((s, d) => s + d.amount, 0),
+    cartDiscount: (extra) => S.lookDiscounts(extra).reduce((s, d) => s + d.amount, 0),
     cartTotalBeforeShipping: () => S.cartSubtotal() - S.cartDiscount(),
     addToCart(variantId, qty = 1) {
       const hit = S.variantById(variantId); if (!hit || !hit.variant) return false;

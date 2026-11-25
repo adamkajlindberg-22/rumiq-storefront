@@ -1547,6 +1547,7 @@ html.sheet-lock{overflow:hidden}
 .lp-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.8rem;font-size:1.05rem}
 .lp-in{font-size:.95rem;color:var(--ink2);margin-bottom:.7rem}
 .lp-buy .ctrl-row{margin:0}
+.lp-buy .ctrl-row > .btn{flex:1 1 auto} /* a wrapped row fills the width instead of leaving two odd-sized buttons */
 .lp-item .iconbtn.done{background:#2C4A3E;border-color:#2C4A3E;color:#F7F7F4}
 .lp-item .iconbtn.done span{display:none}
 .lp-item .iconbtn.done svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:2}

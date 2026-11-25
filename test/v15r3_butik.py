@@ -230,9 +230,10 @@ with sync_playwright() as p:
             pg.evaluate("(h) => RQ.shop.addToCart(h + '::0', 1)", h)
         pg.wait_for_timeout(300)
         pg.evaluate("document.getElementById('lpBuy').scrollIntoView({block:'center'})"); pg.wait_for_timeout(200)
-        want = pg.evaluate("(h) => RQ.byHandle(h).price", items[-1])
+        # r4: the button says what the cart rises by (the rest, less the discount it completes), so it is never higher than the whole look
+        want = pg.evaluate("(h) => RQ.byHandle(h).price - (RQ.shop.cartDiscount([h]) - RQ.shop.cartDiscount())", items[-1])
         txt = pg.evaluate("document.querySelector('#lpBuy [data-look-add]').textContent")
-        ok(txt == f"Lägg till resten · {want} kr", f"{tag} Lägg till resten says what the rest costs, one space: {txt!r}")
+        ok(txt == f"Lägg till resten · +{want} kr", f"{tag} Lägg till resten says what the cart rises by, one space: {txt!r}")
         y0 = pg.evaluate("scrollY"); pg.click("#lpBuy [data-look-add]"); pg.wait_for_timeout(600)
         ok(abs(pg.evaluate("scrollY") - y0) <= 2, f"{tag} the page stays where it is after the click")
         toast = pg.evaluate("document.getElementById('toast').textContent")

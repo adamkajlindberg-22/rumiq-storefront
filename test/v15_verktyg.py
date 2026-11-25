@@ -213,7 +213,7 @@ with sync_playwright() as p:
         # looks
         go(pg, "looks", 800)
         ok("10 %" in pg.evaluate("document.querySelector('.page-head .lead').innerText") and pg.evaluate("!!document.querySelector('.lc-row s')"), f"{tag} looks: the discount is said on the list and the full price is struck through")
-        pg.evaluate("document.querySelector('[data-look-add=spa-hemma]').click()"); pg.wait_for_timeout(1900); pg.evaluate("document.querySelector('[data-look-add=spa-hemma]').click()"); pg.wait_for_timeout(300)
+        pg.evaluate("document.querySelector('[data-look-add=spa-hemma]').click()"); pg.wait_for_timeout(1900); pg.evaluate("document.querySelector('[data-lookbtn=spa-hemma]').click()"); pg.wait_for_timeout(300)  # r4: the card's button now offers the cart once the look is in it
         ok(pg.evaluate(QTY) == 3, f"{tag} looks: buying the same look twice adds it once ({pg.evaluate(QTY)})")
         pg.evaluate("RQ.shop.cartLines().forEach(l => RQ.shop.setQty(l.id, 0))")
         go(pg, "look-sov-gott", 800)
