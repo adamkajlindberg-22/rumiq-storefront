@@ -452,7 +452,7 @@
             ${RQ.ai ? RQ.ai.card() : ""}
             <div class="rm-sel" id="rmSel" hidden>
               <div class="rm-sel-h"><img id="rmSelImg" alt=""><div><b id="rmSelName"></b><span id="rmSelPrice"></span></div><a class="tlink" id="rmSelLink" href="#">Visa</a></div>
-              <div class="range-row"><span>Storlek</span><input type="range" id="rmSize" min="3" max="96" step=".5" aria-label="Storlek"></div>
+              <div class="range-row"><span>Storlek</span><input type="range" id="rmSize" min="3" max="96" step=".1" aria-label="Storlek"></div>
               <div class="range-row"><span>Ljus</span><input type="range" id="rmLight" min="60" max="135" aria-label="Ljus"></div>
               <div class="range-row rm-move" role="group" aria-label="Flytta"><span aria-hidden="true">Flytta</span><div><button type="button" class="chip" data-mv="-2,0" aria-label="Flytta åt vänster">←</button><button type="button" class="chip" data-mv="0,-2" aria-label="Flytta uppåt">↑</button><button type="button" class="chip" data-mv="0,2" aria-label="Flytta nedåt">↓</button><button type="button" class="chip" data-mv="2,0" aria-label="Flytta åt höger">→</button></div></div>
               <div class="rm-sel-a"><button type="button" class="chip" id="rmFlip">${ICO.flip}Spegelvänd</button><button type="button" class="chip" id="rmFront">${ICO.front}Längst fram</button><button type="button" class="chip" id="rmBack">${ICO.back}Längst bak</button><button type="button" class="chip" id="rmDel">${ICO.trash}Ta bort</button></div>
@@ -556,7 +556,8 @@
           if (!it) return;
           const p = RQ.byHandle(it.h);
           $("#rmSelImg", root).src = RQ.img(p, 600); $("#rmSelName", root).textContent = p.name; $("#rmSelPrice", root).textContent = kr(p.price);
-          $("#rmSelLink", root).href = "#produkt-" + p.handle; $("#rmSize", root).value = it.w; $("#rmLight", root).value = it.light;
+          $("#rmSelLink", root).href = "#produkt-" + p.handle; { const sz = $("#rmSize", root), [a, b] = span(it.h); sz.min = a.toFixed(1); sz.max = b.toFixed(1); sz.value = it.w;
+            $('[data-act="bigger"]', root).setAttribute("aria-disabled", it.w >= b - 0.05); $('[data-act="smaller"]', root).setAttribute("aria-disabled", it.w <= a + 0.05); } $("#rmLight", root).value = it.light;
           $("#rmActOrder", root).textContent = it.back ? "Lägg framför" : "Lägg bakom";
         };
         const select = (h) => { sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); };
@@ -566,7 +567,11 @@
           L[kind] = { x: +it.x.toFixed(1), y: +it.y.toFixed(1), s: +(it.w / cm * 100).toFixed(2), w: +it.w.toFixed(1), sy: it.sy };
           if (kind !== "rug" && kind !== "window" && base > 0) L.k = +clamp(it.w / base, 0.4, 3).toFixed(2);
           ls.set(LEARN, L); };
-        const resize = (h, w, tag) => { const it = R.scene().find((x) => x.h === h); if (!it) return; w = +clamp(w, 2.5, 96).toFixed(1); R.update(h, { w }, tag); learn(h, { ...it, w }); };
+        /* how small and how big a thing may be made: around the size it was put in at (half to twice the size in
+           a mapped sample room; wider in your own photo, where the first size is only a guess), so one click never makes a giant */
+        const span = (h) => { const p = RQ.byHandle(h); if (!p) return [2.5, 96]; const b = spotFor(p, [], true).w, own = !mapOf(); return [Math.max(2.5, b * (own ? 0.35 : 0.5)), Math.min(96, b * (own ? 4 : 2))]; };
+        const fit = (h, w) => { const [a, b] = span(h); return clamp(w, a, b); };
+        const resize = (h, w, tag) => { const it = R.scene().find((x) => x.h === h); if (!it) return; w = +fit(h, w).toFixed(1); if (w === it.w) return; R.update(h, { w }, tag); learn(h, { ...it, w }); };
         const removeIt = (h) => { const p = RQ.byHandle(h); if (sel === h) sel = null; R.remove(h); RQ.toast(`${esc(p.name)} är borttagen. <a href="#" data-room-undo>Ångra</a>`); };
 
         // gestures: one finger on a thing moves it, one finger on the room pans it sideways (up and down scrolls the page),
@@ -590,7 +595,7 @@
         stage.addEventListener("pointermove", (e) => {
           if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
           if (pinch && pts.size >= 2) { const [a, b] = [...pts.values()], k = Math.hypot(a.x - b.x, a.y - b.y) / pinch.d;
-            if (pinch.w != null) { const w = clamp(pinch.w * k, 2.5, 96); pinch.cur = w; live(sel, { w }); $("#rmSize", root).value = w; }
+            if (pinch.w != null) { const w = fit(sel, pinch.w * k); pinch.cur = w; live(sel, { w }); $("#rmSize", root).value = w; }
             else { const z = clamp(pinch.z * k, 1, 3.2); view.tx = pinch.cx - (pinch.cx - pinch.tx) * z / pinch.z; view.ty = pinch.cy - (pinch.cy - pinch.ty) * z / pinch.z; view.z = z; paintView(); }
             return; }
           if (pan) { if (!pan.moved && !far(pan, e)) return; if (!pan.moved) canvas.classList.remove("glide"); pan.moved = true; if (!view.on) return; view.tx = pan.tx + e.clientX - pan.sx; if (view.z > 1.01) view.ty = pan.ty + e.clientY - pan.sy; paintView(); return; }
@@ -599,7 +604,7 @@
           drag.x = drag.ox + (e.clientX - drag.sx) / drag.r.width * 100;
           drag.y = drag.oy + (e.clientY - drag.sy) / drag.r.height * 100;
           // on the floor, closer to the camera is bigger: the size follows the depth
-          if (drag.kind === "floor" || drag.kind === "rug") { const hz = (mapOf() || GENERIC).h; if (drag.oy - hz > 6) drag.w = clamp(drag.ow * clamp((clamp(drag.y, 8, 104) - hz) / (drag.oy - hz), 0.35, 2.6), 3, 96); }
+          if (drag.kind === "floor" || drag.kind === "rug") { const hz = (mapOf() || GENERIC).h; if (drag.oy - hz > 6) drag.w = fit(drag.h, drag.ow * clamp((clamp(drag.y, 8, 104) - hz) / (drag.oy - hz), 0.35, 2.6)); }
           [drag.x, drag.y] = inside(drag.x, drag.y, drag.w, drag.hp * drag.w / drag.ow);
           live(drag.h, { x: drag.x, y: drag.y, w: drag.w });
         });
@@ -623,7 +628,7 @@
           const m = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, -d], ArrowDown: [0, d] }[e.key];
           if (m) { e.preventDefault(); sel = it.h; const [x, y] = inside(it.x + m[0], it.y + m[1], it.w, el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100); R.update(it.h, { x, y }, "key:" + it.h); refocus(it.h); said("Flyttad."); }
           if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(it.h); }
-          if (e.key === "+" || e.key === "-") { e.preventDefault(); sel = it.h; resize(it.h, it.w + (e.key === "+" ? 1 : -1), "size:" + it.h); refocus(it.h); said(`Storlek ${Math.round(it.w + (e.key === "+" ? 1 : -1))} %.`); }
+          if (e.key === "+" || e.key === "-") { e.preventDefault(); sel = it.h; const w = +fit(it.h, it.w * (e.key === "+" ? 1.08 : 1 / 1.08)).toFixed(1); resize(it.h, w, "size:" + it.h); refocus(it.h); said(w === it.w ? (e.key === "+" ? "Största storleken." : "Minsta storleken.") : `Storlek ${Math.round(w)} %.`); }
           if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); const l = R.ordered().map((x) => x.h), i = l.indexOf(it.h), nm = (RQ.byHandle(it.h) || {}).name || ""; removeIt(it.h); refocus(l[i + 1] || l[i - 1]); said(`${nm} är borttagen.`); } });
         // what the keys and the arrow buttons did, read out (the room itself is a picture)
         const said = (t) => { const s = $("#rmSaid", root); if (s) { s.textContent = ""; setTimeout(() => { s.textContent = t; }, 30); } };

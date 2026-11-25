@@ -2391,6 +2391,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-act{display:none}
 .rm-act button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;min-height:3.7rem;padding:0 .1rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper);color:var(--ink);font-size:.75rem;font-weight:600;line-height:1.1}
 .rm-act button.on{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
+.rm-act button[aria-disabled=true]{color:var(--muted);border-color:var(--line2)} /* the smallest or biggest size it can have */
 .rm-act svg{width:1.3rem;height:1.3rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .rm-keys{display:none}
 @media (hover:hover) and (pointer:fine){.rm-keys{display:block}} /* only where there is a keyboard and a mouse, not on touch tablets */
