@@ -47,7 +47,7 @@
           <canvas id="dust" aria-hidden="true"></canvas>
           <div class="scrim" aria-hidden="true"></div>
           <div class="bands">
-            <div class="band settle"><h1>Rätt saker.<br>Ett lugnare hem.</h1><p class="sub">Noga utvald belysning, textil och förvaring, och verktyg som låter dig se allt i ditt eget rum innan du köper.</p>
+            <div class="band settle"><h1>Ditt hem.<br>Din vision.<br>Din stil.</h1><p class="sub"><b>Se ditt hem innan du köper.</b> Noga utvald belysning, textil och förvaring, och verktyg som visar allt i ditt eget rum.</p>
               <div class="row">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a>` : `<a class="btn" href="#mitt-rum">Prova i Mitt rum</a>`}<a class="btn ghost" href="#butik">Upptäck butiken</a></div></div>
           </div>
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>

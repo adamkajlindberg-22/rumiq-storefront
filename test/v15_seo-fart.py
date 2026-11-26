@@ -83,7 +83,7 @@ ok(not any(descs[r].startswith("Sedan") for r in routes), "no description starts
 prods = [r for r in routes if r.startswith("produkt-")]
 ok(not any(descs[r].endswith("…") for r in prods), "no product description is cut off")
 ok(all(re.search(r"\d kr\.", descs[r]) for r in prods), "product descriptions say the price")
-ok("Rätt saker" in page("").read_text(encoding="utf-8") and "finns inte" not in re.search(r"<main.*?</main>", page("").read_text(encoding="utf-8"), re.S).group(0), "the start page shows the start page")
+ok("Ditt hem." in page("").read_text(encoding="utf-8") and "finns inte" not in re.search(r"<main.*?</main>", page("").read_text(encoding="utf-8"), re.S).group(0), "the start page shows the start page")
 ok(not any("Du har tittat på" in page(r).read_text(encoding="utf-8") for r in prods), "product pages are drawn for a first visit (no 'Du har tittat på')")
 
 for r in prods:
