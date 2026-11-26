@@ -840,7 +840,8 @@
         const fits = () => { $("#rmCols", root).innerHTML = colsHtml(); const t = room.type; const list = RQ.PRODUCTS.map((p) => ({ p, m: (match(p) || 0) + (t && p.rooms.includes(t) ? 100 : 0) })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };
         /* things land softly the first time they are put in the room */
         const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const seen = new Set(R._landRow ? [] : R.scene().map((it) => it.h)); // things carried over to a new photo all land (and the view fits all of them) if (fresh0) seen.delete(fresh0); R._landRow = false;
+        // things carried over to a new photo all land (and the view fits all of them)
+        const seen = new Set(R._landRow ? [] : R.scene().map((it) => it.h)); if (fresh0) seen.delete(fresh0); R._landRow = false;
         let shown = R.total();
         const count = (to) => { // the room's price counts up while the things land
           const els = [$("#rmTotal", root)], from = shown; shown = to;
