@@ -301,6 +301,33 @@ with sync_playwright() as p:
     ok(len(set(tops)) == 1, f"[D10] the card does not move when Din stil växer fram appears: {tops}")
     c.close()
 
+
+    # ---------------------------------------------------------------- fourth device run (D1-D4, D8)
+    ok(re.search(r"\.sv-info div b\{[^}]*hyphens:manual", mincss) and not re.search(r"\.sv-info div b\{[^}]*hyphens:auto", mincss), "[D8] product names in Svep are not hyphenated")
+    c = new(360, 780, True); pg = c.new_page(); go(pg, BASE + "svep/"); pg.wait_for_timeout(900)
+    pg.evaluate("(() => { const ch = document.querySelector('.sv-meta .sv-chip'); ch.hidden = false; ch.textContent = 'Din stil växer fram: Mjuk och ombonad'; const p = document.createElement('p'); p.style.height = '90px'; document.querySelector('.sv-head').appendChild(p); })()"); pg.wait_for_timeout(700)
+    ok(pg.evaluate("Math.round(document.querySelector('.sv-meta').getBoundingClientRect().height)") <= 26, "[D1] the style pill keeps to one row")
+    ok(pg.evaluate("document.querySelector('.sv-ctrl').getBoundingClientRect().bottom") <= pg.evaluate(DOCK_TOP) - 2, "[D1] when something above the card grows, the buttons are fitted above the dock again")
+    pg.evaluate("RQ.applyLight('kvall', false)"); first = pg.evaluate("document.querySelector('meta[name=theme-color]')")
+    ok(pg.evaluate("[document.querySelectorAll('meta[name=theme-color]').length, document.querySelector('meta[name=theme-color]').content]") == [1, "#191A18"], "[D2] Kväll: one theme-color tag, dark, at once")
+    pg.evaluate("RQ.applyLight('dag', false)")
+    ok(pg.evaluate("document.querySelector('meta[name=theme-color]').content") == "#EDEDEA", "[D2] and back to Dag")
+    ok(pg.evaluate("document.documentElement.dataset.input") == "pointer", "[D3] a touch screen starts without rings")
+    pg.focus('[data-dock="sparat"]'); pg.keyboard.press("Tab"); pg.wait_for_timeout(150)
+    ring = pg.evaluate("(() => { const e = document.activeElement, c = getComputedStyle(e), d = document.querySelector('.dock').getBoundingClientRect(), r = e.getBoundingClientRect(), o = parseFloat(c.outlineOffset) + parseFloat(c.outlineWidth); return [document.documentElement.dataset.input || 'key', c.outlineStyle, r.right + o <= d.right && r.top - o >= d.top && r.bottom + o <= d.bottom]; })()")
+    ok(ring[0] == "key" and ring[1] == "solid" and ring[2], f"[D3] with the keyboard the dock's ring shows, inside the dock's edge: {ring}")
+    pg.evaluate("document.querySelector('.sv-b.no').dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }))")
+    ok(pg.evaluate("document.documentElement.dataset.input") == "pointer", "[D3] a click from a pointer (also a faked one) counts as a tap")
+    c.close()
+    c = new(375, 548, True); pg = c.new_page(); go(pg, BASE + "mitt-rum/"); pg.wait_for_timeout(300); pg.evaluate(SAMPLE, "vardagsrum")
+    pg.evaluate("RQ.room.saveScene([]); ['glob-bordslampa-opalglas'].forEach(h => RQ.room.add(h, true))")
+    go(pg, BASE + "butik/"); go(pg, BASE + "mitt-rum/"); pg.wait_for_timeout(1300)
+    if pg.evaluate("!!document.getElementById('plSelf')"):
+        pg.evaluate("document.getElementById('plSelf').click()"); pg.wait_for_timeout(1500)
+    t, bar = pg.evaluate(R, ".rm-tools"), pg.evaluate(R, ".rm-bar")
+    ok(t and bar and t[3] <= bar[1] + 1 and pg.evaluate(R, "#rmStage")[1] >= 40, f"[D4 375x548] Mitt rum's toolbar starts above the Hela rummet bar: {t} {bar}")
+    c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

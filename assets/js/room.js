@@ -1680,6 +1680,11 @@
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
         R._swapLive = (h, colour) => { if (!root.isConnected || !R.inScene(h)) return; const it = R.scene().find((x) => x.h === h); if (it) lookAt([it]); openSwap(h, colour ? "[data-swv][aria-pressed=true]" : ".rm-alt"); };
         { const sw0 = RQ.ss && RQ.ss.get("rumiq-room-swap"); if (sw0) { RQ.ss.set("rumiq-room-swap", ""); const [sw, c] = sw0.split("|"); if (R.inScene(sw)) setTimeout(() => R._swapLive(sw, c === "c"), 300); } }
+        // a short phone (iPhone SE): at the start the toolbar (Lägg till, Inred åt mig, Spara, Mer) comes up above the room's bar at the bottom,
+        // as far as the picture's top stays under the header (D4)
+        setTimeout(() => { if (scrollY > 4 || !document.contains(root)) return; const t = $(".rm-tools", root), bar = document.querySelector(".rm-bar"); if (!t || !bar || !bar.getClientRects().length) return;
+          const need = t.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + 8, nav = $("#nav"), up = stage.getBoundingClientRect().top - (nav ? nav.getBoundingClientRect().bottom : 0) - 4;
+          const by = Math.min(need, up); if (need > 0 && by > 0) window.scrollBy(0, by); }, 450);
         return () => { if (window.visualViewport) visualViewport.removeEventListener("resize", onVV); tObs.disconnect(); R._swapLive = null; document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
       },
     };
