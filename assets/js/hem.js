@@ -158,7 +158,7 @@
       ${pr.left.length ? `<p class="small hem-left">Budgeten räcker till ${its.length} av ${its.length + pr.left.length}. Kvar: ${pr.left.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
       ${s.compact ? "" : budgetHtml}
       <div class="hem-prop-sum"><span>${its.length} ${its.length === 1 ? "produkt" : "produkter"}</span><b>${kr(pr.total)}</b></div>
-      <div class="ai-row hem-prop-acts"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>${room && H.items(room).length ? "Prova det här i rummet" : "Se det i ditt rum"}</span></button><button class="btn ghost" type="button" data-hem-buy>Köp allt · ${kr(pr.total)}</button></div>
+      <div class="ai-row hem-prop-acts"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-hem-buy>Köp allt · ${kr(pr.total)}</button></div>
       <div class="ai-row small-row">${s.noAsk ? "" : `<button class="tlink" type="button" data-hem-ask>Vad tycker du?</button>`}<button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button>${room || s.compact ? "" : `<button class="tlink" type="button" data-hem-keep>Spara rummet</button>`}</div>
       ${s.compact ? `<details class="hem-more"${s.open ? " open" : ""}><summary>Ändra rum och budget</summary><div class="hem-more-in">${typeChips(s, pr, types)}${budgetHtml}</div></details>` : ""}
       <p class="small" role="status" data-hem-msg>${room ? `Hör till ${esc(H.name(room))}.` : ""}</p>`;

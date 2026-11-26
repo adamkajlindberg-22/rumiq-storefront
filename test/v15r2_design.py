@@ -138,7 +138,8 @@ with sync_playwright() as p:
         hit = pg.evaluate("""() => { const t = document.getElementById('toast'); if (!t.classList.contains('show')) return 'no toast';
           const r = t.getBoundingClientRect(); const under = [...document.querySelectorAll('#view button, #view a, #view input, .buybar button, #view .rm-hint, #view .small')].filter((e) => e.offsetParent).filter((e) => { const q = e.getBoundingClientRect(); return q.width && q.left < r.right && q.right > r.left && q.top < r.bottom && q.bottom > r.top; });
           return under.map((e) => e.textContent.trim().slice(0, 30)); }""")
-        ok(hit == [], f"{tag} the Mitt rum toast covers no button or hint: {hit}")
+        # svep2 review: an empty sample room says it once, in the room ("Exempelrummet är tomt."), so no toast is right too
+        ok(hit == [] or (hit == "no toast" and pg.evaluate("RQ.room.get().sample && !RQ.room.scene().length && (document.getElementById('rmHintT') || {}).textContent === 'Exempelrummet är tomt.'")), f"{tag} the Mitt rum toast covers no button or hint: {hit}")
         if not mobile:
             none = pg.evaluate("() => { const e = document.querySelector('#view .rm-none'); return e && e.offsetParent ? [getComputedStyle(e).display, Math.round(e.getBoundingClientRect().height)] : null; }")
             ok(none and none[0] == "block" and none[1] < 60, f"{tag} the empty I rummet sentence is one block of text: {none}")

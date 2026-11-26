@@ -183,8 +183,9 @@ with sync_playwright() as p:
             pg.click("#svYes"); pg.wait_for_timeout(420)
         pg.wait_for_timeout(1500)
         r = pg.evaluate("""(() => { const res = document.querySelector('.svep-result'); const vis = (e) => !!e && e.offsetParent !== null && getComputedStyle(e).visibility !== 'hidden';
+          // svep2: 'Mer som det här' belongs to the saved things (it was a link on each one before), so it is counted with them
           // studio2 ai: the result ends in the room proposal card (its two actions, Se det i ditt rum and Köp allt, are counted on their own)
-          const acts = [...res.querySelectorAll('a, button, input')].filter((e) => vis(e) && !e.closest('.sv-liked') && !e.closest('form[hidden]') && !e.closest('.hem-prop'));
+          const acts = [...res.querySelectorAll('a, button, input')].filter((e) => vis(e) && !e.closest('.sv-liked') && !e.closest('.ml-way') && !e.closest('form[hidden]') && !e.closest('.hem-prop'));
           const sm = res.querySelector('.sp-look small');
           return { two: [...document.querySelectorAll('.sv-two-link, .sp-two')].filter(vis).length, acts: acts.map((e) => e.textContent.trim().slice(0, 30)), watch: !!res.querySelector('input[type=email]'), small: sm ? getComputedStyle(sm).display : 'none' }; })()""")
         ok(r["two"] == 1, f"svep result {tag}: 'Inreder ni tillsammans?' once: {r['two']}")
