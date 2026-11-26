@@ -1190,6 +1190,7 @@
       return; }
     if (t.matches("[data-line]")) { const l = S.cartLines().find((x) => x.id === t.dataset.line); if (l) S.setQty(l.id, l.quantity + +t.dataset.d); return; }
     if (t.matches("[data-action=cookies]")) { RQ.showCookies(true); return; }
+    if (t.id === "burger" && $("#mnav").classList.contains("open")) { closeAll(); return; } // the burger closes what it opened (a tap while the menu slides in)
     if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); behind(true); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
     if (t.id === "mnavClose") { closeAll(); return; }
     if (t.matches("a[data-after]")) RQ.ss.set("rumiq-after-login", "#" + t.dataset.after);
