@@ -407,7 +407,8 @@ with sync_playwright() as p:
     # minor 3: a sample room is called an example room; polish 1: no grey box behind the selected thing; polish 6: the curtain reaches above the picture; polish 7: Shift+arrow moves 5 %
     c = ctx_for(b, 1440, 900, False); pg = new_page(c)
     pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(900); pg.click("#view [data-room-sample-now]"); pg.wait_for_timeout(1800)
-    ok("Klart. Här är exempelrummet." in pg.evaluate("[...document.querySelectorAll('.toast.show')].map((t) => t.innerText).join(' ')"), "[review] a sample room is called the example room")
+    # svep2 (review polish): the empty sample room says it once, in the room ("Exempelrummet är tomt."), not again in a toast on top
+    ok(pg.evaluate("document.getElementById('rmHintT').textContent") == "Exempelrummet är tomt." and "Klart." not in pg.evaluate("[...document.querySelectorAll('.toast.show')].map((t) => t.innerText).join(' ')"), "[review] a sample room is called the example room, once")
     pg.evaluate("RQ.room.add('dagsljus-linnegardin-2-pack', true); RQ.room.add('lysa-keramiklampa', true)"); pg.wait_for_timeout(400)
     top = pg.evaluate("(() => { const e = document.querySelector('.rm-item[data-h=dagsljus-linnegardin-2-pack]').getBoundingClientRect(), s = document.getElementById('rmStage').getBoundingClientRect(); return e.top - s.top; })()")
     ok(top < 0, f"[review] the sample living room's curtain reaches above the picture (no hard top edge): {round(top)}")

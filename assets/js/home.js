@@ -35,7 +35,8 @@
 
   V.home = () => {
     const forYou = RQ.taste && RQ.taste.has();
-    const featured = forYou ? RQ.taste.sort(RQ.PRODUCTS).slice(0, 8) : RQ.PRODUCTS.filter((p) => p.featured).slice(0, 8);
+    // for you: what you have not seen yet first, then what you liked; never what you said no to (svep2)
+    const featured = forYou ? (RQ.why ? RQ.why.forYou(RQ.PRODUCTS).filter((p) => !RQ.why.rejected(p.handle)) : RQ.taste.sort(RQ.PRODUCTS)).slice(0, 8) : RQ.PRODUCTS.filter((p) => p.featured).slice(0, 8);
     return {
       html: `
       <section class="hero" id="hero" aria-label="Välkommen till RumIQ">
@@ -62,8 +63,8 @@
       </div></section>
 
       <section class="sec" id="utvalt">
-        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">${forYou ? "Utvalt för dig" : "Våra favoriter just nu"}</h2><p>${forYou ? "Sorterat efter det du sparat i Svep." : "Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning."}</p></div><a class="link" href="${forYou ? "#for-dig" : "#butik"}">${forYou ? "Hela butiken för dig" : "Alla produkter"}</a></div>
-          ${RQ.grid(featured, "feat")}</div>
+        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">${forYou ? "Utvalt för dig" : "Våra favoriter just nu"}</h2><p>${forYou ? "Sorterat efter det du sparat i Svep, med skälet under varje sak." : "Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning."}</p></div><a class="link" href="${forYou ? "#for-dig" : "#butik"}">${forYou ? "Hela butiken för dig" : "Alla produkter"}</a></div>
+          ${RQ.grid(featured, "feat", false, forYou && RQ.why ? RQ.why.shop() : null)}</div>
       </section>
 
       ${RQ.svepHome ? RQ.svepHome.html() : ""}

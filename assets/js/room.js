@@ -604,7 +604,7 @@
     close();
     const cb = after; after = null;
     if (cb) cb();
-    else if (/^(mitt-rum|studio(-rum|-analys|-kombinera)?$)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) { RQ.router(); scrollTo(0, 0); if ((room.sample || !R.scene().length) && R.way() !== "place") RQ.toast(room.sample ? "Klart. Här är exempelrummet." : "Klart. Här är ditt rum."); } /* Placera och skapa says it in its own first step; a toast there sat on Skapa bilden (review minor) */ // the editor is drawn with the new photo
+    else if (/^(mitt-rum|studio(-rum|-analys|-kombinera)?$)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) { RQ.router(); scrollTo(0, 0); if ((room.sample ? R.scene().length : !R.scene().length) && R.way() !== "place") RQ.toast(room.sample ? "Klart. Här är exempelrummet." : "Klart. Här är ditt rum."); /* svep2: an empty sample room says it itself; Placera och skapa says it in its own first step (a toast there sat on Skapa bilden) */ } // the editor is drawn with the new photo
     else RQ.toast('Klart. Ditt rum är inlagt. <a href="#mitt-rum">Öppna Mitt rum</a>');
   };
 
@@ -1104,7 +1104,7 @@
               <button type="button" class="rm-undo" id="rmUndo" aria-keyshortcuts="Control+Z" hidden>${ICO.undo}<span>Ångra</span></button>
               <button type="button" class="rm-nightchip" id="rmNightChip" aria-label="Kvällsljus är på. Stäng av" hidden>${ICO.moon}<span>Kvällsljus</span><svg class="x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
               <span class="rm-pos" id="rmPos" aria-hidden="true" hidden><i></i></span>
-              <div class="rm-emptyhint" id="rmHint" hidden>${!room.sample && !room.type ? `<p id="rmHintT">Vilket rum är det?</p><div class="chips rm-hintask">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div>` : `<p id="rmHintT">Rummet är tomt.</p>`}<button class="btn sm light" type="button" id="rmSuggest0"${!room.sample && !room.type ? " hidden" : ""}>${ICO.wand}Inred åt mig</button></div>
+              <div class="rm-emptyhint" id="rmHint" hidden>${!room.sample && !room.type ? `<p id="rmHintT">Vilket rum är det?</p><div class="chips rm-hintask">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div>` : `<p id="rmHintT">${room.sample ? "Exempelrummet är tomt." : "Rummet är tomt."}</p>`}<button class="btn sm light" type="button" id="rmSuggest0"${!room.sample && !room.type ? " hidden" : ""}>${ICO.wand}Inred åt mig</button></div>
             </div>
             <p class="rm-first" id="rmFirst" role="status" hidden></p>
             <div class="rm-tools">
@@ -1810,7 +1810,7 @@
     if (b.matches("[data-room-sample-now]")) { const to = b.dataset.roomSampleNow || "#butik", im = new Image(); b.setAttribute("aria-busy", "true");
       im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum", src: "assets/img/rum/vardagsrum-1600.webp" }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
         // already on that page (the empty Mitt rum): a new hash would change nothing, so the page is drawn again here
-        if (RQ.currentRoute && RQ.currentRoute() === to.replace(/^#/, "")) { RQ.router(); scrollTo(0, 0); if (R.way() !== "place") RQ.toast("Klart. Här är exempelrummet."); } else location.hash = to; });
+        if (RQ.currentRoute && RQ.currentRoute() === to.replace(/^#/, "")) { RQ.router(); scrollTo(0, 0); if (R.scene().length && R.way() !== "place") RQ.toast("Klart. Här är exempelrummet."); } else location.hash = to; });
       im.onerror = () => { b.removeAttribute("aria-busy"); RQ.toast("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); };
       im.src = "assets/img/rum/vardagsrum-1600.webp"; return; }
     const h = b.dataset.roomBtn;
