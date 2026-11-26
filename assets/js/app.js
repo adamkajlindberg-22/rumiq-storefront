@@ -93,7 +93,7 @@
     const box = document.createElement("span"); text.forEach((n) => box.appendChild(n)); t.insertBefore(box, t.firstChild);
   };
   RQ.toast = (html, ms) => {
-    const t = $("#toast"); t.innerHTML = html; toastText(t); t.style.setProperty("--toast-lift", toastLift() + "px"); toastPlace(t); t.classList.add("show");
+    const t = $("#toast"); t._at = Date.now(); t.innerHTML = html; toastText(t); t.style.setProperty("--toast-lift", toastLift() + "px"); toastPlace(t); t.classList.add("show");
     // a toast with a link stays 6 s, and waits while the pointer or the focus is on it (2.2.1)
     const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":hover, :focus-within")) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); };
     clearTimeout(toastT); toastT = setTimeout(hide, wait);
@@ -905,6 +905,8 @@
   RQ.router = () => {
     const raw = currentRaw(); routing = raw;
     if (current != null && raw !== current) scrolls.set(current, window.scrollY);
+    // a toast about the page you leave does not follow you to the next one (one said on the way there, just now, stays)
+    if (current != null && raw !== current) { const t = $("#toast"); if (t && t.classList.contains("show") && Date.now() - (t._at || 0) > 700) t.classList.remove("show"); }
     // "#butik" is an alias: the address bar gets the real path (what follows "?" stays, a sign-in answer after "#" is left alone)
     if (location.hash && !location.hash.includes("=") && isRoute(raw) && pathable(raw)) { try { history.replaceState(history.state && history.state.rqSheet ? null : history.state, "", pathFor(raw) + location.search); } catch (e) {} }
     // phones and tablets: no view transition. Taking a picture of the whole page before every change costs more

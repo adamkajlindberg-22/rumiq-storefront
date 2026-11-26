@@ -243,10 +243,16 @@
     return `<div class="mb-try" role="group" aria-labelledby="mbTryH"><p id="mbTryH"><b>Vilket rum vill du prova i?</b></p>
       ${mine.length ? `<div class="chips" role="group" aria-label="Dina rum">${mine.slice(0, 8).map((r) => `<button type="button" class="chip" data-mb-room="${esc(r.id)}">${esc(H.name(r))}</button>`).join("")}</div><p class="small">Eller ett exempelrum:</p>` : ""}
       <div class="chips" role="group" aria-label="Exempelrum">${["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor"].map((t) => `<button type="button" class="chip${t === k ? " fit" : ""}" data-mb-sample="${t}">${esc(typeName(t))}${t === k ? `<span class="sr"> (passar sakerna bäst)</span>` : ""}</button>`).join("")}</div></div>`; };
+  // into the room you chose; a sample room of a kind becomes a room of yours (named after the board), so it has its own tab.
   const tryIn = async (r, type) => { const its = B.items.map((x) => ({ h: x.h, v: x.v || 0 })); tryOpen = false; mclose(); if (sheet.classList.contains("open")) sclose();
-    if (!r) return H.openInRoom({ room: type, items: its });
+    if (!r) { r = H.create({ label: (B.name || "").trim() || typeName(type), type, items: its }); B.room = r.id; persist(); }
     const out = await H.openInRoom({ room: r.type, items: [...H.items(r), ...its.filter((it) => !H.items(r).some((x) => x.h === it.h))], style: r.style, budget: r.budget, project: r.id });
-    const R = RQ.room; if (out && R && R.group) R.group(() => its.forEach((it) => { if (!R.inScene(it.h)) R.add(it.h, true, it.v); })); }; // a saved room keeps its scene; the board's things are put in beside it
+    const R = RQ.room; if (!out || !R || !R.group) return;
+    // a saved room keeps its scene; the board's things go in beside it by the editor's surface rules (what has no place is left out, like the editor does)
+    const left = new Set(R._leftOut || []), add = its.filter((it) => !R.inScene(it.h) && !left.has(it.h)); if (!add.length) return;
+    R.group(() => { add.forEach((it) => R.add(it.h, true, it.v)); const l = R.scene(), off = R.homeless ? l.filter((it) => add.some((a) => a.h === it.h) && R.homeless(it)).map((it) => it.h) : [];
+      if (off.length) { R.saveScene(l.filter((it) => !off.includes(it.h))); R._leftOut = [...left, ...off]; } });
+  }; // the room's tab says where you are; what the editor leaves out it names itself (room.js)
   const persist = () => { B.at = new Date().toISOString(); const l = boards().filter((b) => b.id !== B.id); saveBoards([B, ...l]); if (B.room) { const r = H.room(B.room); if (r && !(r.boards || []).includes(B.id)) H.patch(B.room, { boards: [...(r.boards || []), B.id] }); } };
   function wireBoard() {
     const bd = $("#mbBoard", mbody);

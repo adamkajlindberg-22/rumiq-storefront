@@ -347,7 +347,7 @@ with sync_playwright() as p:
         ctx, pg, errs = new(b, mob, W, Hh, en=True)
         room(pg, FOUR[:2]); create(pg, 3400)
         txt = pg.evaluate("document.querySelector('.ai-result').innerText")
-        ok("Show someone" in txt and "The image is now under Saved" in txt and "Skapa" not in txt and "Sparad" not in txt and "Bilden" not in txt, f"[en {W}] the result sheet is in English: {txt[:200]}")
+        ok("What do you think?" in txt and "The image is now under Saved" in txt and "Skapa" not in txt and "Sparad" not in txt and "Bilden" not in txt, f"[en {W}] the result sheet is in English: {txt[:200]}")
         go(pg, "mitt-hem", 1500)
         lib = pg.evaluate("document.getElementById('mh-bilder').innerText")
         ok("All images" in lib and "Save my AI images automatically" in lib and "Mina" not in lib and "Spara" not in lib, f"[en {W}] Mina rumsbilder is in English: {lib[:240]}")

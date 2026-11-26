@@ -271,7 +271,7 @@
     return toBlob(cv, 0.9);
   };
   const download = async (v) => { try { saveFile(await labelled(v), `rumiq-ai-bild-${stamp()}${v.n > 1 ? "-v" + v.n : ""}.jpg`); } catch (e) { RQ.toast("Bilden gick inte att ladda ner. Försök igen."); } };
-  // "Visa någon": the before and after in one picture, through the phone's own share sheet when there is one
+  // "Vad tycker du?" (was "Visa någon"): the before and after in one picture, through the phone's own share sheet when there is one
   const share = async (v, btn) => {
     if (btn) btn.disabled = true;
     try {
@@ -447,7 +447,7 @@
       <div class="ai-stage">${baHtml(v, other, fresh ? 100 : 30, many).replace("<figure ", '<figure id="aiBa" ')}${versHtml(list, view.cur, view.cmp)}</div>
       <div class="ai-pad"><span class="eyebrow">${v.demo ? "Förhandsvisning" : many ? `Version ${v.n} av ${list.length}` : "Klar"}</span><h2 id="aiTitle" class="ai-h">${v.demo ? "Så här fungerar det." : "Ditt rum, med sakerna på plats."}</h2>
         ${v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p><p class="small">När AI:n är igång kan du skapa nya versioner av samma rum och jämföra dem.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
-        <div class="ai-row ai-buybar"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Visa någon</span></button></div>
+        <div class="ai-row ai-buybar"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Vad tycker du?</span></button></div>
         <div class="ai-row small-row">${v.demo ? "" : `<button class="tlink" type="button" id="aiAgain">Skapa igen<span class="ai-cost"> · 1 bild</span></button>`}<button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
         ${productsList(items, swapOk())}
         ${savedLine(v)}</div></div>`, false, true);
@@ -519,7 +519,7 @@
       <div class="ai-stage">${baHtml(v, other, 50, many)}${versHtml(g.list, g.cur, g.cmp)}</div>
       <div class="ai-lcard-tx"><div class="ai-lcard-h"><h3 class="h3" id="aiLibH${i}">${esc(hemName(g) || roomName(g.room))}${many ? `, version ${v.n}` : ""}</h3><span class="small">${esc(dateText(v.at))} · ${items.length} ${items.length === 1 ? "produkt" : "produkter"}</span></div>
         ${items.length ? `<ul class="ai-lib-items">${items.map((it) => { const p = RQ.byHandle(it.h); return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button></li>`; }).join("")}</ul>` : ""}
-        <div class="ai-row">${items.length ? `<button class="btn sm" type="button" data-lib-buy>Köp allt</button>` : ""}<button class="btn ghost sm" type="button" data-lib-share>${ICON_SHARE}<span>Visa någon</span></button></div>
+        <div class="ai-row">${items.length ? `<button class="btn sm" type="button" data-lib-buy>Köp allt</button>` : ""}<button class="btn ghost sm" type="button" data-lib-share>${ICON_SHARE}<span>Vad tycker du?</span></button></div>
         <div class="ai-row small-row">${g.room || v.before ? `<button class="tlink" type="button" data-lib-cont>Prova igen i Studio</button>` : ""}<button class="tlink" type="button" data-lib-down>Ladda ner</button><button class="tlink" type="button" data-lib-del>Ta bort</button></div>
         ${RQ.hem && RQ.hem.rooms().length && !v.remote ? `<label class="ai-move"><span>Flytta till rum</span><select data-lib-move>${[["", "Inget rum"], ...RQ.hem.rooms().map((r) => [r.id, RQ.hem.name(r)])].map(([id, nm]) => `<option value="${esc(id)}"${id === hemOf(g) ? " selected" : ""}>${esc(nm)}</option>`).join("")}</select></label>` : ""}</div></article>`;
   };
@@ -555,6 +555,14 @@
   async function continueIn(g, v, btn) {
     btn.disabled = true;
     try {
+      // moved to a room of another kind than the sample room it was made in: that room opens (its tab chosen) with the picture's things
+      const hr0 = RQ.hem && v.roomId && RQ.hem.room(v.roomId), m0 = (g.room && g.room.meta) || {};
+      if (hr0 && m0.sample && m0.type && m0.type !== hr0.type) {
+        const its = liveItems(v.items).map((it) => ({ h: it.h, v: it.v || 0 })), R = RQ.room;
+        const out = await RQ.hem.openInRoom({ room: hr0.type, items: its, style: hr0.style, budget: hr0.budget, project: hr0.id });
+        if (out && R.group) R.group(() => its.forEach((it) => { if (!R.inScene(it.h)) R.add(it.h, true, it.v); }));
+        return;
+      }
       if (AI.projectKey() !== g.key) {
         const src = (g.room && blobUrl(g.room.photo)) || v.before; if (!src) throw new Error("photo");
         const im = await load(src); const okay = await RQ.room.saveImage(im, (g.room && g.room.meta) || {});
@@ -562,10 +570,9 @@
         keepKey(g.key);
       }
       RQ.room.saveScene(liveItems(v.items).map(({ v: _v, ...it }) => it));
-      // the room it belongs to under Sparat, unless the picture was moved there from a sample room of another kind (a bedroom
-      // picture moved to the living room opens as the bedroom it is, not under the living room's name)
-      const hr = RQ.hem && v.roomId && RQ.hem.room(v.roomId), meta = (g.room && g.room.meta) || {};
-      if (hr && (!meta.sample || !meta.type || meta.type === hr.type)) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); } else if (hr) RQ.hem.setActive(null);
+      // the room it belongs to under Sparat
+      const hr = RQ.hem && v.roomId && RQ.hem.room(v.roomId);
+      if (hr) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); }
       RQ.go("mitt-rum");
     } catch (e) { RQ.toast("Rummet gick inte att öppna. Försök igen."); if (btn.isConnected) btn.disabled = false; }
   }

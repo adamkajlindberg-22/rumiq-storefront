@@ -157,7 +157,9 @@ with sync_playwright() as p:
         # Prova igen i Studio: the editor with the same room and products, the room active again
         pg.evaluate("document.querySelector('#mh-bilder [data-lib-cont]').click()"); pg.wait_for_timeout(1800)
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.scene().length") >= 3, f"{tag} 'Prova igen i Studio' opens the editor with the picture's room and products")
-        ok(pg.evaluate("RQ.hem.activeId()") != pg.evaluate("RQ.hem.rooms().find((r) => r.label === 'Sovrummet').id"), f"{tag} a living-room picture moved to the bedroom opens as the living room it is, not under the bedroom's name")
+        g4 = pg.evaluate("(() => { const s = RQ.hem.rooms().find((r) => r.label === 'Sovrummet'); return [RQ.hem.activeId() === s.id, RQ.room.get().map, (document.querySelector('[data-proj][aria-pressed=true]') || {}).innerText || ''] })()")
+        ok(g4[0] and g4[1] == "sovrum" and "Sovrummet" in g4[2], f"{tag} a living-room picture moved to the bedroom opens the bedroom (its tab chosen) with the picture's things: {g4}")
+        ok(not pg.evaluate("document.getElementById('toast').classList.contains('show')") or "Sovrummet" not in pg.evaluate(TOAST), f"{tag} the toast about the move does not follow onto the next page")
         # a room goes, and comes back
         go(pg, "mitt-hem", 1500); n0 = pg.evaluate("RQ.hem.rooms().length")
         pg.evaluate("RQ.hem.openRoom(RQ.hem.rooms()[0].id)"); pg.wait_for_timeout(700); pg.evaluate("document.getElementById('hemDel').click()"); pg.wait_for_timeout(600)
@@ -201,7 +203,7 @@ with sync_playwright() as p:
         ok(card and card[0].startswith("Ditt vardagsrum i ") and card[1] >= 3 and card[2] == "Se ditt hem innan du köper.", f"{tag} the Svep result ends in a ready room proposal: {card}")
         vis = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop a, .svep-result .hem-prop button, .svep-result .hem-prop input')].filter((e) => e.offsetParent && e.getBoundingClientRect().height > 0 && !e.closest('details:not([open])')).map((e) => e.textContent.trim())")
         main = [x for x in vis if not x.startswith("Visa alla")]
-        ok(main == ["Se det i ditt rum"], f"{tag} the card in Svep is one clear card with one main button, the rest behind 'Ändra rum och budget': {vis}")
+        ok(len(main) == 4 and main[0] == "Se det i ditt rum" and re.match(r"^Köp allt · [\d\s]+ kr$", main[1]) and main[2:] == ["Vad tycker du?", "Ett annat förslag"] and pg.evaluate("!!document.querySelector('.svep-result .hem-more:not([open]) [data-hem-budget]') && !!document.querySelector('.svep-result .hem-more:not([open]) [data-hem-type]')"), f"{tag} the card in Svep: Se det i ditt rum, Köp allt · total and Vad tycker du? in view; only room type and budget behind 'Ändra rum och budget': {vis}")
         if mob:  # the phone: two small pictures and +N in a row with the total (one line, also at 360), "Visa alla N" opens the list
             row = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'), r = c.querySelector('.hem-prop-row'); return [c.querySelectorAll('.hem-prop-thumbs img').length, getComputedStyle(c.querySelector('.hem-prop-items')).display, (c.querySelector('[data-hem-all]') || {}).textContent || '', Math.round(c.getBoundingClientRect().height), Math.round(r.getBoundingClientRect().height), r.scrollWidth <= r.clientWidth + 1]; })()")
             ok(row[0] == 2 and row[1] == "none" and row[2].startswith("Visa alla") and row[3] < 640 and row[4] <= 56 and row[5], f"{tag} the phone card is short: two pictures, +N and the total on one line, the list behind Visa alla: {row}")
@@ -334,6 +336,8 @@ with sync_playwright() as p:
         inroom = pg.evaluate("RQ.room.scene().map((i) => i.h)"); note = pg.evaluate("(document.getElementById('rmSugg') || {}).innerText || ''")
         out = [h for h in hs if h not in inroom]
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.get().sample") and set(inroom) <= set(hs) and len(inroom) >= 2 and all(pg.evaluate("(h) => RQ.byHandle(h).name", h) in note for h in out), f"{tag} Prova i ett rum: the board's products placed by the editor in the sample room you chose, what does not fit named: {inroom} {out}")
+        tab = pg.evaluate("(() => { const a = RQ.hem.room(RQ.hem.activeId()); return [a && a.label, (document.querySelector('[data-proj][aria-pressed=true]') || {}).innerText || '', document.getElementById('toast').innerText] })()")
+        ok(tab[0] and tab[0] in tab[1], f"{tag} a sample room from the board becomes a named room of yours, its tab chosen: {tab}")
         go(pg, "mitt-hem", 1300)
         ok(pg.evaluate("document.querySelectorAll('.hem-board').length") == 1, f"{tag} the moodboard is in Sparat")
         ok(not errs, f"{tag} no script errors: {errs[:3]}")

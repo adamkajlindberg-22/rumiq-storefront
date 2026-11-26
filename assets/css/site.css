@@ -823,7 +823,7 @@ details.pw[open] summary::after{content:" −"}
 .acct-nav a.on{color:var(--ink);font-weight:600}
 /* the jump menu on Sparat: the same pills as Mitt konto on phones, the part you are reading dark */
 .jump-nav{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1.6rem}
-.jump-nav a{flex:none;border:1px solid var(--line);border-radius:999px;padding:.45rem .95rem;white-space:nowrap;text-decoration:none;color:var(--ink2);font-size:.95rem;transition:background .25s,color .25s,border-color .25s}
+.jump-nav a{flex:none;display:inline-flex;align-items:center;min-height:2.75rem;border:1px solid var(--line);border-radius:999px;padding:.45rem .95rem;white-space:nowrap;text-decoration:none;color:var(--ink2);font-size:.95rem;transition:background .25s,color .25s,border-color .25s}
 .jump-nav a:hover{border-color:var(--ink)}
 .jump-nav a.on{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
 @media (max-width:900px){.jump-nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:calc(-1*var(--gutter));margin-right:calc(-1*var(--gutter));padding:0 var(--gutter)}.jump-nav::-webkit-scrollbar{display:none}}
@@ -2957,6 +2957,8 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-prop .ai-row,.hem-room .ai-row{margin-top:0}
 .hem-prop .small-row .tlink,.hem-room-foot .tlink{min-height:2.75rem;display:inline-flex;align-items:center}
 .hem-prop .ai-row.small-row{row-gap:0}
+@media (max-width:699px){.hem-prop-acts .btn{flex:1 1 100%}} /* the two main buttons full width, one under the other */
+.hem-prop [data-hem-msg]:empty{display:none}
 .hem-prop .btn svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .hem-first{display:grid;gap:.8rem;padding:clamp(1.3rem,3vw,2.2rem);border-radius:var(--r);background:color-mix(in srgb,var(--accent) 7%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);max-width:46rem}
 .hem-first .h2{margin:0}
@@ -3064,7 +3066,9 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 /* moodboard */
 .mb-wrap{padding:1.4rem var(--gutter) 2rem;display:grid;gap:1rem}
 @media (min-width:900px){.mb-wrap{padding:2rem}}
-.mb-head{display:grid;gap:.3rem;padding-right:3rem;padding-top:.9rem} /* clear of the grab handle */
+.mb-head{display:grid;gap:.3rem;padding-right:3rem} /* clear of the grab handle, which has its own strip in the moodboard */
+.mb-sheet .sheet-grab{background:var(--paper);margin-bottom:0;border-radius:20px 20px 0 0} /* scrolled, the board passes under the handle, never behind a see-through bar */
+.mb-board{isolation:isolate} /* the things' layers stay inside the board */
 .mb-name input{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:560;letter-spacing:-.02em;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);padding:.2rem 0;width:100%;border-radius:0}
 .mb-board{position:relative;aspect-ratio:4 / 3;width:min(100%,calc(58vh * 4 / 3));margin-inline:auto;background:#F4F2EE;border-radius:var(--r);overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 1px var(--line)}
 @media (max-width:600px){.mb-board{aspect-ratio:1}}
