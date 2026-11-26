@@ -2819,6 +2819,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .varlist{display:grid;gap:1rem;margin-top:1.2rem}
 .var-row{display:grid;grid-template-columns:3.4rem minmax(0,1fr);gap:.8rem;align-items:center}
 .var-row img{width:3.4rem;height:3.4rem;object-fit:contain;background:var(--img-bg);border-radius:8px;padding:.2rem}
+.var-row img.tall{object-fit:cover;object-position:50% 30%;padding:0} /* a tall cut-out (a curtain) fills the square instead of standing as a thin sliver in it */
 .var-row b{font-weight:600;font-size:.95rem}
 .var-row .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.4rem}
 .var-row .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .8rem .4rem .5rem;font-size:.86rem}
