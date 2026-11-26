@@ -251,6 +251,69 @@ with sync_playwright() as p:
     ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and {s[0] for s in sc} == {"glob-bordslampa-opalglas", "sand-keramikvas"} and all(s[2] >= 72 for s in sc) and abs(sc[0][1] - sc[1][1]) >= 10, f"[own] signed in, the photo goes in and the things stand in the floor row: {sc}")
     c.close()
 
+    # ------------------------------------------------------------ studio2 review (5bebf95): the room's points
+    for W, Hh, mob in ((390, 844, True), (1280, 720, False)):
+        tag = f"[review {W}]"
+        c = ctx_for(b, W, Hh, mob); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(400); quiet(pg)
+        pr = pg.evaluate("RQ.hem.propose({ type: 'vardagsrum' }).items")
+        pg.evaluate("(its) => RQ.room.openWith({ room: 'vardagsrum', items: its })", pr); pg.wait_for_timeout(1800); quiet(pg)
+        # M2: a handed-over proposal is replaced by Inred åt mig, never stacked; no table thing on the open floor
+        pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900)
+        sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || '', !!i.sg])")
+        ok(len(sc) <= 6 and all(x[2] for x in sc), f"{tag} M2 Inred åt mig replaces the proposal instead of stacking a second set: {len(sc)}")
+        pg.evaluate("document.getElementById('rmSgAgain').click()"); pg.wait_for_timeout(900)
+        ok(not pg.evaluate("RQ.room.scene().filter((i) => RQ.room.homeless(i)).map((i) => i.h)") and len(pg.evaluate("RQ.room.scene()")) <= 6, f"{tag} M2 and another proposal puts nothing for a table on the open floor")
+        # M3: one stable count at every budget; what fits is always taken
+        for sty in ("minimalistisk", "skandinavisk", None):
+            full = pg.evaluate("(s) => RQ.room.suggestSet({ style: s })", sty)
+            res = [pg.evaluate("([s, b]) => { const x = RQ.room.suggestSet({ style: s, budget: b }); return [x.count, x.items.length, x.total, x.left.map((h) => RQ.byHandle(h).price)]; }", [sty, bud]) for bud in (full["min"], full["min"] + 100, 1000, 2000, None)]
+            ok(len({r[0] for r in res}) == 1 and res[-1][1] == full["count"] and all(r[1] + len(r[3]) == r[0] for r in res), f"{tag} M3 {sty}: the same N at every budget, and Hela rummet holds all N: {res}")
+            ok(all(r[1] >= 1 for r in res) and all(all(r[2] + q > b for q in r[3]) for r, b in zip(res, (full["min"], full["min"] + 100, 1000, 2000)) ), f"{tag} M3 {sty}: what is left out is only what the budget cannot take")
+        # minor 12: the room keeps its style
+        pg.evaluate("document.getElementById('rmSugg').scrollIntoView({ block: 'center' })"); pg.evaluate("document.querySelector('[data-sty=minimalistisk]').click()"); pg.wait_for_timeout(700)
+        pg.reload(); pg.wait_for_timeout(1500); quiet(pg); pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(800)
+        ok(pg.evaluate("(document.querySelector('[data-sty][aria-pressed=true]') || {}).dataset.sty") == "minimalistisk", f"{tag} minor 12 Inred åt mig keeps the room's style after a reload")
+        # minor 3: one name per scope; the set's button says it is in the cart
+        ok(pg.evaluate("document.getElementById('rmSgBuy').textContent.trim()") == "Köp förslaget", f"{tag} minor 3 the proposal's button says what it buys")
+        pg.evaluate("document.getElementById('rmSgBuy').click()"); pg.wait_for_timeout(500)
+        ok("I varukorgen" in pg.evaluate("document.getElementById('rmSgBuy').textContent"), f"{tag} minor 3 and then that it lies in the cart")
+        # Byt: minor 13 lamps for a lamp; minor 9 no Jämför without alternatives; minor 8 focus stays; M4 beside the picture on a computer
+        pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'dagsljus-linnegardin-2-pack'].forEach((h) => RQ.room.add(h, true))"); pg.wait_for_timeout(600)
+        ok(all("lampa" in h for h in pg.evaluate("RQ.room.alternatives('lysa-keramiklampa').map((q) => q.handle)")), f"{tag} minor 13 a lamp is swapped for lamps only")
+        pg.evaluate("RQ.room.openSwap('dagsljus-linnegardin-2-pack', { colour: true })"); pg.wait_for_timeout(700)
+        ok(not pg.evaluate("!!document.getElementById('rmCmpT')"), f"{tag} minor 9 no Jämför when nothing else fits there")
+        pg.focus("[data-swv='1']"); pg.keyboard.press("Enter"); pg.wait_for_timeout(600)
+        ok(pg.evaluate("document.activeElement.matches('[data-swv]')"), f"{tag} minor 8 Enter on a colour keeps the focus in Byt")
+        r = pg.evaluate("(() => { const e = document.querySelector('.rm-item.sel').getBoundingClientRect(), s = document.getElementById('rmSwap').getBoundingClientRect(), nav = document.querySelector('header').getBoundingClientRect().bottom; return [e.top >= nav - 2, e.bottom > nav + 40, s.top < innerHeight, !!document.querySelector('.rm-sel #rmSwap')]; })()")
+        ok((r[1] if mob else r[0] and r[3]) and r[2], f"{tag} M4 after a colour the thing and the panel are in sight{'' if mob else ', the panel beside the picture'}: {r}")
+        # M6: Jämför fills a phone's width
+        pg.evaluate("RQ.room.openSwap('lysa-keramiklampa')"); pg.wait_for_timeout(500); pg.evaluate("document.getElementById('rmCmpT').click()"); pg.wait_for_timeout(200)
+        pg.evaluate("document.querySelector('#rmSwap [data-alt]').click()"); pg.wait_for_timeout(200); pg.evaluate("document.getElementById('rmCmpGo').click()"); pg.wait_for_timeout(700)
+        cw = pg.evaluate("document.querySelector('.rmcmp .sheet-card').getBoundingClientRect().width")
+        ok(cw >= W - 1 if mob else cw > 900, f"{tag} M6 Jämför is {'full width' if mob else 'wide'}: {cw}")
+        ok(pg.evaluate("document.getElementById('cmpT').textContent") == "Jämför i rummet", f"{tag} minor 5 a sample room is 'rummet', not 'ditt rum'")
+        pg.evaluate("document.querySelector('.rmcmp [data-cmp-close]').click()"); pg.wait_for_timeout(300)
+        # minor 11: the room's own buttons are 44 px
+        small = pg.evaluate("[...document.querySelectorAll('#rmZoom, #rmUndo, #rmHold, #rmCart2, .rm-more .chip')].filter((e) => { const r = e.getBoundingClientRect(); return r.height && r.height < 43.5; }).map((e) => e.id || e.textContent)")
+        ok(not small, f"{tag} minor 11 the room's buttons are 44 px: {small}")
+        ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
+        c.close()
+
+    # M8: a moodboard of bathroom things, no room named: the bathroom, everything on a surface
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(400)
+    ok(pg.evaluate("RQ.room.openWith({ items: [{ h: 'tvalpump-stengods' }, { h: 'vaffelhandduk-bomull' }, { h: 'lysa-keramiklampa' }] })") and pg.wait_for_timeout(1500) is None and pg.evaluate("RQ.room.get().map") == "badrum", "[mb] M8 bathroom things open the bathroom")
+    ok(not pg.evaluate("RQ.room.scene().filter((i) => RQ.room.homeless(i)).length"), "[mb] M8 and nothing stands on the open floor")
+    c.close()
+    # M5: your own photo through openWith with a room type: the editor does not ask again, and Inred åt mig starts in the style
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(400); quiet(pg)
+    pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')")
+    pg.evaluate("RQ.room.openWith({ own: true, room: 'hall', style: 'skandinavisk', items: [{ h: 'affisch-linje-ekram' }, { h: 'flatad-forvaringskorg' }] })"); pg.wait_for_timeout(500)
+    put(pg, "hall.jpg", picture(1400, 1050)); pg.wait_for_timeout(2500)
+    ok(pg.evaluate("RQ.room.get().type") == "hall" and not pg.evaluate("!!document.getElementById('rmAsk')"), "[own] M5 the room type comes along, no second question")
+    pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900)
+    ok(pg.evaluate("(document.querySelector('[data-sty][aria-pressed=true]') || {}).dataset.sty") == "skandinavisk" and pg.evaluate("RQ.room.scene().filter((i) => i.sg).length") >= 2, "[own] M5 and Inred åt mig starts in the style you chose")
+    c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
