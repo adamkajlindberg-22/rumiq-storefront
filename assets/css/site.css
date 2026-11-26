@@ -2926,7 +2926,8 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
   .hem-prop-row ~ .hem-prop-sum{display:none} /* the total is in the row already */
   .hem-prop-row .hem-prop-thumbs img,.hem-prop-row .hem-prop-thumbs i{width:2.5rem;height:2.5rem}
   .hem-prop-items.compact:not(.open){display:none}
-  .hem-prop-row b{font-variant-numeric:tabular-nums;font-weight:600}
+  .hem-prop-row b{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .hem-prop-row .tlink{white-space:nowrap}
   .hem-prop-row .tlink{min-height:2.75rem;display:inline-flex;align-items:center;margin-left:auto}
 }
 .hem-prop-thumbs{display:flex;align-items:center}

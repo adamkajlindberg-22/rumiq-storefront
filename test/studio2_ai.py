@@ -193,9 +193,9 @@ with sync_playwright() as p:
         vis = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop a, .svep-result .hem-prop button, .svep-result .hem-prop input')].filter((e) => e.offsetParent && e.getBoundingClientRect().height > 0 && !e.closest('details:not([open])')).map((e) => e.textContent.trim())")
         main = [x for x in vis if not x.startswith("Visa alla")]
         ok(main == ["Se det i ditt rum"], f"{tag} the card in Svep is one clear card with one main button, the rest behind 'Ändra rum och budget': {vis}")
-        if mob:  # the phone: three small pictures in a row with the total, "Visa alla N" opens the list
-            row = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'); return [c.querySelectorAll('.hem-prop-thumbs img').length, getComputedStyle(c.querySelector('.hem-prop-items')).display, (c.querySelector('[data-hem-all]') || {}).textContent || '', Math.round(c.getBoundingClientRect().height)]; })()")
-            ok(row[0] == 3 and row[1] == "none" and row[2].startswith("Visa alla") and row[3] < 640, f"{tag} the phone card is short: three pictures and the total, the list behind Visa alla: {row}")
+        if mob:  # the phone: two small pictures and +N in a row with the total (one line, also at 360), "Visa alla N" opens the list
+            row = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'), r = c.querySelector('.hem-prop-row'); return [c.querySelectorAll('.hem-prop-thumbs img').length, getComputedStyle(c.querySelector('.hem-prop-items')).display, (c.querySelector('[data-hem-all]') || {}).textContent || '', Math.round(c.getBoundingClientRect().height), Math.round(r.getBoundingClientRect().height), r.scrollWidth <= r.clientWidth + 1]; })()")
+            ok(row[0] == 2 and row[1] == "none" and row[2].startswith("Visa alla") and row[3] < 640 and row[4] <= 48 and row[5], f"{tag} the phone card is short: two pictures, +N and the total on one line, the list behind Visa alla: {row}")
             pg.evaluate("document.querySelector('.svep-result [data-hem-all]').click()"); pg.wait_for_timeout(300)
             ok(pg.evaluate("getComputedStyle(document.querySelector('.svep-result .hem-prop-items')).display") != "none" and pg.evaluate("document.activeElement && document.activeElement.textContent") == "Visa färre", f"{tag} Visa alla opens the list, the focus stays on the button")
             pg.evaluate("document.querySelector('.svep-result [data-hem-all]').click()"); pg.wait_for_timeout(200)
