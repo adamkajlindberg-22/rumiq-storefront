@@ -34,6 +34,8 @@
     "strand-jutematta": ["rug", 230, 0.37], "dagsljus-linnegardin-2-pack": ["window", 60, 2.63],
   };
   const meta = (p) => KIND[p.handle] || [p.wall ? "wall" : "surface", p.wall ? 50 : 20, 1.2];
+  /* a lamp's narrow foot: [how much of its height from the bottom, its width there as a share of the whole] (read off the cut-outs) */
+  const BASE = { "glob-bordslampa-opalglas": [0.4, 0.45], "lysa-keramiklampa": [0.5, 0.55], "svamp-uppladdningsbar-lampa": [0.6, 0.63] };
   const kindOf = (p) => meta(p)[0];
   // the sort of a thing (Byt, the partner page, Prova i Mitt rum): only the same sort stands in for it
   const SORTS = [[/lampa/, "lampa"], [/doftljus/, "doftljus"], [/ljusstake/, "ljusstake"], [/kuddfodral/, "kudde"], [/plad/, "plad"], [/paslakan/, "sang"], [/affisch|tavla|poster/, "bild"], [/korg|lada|forvaring(?!sburk)/, "forvaring"], [/kruka/, "kruka"], [/matta/, "matta"], [/gardin/, "gardin"], [/handduk/, "handduk"], [/burk/, "burk"], [/vas\b|vas-|keramikvas/, "vas"]];
@@ -45,43 +47,43 @@
      horizon h and the slope k. Rugs and curtains are [x, y, width, squash]. sun = the side the light comes from. */
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
-      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], edge: [[71.3, 84.7, 68.5]], // the side table's top runs from 71.8 to 84.4; a mug stands at 75.6-79.3
+      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5, 62.4]], edge: [[72.9, 84.6, 68.5]], // the side table's top runs from 73.1 to 84.4 (measured on a grid); a mug stands at 75.8-79.2, its top at 62.4
       cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [57.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
-      rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
+      rug: [[40, 89, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, /* the rug lies in front of the sofa, its front edge well inside the picture and clear of the side table's foot (review M5) */ // the curtain reaches the floor where the window wall meets it, its top above the picture
     sovrum: { h: 55, k: 0.95, sun: 1,
-      surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]],
+      surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]], busy: [[17.8, 21.2, 69, 64]], edge: [[7.8, 23.5, 70.4]], /* the nightstand: its own lamp (a new lamp stands in for it), a mug on a book */
       cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[47, 69.5, 19], [60, 69, 19]],
       wall: [[50, 43, 15], [62, 43, 15], [40, 43, 15]],
       floor: [[87, 89], [77, 96], [45, 98], [60, 96]],
       rug: [[63, 99, 52, 0.4]], window: [[80.6, 74, 13.5, 1.12]] },
     kok: { h: 52, k: 0.58, sun: 1, // the only free floor is the passage to the right; the hob and the sink are not places to put things
-      surface: [[70.6, 62.4, 26], [59.6, 62.2, 26], [23, 62.4, 26]],
+      surface: [[70.6, 62.4, 26], [59.6, 62.2, 26], [23, 62.4, 26]], busy: [[25.8, 34.8, 62, 37], [39.3, 57, 62.5, 46], [62.8, 66, 62, 55]], edge: [[9, 75, 62.4]], /* the counter: the board, the bowl and the pump, the sink and its tap, the vase */
       cushion: [], throw: [], bedding: [],
       wall: [[62, 38, 15], [49, 38, 15]],
       floor: [[81.5, 93], [88, 98]],
       rug: [[84, 99, 26, 0.5]], window: [[90.6, 97, 15, 1.33]] },
     hall: { h: 56, k: 0.9, sun: 1,
-      surface: [[49, 67.6, 18.5], [59, 67.6, 18.5], [39, 67.6, 18.5], [4.8, 60.4, 30], [17.3, 58.9, 30]],
+      surface: [[49, 67.6, 18.5], [59, 67.6, 18.5], [39, 67.6, 18.5], [4.8, 60.4, 30], [17.3, 58.9, 30]], busy: [[9, 14, 59.5, 47.5]], edge: [[30.5, 67, 67.6], [0, 18.8, 59.6]], /* the bench; the shelf with its own lamp */
       cushion: [[42, 67.6, 18.5]], throw: [[57, 71, 18.5]], bedding: [[49, 67.6, 18.5]],
       wall: [[41, 47, 15.5], [27, 30, 15.5]],
       floor: [[24.5, 87], [47, 94], [66, 93], [33, 96]], // beside and in front of the bench, never through it
       rug: [[46, 98, 52, 0.4]], window: [[74.4, 83, 13, 1.27]] },
     badrum: { h: 45, k: 0.69, sun: 1, // the vanity beside the basin, the shelf and the window sill; the floor between the stool and the basket
-      surface: [[37.6, 58.8, 34], [48.5, 33, 30], [79.5, 54, 28]],
+      surface: [[37.6, 58.8, 34], [48.5, 33, 30], [79.5, 54, 28]], busy: [[19.8, 37.2, 58.5, 41], [38.2, 41.4, 33, 28], [73.3, 77.7, 54.5, 34]], edge: [[16.6, 39.6, 58.8], [34.4, 53.6, 33], [72, 82.2, 54]], /* the pump and the basin, the jars on the shelf, the plant on the sill */
       cushion: [], throw: [], bedding: [],
       wall: [[56, 64, 24]],
       floor: [[50, 97], [41, 98.5], [57, 99.5]],
       rug: [[50, 100, 40, 0.35]], window: [[76.5, 55, 11, 1.06]] },
     hemmakontor: { h: 45, k: 0.55, sun: 1, // the desk around what already stands there, the empty wall, the strip of floor
-      surface: [[60.5, 62.5, 27], [77.5, 62.5, 27], [64, 67, 28]],
+      surface: [[60.5, 62.5, 27], [77.5, 62.5, 27], [64, 67, 28]], busy: [[65.3, 72.7, 64.5, 63.5], [82, 89, 66, 44]], edge: [[57.5, 86, 62.5], [59, 91, 67]], /* the desk: the phone lying on it, the plant; its own lamp and box stand behind */
       cushion: [], throw: [], bedding: [],
       wall: [[28, 50, 25], [40, 50, 25], [16, 50, 25]],
       floor: [[22, 97], [36, 97], [10, 98], [47, 97.5]],
       rug: [[28, 100, 50, 0.3]], window: [[94.5, 100, 11, 1.6]] },
     uteliv: { h: 40, k: 0.64, sun: 1, // the bench's bare end, the side table, the seat; the deck in front of the bench
-      surface: [[38, 62, 27], [65.5, 61, 27], [42.5, 62, 27]],
+      surface: [[38, 62, 27], [65.5, 61, 27], [42.5, 62, 27]], busy: [[64, 76, 60.5, 43]], edge: [[33, 44.5, 62], [63, 77, 60.5]], /* the bench's bare end; the round table holds the room's own lamp */
       cushion: [[55, 59.5, 27]], throw: [[84, 64, 26]], bedding: [],
       wall: [[39, 56, 25]],
       floor: [[38, 92], [52, 94], [24, 97]],
@@ -132,12 +134,20 @@
     [...new Set(list.filter((it) => it.row).map((it) => it.y))].forEach((y) => { const row = list.filter((it) => it.row && it.y === y).sort((a, b) => a.x - b.x), sum = row.reduce((t, it) => t + it.w, 0), k = Math.min(1, (band - 2 * (row.length + 1)) / Math.max(1, sum));
       row.forEach((it) => { it.w = +(it.w * k).toFixed(1); }); const used = row.reduce((t, it) => t + it.w, 0), gap = (band - used) / (row.length + 1); let x = lo + gap;
       row.forEach((it) => { it.x = +(x + it.w / 2).toFixed(1); x += it.w + gap; }); }); return list; };
-  const spotFor = (p, list, raw, MX, over, row) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor
+  const spotFor = (p, list, raw, MX, over, row, near) => { /* MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor; near: [x, y] the free place nearest to it (a pin put down by hand) */
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
-    const busy = (x, y, w, k) => SORT[k || kind] === "s" && ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
-    const foot = /lampa|vas|ljus|kruka/.test(p.handle) ? 0.25 : 0.4; // a lamp's shade may reach past the edge, its foot may not; a tray or a box stands on all of its width
-    const overEdge = (x, y, w, k) => (k || kind) === "surface" && ((M && M.edge) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && (x - w * foot < a || x + w * foot > b)); // it would hang over the table's edge
+    /* something in the photo stands there (a mug on the side table, the basin on the vanity): [left, right, y, top]. The
+       whole width of the thing keeps clear of it (its dashed footprint and the picture alike, review D7); a thing standing
+       behind it and higher than its top (y < top) does not touch it */
+    const tallP = (w) => w * meta(p)[2] * (MX || !room ? 1600 / 893 : room.w / room.h); /* its height in % of the photo's height */
+    const busy = (x, y, w, k) => SORT[k || kind] === "s" && ((M && M.busy) || []).some(([a, b, yy, top]) => { if (Math.abs(yy - y) >= 4 || (top != null && y < top)) return false;
+      const bs = BASE[p.handle], up = top != null ? (y - top + 1.5) / tallP(w) : 1, half = w * 0.5 * (bs && up <= bs[0] ? bs[1] : 1); /* a lamp's narrow foot may stand beside a mug that is lower than its shade */
+      return x + half > a - 0.3 && x - half < b + 0.3; });
+    const foot = /lampa|vas|ljus|kruka/.test(p.handle) ? 0.25 : 0.4; /* a lamp's shade may reach past the edge, its foot may not; a tray or a box stands on all of its width */
+    /* the tops of the tables at that height ([left, right, y]): the foot stands on one of them, never over its edge or in the air between two */
+    const edgesAt = (y) => ((M && M.edge) || []).filter(([, , yy]) => Math.abs(yy - y) < 4);
+    const overEdge = (x, y, w, k) => { if ((k || kind) !== "surface") return false; const es = edgesAt(y); return es.length > 0 && !es.some(([a, b]) => x - w * foot >= a && x + w * foot <= b); };
     const taken = (x, y, w, k) => busy(x, y, w, k) || overEdge(x, y, w, k) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
@@ -160,13 +170,23 @@
         if (kd === "window" && !M && room) { const w = clamp(80 / (meta(p)[2] * room.w / room.h), 8, 40); return { x: +Math.min(sp[0], 99 - w / 2).toFixed(1), y: sp[1], w: +w.toFixed(1), sy: sp[3] }; }
         return { x: sp[0], y: sp[1], w: sp[2], sy: sp[3] }; }
       const width = (sp) => clamp(cm * (sp[2] || floorScale(sp[1], M)) / 100 * k, 2.5, 70);
+      /* where on the surface a thing may stand: the table's top when the map knows it, else a little either side of its spots */
+      const span = (sp, w) => { const e = edgesAt(sp[1]).find(([a, b]) => sp[0] >= a && sp[0] <= b); if (e && SORT[kd] === "s") return [e[0], e[1]];
+        const row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]); return [Math.max(M ? 3 : 2 + w / 2, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), Math.min(M ? 97 : 98 - w / 2, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30))]; };
+      /* a pin put down by hand: the free place on this kind of surface nearest to where it was put (never on top of another
+         thing or of what stands in the photo); null when that surface is full */
+      if (near && M && kd !== "floor" && kd !== "rug" && kd !== "window" && kd !== "wall") { let best = null, bd = 1e9;
+        spots.forEach((sp) => { const w = width(sp), [lo, hi] = span(sp, w), x0 = clamp(near[0], lo, hi);
+          for (let d = 0; d <= hi - lo; d += 0.5) { let hit = null; for (const x of d ? [x0 + d, x0 - d] : [x0]) if (x >= lo && x <= hi && !taken(x, sp[1], w, kd)) { hit = x; break; }
+            if (hit != null) { const dd = Math.hypot(hit - near[0], (sp[1] - near[1]) * 1.6); if (dd < bd) { bd = dd; best = { x: +hit.toFixed(1), y: sp[1], w: +w.toFixed(1) }; } break; } } });
+        return best; }
       // a small thing for a table (a candle, a vase) takes a side spot first, so a lamp keeps the table's main spot and does not end
       // up at its far end against the sofa (device review X6)
       const order = M && SORT[kd] === "s" && cm < 15 && spots.length > 1 ? [...spots.slice(1), spots[0]] : spots;
       const free = order.find((sp) => !taken(sp[0], sp[1], width(sp), kd)); if (free) return { x: free[0], y: free[1], w: +width(free).toFixed(1) };
       // every mapped spot is taken: the free place on the same surface nearest to one of them (a second lamp goes to the
       // other end of the side table, not to the floor), as long as that is still on the surface
-      for (const sp of spots) { const w = width(sp), row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]), lo = Math.max(M ? 3 : 2 + w / 2, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), hi = Math.min(M ? 97 : 98 - w / 2, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30)); // its foot stays on the surface (and in your own photo, all of it inside the picture)
+      for (const sp of spots) { const w = width(sp), [lo, hi] = span(sp, w); /* its foot stays on the surface (and in your own photo, all of it inside the picture) */
         for (let d = 0.5; d <= hi - lo; d += 0.5) for (const x of [sp[0] + d, sp[0] - d]) if (x >= lo && x <= hi && !taken(x, sp[1], w, kd)) return { x: +x.toFixed(1), y: sp[1], w: +w.toFixed(1) }; }
       return null;
     };
@@ -389,7 +409,9 @@
       const n = { ...it, h: q.handle }; if (v > 0 && (q.variants || [])[v]) n.v = v; else delete n.v;
       delete n.sg; // swapped (or another colour) by hand: yours now, so Inred åt mig keeps it (device review R3)
       if (q.handle !== h) { const r = meta(p)[1] > 0 ? meta(q)[1] / meta(p)[1] : 1; n.w = +clamp(it.w * r, 1, 96).toFixed(1); n.w0 = +clamp((it.w0 || it.w) * r, 1, 96).toFixed(1); delete n.sy; const sp = spotFor(q, [], true); if (sp.sy && sp.sy !== 1) n.sy = sp.sy; delete n.real;
-        if (SURF[it.on] && !(CAN[kindOf(q)] || []).includes(it.on)) delete n.on; const tw = trueW(n); if (tw) { n.w = tw; n.real = true; } }
+        if (SURF[it.on] && !(CAN[kindOf(q)] || []).includes(it.on)) delete n.on; const tw = trueW(n); if (tw) { n.w = tw; n.real = true; }
+        /* a wider thing in a sample room keeps clear of what stands on that table (review D7): the nearest free place on it */
+        const M = mapOf(); if (M && kindAt(surfOf(n), kindOf(q)) === "surface") { const sp = spotFor(q, list.filter((x, j) => j !== i), true, M, "surface", false, [n.x, n.y]); if (sp && !sp.moved) { n.x = sp.x; n.y = sp.y; } } }
       list[i] = n; R._swapped = { from: h, to: q.handle }; return R.saveScene(list); },
     /* a colour other than the one the picture shows: the cut-out takes the colour's tone (approximate, and said so) */
     tint: (it) => { const p = RQ.byHandle(it.h); return it.v > 0 && p && (p.variants || [])[it.v] ? p.tone[it.v] || null : null; },
@@ -774,6 +796,8 @@
   /* from the AI picture ("Prova en annan färg", "Byt produkt"): Mitt rum with Byt open on that thing; colour: true opens it at
      the colours. Answers false when the thing is not in the room. */
   R.leftOut = () => (R._leftOut || []).slice();
+  /* for the tests: the sample rooms' maps and what a thing is */
+  R._maps = MAPS; R._kind = (p) => kindOf(p); R._base = (p) => BASE[p.handle] || null; R._ratio = (p) => meta(p)[2];
   /* which of these things the editor will really put in a room, by the same rules as openWith (device review R2), so a
      proposal offers only what fits and its count and total agree with the editor's:
        RQ.room.fits(items, roomType, { own: false }) -> { fit: [{ h, v }], out: [{ h, v }], later: [{ h, v }], count, total, outTotal }
@@ -803,14 +827,20 @@
      this browser, else its sample room; things where they stand (the saved scene) or placed by the editor's rules.
      Resolves a data URL, or null when the room's photo is not in this browser. */
   const snapCache = new Map();
+  const w0h = (w, im, it) => w * im.naturalHeight / im.naturalWidth * (it.sy || 1);
   const imgOf = (src) => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
-  const drawScene = async (bg, list, W, lf) => { const H = Math.round(W * (bg.naturalHeight || bg.height) / (bg.naturalWidth || bg.width)), cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
+  const drawScene = async (bg, list, W, lf, persp) => { /* persp: the room open now, whose scale is known: a rug lies as deep as it really is */ const H = Math.round(W * (bg.naturalHeight || bg.height) / (bg.naturalWidth || bg.width)), cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
     for (const it of orderOf(list)) { const p = RQ.byHandle(it.h); let im; try { im = await imgOf(cutIn(p)); } catch (e) { continue; }
-      const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h; let src = im; const tone = R.tint(it);
+      let h = w0h(W * it.w / 100, im, it); const w = W * it.w / 100; if (persp && effKind(it) === "rug") { const rb = rugBack(it); if (rb && rb.y < it.y - 0.5) h = H * (it.y - rb.y) / 100; } /* review M5: not up the wall */
+      const x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h; let src = im; const tone = R.tint(it);
+      /* a soft contact shadow where it stands, so it rests on the table or the floor instead of floating (review M5) */
+      { const kd = effKind(it); if (kd === "surface" || kd === "floor") { const bs = BASE[p.handle], sw = w * (bs ? bs[1] : 0.9) * 0.62, sh = Math.max(2, sw * 0.16), fy = H * it.y / 100 - sh * 0.35;
+        cx.save(); const g = cx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, "rgba(30,22,14,.38)"); g.addColorStop(0.6, "rgba(30,22,14,.16)"); g.addColorStop(1, "rgba(30,22,14,0)");
+        cx.translate(W * it.x / 100, fy); cx.scale(sw, sh); cx.fillStyle = g; cx.beginPath(); cx.arc(0, 0, 1, 0, Math.PI * 2); cx.fill(); cx.restore(); } }
       if (tone) { const t = document.createElement("canvas"); t.width = Math.max(1, Math.round(w)); t.height = Math.max(1, Math.round(h)); const tx = t.getContext("2d"); tx.drawImage(im, 0, 0, t.width, t.height); tx.globalCompositeOperation = "color"; tx.fillStyle = tone; tx.fillRect(0, 0, t.width, t.height); tx.globalCompositeOperation = "destination-in"; tx.drawImage(im, 0, 0, t.width, t.height); src = t; }
       cx.save(); cx.filter = lf(it.light || 100); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(src, 0, 0, w, h); } else cx.drawImage(src, x, y, w, h); cx.restore(); }
     return cv; };
-  R.picture = async (W) => { if (!room) return null; return drawScene(await imgOf(R.url()), R.scene(), W, lightFilter); }; // the room as it stands, as a canvas
+  R.picture = async (W) => { if (!room) return null; return drawScene(await imgOf(R.url()), R.scene(), W, lightFilter, true); }; // the room as it stands, as a canvas
   R.snapshot = async (id, W = 900) => {
     const pr = projOf(id); if (!pr) return null; const key = `${id}|${W}|${pr.updated || pr.at || ""}`; if (snapCache.has(key)) return snapCache.get(key);
     const its = (RQ.hem.items(pr) || []).map((it) => ({ h: it.h, v: it.v || 0 })), here = room && pr.pkey && pr.pkey === keyNow();
@@ -837,6 +867,8 @@
     flip: '<svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l-4 5 4 5zM16 7l4 5-4 5z"/></svg>',
     front: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="1"/><path d="M5 15V5h10"/></svg>',
     trash: '<svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/></svg>',
+    up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
     share: '<svg viewBox="0 0 24 24"><path d="M12 4v11M8 8l4-4 4 4M5 13v7h14v-7"/></svg>',
     minus: '<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -849,11 +881,11 @@
   const setupBlock = (want) => `<div class="rm-empty">
       <div class="rm-empty-in">
         ${want ? `<p class="rm-want"><img src="${RQ.cut(want)}" alt=""><span><b>${esc(want.name)}</b> står i rummet så fort bilden är inne.</span></p>` : ""}
-        <h2 class="h2">Börja med en bild av ditt rum.</h2>
-        <p class="lead">Sedan ställer du in produkter där du vill ha dem, ser vad hela rummet kostar och handlar allt på en gång.</p>
+        <h2 class="h2">Placera och skapa</h2>
+        <p class="lead">Välj ett rum och några saker, och peka ut var de ska stå. Vi gör en bild av rummet med dem på plats, i rätt storlek.</p>
         <div class="ctrl-row rm-empty-acts" style="margin-top:1.6rem">${S.customer() ? `<button class="btn" type="button" data-room-setup>Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button>` // signed in: your own room first; signed out: the free sample room is the main way in
           : `<button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup>Lägg in ditt rum</button>`}</div>
-        <ol class="rm-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Ställ in produkter</b><span>Från butiken, eller låt oss föreslå.</span></li><li><b>Handla looken</b><span>Allt i rummet hamnar i varukorgen med en knapp.</span></li></ol>
+        <ol class="rm-steps"><li><b>Välj rum</b><span>Ett av våra exempelrum, eller en bild av ditt eget.</span></li><li><b>Peka ut</b><span>Tryck där varje sak ska stå. Upp till fem åt gången.</span></li><li><b>Skapa bilden</b><span>Se rummet med sakerna på plats, och handla allt i bilden på en gång.</span></li></ol>
         <p class="small" style="margin-top:1.2rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
       </div>${RQ.demoFig ? RQ.demoFig({ bare: true }) : ""}</div>`; // the picture shows what it does; no way out of Studio in it
 
@@ -864,7 +896,10 @@
   const WAY = "rumiq-room-way", PLACE_MAX = 5;
   R.way = () => (ls.get(WAY, "place") === "edit" ? "edit" : "place");
   R.setWay = (w) => { ls.set(WAY, w === "edit" ? "edit" : "place"); };
-  const surfKey = (it) => surfOf(it);
+  /* your own photo, a thing not yet pointed out: it waits in a row on the floor, but what it will stand on is guessed from what it
+     is (a duvet cover on a bed, a table lamp on a table), and the page asks (review M4) */
+  const unpinned = (it) => !mapOf() && !it.pc && !!it.row;
+  const surfKey = (it) => (unpinned(it) ? ({ surface: "bord", floor: "golv", rug: "golv", wall: "vagg", window: "vagg", bedding: "sang", cushion: soft(), throw: soft() })[kindOf(RQ.byHandle(it.h))] || surfOf(it) : surfOf(it));
   /* the width a thing has where it stands: true scale when the room knows its scale and the thing its measurements, else
      the room's own scale with the usual width of such a thing (approximate), else the width it has */
   const widthAt = (it) => { const p = RQ.byHandle(it.h), t = trueW(it); if (t) return { w: t, sure: true };
@@ -888,16 +923,26 @@
   /* a pin moved to x, y (and maybe a new surface): the thing stands there at the right width; in a sample room the surface is
      the nearest one it can stand on and a table thing snaps onto that table's top */
   R.movePin = (h, x, y, sf) => { const list = R.scene(), i = list.findIndex((it) => it.h === h); if (i < 0) return false; const it = { ...list[i] }, p = RQ.byHandle(h), k = kindOf(p);
-    const s2 = sf || surfaceAt(h, x, y), M = mapOf(); it.x = +clamp(x, 1, 99).toFixed(1); it.y = +clamp(y, 4, 100).toFixed(1);
-    if (M && s2 === "golv" && kindAt(s2, k) !== "rug") { const fl = M.floor || []; const top = fl.length ? Math.min(...fl.map((f) => f[1])) : M.h + 20; if (it.y < top - 1) { const near = fl.slice().sort((a, b) => Math.abs(a[0] - x) - Math.abs(b[0] - x))[0]; it.y = near ? near[1] : top; } } // on the floor, not in mid-air at the table's height
-    if (M && s2 !== "golv" && s2 !== "vagg") { const pts = M[kindAt(s2, k)] || []; if (pts.length) { const near = pts.slice().sort((a, b) => Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y))[0]; it.y = near[1]; if (Math.abs(near[0] - x) > 12) it.x = near[0]; } }
-    if ((CAN[k] || []).includes(s2)) it.on = s2; delete it.row; delete it.sg; it.pc = true;
+    const s2 = sf || surfaceAt(h, x, y), M = mapOf(), kd = kindAt(s2, k); it.x = +clamp(x, 1, 99).toFixed(1); it.y = +clamp(y, 4, 100).toFixed(1); let sOn = s2, full = false, low = false;
+    /* on the floor, a rug too, never up the wall or in mid-air at the table's height (review B2): a sample room knows where its floor
+       begins, your own photo is taken to have floor in its lower part */
+    if (s2 === "golv") { const fl = M ? (M.floor || []).concat(kd === "rug" ? M.rug || [] : []) : []; const top = M ? (fl.length ? Math.min(...fl.map((f) => f[1])) : M.h + 20) : GENERIC.h + 12;
+      if (it.y < top - 1) { low = true; const near = M && kd !== "rug" ? (M.floor || []).slice().sort((a, b) => Math.abs(a[0] - x) - Math.abs(b[0] - x))[0] : null; it.y = near ? near[1] : top; } }
+    /* on a table, a sofa or a bed in a sample room: the free place on it nearest to where it was put, never on top of another
+       thing or of what stands in the photo (review M1, D7); a full table sends it to the floor, and the page says so */
+    if (M && s2 !== "golv" && s2 !== "vagg") { const sp = spotFor(p, list.filter((o) => o.h !== h), true, M, kd, false, [x, y]);
+      if (sp) { it.x = sp.x; it.y = sp.y; if (sp.moved === "floor") { full = true; sOn = "golv"; } } }
+    if ((CAN[k] || []).includes(sOn)) it.on = sOn; delete it.row; delete it.sg; it.pc = true;
     const wa = widthAt(it); it.w = wa.w; if (wa.sure) it.real = true; else delete it.real;
+    /* why it is not where it was put: said by the page (R.pinNote) */
+    const far = Math.hypot(it.x - x, (it.y - y) * 1.6) > 6, nm = p.name, vb = verbOf(it), can = (CAN[k] || ["golv"]).map((c) => SURF[c]);
+    R.pinNote = full ? `${SURF_DEF[s2].replace(/^./, (c) => c.toUpperCase())} är fullt, så den ${vb} ${SURF_DEF[sOn]} nu.` : low ? `${nm} ${vb} ${SURF_DEF.golv}, så den kan inte flyttas högre upp.` : far && !sf ? `${nm} kan ${INF[vb] || "stå på"} ${can.length > 1 ? can.slice(0, -1).join(", ") + " eller " + can[can.length - 1] : can[0]}, så den ${vb} ${SURF_DEF[sOn]} nu.` : far ? `Där var det fullt, så den ${vb} på närmaste lediga plats.` : "";
     list[i] = it; return R.saveScene(list); };
+  const SURF_DEF = { golv: "golvet", bord: "bordet", vagg: "väggen", sang: "sängen", soffa: "soffan" }, INF = { "står på": "stå på", "ligger på": "ligga på", "hänger på": "hänga på", "hänger vid": "hänga vid" };
   /* the order of the pins: one step earlier or later (the number on the pin follows) */
   R.pinOrder = (h, d) => { const list = R.scene(), i = list.findIndex((it) => it.h === h), j = i + d; if (i < 0 || j < 0 || j >= list.length) return false; [list[i], list[j]] = [list[j], list[i]]; return R.saveScene(list); };
   /* the preview while the AI is not switched on: the photo with the pinned things drawn where they stand, at their width */
-  R.preview = async (W = 1200) => { if (!room) return null; const cv = await drawScene(await imgOf(R.url()), R.scene().slice(0, PLACE_MAX), W, lightFilter); return cv.toDataURL("image/jpeg", 0.86); };
+  R.preview = async (W = 1200) => { if (!room) return null; const cv = await drawScene(await imgOf(R.url()), R.scene().slice(0, PLACE_MAX), W, lightFilter, true); return cv.toDataURL("image/jpeg", 0.86); };
   /* every way in (Mitt hem, the proposal card, Sparat, Svep's "Gör ett rum av det"): Placera och skapa with these things pinned
      by the editor's rules; the same arguments as openWith. Resolves true when it is open */
   R.place = (o = {}) => { R.setWay("place"); return R.openWith(o); };
@@ -927,13 +972,15 @@
       title: "Placera och skapa · RumIQ",
       html: `<section class="wrap rm-top has-room pl-top">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Placera och skapa</h1>${projChips()}<p class="lead">Peka ut var sakerna ska stå. Vi gör en bild av ${room.sample ? "rummet" : "ditt rum"} med dem på plats, i rätt storlek.</p></div></section>
         <section class="wrap pl" id="pl">
-          <ol class="pl-steps" aria-label="Så går det till"><li><b>1</b> ${room.sample ? esc(room.name || "Exempelrummet") : "Ditt rum"} <button type="button" class="tlink" data-room-setup>Byt rum</button></li><li><b>2</b> Välj saker</li><li><b>3</b> Peka ut</li><li><b>4</b> Skapa bilden</li></ol>
+          <ol class="pl-steps" id="plSteps" aria-label="Så går det till"><li><b>1</b> ${room.sample ? esc(room.name || "Exempelrummet") : "Ditt rum"} <button type="button" class="tlink" data-room-setup>Byt rum</button></li><li><b>2</b> Välj saker</li><li><b>3</b> Peka ut</li><li><b>4</b> Skapa bilden</li></ol>
           <div class="pl-grid"><div class="pl-left">
             <div class="pl-stage" id="plStage"><div class="pl-in" id="plIn" style="aspect-ratio:${room.w} / ${room.h}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div></div>
-            <button type="button" class="tlink pl-zoom" id="plZoom" aria-pressed="false">Förstora bilden</button>
+            <div id="plPinSlot"></div>
             <p class="pl-hint" id="plHint" role="status"></p>
+            <p class="small pl-legend" id="plLegend" hidden>Streckad yta: ungefär så mycket plats saken tar.</p>
+            <button type="button" class="tlink pl-zoom" id="plZoom" aria-pressed="false">Förstora bilden</button>
           </div><div class="pl-right">
-            <div class="pl-pin" id="plPin" role="group" aria-labelledby="plPinT" hidden></div>
+            <div class="pl-pin" id="plPin" role="group" aria-labelledby="plPinT" hidden></div><div id="plPinHome" hidden></div>
             <div class="pl-list"><div class="pl-list-h"><h2 class="h3" id="plListT">Dina saker</h2><span class="small" id="plCount"></span></div><ol id="plList" aria-labelledby="plListT"></ol><button type="button" class="btn ghost sm" id="plAdd">${ICO.plus}<span>Lägg till en sak</span></button></div>
             <div class="pl-go"><button type="button" class="btn block pl-create" id="plCreate">${ICO.spark}<span>Skapa bilden</span></button><p class="small" id="plGoNote"></p>
               <p class="pl-self"><button type="button" class="tlink" id="plSelf">Justera själv</button><span class="small"> Flytta och ändra storlek för hand.</span></p></div>
@@ -945,41 +992,68 @@
         const say = (t) => { hint.textContent = ""; setTimeout(() => { hint.textContent = t; }, 30); };
         const name = (h) => RQ.byHandle(h).name;
         const pinLabel = (it, i) => `${i + 1} ${name(it.h)}, ${verbOf(it)} ${SURF[surfKey(it)]}, flytta med piltangenterna`;
-        const boxOf = (it) => { const p = RQ.byHandle(it.h), k = kindOf(p), ar = room.w / room.h, hP = k === "rug" ? it.w * 0.3 * ar : it.w * meta(p)[2] * (it.sy || 1) * ar; return { l: it.x - it.w / 2, t: it.y - hP, w: it.w, h: hP }; };
+        const boxOf = (it) => { const p = RQ.byHandle(it.h), k = kindOf(p), ar = room.w / room.h;
+          if (k === "rug") { const rb = rugBack(it); if (rb && rb.y < it.y - 0.5) return { l: it.x - it.w / 2, t: rb.y, w: it.w, h: it.y - rb.y, back: +((1 - rb.w / it.w) / 2 * 100).toFixed(1) }; } /* a rug lies in perspective: its back edge narrower, further up */
+          const hP = k === "rug" ? it.w * 0.3 * ar : it.w * meta(p)[2] * (it.sy || 1) * ar; return { l: it.x - it.w / 2, t: it.y - hP, w: it.w, h: hP }; };
         const paint = () => {
           const list = R.scene(), pins = list.slice(0, PLACE_MAX); if (sel && !pins.some((it) => it.h === sel)) sel = null;
           const focusH = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.pin : null;
-          marks.innerHTML = pins.map((it, i) => { const b = boxOf(it), sure = widthAt(it).sure;
-            return `<div class="pl-foot${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true"><span>${i + 1}${sure ? "" : " · ungefär"}</span></div>
-              <button type="button" class="pl-pinb${sel === it.h ? " on" : ""}" data-pin="${it.h}" style="left:clamp(1.45rem, ${it.x}%, calc(100% - 1.45rem));top:clamp(1.45rem, ${it.y}%, calc(100% - 1.45rem))" aria-label="${esc(pinLabel(it, i))}" aria-pressed="${sel === it.h}">${i + 1}</button>`; }).join("");
+          const sp = spread(pins), pw = inner.offsetWidth || 1;
+          marks.innerHTML = `<svg class="pl-lines" aria-hidden="true">${sp.map((q) => (q.off ? `<line x1="${q.ax}" y1="${q.ay}" x2="${q.x}" y2="${q.y}"/>` : "")).join("")}</svg>` + pins.map((it, i) => { const b = boxOf(it), sure = widthAt(it).sure, q = sp[i];
+            const lab = `<span>${i + 1}${sure || b.w * pw / 100 < 72 ? "" : " · ungefär"}</span>`;
+            return (b.back ? `<div class="pl-foot rug${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="${b.back},0 ${100 - b.back},0 100,100 0,100"/></svg>${lab}</div>`
+              : `<div class="pl-foot${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true">${lab}</div>`) + `
+              ${q.off ? `<i class="pl-dot" style="left:${q.ax}px;top:${q.ay}px" aria-hidden="true"></i>` : ""}<button type="button" class="pl-pinb${sel === it.h ? " on" : ""}" data-pin="${it.h}" style="left:${q.x}px;top:${q.y}px" aria-label="${esc(pinLabel(it, i))}" aria-pressed="${sel === it.h}">${i + 1}</button>`; }).join("");
+          $("#plLegend", root).hidden = !pins.some((it) => !widthAt(it).sure); $("#plZoom", root).hidden = !pins.length;
+          $$("#plSteps li", root).forEach((li, j) => { if (j === (pins.length ? 2 : 1)) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current"); });
           if (focusH) { const f = $(`[data-pin="${focusH}"]`, marks); if (f) f.focus({ preventScroll: true }); }
           $("#plCount", root).textContent = `${Math.min(list.length, PLACE_MAX)} av ${PLACE_MAX}`;
           $("#plList", root).innerHTML = list.map((it, i) => { const p = RQ.byHandle(it.h), z = measures(p);
-            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i < PLACE_MAX ? `${verbOf(it)} ${SURF[surfKey(it)]} · ` : "Inte med i bilden · "}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty small">Inga saker än. Lägg till en, eller tryck på Inred åt mig i Justera själv.</li>`;
-          const over = list.length - PLACE_MAX; $("#plGoNote", root).textContent = !pins.length ? "Lägg till minst en sak först." : over > 0 ? `Bilden tar fem saker åt gången, de fem första. ${over === 1 ? "En till" : over + " till"} väntar.` : live ? "Det tar en liten stund." : "AI-bilden slås på snart. Nu ser du en förhandsvisning.";
+            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i >= PLACE_MAX ? "Väntar, inte med i bilden · " : unpinned(it) ? "Var står den? Peka ut i bilden · " : `${verbOf(it)} ${SURF[surfKey(it)]} · `}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty small">Inga saker än. Lägg till upp till fem, så pekar du ut var de ska stå. <button type="button" class="tlink" id="plSuggest">Föreslå saker åt mig</button></li>`;
+          const over = list.length - PLACE_MAX; $("#plGoNote", root).textContent = !pins.length ? "Lägg till minst en sak först." : over > 0 ? `Bilden tar fem saker åt gången: de fem första, ${kr(pins.reduce((t, it) => t + RQ.byHandle(it.h).price, 0))}. ${over === 1 ? "En till" : over + " till"} väntar i listan.` : live ? "Det tar en liten stund." : "AI-bilden slås på snart. Nu ser du en förhandsvisning.";
           $("#plCreate", root).disabled = !pins.length; $("#plAdd", root).disabled = false;
           paintPin(); };
         const paintPin = () => { const list = R.scene(), i = list.findIndex((it) => it.h === sel), it = list[i]; pin.hidden = !it || i >= PLACE_MAX; if (pin.hidden) return;
           const p = RQ.byHandle(it.h), k = kindOf(p), z = measures(p), sure = widthAt(it).sure, ask = !mapOf() && !it.pc;
+          /* one compact block (review M3): on a phone it sits right under the photo, above the dock; on a computer beside it */
           pin.innerHTML = `<div class="pl-pin-h"><span class="pl-n">${i + 1}</span><b id="plPinT">${esc(p.name)}</b><button type="button" class="iconbtn" id="plPinX" aria-label="Klar med ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-            <p class="small">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek i bilden"}` : "Mått kommer. Storleken i bilden är ungefärlig."}${!mapOf() && !(room.known && room.known.cm > 0) ? ` <button type="button" class="tlink" id="plMeasure">Ange en känd längd</button> ger rätt skala.` : ""}</p>
-            <p class="pl-ask${ask ? " now" : ""}">${ask ? "Var står den?" : verbOf(it).replace(/^./, (c) => c.toUpperCase())}</p>
-            <div class="chips" role="group" aria-label="Yta">${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
-            <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>
-            <div class="pl-pin-a"><button type="button" class="btn ghost sm" data-ord="-1"${i ? "" : " disabled"}>Tidigare</button><button type="button" class="btn ghost sm" data-ord="1"${i < Math.min(list.length, PLACE_MAX) - 1 ? "" : " disabled"}>Senare</button><button type="button" class="btn ghost sm" id="plDel">Ta bort</button></div>`; };
-        const select = (h, quiet) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); const it = R.scene().find((x) => x.h === h); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
+            <p class="small pl-pin-m">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek"}` : "Mått kommer, ungefärlig storlek"}.${!mapOf() && !(room.known && room.known.cm > 0) ? ` <button type="button" class="tlink" id="plMeasure">Ange en känd längd</button> <span class="pl-pin-tip">(i Justera själv) ger rätt skala.</span>` : ""}</p>
+            <div class="pl-pin-row"><span class="pl-ask${ask ? " now" : ""}" id="plAsk">${ask ? "Var står den?" : verbOf(it).replace(/^./, (c) => c.toUpperCase())}</span><div class="chips" role="group" aria-labelledby="plAsk">${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
+            <div class="pl-pin-a"><button type="button" class="btn ghost sm" data-ord="-1" aria-label="Tidigare: nummer ${i}"${i ? "" : " disabled"}>${ICO.up}<span class="pl-a-t">Tidigare</span></button><button type="button" class="btn ghost sm" data-ord="1" aria-label="Senare: nummer ${i + 2}"${i < Math.min(list.length, PLACE_MAX) - 1 ? "" : " disabled"}>${ICO.down}<span class="pl-a-t">Senare</span></button><button type="button" class="btn ghost sm" id="plDel" aria-label="Ta bort ${esc(p.name)}">${ICO.trash}<span class="pl-a-t">Ta bort</span></button></div></div>
+            <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>`; };
+        const select = (h, quiet) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); inView(); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
+        /* a phone: the photo and the chosen pin's block both in view, between the header and the dock (review M3, D4) */
+        const inView = () => { if (!phone.matches || pin.hidden) return; requestAnimationFrame(() => { const top = ((document.querySelector("header") || {}).offsetHeight || 56) + 8, dk = document.getElementById("dock"), a = stage.getBoundingClientRect(), z = pin.getBoundingClientRect();
+          const room2 = (dk && dk.offsetHeight && getComputedStyle(dk).display !== "none" ? dk.getBoundingClientRect().top : innerHeight) - 8; let dy = 0; if (z.bottom > room2) dy = z.bottom - room2; if (a.top - dy < top) dy = a.top - top; if (Math.abs(dy) > 2) scrollBy({ top: dy, behavior: calmNow() ? "auto" : "smooth" }); }); };
         const inner = $("#plIn", root);
+        /* the pins as drawn: each at its foot point unless that would cover another pin; then they are pushed apart (at least a
+           finger's width between their centres) with a thin line back to the true point. Only the drawing: where the thing is saved
+           does not change (review M2, 360 px) */
+        const spread = (pins) => { const W = inner.offsetWidth || 1, H = inner.offsetHeight || 1, r = 23, D = 47;
+          const q = pins.map((it) => { const ax = it.x / 100 * W, ay = it.y / 100 * H; return { ax, ay, x: clamp(ax, r, W - r), y: clamp(ay, r, H - r) }; });
+          for (let n = 0; n < 80; n++) { let moved = false;
+            for (let i = 0; i < q.length; i++) for (let j = i + 1; j < q.length; j++) { const a = q[i], b = q[j]; let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy); if (d >= D) continue; moved = true;
+              if (d < 0.5) { dx = j % 2 ? 1 : -1; dy = -0.6; d = Math.hypot(dx, dy); } const push = (D - d) / 2 + 0.5, ux = dx / d, uy = dy / d; a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push; }
+            q.forEach((a) => { a.x = clamp(a.x, r, W - r); a.y = clamp(a.y, r, H - r); }); if (!moved) break; }
+          return q.map((a) => ({ ...a, x: +a.x.toFixed(1), y: +a.y.toFixed(1), ax: +a.ax.toFixed(1), ay: +a.ay.toFixed(1), off: Math.hypot(a.x - a.ax, a.y - a.ay) > 4 })); };
+        const phone = matchMedia("(max-width: 900px)"), homeP = $("#plPinHome", root), slot = $("#plPinSlot", root);
+        const placePin = () => { if (phone.matches) { if (pin.parentNode !== slot) slot.appendChild(pin); } else if (pin.parentNode === slot) homeP.parentNode.insertBefore(pin, homeP); };
+        placePin(); if (phone.addEventListener) phone.addEventListener("change", placePin);
+        let rsT = 0; const ro = window.ResizeObserver ? new ResizeObserver(() => { clearTimeout(rsT); rsT = setTimeout(() => { if (!drag && document.contains(inner)) paint(); }, 60); }) : null; if (ro) ro.observe(inner);
         const at = (e) => { const r = inner.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 100, 1, 99), clamp((e.clientY - r.top) / r.height * 100, 4, 100)]; };
         stage.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; e.preventDefault(); b.setPointerCapture(e.pointerId); drag = { h: b.dataset.pin, b, x0: e.clientX, y0: e.clientY, moved: false }; });
-        stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.b.style.left = x + "%"; drag.b.style.top = y + "%"; drag.x = x; drag.y = y; });
+        stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.x = x; drag.y = y;
+          if (!drag.raf) drag.raf = requestAnimationFrame(() => { if (!drag) return; drag.raf = 0; drag.b.style.left = drag.x + "%"; drag.b.style.top = drag.y + "%"; }); }); /* one style change a frame (review M12) */
         let dragged = 0; // a drag is not also a click
-        const endDrag = () => { if (!drag) return; const d = drag; drag = null; if (d.moved) { dragged = Date.now(); sel = d.h; R.movePin(d.h, d.x, d.y); const it = R.scene().find((x) => x.h === d.h); if (it) say(`${name(d.h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); } };
+        /* where it ended up, and why when that is not where it was put (a full table, a rug that stays on the floor) */
+        const moved = (h) => { const it = R.scene().find((x) => x.h === h); if (it) say(R.pinNote || `${name(h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); };
+        const endDrag = () => { if (!drag) return; const d = drag; drag = null; if (d.moved) { dragged = Date.now(); sel = d.h; R.movePin(d.h, d.x, d.y); moved(d.h); } };
         stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", () => { drag = null; paint(); });
         // a tap, a click or Enter on a pin chooses it; a tap elsewhere in the picture moves the chosen one there
-        stage.addEventListener("click", (e) => { const pb = e.target.closest("[data-pin]"); if (pb) { if (Date.now() - dragged > 300) select(sel === pb.dataset.pin ? null : pb.dataset.pin); return; } if (!sel) { say(R.scene().length ? "Välj först en sak, i listan eller på en nål." : "Lägg till en sak först."); return; } const [x, y] = at(e); R.movePin(sel, x, y); const it = R.scene().find((q) => q.h === sel); if (it) say(`${name(sel)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); });
+        stage.addEventListener("click", (e) => { const pb = e.target.closest("[data-pin]"); if (pb) { if (Date.now() - dragged > 300) select(sel === pb.dataset.pin ? null : pb.dataset.pin); return; } if (!sel) { say(R.scene().length ? "Välj först en sak, i listan eller på en nål." : "Lägg till en sak först."); return; } const [x, y] = at(e); R.movePin(sel, x, y); moved(sel); });
         marks.addEventListener("keydown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; const h = b.dataset.pin, it = R.scene().find((x) => x.h === h); if (!it) return;
           const st = e.shiftKey ? 5 : 1, mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
-          if (mv) { e.preventDefault(); sel = h; R.movePin(h, it.x + mv[0], it.y + mv[1]); const n = R.scene().find((x) => x.h === h); if (n) say(`${Math.round(n.x)} % från vänster, ${Math.round(n.y)} % ned, ${verbOf(n)} ${SURF[surfKey(n)]}.`); return; }
+          if (mv) { e.preventDefault(); sel = h; R.movePin(h, it.x + mv[0], it.y + mv[1]); const n = R.scene().find((x) => x.h === h); if (n) say(`${Math.round(n.x)} % från vänster, ${Math.round(n.y)} % ned, ${verbOf(n)} ${SURF[surfKey(n)]}.${R.pinNote ? " " + R.pinNote : ""}`); return; }
           if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); R.remove(h); say(`${name(h)} är borttagen. Ångra med Ctrl+Z i Justera själv.`); const f = $("[data-pin]", marks); if (f) f.focus(); return; }
           if (e.key === "Escape") { select(null); } });
         pin.addEventListener("click", (e) => { if (!sel) return; const it = R.scene().find((x) => x.h === sel); if (!it) return;
@@ -988,7 +1062,9 @@
           if (e.target.closest("#plMeasure")) { RQ.ss && RQ.ss.set("rumiq-room-measure", "1"); R.setWay("edit"); RQ.router(); scrollTo(0, 0); return; }
           if (e.target.closest("#plDel")) { const h = sel; sel = null; R.remove(h); say(`${name(h)} är borttagen.`); return; }
           if (e.target.closest("#plPinX")) { const h = sel; select(null); const g = $(`[data-pin="${h}"]`, marks); if (g) g.focus(); } });
-        $("#plList", root).addEventListener("click", (e) => { const b = e.target.closest("[data-pick]"); if (!b) return; select(b.dataset.pick); if (innerWidth <= 900) stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); });
+        $("#plList", root).addEventListener("click", (e) => { if (e.target.closest("#plSuggest")) { /* Inred åt mig, here too (review M9): a set for the room, pinned by the editor's rules */
+            const set = R.suggestSet(R._want || {}); R.group(() => set.items.slice(0, PLACE_MAX).forEach((it) => R.add(it.h, true, it.v || 0))); const n = R.scene().length; say(n ? `${n === 1 ? "En sak" : n + " saker"} står i rummet. Välj en och peka ut var den ska stå.` : "Vi hittade inget som passar just nu. Lägg till en sak själv."); const f = $("[data-pick]", root); if (f) f.focus({ preventScroll: true }); return; }
+          const b = e.target.closest("[data-pick]"); if (!b) return; select(b.dataset.pick); if (innerWidth <= 900) stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); });
         $("#plAdd", root).addEventListener("click", () => R.openPicker());
         // a phone: the picture twice as wide (swipe sideways), so pins close together are easy to tell apart and to place
         const zoomTo = (h) => { const it = h && R.scene().find((x) => x.h === h); if (!it || !stage.classList.contains("big")) return; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * it.x / 100 - stage.clientWidth / 2), behavior: calmNow() ? "auto" : "smooth" }); };
@@ -1004,25 +1080,34 @@
           $("#plBuy", res).addEventListener("click", (e2) => RQ.addMany && RQ.addMany(pins.map((x) => x.h + "::" + (x.v || 0)), e2.currentTarget, "Allt i bilden"));
           $("#plAgain", res).addEventListener("click", () => { res.hidden = true; stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); const f = $("[data-pin]", marks); if (f) f.focus({ preventScroll: true }); });
           res.scrollIntoView({ block: "start", behavior: calmNow() ? "auto" : "smooth" }); const h2 = $("figcaption b", res); if (h2) { h2.tabIndex = -1; h2.focus({ preventScroll: true }); } });
-        const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") paint(); else if (e.detail === "room") RQ.router(); };
+        let had = new Set(R.scene().map((it) => it.h));
+        const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "room") { RQ.router(); return; } if (e.detail !== "scene") return;
+          const l = R.scene(), fresh = l.filter((it) => !had.has(it.h)); had = new Set(l.map((it) => it.h));
+          if (fresh.length === 1) { const h = fresh[0].h, i = l.findIndex((it) => it.h === h); /* a thing that just came is the chosen one, so it can be pointed out at once (M4) */
+            if (i >= PLACE_MAX) { paint(); say(`Bilden tar fem saker åt gången. ${name(h)} väntar som nummer ${i + 1}.`); RQ.toast(`Bilden tar fem saker åt gången, så ${esc(name(h))} väntar. Ta bort en, eller flytta upp den i listan.`); return; } /* M10 */
+            select(h); return; }
+          paint(); };
         document.addEventListener("rq-room", onRoom);
         // a thing that just came (a product page, the picker) is chosen, so the next tap in the picture puts it there
         const nw = RQ.ss && RQ.ss.get("rumiq-room-new"); if (nw && R.inScene(nw)) { RQ.ss.set("rumiq-room-new", ""); sel = nw;
           const l = R.scene(), i = l.findIndex((x) => x.h === nw); if (i >= PLACE_MAX) { const [it] = l.splice(i, 1); l.splice(PLACE_MAX - 1, 0, it); R.saveScene(l, true); } } // the five are full: the one you came with takes the fifth place
         paint(); if (sel) say(`${name(sel)} är vald. Tryck i bilden där den ska stå.`);
-        return () => document.removeEventListener("rq-room", onRoom);
+        return () => { document.removeEventListener("rq-room", onRoom); if (ro) ro.disconnect(); if (phone.removeEventListener) phone.removeEventListener("change", placePin); };
       },
     };
   };
   V.myRoom = (pre) => {
-    if (pre && RQ.byHandle(pre) && room && R.tryIn(pre)) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
+    /* the thing you came with from a product page while there was no room yet ("Prova med ett exempelrum", or your own photo):
+       it goes in as soon as there is a room, in Placera och skapa as in Justera själv, and it is the chosen one (review B1) */
+    if (!pre && room && RQ.ss) { const p0 = RQ.ss.get("rumiq-room-pre"); if (p0) { RQ.ss.set("rumiq-room-pre", ""); if (RQ.byHandle(p0)) pre = p0; } }
+    if (pre && RQ.byHandle(pre) && room && (R.tryIn(pre) || R.inScene(pre))) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
     if (pre && RQ.byHandle(pre) && !room) RQ.ss && RQ.ss.set("rumiq-room-pre", pre);
     if (room && R.way() === "place") return placeView(pre); // Placera och skapa is the main way; the editor is "Justera själv"
     const want = pre && RQ.byHandle(pre) && !room ? RQ.byHandle(pre) : null; // came from a product without a room yet
     const more = `<nav class="rm-more" aria-label="Fler sätt att välja">${room ? `<button type="button" class="chip rm-toplace" id="rmToPlace">${ICO.spark}<span>Placera och skapa</span></button>` : ""}<a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
     return {
       title: pre && RQ.byHandle(pre) ? `${RQ.byHandle(pre).name} i ditt rum · RumIQ` : "Mitt rum · RumIQ",
-      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
+      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title">${room ? "" : `<p class="eyebrow">Mitt rum</p>`}<h1 class="h1" id="rmH1">${room && R.scene().length ? "Mitt rum" : "Se ditt hem innan du köper."}</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
         ${room ? "" : more}</section>
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap" id="rmWrap" style="--ar:${(room.w / room.h).toFixed(4)}">
@@ -1223,7 +1308,7 @@
           view.tx = view.sw / 2 - c[0] / 100 * w; view.ty = view.sh / 2 - c[1] / 100 * h; paintView(true); return Math.abs(view.tx - tx) + Math.abs(view.ty - ty) > 8; };
 
         const tintHtml = (it, p) => { const t = R.tint(it); return t ? `<i class="rm-tint" aria-hidden="true" style="background:${esc(t)};-webkit-mask-image:url(${cutIn(p)});mask-image:url(${cutIn(p)});transform:scaleX(${it.flip ? -1 : 1})"></i>` : ""; };
-        const draw = () => {
+        const draw = () => { { const t = $("#rmH1", root), want = R.scene().length ? "Mitt rum" : "Se ditt hem innan du köper."; if (t && t.textContent !== want) t.textContent = want; } /* an empty room invites (2b) */
           const list = R.scene(), order = R.ordered(); let fresh = 0; const news = [];
           const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h;
           const lane = new Map(nw.slice().sort((a, b) => a.x - b.x).map((it, i) => [it.h, i])); // several land from left to right
@@ -1680,7 +1765,7 @@
     const q = $("#pickQ", picker).value.trim(), t = room && room.type;
     const inG = RQ.PRODUCTS.filter((p) => !pickG || groupOf(p) === pickG); let found = inG.filter((p) => !q || hit(p, q)); if (!found.length) found = inG.filter((p) => hit(p, q, true)); // exact words first; only when nothing is found do stems and one wrong letter count
     const list = found.map((p) => ({ p, m: match(p) })).sort((a, b) => (t ? p2(b.p, t) - p2(a.p, t) : 0) || (b.m || 0) - (a.m || 0));
-    $("#pickGrid", picker).innerHTML = list.length ? list.map(({ p, m }) => `<button type="button" data-room-btn="${p.handle}" aria-pressed="${R.inScene(p.handle)}"><span class="pg-cut"><img src="${RQ.cut(p)}" alt="" loading="lazy"></span><b>${esc(p.name)}</b><span>${kr(p.price)}${m >= 60 ? `<em> · ${m} % färgmatch</em>` : ""}</span><i aria-hidden="true"></i></button>`).join("")
+    $("#pickGrid", picker).innerHTML = list.length ? list.map(({ p, m }) => `<button type="button" data-room-btn="${p.handle}" aria-pressed="${R.inScene(p.handle)}"><span class="pg-cut"><img src="${RQ.cut(p)}" alt="" loading="lazy"></span><b>${esc(p.name)}</b><span>${kr(p.price)}${m >= 60 ? `<em> · ${m} % färgmatch</em>` : ""}</span><small class="pick-m">${measures(p) ? esc(measures(p)) : "Mått kommer"}</small><i aria-hidden="true"></i></button>`).join("")
       : `<p class="pick-none">Inget i sortimentet heter så. Prova ett annat ord eller välj en grupp här ovanför.</p>`;
   };
   const p2 = (p, t) => (p.rooms.includes(t) ? 1 : 0);

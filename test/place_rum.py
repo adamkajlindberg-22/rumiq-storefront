@@ -149,7 +149,7 @@ with sync_playwright() as p:
         sizes = pg.evaluate("[...document.querySelectorAll('[data-pin], #plPin button, #pl .pl-li, #plAdd, #plCreate, #plSelf, .pl-steps .tlink')].filter((e) => e.offsetParent).map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
         ok(all(w >= 44 and h >= 44 for w, h in sizes), f"{tag} every tap target is at least 44 px: {[s for s in sizes if min(s) < 44][:3]}")
         fw = pg.evaluate("(() => { const st = document.getElementById('plIn').getBoundingClientRect(); return [...document.querySelectorAll('.pl-foot')].map((f) => +(f.getBoundingClientRect().width / st.width * 100).toFixed(1)); })()")
-        ok(all(abs(a - x["w"]) < 1.2 for a, x in zip(fw, pins)) and "ungefär" in pg.evaluate("document.querySelectorAll('.pl-foot')[0].textContent"), f"{tag} the dashed footprints are drawn at the things' widths, the estimated one says ungefär: {fw}")
+        ok(all(abs(a - x["w"]) < 1.2 for a, x in zip(fw, pins)) and ("ungefär" in pg.evaluate("document.querySelectorAll('.pl-foot')[0].textContent") or pg.evaluate("!document.getElementById('plLegend').hidden && /ungefär/.test(document.getElementById('plLegend').textContent)")), f"{tag} the dashed footprints are drawn at the things' widths, the estimated one says ungefär (a narrow one by the legend under the photo): {fw}")
         st = pg.evaluate(STAGE); ok(st[1] + st[3] <= Hh + 2 or mob and st[3] > 120, f"{tag} the picture is on the first screen: {st}")
         # choose a pin, change its surface, move it with a tap
         x0, y0, bw, bh = pg.evaluate(BTN, "glob-bordslampa-opalglas")
@@ -193,15 +193,20 @@ with sync_playwright() as p:
         pg.evaluate("document.getElementById('plCreate').click()"); pg.wait_for_timeout(2200)
         pc = pg.evaluate("window.__pc && [window.__pc.pins.length, window.__pc.room.w > 0, !!window.__pc.room.src]")
         ok(pc == [3, True, True], f"{tag} Skapa bilden hands the pins and the room to the AI side (rq-place-create): {pc}")
-        pg.wait_for_timeout(1200)
-        # with the AI side loaded it takes the event and shows its own labelled preview (ai.js); without it, the pin view's own
+        # the AI side (ai.js) takes the event and shows its labelled preview; without it, the pin view's own below the pins.
+        # Waited for robustly: the preview is drawn first (1200 ms was not always enough at 1440)
+        try:
+            pg.wait_for_function("(() => { const a = document.querySelector('.ai-sheet.open .ai-pad'); const t = a ? a.innerText + ((document.getElementById('aiBuy') || {}).innerText || '') : (document.getElementById('plResult') || {}).innerText || ''; return /Ingenting har skickats/.test(t) && /Köp allt i bilden/.test(t); })()", timeout=12000)
+        except Exception:
+            pass
         res = pg.evaluate("(() => { const a = document.querySelector('.ai-sheet.open .ai-pad'); if (a) return [false, 'data:image/jpeg', a.innerText + ' ' + ((document.getElementById('aiBuy') || {}).innerText || '')]; const r = document.getElementById('plResult'); return [r.hidden, (r.querySelector('img') || {}).src || '', r.innerText]; })()")
-        ok(not res[0] and res[1].startswith("data:image/jpeg") and "Förhandsvisning" in res[2] and "å här blir bilden när AI:n är på" in res[2] and "Ingenting har skickats" in res[2], f"{tag} while the AI is off: an honest, labelled preview")
+        ok(not res[0] and res[1].startswith("data:image/jpeg") and "Förhandsvisning" in res[2] and "å här blir bilden när AI:n är på" in res[2] and "Ingenting har skickats" in res[2], f"{tag} while the AI is off: an honest, labelled preview: {res[2][:80]}")
         tot = pg.evaluate("RQ.room.pins().reduce((t, x) => t + RQ.byHandle(x.h).price, 0)")
         ok(f"Köp allt i bilden · {pg.evaluate('(n) => RQ.shop.kr(n)', tot)}".replace("\u00a0", " ") in res[2].replace("\u00a0", " "), f"{tag} Köp allt i bilden with the total of exactly these things")
         if AXE.exists():
             # (.roompill, the nav's Mitt rum pill, is app.js: its label lacks the count it shows; told to the coordinator)
             pg.add_script_tag(content=AXE.read_text()); v = [x for x in pg.evaluate(RUN_AXE) if not x.startswith("label-content-name-mismatch: .roompill")]; ok(not v, f"{tag} axe: {v[:3]}")
+        pg.evaluate("(() => { const x = document.querySelector('.ai-sheet.open [data-ai-close], .ai-sheet.open .sheet-x, .ai-sheet.open [aria-label=Stäng]'); if (x) x.click(); })()"); pg.wait_for_timeout(500)
         # Justera själv: the editor on the same things; and back
         hs = [x["h"] for x in pg.evaluate(PINS)]
         pg.evaluate("document.getElementById('plSelf').click()"); pg.wait_for_timeout(1200)
@@ -233,6 +238,83 @@ with sync_playwright() as p:
     ok(pg.evaluate("!!document.getElementById('plStage')") and pg.evaluate("RQ.room.inScene('svamp-uppladdningsbar-lampa')"), "[pdp] Prova i Mitt rum opens Placera och skapa with the lamp in it")
     ok("är vald" in pg.evaluate("document.getElementById('plHint').textContent") or pg.evaluate("document.querySelector(\"[data-pin='svamp-uppladdningsbar-lampa']\") && document.querySelector(\"[data-pin='svamp-uppladdningsbar-lampa']\").classList.contains('on')"), "[pdp] and the lamp is chosen, ready to be pointed out")
     c.close()
+
+    # D7: a thing for a table never stands on what already stands on a sample room's tables (the mug on the side table, the
+    # basin, the jars, the plant): its whole width keeps clear of the busy areas, from a product page and when pinned by hand
+    c = ctx_for(b, 1440, 900, False); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(600)
+    CLEAR = """(rm) => { const M = RQ.room._maps[rm], bad = []; RQ.room.scene().forEach((it) => { const p = RQ.byHandle(it.h); if (RQ.room._kind(p) !== 'surface' || it.on) return;
+      (M.busy || []).forEach(([a, b, y, top]) => { if (Math.abs(y - it.y) < 4 && !(top != null && it.y < top)) { const bs = RQ.room._base(p), up = top != null ? (it.y - top + 1.5) / (it.w * RQ.room._ratio(p) * 1600 / 893) : 1, half = it.w / 2 * (bs && up <= bs[0] ? bs[1] : 1);
+        if (it.x + half > a - 0.25 && it.x - half < b + 0.25) bad.push([it.h, it.x, it.w, a, b]); } });
+      const es = (M.edge || []).filter((e) => Math.abs(e[2] - it.y) < 4); if (es.length && !es.some(([a, b]) => it.x >= a && it.x <= b)) bad.push([it.h, 'off the table', it.x]); }); return bad; }"""
+    rooms_busy = pg.evaluate("Object.keys(RQ.room._maps).filter((r) => (RQ.room._maps[r].busy || []).length)")
+    ok(len(rooms_busy) == 7, f"[D7] every sample room knows what stands on its tables: {rooms_busy}")
+    bad_all = []
+    for rm in rooms_busy:
+        pg.evaluate(SAMPLE, rm); pg.wait_for_timeout(150)
+        for pre in ([], ["svamp-uppladdningsbar-lampa"], ["glod-doftljus-keramik"], ["lysa-keramiklampa"], ["sand-keramikvas", "glod-doftljus-keramik"], ["stilla-ljusstake-massing-2-pack", "tvalpump-stengods"]):
+            pg.evaluate("RQ.room.saveScene([], true)")
+            for h in pre: pg.evaluate("(h) => RQ.room.add(h, true)", h)
+            pg.evaluate("RQ.room.tryIn('glob-bordslampa-opalglas')")
+            bad_all += [(rm, pre, x) for x in pg.evaluate(CLEAR, rm)]
+        # pinned by hand right on the busy area: it goes to the nearest free place on that table instead
+        pg.evaluate("RQ.room.saveScene([], true)"); pg.evaluate("RQ.room.add('glob-bordslampa-opalglas', true)")
+        for a_, b_, y_, *_ in pg.evaluate("(rm) => RQ.room._maps[rm].busy", rm):
+            pg.evaluate("([x, y]) => RQ.room.movePin('glob-bordslampa-opalglas', x, y, 'bord')", [(a_ + b_) / 2, y_])
+            bad_all += [(rm, "pin", x) for x in pg.evaluate(CLEAR, rm)]
+    ok(not bad_all, f"[D7] the glob lamp (from a product page, beside other things, or pinned on top of something) stands on a free part of the table: {bad_all[:4]}")
+    pg.evaluate(SAMPLE, "vardagsrum"); pg.wait_for_timeout(150); pg.evaluate("RQ.room.saveScene([], true)"); pg.evaluate("RQ.room.tryIn('glob-bordslampa-opalglas')")
+    g = pg.evaluate(SPOT, "glob-bordslampa-opalglas")
+    ok(g and g[0] - g[2] / 2 >= 79.3 and g[0] + g[2] * 0.25 <= 84.6, f"[D7] the living room: the glob lamp stands right of the mug, on the side table: {g}")
+    ok(not pg.errs, f"[D7] no script errors: {pg.errs[:2]}")
+    c.close()
+
+    # B1: product page -> Prova i Mitt rum -> Prova med ett exempelrum: the product is pinned and chosen in Placera och skapa
+    for url in ("produkt-glob-bordslampa-opalglas/", "mitt-rum-glob-bordslampa-opalglas/"):
+        c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + url); pg.wait_for_timeout(1200); quiet(pg)
+        if url.startswith("produkt"):
+            pg.wait_for_selector(".roomcta", state="attached", timeout=15000); pg.evaluate("document.querySelector('.roomcta').click()"); pg.wait_for_timeout(1500)
+        pg.evaluate("[...document.querySelectorAll('[data-room-sample-now]')].find((b) => b.offsetParent).click()"); pg.wait_for_timeout(2600)
+        ok(pg.evaluate("!!document.getElementById('plStage')") and pg.evaluate("RQ.room.inScene('glob-bordslampa-opalglas')") and pg.evaluate("!!document.querySelector(\"[data-pin='glob-bordslampa-opalglas'].on\")"), f"[B1 {url}] the lamp is in the sample room, pinned and chosen")
+        ok(not pg.errs, f"[B1 {url}] no script errors: {pg.errs[:2]}")
+        c.close()
+
+    # B2: a rug stays on the floor (keyboard, a tap high up); M1: a table thing put on the wall goes to a free place on a table,
+    # never onto another pin, and the page says why
+    c = ctx_for(b, 1440, 900, False); pg = new_page(c); place(pg); pg.evaluate("RQ.room.add('glod-doftljus-keramik', true)"); pg.wait_for_timeout(300)
+    pg.focus("[data-pin='strand-jutematta']")
+    for _ in range(12): pg.keyboard.press("Shift+ArrowUp"); pg.wait_for_timeout(40)
+    r = next(x for x in pg.evaluate(PINS) if x["h"] == "strand-jutematta")
+    ok(r["y"] >= 82 and r["surface"] == "golv", f"[B2] Shift+Up does not lift the rug off the floor: {r}")
+    pg.evaluate("RQ.room.movePin('strand-jutematta', 30, 40)"); r = next(x for x in pg.evaluate(PINS) if x["h"] == "strand-jutematta")
+    ok(r["y"] >= 82 and r["surface"] == "golv", f"[B2] nor does putting it on the wall: {r}")
+    pg.evaluate("document.querySelector('[data-pick=glob-bordslampa-opalglas]').click()"); pg.wait_for_timeout(200); st = pg.evaluate(STAGE)
+    pg.mouse.click(st[0] + st[2] * 0.30, st[1] + st[3] * 0.35); pg.wait_for_timeout(400)
+    ps = {x["h"]: x for x in pg.evaluate(PINS)}; gl, va = ps["glob-bordslampa-opalglas"], ps["glod-doftljus-keramik"]
+    ok(gl["surface"] in ("bord", "golv") and (gl["surface"] != va["surface"] or abs(gl["x"] - va["x"]) > (gl["w"] + va["w"]) * 0.4) and not any(o["h"] != gl["h"] and o["x"] == gl["x"] and o["y"] == gl["y"] for o in ps.values()), f"[M1] the lamp put on the wall stands on a free place, not on the candle: {gl} / {va}")
+    ok("kan stå på bord eller golv" in pg.evaluate("document.getElementById('plHint').textContent") or "fullt" in pg.evaluate("document.getElementById('plHint').textContent"), f"[M1] and the page says why: {pg.evaluate('document.getElementById(\"plHint\").textContent')}")
+    ok(not pg.errs, f"[B2/M1] no script errors: {pg.errs[:2]}")
+    c.close()
+
+    # M2 / 2a: pins close together are drawn apart (the saved place does not change): every pin can be tapped at 360 and 375,
+    # its number readable; M3 / D4: on a phone the chosen pin's controls are right under the photo, above the dock (iPhone SE too)
+    FIVE = SET + [{"h": "glod-doftljus-keramik"}, {"h": "lin-kuddfodral"}]
+    for W, Hh in ((360, 740), (375, 548), (390, 844)):
+        c = ctx_for(b, W, Hh, True); pg = new_page(c); place(pg, FIVE); pg.evaluate("document.querySelector('.cookie') && document.querySelector('.cookie').remove()")
+        cs = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width]; })")
+        near = [(i, j) for i in range(len(cs)) for j in range(i + 1, len(cs)) if ((cs[i][0] - cs[j][0]) ** 2 + (cs[i][1] - cs[j][1]) ** 2) ** 0.5 < 44]
+        ok(len(cs) == 5 and not near and all(x[2] >= 44 for x in cs), f"[pins {W}] five pins, none covering another (centres 44 px apart): {near}")
+        saved = pg.evaluate("RQ.room.scene().slice(0, 5).map((i) => [i.x, i.y])"); hit = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => { const r = b.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!(e && e.closest('[data-pin]') === b); })")
+        ok(all(hit), f"[pins {W}] each pin is on top where it is drawn: {hit}")
+        lab = pg.evaluate("[...document.querySelectorAll('.pl-foot span')].map((s) => s.textContent)")
+        ok(not any("ungefärungefär" in "".join(lab[i:i + 2]).replace(" ", "") for i in range(len(lab))) and float(pg.evaluate("parseFloat(getComputedStyle(document.querySelector('.pl-foot span')).fontSize)")) >= 12, f"[pins {W}] footprint labels short and readable: {lab}")
+        for h in ("plad-ullblandning-havre", "glod-doftljus-keramik"):
+            pg.tap(f"[data-pin='{h}']"); pg.wait_for_timeout(900)
+            dock = pg.evaluate("(() => { const d = [...document.querySelectorAll('.dock, nav.dock')].find((x) => x.offsetParent); return d ? d.getBoundingClientRect().top : innerHeight; })()")
+            box = pg.evaluate("(() => { const p = document.getElementById('plPin').getBoundingClientRect(), s = document.getElementById('plStage').getBoundingClientRect(), hd = (document.querySelector('header') || document.body).getBoundingClientRect(); return [p.top, p.bottom, s.top, s.bottom, hd.bottom, !!document.getElementById('plPin').closest('#plPinSlot')]; })()")
+            ok(box[5] and box[1] <= dock + 1 and box[2] >= box[4] - 1 and box[0] >= box[3] - 1, f"[pins {W}] the chosen pin's block sits under the photo and above the dock: {[round(v) for v in box[:5]]} dock {round(dock)}")
+        ok(pg.evaluate("RQ.room.scene().slice(0, 5).map((i) => [i.x, i.y])") == saved, f"[pins {W}] spreading them is only the drawing: the saved places are the same")
+        ok(not pg.errs, f"[pins {W}] no script errors: {pg.errs[:2]}")
+        c.close()
 
     # your own photo: the surface is asked once
     c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); quiet(pg)
