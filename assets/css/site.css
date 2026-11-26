@@ -189,6 +189,8 @@ a.eyebrow:hover{color:var(--ink)}
 /* mobile menu sheet */
 .mnav{position:fixed;inset:0;z-index:150;background:var(--bg);color:var(--ink);transform:translateY(100%);transition:transform .55s var(--ease),visibility 0s .55s;visibility:hidden;overflow:auto;overscroll-behavior:contain;padding:0 var(--gutter) calc(2.5rem + env(safe-area-inset-bottom))}
 .mnav.open{transform:none;visibility:visible;transition:transform .55s var(--ease)}
+/* the menu reaches down behind Safari's floating bar (the large viewport), so no strip of the page shows there; its last links stay above the bar (X8) */
+.mnav{bottom:auto;height:100vh;height:100lvh;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom) + 100lvh - 100svh)}
 /* the logo and the close button stay put; language and light come first, every row is a full finger high */
 .mnav-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;height:var(--nav-h);margin:0 calc(-1 * var(--gutter));padding:0 var(--gutter);background:var(--bg);border-bottom:1px solid var(--line2)}
 .mnav .close{background:none}
@@ -867,6 +869,7 @@ details.pw[open] summary::after{content:" −"}
 /* ---------------------------------------------------------------- home */
 .hero{position:relative;height:200vh}
 .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#D9D6CF}
+:root[data-light=kvall] .stage{background:var(--img-bg)} /* no light grey band under the start picture at night (X8) */
 .stage img.still,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .stage .first{z-index:1}.stage .wide{z-index:0}.stage .wide.over{z-index:1}
 .stage video{z-index:2;opacity:0;transition:opacity .9s var(--ease)}
