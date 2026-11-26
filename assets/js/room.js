@@ -35,6 +35,9 @@
   };
   const meta = (p) => KIND[p.handle] || [p.wall ? "wall" : "surface", p.wall ? 50 : 20, 1.2];
   const kindOf = (p) => meta(p)[0];
+  // the sort of a thing (Byt, the partner page, Prova i Mitt rum): only the same sort stands in for it
+  const SORTS = [[/lampa/, "lampa"], [/doftljus/, "doftljus"], [/ljusstake/, "ljusstake"], [/kuddfodral/, "kudde"], [/plad/, "plad"], [/paslakan/, "sang"], [/affisch|tavla|poster/, "bild"], [/korg|lada|forvaring(?!sburk)/, "forvaring"], [/kruka/, "kruka"], [/matta/, "matta"], [/gardin/, "gardin"], [/handduk/, "handduk"], [/burk/, "burk"], [/vas\b|vas-|keramikvas/, "vas"]];
+  const sortOf = (hh) => { const f = SORTS.find(([re]) => re.test(hh)); return f ? f[1] : "x-" + hh; };
   const cutIn = (p) => (meta(p)[3] ? RQ.cut(p).replace(/\.webp$/, `-${meta(p)[3]}.webp`) : RQ.cut(p)); // the picture that stands in the room
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   /* The sample rooms are mapped by hand. A spot is [x, y, s]: x/y in % of the photo (y is where the thing
@@ -371,8 +374,7 @@
       // the same sort of thing only (studio3 review minor 2, also the partner page): a lamp for a lamp, a scented candle for a
       // candle, candlesticks for candlesticks, a cushion for a cushion, a throw for a throw, a print for a print, a basket or box
       // for a basket or box, a plant pot for a plant pot; otherwise none ("Inget annat … passar")
-      const SORTS = [[/lampa/, "lampa"], [/doftljus/, "doftljus"], [/ljusstake/, "ljusstake"], [/kuddfodral/, "kudde"], [/plad/, "plad"], [/paslakan/, "sang"], [/affisch|tavla|poster/, "bild"], [/korg|lada|forvaring(?!sburk)/, "forvaring"], [/kruka/, "kruka"], [/matta/, "matta"], [/gardin/, "gardin"], [/handduk/, "handduk"], [/burk/, "burk"], [/vas\b|vas-|keramikvas/, "vas"]];
-      const grp = (q) => { const f = SORTS.find(([re]) => re.test(q.handle)); return f ? f[1] : "x-" + q.handle; }; // a sort of its own: nothing else stands in for it
+      const grp = (q) => sortOf(q.handle); // a sort of its own when none matches: nothing else stands in for it
       return RQ.PRODUCTS.filter((q) => q.handle !== h && !have.has(q.handle) && grp(q) === grp(p))
         .map((q) => ({ q, m: (match(q) || 60) + (room && room.type && q.rooms.includes(room.type) ? 20 : 0) })).sort((a, b) => b.m - a.m).map((x) => x.q).slice(0, 8); },
     /* the thing at h, as "to" (another product, or the same one in colour v), in its place: the same spot, the same
@@ -852,8 +854,19 @@
     // the room whose photo this is is marked even when nothing set it active (back from Sparat's "Prova igen i Studio"; studio3 review minor 4)
     const k = keyNow(), act = (H.activeId && H.activeId()) || ((rs.find((r) => r.pkey && r.pkey === k) || {}).id) || null;
     return `<nav class="rm-projs" aria-label="Dina rum">${rs.slice(0, 6).map((r) => `<button type="button" class="chip" data-proj="${esc(r.id)}" aria-pressed="${r.id === act}">${esc(H.name(r))}</button>`).join("")}<a class="chip rm-projnew" href="#mitt-hem">${ICO.plus}<span>Nytt rum</span></a></nav>`; };
+  /* "Prova i Mitt rum" from a product page (device review R5): into your active room (Mitt hem), not whatever room this
+     browser showed last; and when its table is full, the new thing takes the place of one of the same sort (Ångra brings
+     it back) instead of standing on the open floor. Answers true when it is in the room */
+  R.tryIn = (h) => { const q = RQ.byHandle(h); if (!q || !room) return false;
+    const H = RQ.hem, pr = projOf(H && H.activeId ? H.activeId() : null);
+    if (pr && !((pr.pkey && pr.pkey === keyNow()) || (room.sample && pr.sceneMap && pr.sceneMap === room.map)) && (H.items(pr) || []).length) {
+      R.openWith({ room: pr.type, items: H.items(pr), project: pr.id }).then((ok) => { if (ok && R.tryIn(h)) { RQ.ss && RQ.ss.set("rumiq-room-new", h); RQ.router && RQ.router(); } }); return false; }
+    if (R.inScene(h)) return false;
+    return R.group(() => { if (!R.add(h, true)) return false; const it = R.scene().find((x) => x.h === h); if (!it || !R.homeless(it)) return true;
+      const by = R.scene().find((x) => x.h !== h && !R.homeless(x) && sortOf(x.h) === sortOf(h)); if (!by) return true; // nothing of its sort to stand in for: the floor, and the room says why
+      R.saveScene(R.scene().filter((x) => x.h !== h)); R.swapWith(by.h, h); R.lastMoved = null; R._tookPlace = { of: by.h, by: h }; return true; }); };
   V.myRoom = (pre) => {
-    if (pre && RQ.byHandle(pre) && room && R.add(pre, true)) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
+    if (pre && RQ.byHandle(pre) && room && R.tryIn(pre)) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
     if (pre && RQ.byHandle(pre) && !room) RQ.ss && RQ.ss.set("rumiq-room-pre", pre);
     const want = pre && RQ.byHandle(pre) && !room ? RQ.byHandle(pre) : null; // came from a product without a room yet
     const more = `<nav class="rm-more" aria-label="Fler sätt att välja"><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
@@ -948,6 +961,7 @@
         let sel = fresh0 && R.inScene(fresh0) ? fresh0 : null;
         const paintCart = []; // the add-all buttons follow the cart and the room (addAllBtn)
         if (fresh0) setTimeout(() => RQ.ss.set("rumiq-room-new", ""), 1600); // kept a moment: the view may be drawn twice on the way in
+        if (R._tookPlace && R.inScene(R._tookPlace.by)) { const tp = R._tookPlace; R._tookPlace = null; ls.set("rumiq-room-landed", true); setTimeout(() => RQ.toast(`${esc(RQ.byHandle(tp.by).name)} står där ${esc(RQ.byHandle(tp.of).name)} stod. Ångra finns på rummet.`), 700); } // R5: it took the place of one of its sort
         if (fresh0 && R.lastMoved === fresh0 && R.inScene(fresh0)) { R.lastMoved = null; ls.set("rumiq-room-landed", true); setTimeout(() => RQ.toast(`Där var det fullt, så ${esc(RQ.byHandle(fresh0).name)} står på golvet. Dra den dit du vill.`), 700); } // it came from a product page: say why it is not on the table
         const colsHtml = () => { const c = R.read(); return c && c.pal.length ? `<div class="rm-colors"><div class="palette" role="img" aria-label="Färgerna i ${room.sample ? "rummet" : "ditt rum"}">${c.pal.map((t) => `<i style="background:${t}"></i>`).join("")}</div><div><h3>Färgerna i ${room.sample ? "rummet" : "ditt rum"}</h3><p>${c.text} ${c.tip}</p></div></div>` : ""; };
         const fits = () => { $("#rmCols", root).innerHTML = colsHtml(); const t = room.type; const list = RQ.PRODUCTS.map((p) => ({ p, m: (match(p) || 0) + (t && p.rooms.includes(t) ? 100 : 0) })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };

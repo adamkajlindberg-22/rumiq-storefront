@@ -197,7 +197,9 @@ with sync_playwright() as p:
     pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'svamp-uppladdningsbar-lampa'].forEach((h) => RQ.room.add(h, true))")
     pg.goto(BASE + "mitt-rum-glob-bordslampa-opalglas/"); pg.wait_for_timeout(1600)
     ts = pg.evaluate("[...document.querySelectorAll('.toast')].map((t) => t.textContent).join(' ')")
-    ok(pg.evaluate("(RQ.room.scene().find((i) => i.h === 'glob-bordslampa-opalglas') || {}).on") == "floor" and "står på golvet" in ts and "Dra den dit du vill" in ts, f"[P5 vardagsrum] a lamp that does not fit says why it is on the floor, also coming from its product page: {ts[:90]}")
+    # device review R5: from its product page a lamp that does not fit takes the place of a lamp on the table (Ångra brings it back), and says so
+    sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || ''])")
+    ok(any(h == "glob-bordslampa-opalglas" and on != "floor" for h, on in sc) and len(sc) == 2 and "står där" in ts and "Ångra" in ts, f"[P5 vardagsrum] a lamp that does not fit takes the place of a lamp on the table, also coming from its product page, and says so: {sc} {ts[:90]}")
     ok(not pg.evaluate("!document.getElementById('rmFirst').hidden"), "[P5] and no second message on top of it")
     ok(not pg.errs, f"[P5] no script errors: {pg.errs[:2]}")
     c.close()

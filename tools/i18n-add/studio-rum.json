@@ -146,5 +146,6 @@
  "Budgeten räcker inte till något. Det billigaste kostar {0}.": "The budget does not cover anything. The cheapest costs {0}.",
  "Budgeten räcker till {0} av {1}. Kvar att lägga till: {2}.": "The budget covers {0} of {1}. Left to add: {2}.",
  "Från din moodboard": "From your moodboard",
- "Finns i en färg.": "Comes in one colour."
+ "Finns i en färg.": "Comes in one colour.",
+ "{0} står där {1} stod. Ångra finns på rummet.": "{0} stands where {1} stood. Undo is on the room."
 }

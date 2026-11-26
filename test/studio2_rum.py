@@ -342,6 +342,20 @@ with sync_playwright() as p:
     ok(pg.evaluate("document.querySelectorAll('#rmSwap [data-swv]').length") == 2, "[R4] and a cushion cover shows its two colours")
     c.close()
 
+    # device review R5: Prova i Mitt rum from a product page goes into your active room, and takes the place of one of its sort
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-hem/"); pg.wait_for_timeout(600); quiet(pg)
+    pid = pg.evaluate("(() => { const r = RQ.hem.create ? RQ.hem.create({ type: 'vardagsrum', name: 'Vardagsrummet' }) : null; return r && (r.id || r); })()")
+    its = pg.evaluate("RQ.hem.propose({ type: 'vardagsrum' }).items")
+    pg.evaluate("([id, its]) => { RQ.hem.patch(id, { items: its }); return RQ.room.openWith({ room: 'vardagsrum', items: its, project: id }); }", [pid, its]); pg.wait_for_timeout(1500)
+    pg.evaluate("(() => { const im = new Image(); im.src = 'assets/img/rum/sovrum-1600.webp'; return new Promise((ok) => { im.onload = () => RQ.room.saveImage(im, { sample: true, map: 'sovrum', type: 'sovrum', name: 'Sovrum', src: 'assets/img/rum/sovrum-1600.webp' }).then(ok); }); })()"); pg.wait_for_timeout(800)
+    pg.evaluate("(id) => RQ.hem.setActive(id)", pid)
+    pg.goto(BASE + "produkt-lysa-keramiklampa/"); pg.wait_for_timeout(1000); quiet(pg)
+    pg.evaluate("document.querySelector('.roomcta').click()"); pg.wait_for_timeout(3000)
+    sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || ''])")
+    ok(pg.evaluate("RQ.room.get().map") == "vardagsrum" and any(h == "lysa-keramiklampa" and on != "floor" for h, on in sc), f"[R5] the lamp goes into your active room (the living room), on the table: {sc}")
+    ok(len([h for h, _ in sc if "lampa" in h]) == 1 and "står där" in pg.evaluate(TOAST_ALL if 'TOAST_ALL' in dir() else "[...document.querySelectorAll('.toast')].map((t) => t.textContent).join(' ')"), f"[R5] and takes the place of the lamp that stood there, and says so")
+    c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
