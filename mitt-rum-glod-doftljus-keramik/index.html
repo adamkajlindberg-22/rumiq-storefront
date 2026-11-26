@@ -5,14 +5,14 @@
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mitt rum – prova inredning i ett foto av ditt rum · RumIQ</title>
-<meta name="description" content="Ta en bild av ditt rum och ställ in lampor, textil och tavlor där du vill ha dem. Se vad hela rummet kostar och handla allt på en gång. Gratis, utan konto.">
+<meta name="description" content="Välj ett exempelrum eller ta en bild av ditt rum, peka ut var lamporna, textilierna och tavlorna ska stå och se rummet med dem på plats, i rätt storlek. Handla allt på en gång.">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://adamkajlindberg-22.github.io/rumiq-storefront/mitt-rum/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RumIQ">
 <meta property="og:locale" content="sv_SE">
 <meta property="og:title" content="Mitt rum – prova inredning i ett foto av ditt rum · RumIQ">
-<meta property="og:description" content="Ta en bild av ditt rum och ställ in lampor, textil och tavlor där du vill ha dem. Se vad hela rummet kostar och handla allt på en gång. Gratis, utan konto.">
+<meta property="og:description" content="Välj ett exempelrum eller ta en bild av ditt rum, peka ut var lamporna, textilierna och tavlorna ska stå och se rummet med dem på plats, i rätt storlek. Handla allt på en gång.">
 <meta property="og:image" content="https://adamkajlindberg-22.github.io/rumiq-storefront/assets/img/og.jpg">
 <meta property="og:url" content="https://adamkajlindberg-22.github.io/rumiq-storefront/mitt-rum/">
 <meta name="twitter:card" content="summary_large_image">
@@ -74,7 +74,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
         </div></div>
       <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
-      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
+      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Mitt hem"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
       <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
       <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
     </div>
@@ -87,7 +87,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <h4>Butik</h4><a href="butik/">Alla produkter</a>
   <div class="mnav-grid"><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a><a href="kategori-badrum-valmaende/">Badrum & välmående</a><a href="kategori-uteliv/">Uteliv</a><a href="rum/">Handla efter rum</a><a href="presentkort/">Presentkort</a></div>
   <h4>Upptäck</h4><a href="looks/">Looks</a><a href="for-dig/">För dig</a><a href="svep/">Svep</a><a href="hitta-ratt/">Hitta rätt</a><a href="onska/">Önska</a><a href="magasin/">Magasin</a>
-  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat</a><a href="varukorg/" data-open-cart>Varukorg<span class="badge" data-count="cart"></span></a><a href="studio-plus/">Studio Plus</a>
+  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Mitt hem</a><a href="varukorg/" data-open-cart>Varukorg<span class="badge" data-count="cart"></span></a><a href="studio-plus/">Studio Plus</a>
   <h4>Konto och hjälp</h4>
   <div class="mnav-grid"><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Spåra min beställning</a><a href="frakt/">Frakt & leverans</a><a href="returer/">Returer</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a></div>
 </nav>
@@ -96,8 +96,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <noscript><p class="noscript">Butiken behöver JavaScript för varukorg, sök och Mitt rum. Slå på det i webbläsaren, så fungerar allt.</p></noscript>
 <main id="view" class="view first" tabindex="-1"><section class="wrap rm-top"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><span aria-current="page">Mitt rum</span></li></ol></nav><div class="rm-title"><h1 class="h1">Mitt rum</h1></div>
-        <nav class="rm-more" aria-label="Fler sätt att välja"><a class="chip" href="svep/">Svep fram din stil</a><a class="chip" href="hitta-ratt/">Hitta rätt</a><a class="chip" href="studio-stylist/">Fråga stylisten</a></nav></section>
-        <section class="wrap" style="padding-bottom:5rem"><div class="rm-empty">
+        </section>
+        <section class="wrap" style="padding-bottom:2.5rem"><div class="rm-empty">
       <div class="rm-empty-in">
         <p class="rm-want"><img src="assets/img/cut/glod-doftljus-keramik.webp" alt=""><span><b>Glöd doftljus i keramik</b> står i rummet så fort bilden är inne.</span></p>
         <h2 class="h2">Börja med en bild av ditt rum.</h2>
@@ -108,7 +108,12 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       </div><figure class="rh-fig bav" style="--ba:31%"><div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w, assets/img/rum/sovrum-fore-2016.webp 2016w, assets/img/rum/sovrum-fore-2688.webp 2688w" sizes="(max-width: 900px) 100vw, 60vw" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async" width="1344" height="752"><div class="ba-after"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w, assets/img/rum/sovrum-efter-2016.webp 2016w, assets/img/rum/sovrum-efter-2688.webp 2688w" sizes="(max-width: 900px) 100vw, 60vw" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async" width="1344" height="752"><span class="rh-tag l" style="left:86%;top:47%"><i></i><span><b>Lysa keramiklampa</b> 1&nbsp;290 kr</span></span><span class="rh-tag" style="left:44%;top:57%"><i></i><span><b>Pläd ullblandning havre</b> 799 kr</span></span><span class="rh-tag l" style="left:75%;top:74%"><i></i><span><b>Flätad förvaringskorg</b> 379 kr</span></span></div>
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
       <input class="ba-range" type="range" min="0" max="100" value="31" aria-label="Jämför rummet före och efter. Dra åt vänster för att visa fler produkter."></div>
-      <figcaption class="rh-card"><span><b>Hela rummet</b><span>3 produkter · 2&nbsp;468&nbsp;kr</span></span></figcaption></figure></div></section></main>
+      <figcaption class="rh-card"><span><b>Hela rummet</b><span>3 produkter · 2&nbsp;468&nbsp;kr</span></span></figcaption></figure></div></section><section class="wrap rm-ways" aria-labelledby="rmWaysT"><h2 class="h3" id="rmWaysT">Inte säker på stilen än?</h2>
+      <div class="rm-ways-g">
+        <a class="rm-way" href="svep/"><span class="rm-way-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="11" height="15" rx="2"></rect><path d="M19 7.5v10a2.5 2.5 0 0 1-2.5 2.5H9"></path></svg></span><span><b>Svep fram din stil</b><small>Svep tio kort. Du får din stil, dina färger och ett färdigt rumsförslag att se i ditt rum.</small><em>En minut</em></span></a>
+        <a class="rm-way" href="svep-ihop/"><span class="rm-way-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"></circle><circle cx="16.5" cy="9.5" r="2.5"></circle><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8M14.5 14.6c.6-.2 1.3-.3 2-.3 2.3 0 4 1.5 4.5 4.2"></path></svg></span><span><b>Svep tillsammans</b><small>Inreder ni ihop? Skicka samma kort till 1–5 personer och se vad ni alla gillar.</small><em>Utan konto</em></span></a>
+        <a class="rm-way" href="studio-stylist/"><span class="rm-way-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v9h-8l-4 3.5v-3.5h-3z"></path></svg></span><span><b>Fråga stylisten</b><small>Beskriv rummet och vad du vill ändra. Du får råd och saker ur sortimentet.</small><em>Med egna ord</em></span></a>
+      </div></section></main>
 
 <footer class="site">
   <div class="wrap">
@@ -130,7 +135,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
   <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
   <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
-  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Mitt hem<span class="badge" data-count="wish"></span></a>
   <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
 </nav>
 
@@ -152,7 +157,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=cc256592"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=ab57be54"; window.RQ_HEADS_SRC = "assets/heads.json?v=025f9282";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=cc256592"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=ab57be54"; window.RQ_HEADS_SRC = "assets/heads.json?v=308bc9ee";</script>
 <script src="assets/js/i18n.min.js?v=7ac14a2a"></script>
 <script src="assets/js/site.min.js?v=0fc8a0ff"></script>
 </body>

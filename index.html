@@ -75,7 +75,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
         </div></div>
       <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
-      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
+      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Mitt hem"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
       <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
       <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
     </div>
@@ -88,7 +88,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <h4>Butik</h4><a href="butik/">Alla produkter</a>
   <div class="mnav-grid"><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a><a href="kategori-badrum-valmaende/">Badrum & välmående</a><a href="kategori-uteliv/">Uteliv</a><a href="rum/">Handla efter rum</a><a href="presentkort/">Presentkort</a></div>
   <h4>Upptäck</h4><a href="looks/">Looks</a><a href="for-dig/">För dig</a><a href="svep/">Svep</a><a href="hitta-ratt/">Hitta rätt</a><a href="onska/">Önska</a><a href="magasin/">Magasin</a>
-  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat</a><a href="varukorg/" data-open-cart>Varukorg<span class="badge" data-count="cart"></span></a><a href="studio-plus/">Studio Plus</a>
+  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Mitt hem</a><a href="varukorg/" data-open-cart>Varukorg<span class="badge" data-count="cart"></span></a><a href="studio-plus/">Studio Plus</a>
   <h4>Konto och hjälp</h4>
   <div class="mnav-grid"><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Spåra min beställning</a><a href="frakt/">Frakt & leverans</a><a href="returer/">Returer</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a></div>
 </nav>
@@ -114,6 +114,23 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       </section>
 
       <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li><b>30 dagars öppet köp</b>, ångra med en knapp</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
+
+      <section class="sec roomhero dark" id="ditt-rum">
+        <div class="wrap rh">
+          <div class="rh-copy">
+            <span class="eyebrow rh-promise">Se ditt hem innan du köper.</span>
+            <h2 class="display">Prova produkterna i ditt rum.</h2>
+            <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Peka ut var sakerna ska stå och se bilden med dem på plats. Sedan handlar du allt med en knapp.</p>
+            <ol class="rh-steps"><li><b>Välj rum</b><span>Ta en bild med telefonen, eller börja i ett exempelrum.</span></li><li><b>Peka ut</b><span>Välj upp till fem saker och visa var de ska stå.</span></li><li><b>Skapa bilden</b><span>Se rummet med sakerna på plats och handla allt med en knapp.</span></li></ol>
+            <div class="ctrl-row" style="margin-top:2rem"><button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup="#mitt-rum">Lägg in ditt rum</button></div>
+            <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
+          </div>
+          <figure class="rh-fig bav" style="--ba:31%"><div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w, assets/img/rum/sovrum-fore-2016.webp 2016w, assets/img/rum/sovrum-fore-2688.webp 2688w" sizes="(max-width: 900px) 100vw, 60vw" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async" width="1344" height="752"><div class="ba-after"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w, assets/img/rum/sovrum-efter-2016.webp 2016w, assets/img/rum/sovrum-efter-2688.webp 2688w" sizes="(max-width: 900px) 100vw, 60vw" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async" width="1344" height="752"><span class="rh-tag l" style="left:86%;top:47%"><i></i><span><b>Lysa keramiklampa</b> 1&nbsp;290 kr</span></span><span class="rh-tag" style="left:44%;top:57%"><i></i><span><b>Pläd ullblandning havre</b> 799 kr</span></span><span class="rh-tag l" style="left:75%;top:74%"><i></i><span><b>Flätad förvaringskorg</b> 379 kr</span></span></div>
+      <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
+      <input class="ba-range" type="range" min="0" max="100" value="31" aria-label="Jämför rummet före och efter. Dra åt vänster för att visa fler produkter."></div>
+      <figcaption class="rh-card"><span><b>Hela rummet</b><span>3 produkter · 2&nbsp;468&nbsp;kr</span></span><a class="btn sm" href="butik/">Till butiken</a></figcaption></figure>
+        </div>
+      </section>
 
       <section class="hrooms" aria-label="Handla efter rum"><div class="wrap hrooms-in">
         <a class="hroom" href="rum-vardagsrum/"><span class="hroom-im"><img src="assets/img/rum/vardagsrum-600.webp" srcset="assets/img/rum/vardagsrum-600.webp 600w, assets/img/rum/vardagsrum-900.webp 900w, assets/img/rum/vardagsrum-1600.webp 1600w, assets/img/rum/vardagsrum-2400.webp 2400w, assets/img/rum/vardagsrum-3200.webp 3200w" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Vardagsrum</span></a><a class="hroom" href="rum-sovrum/"><span class="hroom-im"><img src="assets/img/rum/sovrum-600.webp" srcset="assets/img/rum/sovrum-600.webp 600w, assets/img/rum/sovrum-900.webp 900w, assets/img/rum/sovrum-1600.webp 1600w, assets/img/rum/sovrum-2400.webp 2400w, assets/img/rum/sovrum-3200.webp 3200w" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Sovrum</span></a><a class="hroom" href="rum-kok/"><span class="hroom-im"><img src="assets/img/rum/kok-600.webp" srcset="assets/img/rum/kok-600.webp 600w, assets/img/rum/kok-900.webp 900w, assets/img/rum/kok-1600.webp 1600w, assets/img/rum/kok-2400.webp 2400w, assets/img/rum/kok-3200.webp 3200w" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Kök</span></a><a class="hroom" href="rum-badrum/"><span class="hroom-im"><img src="assets/img/rum/badrum-600.webp" srcset="assets/img/rum/badrum-600.webp 600w, assets/img/rum/badrum-900.webp 900w, assets/img/rum/badrum-1600.webp 1600w, assets/img/rum/badrum-2400.webp 2400w, assets/img/rum/badrum-3200.webp 3200w" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Badrum</span></a><a class="hroom" href="rum-hall/"><span class="hroom-im"><img src="assets/img/rum/hall-600.webp" srcset="assets/img/rum/hall-600.webp 600w, assets/img/rum/hall-900.webp 900w, assets/img/rum/hall-1600.webp 1600w, assets/img/rum/hall-2400.webp 2400w, assets/img/rum/hall-3200.webp 3200w" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Hall</span></a><a class="hroom" href="rum-hemmakontor/"><span class="hroom-im"><img src="assets/img/rum/hemmakontor-600.webp" srcset="assets/img/rum/hemmakontor-600.webp 600w, assets/img/rum/hemmakontor-900.webp 900w, assets/img/rum/hemmakontor-1600.webp 1600w, assets/img/rum/hemmakontor-2400.webp 2400w, assets/img/rum/hemmakontor-3200.webp 3200w" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Hemmakontor</span></a><a class="hroom" href="rum-uteliv/"><span class="hroom-im"><img src="assets/img/rum/uteliv-600.webp" srcset="assets/img/rum/uteliv-600.webp 600w, assets/img/rum/uteliv-900.webp 900w, assets/img/rum/uteliv-1600.webp 1600w, assets/img/rum/uteliv-2400.webp 2400w, assets/img/rum/uteliv-3200.webp 3200w" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>Uteliv</span></a>
@@ -236,22 +253,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     </div></div>
         </div></section>
 
-      <section class="sec roomhero" id="ditt-rum">
-        <div class="wrap rh">
-          <div class="rh-copy">
-            <span class="eyebrow rh-promise">Se ditt hem innan du köper.</span>
-            <h2 class="display">Prova produkterna i ditt rum.</h2>
-            <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Peka ut var sakerna ska stå och se bilden med dem på plats. Sedan handlar du allt med en knapp.</p>
-            <ol class="rh-steps"><li><b>Välj rum</b><span>Ta en bild med telefonen, eller börja i ett exempelrum.</span></li><li><b>Peka ut</b><span>Välj upp till fem saker och visa var de ska stå.</span></li><li><b>Skapa bilden</b><span>Se rummet med sakerna på plats och handla allt med en knapp.</span></li></ol>
-            <div class="ctrl-row" style="margin-top:2rem"><button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup="#mitt-rum">Lägg in ditt rum</button></div>
-            <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
-          </div>
-          <figure class="rh-fig bav" style="--ba:31%"><div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w, assets/img/rum/sovrum-fore-2016.webp 2016w, assets/img/rum/sovrum-fore-2688.webp 2688w" sizes="(max-width: 900px) 100vw, 60vw" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async" width="1344" height="752"><div class="ba-after"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w, assets/img/rum/sovrum-efter-2016.webp 2016w, assets/img/rum/sovrum-efter-2688.webp 2688w" sizes="(max-width: 900px) 100vw, 60vw" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async" width="1344" height="752"><span class="rh-tag l" style="left:86%;top:47%"><i></i><span><b>Lysa keramiklampa</b> 1&nbsp;290 kr</span></span><span class="rh-tag" style="left:44%;top:57%"><i></i><span><b>Pläd ullblandning havre</b> 799 kr</span></span><span class="rh-tag l" style="left:75%;top:74%"><i></i><span><b>Flätad förvaringskorg</b> 379 kr</span></span></div>
-      <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
-      <input class="ba-range" type="range" min="0" max="100" value="31" aria-label="Jämför rummet före och efter. Dra åt vänster för att visa fler produkter."></div>
-      <figcaption class="rh-card"><span><b>Hela rummet</b><span>3 produkter · 2&nbsp;468&nbsp;kr</span></span><a class="btn sm" href="butik/">Till butiken</a></figcaption></figure>
-        </div>
-      </section>
 
 
       <section class="sec looks-sec" id="looks-hem">
@@ -282,7 +283,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
       <section class="sec why" id="varfor" aria-labelledby="whyH"><div class="wrap">
         <div class="sec-head"><h2 class="h2" id="whyH">Därför RumIQ</h2><p>En ny butik ska vara lätt att lita på. Det här kan du räkna med.</p></div>
-        <ul class="why-grid"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><b>Se det hemma först</b><span>Peka ut var produkterna ska stå i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><b>Målet: hemma om 2–5 arbetsdagar</b><span>Lager i EU. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 4v4h4"></path></svg><b>30 dagars öppet köp</b><span>Ångra med en knapp på sajten. Returen skickas till en adress i Sverige.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><b>Du är med och väljer</b><span>Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in.</span></li></ul>
+        <ul class="why-grid"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg><b>Ärligt, hela vägen</b><span>Vi säger vad som är exempel och vad som är gjort med AI, och du ser hela summan innan du betalar.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><b>Målet: hemma om 2–5 arbetsdagar</b><span>Lager i EU. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 4v4h4"></path></svg><b>30 dagars öppet köp</b><span>Ångra med en knapp på sajten. Returen skickas till en adress i Sverige.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><b>Du är med och väljer</b><span>Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in.</span></li></ul>
         <p class="why-foot">Frågor? Skriv till <a href="mailto:support@rumiq.se">support@rumiq.se</a>, eller läs mer <a href="om/">om oss</a> och <a href="sa-fungerar-det/">hur det fungerar</a>.</p>
       </div></section>
 
@@ -312,7 +313,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
   <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
   <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
-  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Mitt hem<span class="badge" data-count="wish"></span></a>
   <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
 </nav>
 
@@ -334,7 +335,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=cc256592"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=ab57be54"; window.RQ_HEADS_SRC = "assets/heads.json?v=025f9282";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=cc256592"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=ab57be54"; window.RQ_HEADS_SRC = "assets/heads.json?v=308bc9ee";</script>
 <script src="assets/js/i18n.min.js?v=7ac14a2a"></script>
 <script src="assets/js/site.min.js?v=0fc8a0ff"></script>
 </body>

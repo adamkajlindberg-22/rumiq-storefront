@@ -77,7 +77,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <button type="button" role="menuitemradio" data-light-set="kvall" aria-checked="false"><span>Kväll<small>Mörkt och varmt hela tiden</small></span></button>
         </div></div>
       <a class="iconbtn" id="accLink" href="konto/" aria-label="Logga in"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></a>
-      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
+      <a class="iconbtn wishlink" href="mitt-hem/" aria-label="Mitt hem"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span class="badge" data-count="wish"></span></a>
       <button class="iconbtn" type="button" data-open-cart aria-label="Varukorg"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="badge" data-count="cart"></span></button>
       <button class="iconbtn burger" id="burger" type="button" aria-label="Meny" aria-controls="mnav" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16"/></svg></button>
     </div>
@@ -90,7 +90,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <h4>Butik</h4><a href="butik/">Alla produkter</a>
   <div class="mnav-grid"><a href="kategori-belysning-atmosfar/">Belysning</a><a href="kategori-hem-inredning/">Hem & inredning</a><a href="kategori-sovrum-komfort/">Sovrum & komfort</a><a href="kategori-kok-matplats/">Kök & matplats</a><a href="kategori-forvaring-organisering/">Förvaring</a><a href="kategori-tavlor-vaggar/">Tavlor & väggar</a><a href="kategori-badrum-valmaende/">Badrum & välmående</a><a href="kategori-uteliv/">Uteliv</a><a href="rum/">Handla efter rum</a><a href="presentkort/">Presentkort</a></div>
   <h4>Upptäck</h4><a href="looks/">Looks</a><a href="for-dig/">För dig</a><a href="svep/">Svep</a><a href="hitta-ratt/">Hitta rätt</a><a href="onska/">Önska</a><a href="magasin/">Magasin</a>
-  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Sparat</a><a href="varukorg/" data-open-cart>Varukorg<span class="badge" data-count="cart"></span></a><a href="studio-plus/">Studio Plus</a>
+  <h4>Ditt hem</h4><a href="mitt-rum/">Mitt rum</a><a href="mitt-hem/">Mitt hem</a><a href="varukorg/" data-open-cart>Varukorg<span class="badge" data-count="cart"></span></a><a href="studio-plus/">Studio Plus</a>
   <h4>Konto och hjälp</h4>
   <div class="mnav-grid"><a href="konto/">Logga in</a><a href="skapa-konto/">Skapa konto</a><a href="spara-order/">Spåra min beställning</a><a href="frakt/">Frakt & leverans</a><a href="returer/">Returer</a><a href="faq/">Vanliga frågor</a><a href="kontakt/">Kontakt</a></div>
 </nav>
@@ -102,7 +102,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <div class="sv-head"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="upptack/">Upptäck</a></li><li><a href="svep/">Svep</a></li><li><span aria-current="page">Hemmakontor</span></li></ol></nav><h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           <nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="svep/">Hela butiken</a><a class="chip" href="svep-rum-vardagsrum/">Vardagsrum</a><a class="chip" href="svep-rum-sovrum/">Sovrum</a><a class="chip" href="svep-rum-kok/">Kök</a><a class="chip" href="svep-rum-badrum/">Badrum</a><a class="chip" href="svep-rum-hall/">Hall</a><a class="chip" href="svep-rum-hemmakontor/" aria-current="true">Hemmakontor</a><a class="chip" href="svep-rum-uteliv/">Uteliv</a></nav>
           <ul class="sv-legend">
-      <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar under Sparat och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar i Mitt hem och lär oss din stil.</span></div></li>
       <li><kbd aria-hidden="true">←</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></i><div><b>Hoppa över</b><span><em class="sv-tc">Svep åt vänster. </em>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></i><div><b>Lägg i varukorgen</b><span><em class="sv-tc">Svep uppåt. </em>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg></i><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
@@ -169,7 +169,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
   <a href="upptack/" data-dock="upptack"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Upptäck</a>
   <a href="butik/" data-dock="butik"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>Butik</a>
   <a href="mitt-rum/" data-dock="mitt" class="dock-room"><span class="dr-img" data-room-thumb data-empty="<svg viewBox=&quot;0 0 24 24&quot;><path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/><path d=&quot;M9 20v-5.5h6V20&quot;/></svg>"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/></svg></span>Mitt rum<span class="badge" data-count="scene"></span></a>
-  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sparat<span class="badge" data-count="wish"></span></a>
+  <a href="mitt-hem/" data-dock="sparat"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Mitt hem<span class="badge" data-count="wish"></span></a>
   <button type="button" data-open-cart><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Varukorg<span class="badge" data-count="cart"></span></button>
 </nav>
 
@@ -191,7 +191,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=cc256592"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=ab57be54"; window.RQ_HEADS_SRC = "assets/heads.json?v=025f9282";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=cc256592"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=ab57be54"; window.RQ_HEADS_SRC = "assets/heads.json?v=308bc9ee";</script>
 <script src="assets/js/i18n.min.js?v=7ac14a2a"></script>
 <script src="assets/js/site.min.js?v=0fc8a0ff"></script>
 </body>
