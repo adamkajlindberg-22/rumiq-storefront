@@ -122,6 +122,13 @@
     return { type: t, style: st, budget: budget || null, items: picked.map((p) => ({ h: p.handle, v: 0 })), left: left.map((p) => p.handle), total, fullTotal, min, colours };
   };
   const roomWord = (t) => typeName(t).toLowerCase();
+  /* only what fits the room (device2 A7): the editor says what has a place in a room of that type (RQ.room.fits, room.js);
+     what does not is left out of the set and the total, and named on the card */
+  const fitted = (pr) => { const F = RQ.room && RQ.room.fits; let ok = null;
+    if (typeof F === "function" && pr.items.length) { try { const r = F(pr.items, pr.type); ok = Array.isArray(r) ? r : r && (r.items || r.fit) ? r.items || r.fit : r && (r.out || r.left) ? pr.items.filter((it) => !(r.out || r.left).some((x) => (x.h || x) === it.h)) : null; } catch (e) { ok = null; } }
+    if (!ok) return { ...pr, out: [] };
+    const keep = new Set(ok.map((x) => x.h || x)), items = pr.items.filter((it) => keep.has(it.h)), out = pr.items.filter((it) => !keep.has(it.h)).map((it) => it.h);
+    return { ...pr, items, out, total: items.reduce((a, it) => a + vPrice(it), 0) }; };
   H.title = (pr) => `Ditt ${roomWord(pr.type)}${pr.style ? ` i ${(RQ.STYLES[pr.style].name.split(" ")[0]).toLowerCase()} stil` : ""}`;
   const PROMISE = "Se ditt hem innan du köper.";
   H.PROMISE = PROMISE;
@@ -130,7 +137,7 @@
   const cardState = new Map(); let seq = 0;
   H.slot = (spec) => { const id = "hp" + ++seq; cardState.set(id, { ...spec, budget: spec.budget || null }); return `<div class="hem-prop" data-hem-prop="${id}">${cardInner(id)}</div>`; };
   const cardInner = (id) => {
-    const s = cardState.get(id), pr = H.propose(s); s.pr = pr;
+    const s = cardState.get(id), pr = fitted(H.propose(s)); s.pr = pr;
     const its = pr.items.map((it) => RQ.byHandle(it.h)), room = s.room ? H.room(s.room) : null;
     const types = ["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor"];
     const budgetHtml = `<label class="hem-budget"><span>Budget <b>${kr(s.budget || pr.fullTotal)}</b></span><input type="range" data-hem-budget min="${Math.max(100, Math.floor(pr.min / 100) * 100)}" max="${Math.ceil(pr.fullTotal / 100) * 100}" step="100" value="${s.budget || Math.ceil(pr.fullTotal / 100) * 100}" aria-label="Budget i kronor" aria-valuetext="${esc(kr(s.budget || pr.fullTotal))}"></label>`;
@@ -140,6 +147,7 @@
       ${pr.colours.length ? `<div class="hem-cols" role="img" aria-label="Färgerna i förslaget">${pr.colours.map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</div>` : ""}
       ${s.compact ? `<div class="hem-prop-row${s.all ? " open" : ""}"><span class="hem-prop-thumbs" aria-hidden="true">${its.slice(0, 2).map((p) => `<img src="${RQ.cut(p)}" alt="">`).join("")}${its.length > 2 ? `<i>+${its.length - 2}</i>` : ""}</span><b>${kr(pr.total)}</b>${its.length > 3 ? `<button class="tlink" type="button" data-hem-all aria-expanded="${!!s.all}">${s.all ? "Visa färre" : `Visa alla ${its.length}`}</button>` : ""}</div>` : ""}
       <ul class="hem-prop-items${s.compact ? " compact" : ""}${s.all ? " open" : ""}">${its.map((p) => `<li data-h="${p.handle}">${s.compact ? `<span class="hem-prop-im"><img src="${RQ.cut(p)}" alt=""></span>` : `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button>`}<span>${esc(p.name)}</span><b>${kr(p.price)}</b></li>`).join("")}</ul>
+      ${pr.out.length ? `<p class="small hem-left">${pr.out.length === 1 ? "1 sak får" : `${pr.out.length} saker får`} inte plats i rummet och är inte med: ${pr.out.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
       ${pr.left.length ? `<p class="small hem-left">Budgeten räcker till ${its.length} av ${its.length + pr.left.length}. Kvar: ${pr.left.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
       ${s.compact ? "" : budgetHtml}
       <div class="hem-prop-sum"><span>${its.length} ${its.length === 1 ? "produkt" : "produkter"}</span><b>${kr(pr.total)}</b></div>
