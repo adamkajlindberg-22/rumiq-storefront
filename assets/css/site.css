@@ -3046,3 +3046,9 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .mb-add-it[aria-pressed=true]{border-color:var(--accent)}
 .mb-notef{display:grid;gap:.3rem;font-weight:500;font-size:.94rem}
 @media (prefers-reduced-motion:reduce){.hem-card-im img{transition:none}}
+/* studio2 review minor 11: the room's own buttons are a full 44 px to tap */
+.rm-hold,.rm-zoom,.rm-undo{height:2.75rem}
+.rm-more .chip{min-height:2.75rem;display:inline-flex;align-items:center}
+.rm-bar #rmCart2{min-height:2.75rem}
+.buybar.rm-bar{padding-top:.58rem;padding-bottom:calc(.58rem + env(safe-area-inset-bottom))} /* the taller button, the same bar */
+.kalk .sec-row > .link{display:inline-flex;align-items:center;min-height:2.75rem}

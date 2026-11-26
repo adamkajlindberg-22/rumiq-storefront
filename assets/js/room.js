@@ -973,7 +973,8 @@
         /* a phone shows the group of things that just landed: as tall as possible, wide enough for all of them, and never so
            small that one of them is under 44 px to tap */
         const fitGroup = (list) => { if (!view.on || !list.length) return; const ar = room.w / room.h, lo = Math.min(...list.map((it) => it.x - it.w / 2)), hi = Math.max(...list.map((it) => it.x + it.w / 2));
-          const gw = clamp((hi - lo + 10) / 100, 0.2, 1); // (a tiny thing keeps a 44 px tap area of its own, site.css)
+          // (a tiny thing keeps a 44 px tap area of its own, site.css); your own photo is never shown closer than half its width, so you see your room around the things (studio2 review polish 7)
+          const gw = clamp((hi - lo + 10) / 100, mapOf() ? 0.2 : 0.5, 1);
           view.fit = view.sw / (gw * ar); view.whole = false; stage.classList.add("resize"); layout(true);
           const c = centre(list); view.tx = view.sw / 2 - c[0] / 100 * view.cw; view.ty = 0; paintView(true); setTimeout(() => stage.classList.remove("resize"), 450); };
         const centre = (list) => { if (!list.length) return [50, 50]; const xs = list.map((it) => it.x), ys = list.map((it) => it.y - (it.w * meta(RQ.byHandle(it.h))[2] * (it.sy || 1) * room.w / room.h) / 2); return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2]; };
