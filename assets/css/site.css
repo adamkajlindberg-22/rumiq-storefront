@@ -52,11 +52,14 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1.0
 img,svg,video,canvas{display:block;max-width:100%}
 a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
 i{font-style:normal} /* <i> only holds icons and small marks here; without this the browser fetches the italic font for them */
-button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button,input,select,textarea{font:inherit;font-feature-settings:inherit;font-variant-numeric:inherit;color:inherit;letter-spacing:inherit} /* the same digits in a field as in the text (Safari's own field style must not win, p3) */
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 /* the ring is two-tone: a band of the page colour under the accent line, so it shows on photos and dark surfaces too */
 :focus-visible:not([tabindex="-1"]){box-shadow:0 0 0 3px var(--bg)}
+/* Safari before 16.4 draws an outline as a square box round a round button: there the ring is a shadow that follows the
+   corners, the same two tones (lh came in the same Safari; browsers with rounded outlines but no lh get the same look) */
+@supports not (width:1lh){:focus-visible:not([tabindex="-1"]){outline-color:transparent;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent)}}
 ::selection{background:var(--glow);color:#22252A}
 .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .noscript{position:fixed;z-index:60;top:calc(var(--nav-h) + .6rem);left:50%;transform:translateX(-50%);width:max-content;max-width:min(92vw,36rem);margin:0;padding:.7rem 1.1rem;border-radius:12px;background:#2B2C2A;color:#F7F7F4;font-size:.92rem;line-height:1.4;box-shadow:0 8px 30px rgba(0,0,0,.18)}
@@ -605,6 +608,7 @@ textarea{padding-block:.85rem}
 input::placeholder,textarea::placeholder{color:var(--muted)}
 input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 2px var(--bg)}
+@supports not (width:1lh){input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}}
 .status{font-size:.92rem;color:var(--accent);min-height:1.2em}
 .err{color:var(--danger)}
 .check{display:flex;gap:.7rem;align-items:flex-start;color:var(--ink2);font-size:.96rem;font-weight:400}
@@ -853,6 +857,7 @@ details.pw[open] summary::after{content:" −"}
 .switch input:checked + span{background:var(--accent)}
 .switch input:checked + span::after{transform:translateX(1.1rem)}
 .switch input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+@supports not (width:1lh){.switch input:focus-visible + span{outline-color:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}}
 .listtabs{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1.6rem}
 .listhead{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.4rem}
 
@@ -2882,6 +2887,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--danger)}
 input[aria-invalid=true]:focus{border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 22%,transparent)}
 input[aria-invalid=true]:focus-visible{outline-color:var(--danger);box-shadow:0 0 0 2px var(--bg)}
+@supports not (width:1lh){input[aria-invalid=true]:focus-visible{outline-color:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--danger)}}
 input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-offset:2px}
 .status.err{color:var(--danger)}
 .crumb-btn{border:0;background:none;padding:0;font:inherit;color:var(--muted);text-decoration:underline;text-underline-offset:.2em;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
