@@ -118,7 +118,8 @@
   /* does the product belong in the customer's room? (a room of unknown type takes everything; a cutting board never lands on the living-room table) */
   RQ.suits = (p) => { const r = RQ.room && RQ.room.get(), t = r && r.type; return !t || p.rooms.includes(t); };
   // a card is the product, always its own photo (the founder's decision: the room lives in Mitt rum, not on the cards)
-  RQ.card = (p, first) => {
+  // why (svep2): a short true reason under the name, from RQ.why (svep.js), on lists made for you
+  RQ.card = (p, first, why) => {
     const R = RQ.room;
     const print = RQ.isPrint && RQ.isPrint(p);
     const photo = print ? `<img class="fade cutph" src="${RQ.cut(p)}" alt="${esc(p.name)}" ${first ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="461" height="600">`
@@ -133,10 +134,10 @@
       <button class="qv" type="button" data-sheet="${p.handle}" tabindex="-1" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
-      <p class="sub">${swatches(p)}</p>
+      <p class="sub">${swatches(p)}</p>${why ? `<p class="card-why">${esc(why)}</p>` : ""}
     </article>`;
   };
-  RQ.grid = (list, cls = "", top = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
+  RQ.grid = (list, cls = "", top = false, why = null) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "", why ? why(p) : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
   const crumbs = (items) => `<nav aria-label="Brödsmulor"><ol class="crumbs">${items.map(([t, h], i) => `<li>${h ? `<a href="#${h}">${esc(t)}</a>` : i === items.length - 1 ? `<span aria-current="page">${esc(t)}</span>` : esc(t)}</li>`).join("")}</ol></nav>`;
   RQ.crumbs = crumbs;
   const head = (kicker, title, lead, extra = "") => `<header class="page-head wrap">${kicker}<h1 class="h1">${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ""}${extra}</header>`;
@@ -192,7 +193,7 @@
     /* how many products a choice would show, given the other groups' choices (the counts follow the filters) */
     const countOf = (k, id) => all.filter((p) => passBut(p, k) && has[k](p, id)).length;
     const listFor = (srt) => {
-      const l = srt === "dig" && RQ.taste ? RQ.taste.sort(base()) : base(srt);
+      const l = srt === "dig" && RQ.taste ? (RQ.why ? RQ.why.forYou(base()) : RQ.taste.sort(base())) : base(srt); // svep2: new first, then liked, what you said no to last
       return l.filter(pass);
     };
     const nActive = () => FKEYS.reduce((n, k) => n + st[k].length, 0);
@@ -216,7 +217,7 @@
       return `${more.length ? `<div class="list-more"><h2 class="h3">Mer som passar</h2>${RQ.grid(more, "three")}</div>` : ""}
         <div class="list-end"><p>${list.length === all.length ? `Du har sett alla ${nProd(list.length)}.` : `Du har sett ${list.length} av ${nProd(all.length)}.`}</p><span class="chips"><a class="chip" href="#looks">Looks</a><a class="chip" href="#hitta-ratt">Hitta rätt</a></span></div>`;
     };
-    const results = (list) => (list.length ? RQ.grid(list, "three", true) : "") + tail(list);
+    const results = (list) => (list.length ? RQ.grid(list, "three", true, st.sort === "dig" && RQ.why ? RQ.why.shop() : null) : "") + tail(list);
     const first = listFor(st.sort);
     return {
       html: `${head(crumbs(trail), esc(title), lead, banner ? `<div class="banner-img reveal"><img src="${banner}" srcset="${RQ.srcset(banner)}" sizes="(min-width: 1400px) 1320px, 94vw" alt="" loading="eager" decoding="async" width="1600" height="893"></div>` : "").replace('class="page-head wrap"', 'class="page-head wrap shop-head"')}
@@ -370,7 +371,7 @@
     const isLamp = LAMPS.includes(p.handle);
     const ld = { "@context": "https://schema.org", "@type": "Product", name: p.name, description: p.short, image: new URL(RQ.img(p, 900), document.baseURI).href, category: c.name, brand: { "@type": "Brand", name: "RumIQ" },
       offers: { "@type": "Offer", priceCurrency: "SEK", price: p.price, availability: "https://schema.org/PreOrder" } };
-    const look = [p, ...pairs.slice(0, 3)];
+    const look = [p, ...pairs.slice(0, 3)], pairUsed = new Set();
     const shown = gal.filter((g) => g.k !== "off");
     /* the way into Studio, on the first screen next to the price: Mitt rum opens with the product in it (in your room, or
        on the page that lets you pick a sample room or your own photo when you have none yet) */
@@ -430,9 +431,9 @@
         </section>
 
         ${pairs.length ? `<section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ihop</h2><p>Bocka ur det du inte vill ha. Du kan ändra antal i varukorgen.</p></div><a class="link" href="#mitt-rum-${p.handle}">Bygg en look i ditt rum</a></div>
-          <div class="look"><div class="look-items">${look.map((x, i) => `<label class="look-item"><input type="checkbox" data-look="${x.handle}" checked><img${RQ.isPrint(x) ? ' class="cutph"' : ""} src="${RQ.thumb(x)}" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">${i === 0 ? "Den här: " : ""}${esc(x.name)}</span><span class="pr">${kr(x.price)}</span></label>`).join("")}</div>
+          <div class="look"><div class="look-items">${look.map((x, i) => `<label class="look-item"><input type="checkbox" data-look="${x.handle}" checked><img${RQ.isPrint(x) ? ' class="cutph"' : ""} src="${RQ.thumb(x)}" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">${i === 0 ? "Den här: " : ""}${esc(x.name)}</span><span class="pr">${kr(x.price)}</span>${i && RQ.why && !RQ.why.rejected(x.handle) ? `<span class="why">${esc(RQ.why.of(x, { mine: false, used: pairUsed }) || `Samma stil: ${RQ.STYLES[x.styles.find((st) => p.styles.includes(st))].name}`)}</span>` : ""}</label>`).join("")}</div>
           <div class="look-sum"><div class="sum total"><span>Totalt</span><span id="lookTotal">${kr(look.reduce((s, x) => s + x.price, 0))}</span></div><button class="btn block" type="button" id="lookAdd">Lägg ${look.length} produkter i varukorgen</button></div></div></div></section>` : ""}
-        ${related.length ? `<section class="sec tight"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Liknande produkter</h2></div><a class="link" href="#kategori-${c.id}">Visa alla</a></div>${RQ.grid(related.slice(0, 4))}</div></section>` : ""}
+        ${related.length ? `<section class="sec tight"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Liknande produkter</h2></div><a class="link" href="#kategori-${c.id}">Visa alla</a></div>${RQ.grid(related.slice(0, 4), "", false, RQ.why ? RQ.why.shop() : null)}</div></section>` : ""}
         ${seen.length ? `<section class="sec tight" style="padding-top:0"><div class="wrap"><div class="sec-head"><h2 class="h3">Du har tittat på</h2></div>${RQ.grid(seen)}</div></section>` : ""}
         <div class="buybar" id="buybar"><div class="bb-p"><img${PRINT(p) ? ' class="cutph"' : ""} src="${RQ.thumb(p)}" alt="" width="600" height="750" decoding="async"><div class="bb-t"><b>${esc(p.name)}</b><span>${kr(p.price)}<span id="bbVar"></span></span></div></div><button class="btn sm" type="button" id="add2">Lägg i varukorgen</button></div>
         <script type="application/ld+json">${JSON.stringify(ld)}</script>`,
