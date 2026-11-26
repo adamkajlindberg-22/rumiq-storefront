@@ -6,6 +6,7 @@ without dragging, names and headings, and an axe-core pass (if axe-core is insta
 import http.server, os, re, socketserver, sys, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+import sys as _s, os as _o; _s.path.insert(0, _o.path.dirname(_o.path.abspath(__file__))); import _edit_way  # noqa: E402,F401  the editor tests start in Justera själv
 
 ROOT = Path(__file__).resolve().parent.parent
 AXE = Path(os.environ.get("AXE", "/home/claude/axe/node_modules/axe-core/axe.min.js"))
