@@ -371,15 +371,32 @@
       list[i] = n; R._swapped = { from: h, to: q.handle }; return R.saveScene(list); },
     /* a colour other than the one the picture shows: the cut-out takes the colour's tone (approximate, and said so) */
     tint: (it) => { const p = RQ.byHandle(it.h); return it.v > 0 && p && (p.variants || [])[it.v] ? p.tone[it.v] || null : null; },
-    /* a ready set from the range for this room: style and budget (Inred åt mig). Uses the same proposal as Mitt hem when it is there */
+    /* a ready set from the range for this room: style and budget (Inred åt mig). Uses the same proposal as Mitt hem when it is there.
+       Honest by construction (studio2 review M2, M3): the set is first made whole for the room and the style (strictly in the
+       style), without what already stands there (not part of a set) and without table things that have no free table here
+       (noRoom: never on the open floor). That whole set is "Hela rummet", and its size is the one number "X av N" counts
+       against at every budget; a budget then takes what fits, in the set's order, skipping what is too dear. */
     suggestSet({ style = null, budget = null, avoid = [] } = {}) {
-      const t = (room && room.type) || "vardagsrum", have = new Set(R.scene().filter((it) => !it.sg).map((it) => it.h));
-      const pr = RQ.hem && RQ.hem.propose ? RQ.hem.propose({ type: t, style, budget, avoid: [...avoid, ...have] }) : null;
-      if (pr) { const off = style ? pr.items.filter((it) => !RQ.byHandle(it.h).styles.includes(style)).map((it) => it.h) : []; // a style is kept to: what is not in it is left out
-        const items = pr.items.filter((it) => !have.has(it.h) && !off.includes(it.h)); return { items, left: pr.left, total: items.reduce((s, it) => s + RQ.byHandle(it.h).price, 0), fullTotal: pr.fullTotal, min: pr.min, style: pr.style }; }
-      const ps = R.suggest(4).filter((q) => !avoid.includes(q.handle) && (!style || q.styles.includes(style))); let sum = 0; const items = [], left = [];
-      ps.forEach((q) => { if (!budget || sum + q.price <= budget) { items.push({ h: q.handle, v: 0 }); sum += q.price; } else left.push(q.handle); });
-      return { items, left, total: sum, fullTotal: ps.reduce((s, q) => s + q.price, 0), min: ps.length ? Math.min(...ps.map((q) => q.price)) : 0, style }; },
+      const t = (room && room.type) || "vardagsrum", base = R.scene().filter((it) => !it.sg), have = new Set(base.map((it) => it.h));
+      const ok = (q) => q && !have.has(q.handle) && (!style || q.styles.includes(style));
+      let cand = [];
+      const pr = RQ.hem && RQ.hem.propose ? RQ.hem.propose({ type: t, style, avoid: [...avoid, ...have] }) : null;
+      if (pr) cand = pr.items.map((it) => RQ.byHandle(it.h)).filter(ok);
+      else cand = R.suggest(6).filter(ok);
+      // a style with few things for this room: more of the same style that belongs in the room, up to six
+      if (cand.length < 6) RQ.PRODUCTS.filter((q) => ok(q) && q.rooms.includes(t) && !cand.includes(q) && !avoid.includes(q.handle)).sort((a, b) => a.price - b.price)
+        .forEach((q) => { if (cand.length < 6 && cand.filter((c) => c.cat === q.cat).length < 2) cand.push(q); });
+      if (!cand.length && avoid.length) return R.suggestSet({ style, budget }); // every other set has been shown: start over
+      // where each would stand, in order: a table thing with no table free is left out (said, not put on the floor)
+      const sim = base.map((it) => ({ ...it })), fit = [], noRoom = [];
+      cand.forEach((q) => { const sp = spotFor(q, sim, false, null, null, true), k = kindOf(q);
+        if (sp.moved === "floor" && k !== "floor" && k !== "rug") { noRoom.push(q.handle); return; }
+        sim.push({ h: q.handle, x: sp.x, y: sp.y, w: sp.w, ...(sp.moved ? { on: sp.moved } : {}) }); fit.push(q); });
+      const items = [], left = []; let sum = 0;
+      fit.forEach((q) => { if (!budget || sum + q.price <= budget) { items.push({ h: q.handle, v: 0 }); sum += q.price; } else left.push(q.handle); });
+      return { items, left, noRoom, total: sum, fullTotal: fit.reduce((s, q) => s + q.price, 0), min: fit.length ? Math.min(...fit.map((q) => q.price)) : 0, count: fit.length, style: RQ.STYLES[style] ? style : null }; },
+    /* a table thing that ended up on the open floor because no table had room (a sample room's last resort) */
+    homeless: (it) => { const q = RQ.byHandle(it.h); return !!(q && it.on === "floor" && !["floor", "rug"].includes(kindOf(q))); },
     ordered() { return orderOf(R.scene()); },
     /* a sample room with these things placed in it, the way Mitt rum would place them: for the look pictures.
        layer = the things, to lie over the photo (in % of the photo); spots = where each one stands, for its dot */
@@ -649,26 +666,44 @@
      - a project whose saved scene belongs to this photo gets that scene back exactly; otherwise the things are placed
        by the editor's rules (mapped spots in a sample room, the tidy floor row in an own photo; never in mid-air);
      - swap: open with Byt on that thing (from the AI picture: "Prova en annan färg", "Byt produkt").
+     - room null and no project: the room you have, but a sample room where most of the things do not belong is swapped for
+       the sample room they do belong in (a moodboard of bathroom things opens the bathroom);
+     - own with a room (or a project's type): your photo gets that kind of room, so the editor does not ask again; the style
+       goes to Inred åt mig;
+     - the things are placed as a proposal (Inred åt mig replaces them); a table thing with no free table is left out, and
+       RQ.room.leftOut() names what was left out (the editor says it too).
      Resolves true when Mitt rum is open with the things in it (false when it waits for the sheet or sign-in). */
   const projOf = (id) => (id && RQ.hem && RQ.hem.room ? RQ.hem.room(id) : null);
   const keyNow = () => (RQ.ai && RQ.ai.projectKey ? RQ.ai.projectKey() : room && room.at);
   const putIn = (items, pr) => R.group(() => {
     const mine = pr && ((pr.pkey && pr.pkey === keyNow()) || (room && room.sample && pr.sceneMap && pr.sceneMap === room.map)); // the room's own photo, or the same sample room
     const keep = mine && Array.isArray(pr.scene) ? pr.scene.filter((it) => it && RQ.byHandle(it.h) && isFinite(it.x) && isFinite(it.y) && it.w > 0) : null;
-    if (keep && keep.length) { R.saveScene(keep); return keep.length; }
-    R.saveScene([]); return items.filter((it) => R.add(it.h, true, it.v || 0)).length; });
+    if (keep && keep.length) { R.saveScene(keep); R._leftOut = []; return keep.length; }
+    // a set handed over (Svep, a proposal, a moodboard) is a proposal: Inred åt mig replaces it instead of stacking a second one.
+    // The editor's surface rules hold for all of it: a table thing with no free table is left out and said, never put on the open floor
+    R.saveScene([]); items.forEach((it) => R.add(it.h, true, it.v || 0));
+    const list = R.scene(), out = list.filter((it) => R.homeless(it)).map((it) => it.h); R._leftOut = out;
+    R.saveScene(list.filter((it) => !out.includes(it.h)).map((it) => ({ ...it, sg: true }))); return list.length - out.length; });
+  /* the sample room whose kind of room most of these things belong to (a moodboard of bathroom things: the bathroom) */
+  const roomFor = (its) => { const n = {}; its.forEach((it) => { const q = RQ.byHandle(it.h); (q ? q.rooms : []).forEach((r, i) => { n[r] = (n[r] || 0) + (i ? 1 : 2); }); });
+    return RQ.SAMPLE_ROOMS.filter((x) => n[x.id]).sort((a, b) => n[b.id] - n[a.id])[0] || null; };
   const goRoom = (swap) => { if (swap) RQ.ss.set("rumiq-room-swap", swap); const here = (RQ.currentRoute && RQ.currentRoute()) || ""; if (here === "mitt-rum") { RQ.router(); scrollTo(0, 0); } else if (RQ.go) RQ.go("mitt-rum"); else location.hash = "#mitt-rum"; };
   R.openWith = async ({ room: type = null, own = false, items = [], style = null, budget = null, project = null, swap = null } = {}) => {
     const its = (items || []).map((it) => (typeof it === "string" ? { h: it, v: 0 } : { h: it.h, v: +it.v || 0 })).filter((it) => RQ.byHandle(it.h)).slice(0, 16);
     const pr = projOf(project); if (RQ.hem && RQ.hem.setActive && (project || RQ.hem.activeId())) RQ.hem.setActive(project || null); // the room Mitt rum shows is the active one (none when it is not one of yours)
     R._want = { style: RQ.STYLES[style] ? style : null, budget: budget > 0 ? +budget : null }; // Inred åt mig starts from the same style and budget
     document.dispatchEvent(new CustomEvent("rq-hem-go"));
+    // your own photo: the kind of room you said (Mitt hem's "Hall") is used, so the editor does not ask again (studio2 review M5)
+    const kind = RQ.roomById && RQ.roomById(type || (pr && pr.type)) ? type || pr.type : null, typed = () => { if (kind && room && !room.sample && !room.type) R.setType(kind); };
     if (own) {
-      if (room && !room.sample) { putIn(its, pr); goRoom(swap); return true; }
-      R.openSetup(() => { putIn(its, pr); if (pr && RQ.hem.patch) RQ.hem.patch(pr.id, { pkey: keyNow() }); goRoom(swap); }, { add: its.map((it) => it.h), go: "#mitt-rum" }); return false; // the sheet, with its sign-in gate; the plan survives signing in
+      if (room && !room.sample) { typed(); putIn(its, pr); goRoom(swap); return true; }
+      R.openSetup(() => { typed(); putIn(its, pr); if (pr && RQ.hem.patch) RQ.hem.patch(pr.id, { pkey: keyNow() }); goRoom(swap); }, { add: its.map((it) => it.h), go: "#mitt-rum" }); return false; // the sheet, with its sign-in gate; the plan survives signing in
     }
     const same = pr && pr.pkey && room && pr.pkey === keyNow();
-    const want = RQ.SAMPLE_ROOMS.find((x) => x.id === (type || (pr && pr.type))) || null;
+    // no room named: the room you have, unless it is a sample room where these things do not belong; then the sample room they do belong in
+    const fits = (r) => its.length && its.filter((it) => RQ.byHandle(it.h).rooms.includes(r)).length * 2 >= its.length;
+    const guess = !type && !pr && its.length && !(room && !room.sample) && !(room && room.sample && fits(room.type || room.map)) ? roomFor(its) : null;
+    const want = RQ.SAMPLE_ROOMS.find((x) => x.id === (type || (pr && pr.type))) || guess || null;
     if (!same && (want || !room) && !(room && room.sample && want && room.map === want.id)) {
       const sm = want || RQ.SAMPLE_ROOMS[0], im = new Image();
       const ok = await new Promise((res) => { im.onload = () => res(true); im.onerror = () => res(false); im.src = sm.img; });
@@ -678,6 +713,7 @@
   };
   /* from the AI picture ("Prova en annan färg", "Byt produkt"): Mitt rum with Byt open on that thing; colour: true opens it at
      the colours. Answers false when the thing is not in the room. */
+  R.leftOut = () => (R._leftOut || []).slice();
   R.openSwap = (h, opt = {}) => { if (!room || !R.inScene(h)) return false; const c = !!(opt && opt.colour);
     if (R._swapLive && ((RQ.currentRoute && RQ.currentRoute()) || "") === "mitt-rum") { R._swapLive(h, c); return true; }
     goRoom(h + (c ? "|c" : "")); return true; };
@@ -1152,7 +1188,12 @@
         /* ---- Inred åt mig: a ready set for this room, in a style and within a budget if you like (both optional).
            The set's things are marked (sg); a new set replaces them, while what you moved or swapped stays. One step for Ångra. */
         const want0 = R._want || {}; R._want = null;
-        const sg = { style: want0.style || null, budget: want0.budget || null, avoid: [], left: [], shown: false };
+        // the style and budget last used for this room stay with it (after a reload too); a project's own style comes first
+        const SGK = "rumiq-room-sg", sgKey = () => String(keyNow() || (room && (room.map || room.at)) || ""), sgOld = (ls.get(SGK, {}) || {})[sgKey()] || {};
+        const prNow = projOf(RQ.hem && RQ.hem.activeId ? RQ.hem.activeId() : null);
+        const sg = { style: want0.style || (prNow && RQ.STYLES[prNow.style] ? prNow.style : null) || sgOld.style || null, budget: want0.budget || (prNow && prNow.budget) || sgOld.budget || null, avoid: [], left: [], noRoom: [], note: "", shown: false, count: 0, bought: "" };
+        const sgKeep = () => { const all = ls.get(SGK, {}) || {}; all[sgKey()] = { style: sg.style, budget: sg.budget }; const ks = Object.keys(all); if (ks.length > 12) delete all[ks[0]]; ls.set(SGK, all); };
+        const styleWord = () => RQ.STYLES[sg.style].name.split(" ")[0].toLowerCase();
         const suggest = (again) => {
           if (!mapOf() && !room.type) { // your own photo: which room it is comes first, then the suggestions fit
             wantSuggest = true; const a = !$("#rmHint", root).hidden && $(".rm-hintask", root) ? $("#rmHint", root) : $("#rmAsk", root);
@@ -1160,30 +1201,39 @@
             said("Välj först vilket rum det är."); return; }
           const first = !!mapOf() && !ls.get("rumiq-room-landed", false), old = R.scene().filter((it) => it.sg).map((it) => it.h);
           if (again === true) sg.avoid = [...new Set([...sg.avoid, ...old])].slice(-14);
-          let set = R.suggestSet({ style: sg.style, budget: sg.budget, avoid: sg.avoid });
-          if (!set.items.length && sg.avoid.length) { sg.avoid = []; set = R.suggestSet({ style: sg.style, budget: sg.budget, avoid: [] }); } // every other set shown: start over
-          sg.left = set.left; sg.full = set.fullTotal; sg.min = set.min; sg.shown = true;
+          const set = R.suggestSet({ style: sg.style, budget: sg.budget, avoid: sg.avoid }); if (!set.items.length && !set.count) sg.avoid = [];
+          Object.assign(sg, { left: set.left, noRoom: set.noRoom, full: set.fullTotal, min: set.min, count: set.count, shown: true, note: "" }); sgKeep();
+          // the set replaces the proposal that stood there (one step for Ångra); what you moved or swapped yourself stays
           const n = R.group(() => { R.saveScene(R.scene().filter((it) => !it.sg)); const put = set.items.filter((it) => R.add(it.h, true, it.v)).map((it) => it.h);
-            R.saveScene(R.scene().map((it) => (put.includes(it.h) ? { ...it, sg: true } : it))); return put.length; });
+            const list = R.scene(), out = list.filter((it) => put.includes(it.h) && R.homeless(it)).map((it) => it.h); if (out.length) sg.noRoom = [...sg.noRoom, ...out];
+            R.saveScene(list.filter((it) => !out.includes(it.h)).map((it) => (put.includes(it.h) ? { ...it, sg: true } : it))); return put.length - out.length; });
+          if (!n) sg.note = !set.count ? (sg.style ? "Inget mer i stilen passar i rummet just nu. Välj en annan stil." : "Inget mer passar i rummet just nu.") : `Budgeten räcker inte till något${sg.style ? " i stilen" : ""}. Det billigaste kostar ${kr(set.min)}.`;
           paintSugg();
-          if (!n) { RQ.toast(set.items.length ? "Nu står allt som passar här i rummet. Lägg till fler själv." : "Inget i stilen ryms i budgeten. Höj budgeten eller välj en annan stil."); return; }
+          if (!n) { said(sg.note); return; }
           if (first || !mapOf()) return; // the room itself says it ("Så här kan det se ut hemma hos dig", "Dra sakerna dit du vill ha dem"): one message at a time
-          said(`${n} förslag i rummet.`);
+          said(`${n} förslag i rummet${old.length ? " i stället för det förra" : ""}.`);
         };
         const STY = [["", "Alla stilar"], ...Object.entries(RQ.STYLES).map(([k, v]) => [k, v.name.split(" ")[0]])];
         const step50 = (v, up) => (up ? Math.ceil(v / 50) * 50 : Math.floor(v / 50) * 50);
-        const paintSugg = () => { const bx = $("#rmSugg", root), its = R.scene().filter((it) => it.sg); bx.hidden = !sg.shown || !its.length && !sg.left.length;
+        const names = (hs) => hs.map((h) => `<b>${esc(RQ.byHandle(h).name)}</b>`).join(" · ");
+        const paintSugg = () => { const bx = $("#rmSugg", root), its = R.scene().filter((it) => it.sg); bx.hidden = !sg.shown;
           if (bx.hidden) return; const tot = its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), lo = step50(Math.max(100, sg.min || 100), true), hi = Math.max(lo + 50, step50(sg.full || tot, true)), b = sg.budget ? clamp(sg.budget, lo, hi) : hi;
+          const all = Math.max(sg.count || 0, its.length), hs = its.map((it) => it.h + "::" + (it.v || 0)).sort().join(","), inCart = !!(its.length && RQ.allInCart && RQ.allInCart(its.map((it) => it.h)));
           const focus = document.activeElement && bx.contains(document.activeElement) ? document.activeElement.dataset.sgk || document.activeElement.id : null;
-          bx.innerHTML = `<div class="rm-sugg-h"><div><b>Förslag${sg.style ? ` i ${esc(RQ.STYLES[sg.style].name.split(" ")[0].toLowerCase())} stil` : ""}</b><span>${its.length} ${its.length === 1 ? "sak" : "saker"} · ${kr(tot)}</span></div><button class="btn sm" type="button" id="rmSgBuy"${its.length ? "" : " disabled"}>Köp allt</button></div>
+          bx.innerHTML = `<div class="rm-sugg-h"><div><b>Förslag${sg.style ? ` i ${esc(styleWord())} stil` : ""}</b><span>${its.length} ${its.length === 1 ? "sak" : "saker"} · ${kr(tot)}</span></div>${inCart || sg.bought === hs ? `<button class="btn sm ghost" type="button" id="rmSgBuy" data-open-cart>I varukorgen ✓</button>` : `<button class="btn sm" type="button" id="rmSgBuy"${its.length ? "" : " disabled"}>Köp förslaget</button>`}</div>
             <div class="chips rm-sugg-sty" role="group" aria-label="Stil">${STY.map(([k, n]) => `<button type="button" class="chip" data-sgk="sty-${k}" data-sty="${k}" aria-pressed="${(sg.style || "") === k}">${esc(n)}</button>`).join("")}</div>
             <label class="rm-sugg-b"><span>Budget <b id="rmSgBv">${sg.budget && sg.budget < hi ? kr(b) : "Hela rummet"}</b></span><input type="range" id="rmSgB" min="${lo}" max="${hi}" step="50" value="${b}" aria-valuetext="${sg.budget && sg.budget < hi ? kr(b) : "Hela rummet"}"></label>
-            ${sg.left.length ? `<p class="small rm-sugg-left">Budgeten räcker till ${its.length} av ${its.length + sg.left.length}. Kvar att lägga till: ${sg.left.map((h) => `<b>${esc(RQ.byHandle(h).name)}</b>`).join(" · ")}.</p>` : ""}
+            ${sg.note ? `<p class="small rm-sugg-left">${esc(sg.note)}</p>` : ""}
+            ${sg.left.length ? `<p class="small rm-sugg-left">Budgeten räcker till ${its.length} av ${all}. Kvar att lägga till: ${names(sg.left)}.</p>` : ""}
+            ${sg.noRoom.length ? `<p class="small rm-sugg-left">Får inte plats på ett bord i rummet: ${names(sg.noRoom)}.</p>` : ""}
             <button type="button" class="tlink" data-sgk="again" id="rmSgAgain">Ett annat förslag</button>`;
           if (focus) { const f = $(`[data-sgk="${focus}"], #${focus}`, bx); if (f) f.focus({ preventScroll: true }); } };
+        // a set handed over (Svep, a proposal, a moodboard) is shown as the room's proposal, with what had to be left out
+        if (R.scene().some((it) => it.sg) && (R._leftOut || []).length) { const its = R.scene().filter((it) => it.sg); Object.assign(sg, { shown: true, noRoom: R._leftOut.slice(), count: its.length, full: its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), min: Math.min(...its.map((it) => RQ.byHandle(it.h).price)) }); R._leftOut = []; setTimeout(paintSugg, 0); }
         $("#rmSugg", root).addEventListener("click", (e) => { const t = e.target.closest("[data-sty]"); if (t) { sg.style = t.dataset.sty || null; sg.avoid = []; suggest(); return; }
           if (e.target.closest("#rmSgAgain")) { suggest(true); return; }
-          const bb = e.target.closest("#rmSgBuy"); if (bb && RQ.addMany) RQ.addMany(R.scene().filter((it) => it.sg).map((it) => it.h + "::" + (it.v || 0)), bb, sg.style ? `Förslaget i ${RQ.STYLES[sg.style].name.split(" ")[0].toLowerCase()} stil` : "Förslaget"); });
+          const bb = e.target.closest("#rmSgBuy"); if (bb && !bb.hasAttribute("data-open-cart") && RQ.addMany) { const its = R.scene().filter((it) => it.sg);
+            if (RQ.addMany(its.map((it) => it.h + "::" + (it.v || 0)), bb, sg.style ? `Förslaget i ${styleWord()} stil` : "Förslaget")) { sg.bought = its.map((it) => it.h + "::" + (it.v || 0)).sort().join(","); setTimeout(() => { paintSugg(); const f = $("#rmSgBuy", root); if (f) f.focus({ preventScroll: true }); }, 0); } } });
         $("#rmSugg", root).addEventListener("input", (e) => { if (e.target.id !== "rmSgB") return; const v = +e.target.value, hi = +e.target.max; $("#rmSgBv", root).textContent = v >= hi ? "Hela rummet" : kr(v); });
         $("#rmSugg", root).addEventListener("change", (e) => { if (e.target.id !== "rmSgB") return; const v = +e.target.value; sg.budget = v >= +e.target.max ? null : v; sg.avoid = []; suggest(); });
 
