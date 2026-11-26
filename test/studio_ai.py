@@ -271,6 +271,7 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "RumIQ · AI-bild", f"{tag} the picture is labelled RumIQ · AI-bild")
         ok("nytt försök" in pg.evaluate("document.querySelector('.ai-result .ai-pad').innerText"), f"{tag} the result says a second try was made at no extra cost")
         ok(pg.evaluate("!!document.getElementById('aiBad')") and "1 bild" in pg.evaluate("document.getElementById('aiAgain').innerText"), f"{tag} Produkten blev fel is offered, Skapa igen says it uses one picture")
+        ok(not pg.evaluate("!!document.querySelector('[data-ai-swap]')"), f"{tag} without the editor's Byt (R.openSwap) no Byt or colour buttons are shown")
         shot(pg, f"live-{W}-result")
         # the room changes after the picture: Köp allt still adds exactly what the picture shows
         pg.evaluate("RQ.room.remove('sand-keramikvas'); RQ.room.remove('lin-kuddfodral'); RQ.room.add('glod-doftljus-keramik', true)")
@@ -282,12 +283,21 @@ with sync_playwright() as p:
         ok(pg.evaluate(LINES) == ",".join(sorted(h + "::0" for h in FOUR)), f"{tag} Köp allt adds exactly the four pictured products in the pictured colours: {pg.evaluate(LINES)}")
         pg.evaluate("document.getElementById('aiBad').click()"); pg.wait_for_timeout(500)
         ok("tillbaka på ditt saldo" in pg.evaluate(TOAST) and not pg.evaluate("!!document.getElementById('aiBad')"), f"{tag} Produkten blev fel gives the picture back once")
+        # with the editor's Byt: "Prova en annan färg" (things with colours) and "Byt produkt" per thing, opening Byt at that thing
+        pg.evaluate("window.__swap = null; RQ.room.openSwap = (h, o) => { window.__swap = [h, !!(o && o.colour)]; }"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+        pg.evaluate("RQ.room.saveScene([]); " + "; ".join(f"RQ.room.add('{h}', true)" for h in FOUR))
+        pg.evaluate(LIVE, {"stream": False, "wait": 300}); create(pg, 2800)
+        sw = pg.evaluate("[document.querySelectorAll('[data-ai-swap]:not([data-colour])').length, [...document.querySelectorAll('[data-ai-swap][data-colour]')].map((b) => b.dataset.aiSwap)]")
+        ok(sw[0] == 4 and sw[1] == ["lin-kuddfodral"], f"{tag} with R.openSwap: Byt produkt on every thing, another colour where there are colours: {sw}")
+        pg.evaluate("document.querySelector('[data-ai-swap=\"lin-kuddfodral\"][data-colour]').click()"); pg.wait_for_timeout(500)
+        ok(pg.evaluate("window.__swap") == ["lin-kuddfodral", True] and not pg.evaluate("document.getElementById('aiSheet').classList.contains('open')"), f"{tag} it closes the picture and opens the editor's Byt at that thing, colours first")
+        pg.evaluate("delete RQ.room.openSwap"); pg.evaluate("RQ.room.saveScene([]); " + "; ".join(f"RQ.room.add('{h}', true)" for h in ["lysa-keramiklampa", "plad-ullblandning-havre"]))
         # a server that answers with plain JSON (no steps) works the same
         pg.evaluate(LIVE, {"stream": False, "wait": 500}); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         create(pg, 3200)
-        ok(pg.evaluate("document.querySelectorAll('.ai-ver').length") == 2 and pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "RumIQ · AI-bild", f"{tag} plain JSON: a second version of the same room")
+        ok(pg.evaluate("document.querySelectorAll('.ai-ver').length") == 3 and pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "RumIQ · AI-bild", f"{tag} plain JSON: a second version of the same room")
         pics = pg.evaluate(PICS)
-        ok(len(pics) == 2 and pics[0]["items"] != pics[1]["items"], f"{tag} each version remembers its own products")
+        ok(len(pics) == 3 and pics[0]["items"] != pics[1]["items"], f"{tag} each version remembers its own products")
         ok(not errs, f"{tag} no script errors: {errs[:3]}")
         ctx.close()
 

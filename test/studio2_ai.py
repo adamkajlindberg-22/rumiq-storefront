@@ -118,7 +118,7 @@ with sync_playwright() as p:
         ok(len(pg.evaluate(ROOM0)["items"]) == len(r["items"]) - 1, f"{tag} what changes in Mitt rum follows into the room project")
         go(pg, "mitt-hem", 1700)
         ok(pg.evaluate("document.querySelector('#mh-rum h2').innerText") == "Fortsätt där du slutade" and pg.evaluate("document.querySelectorAll('.hem-card.big').length") == 1, f"{tag} the overview: big room cards, 'Fortsätt där du slutade'")
-        ok(pg.evaluate("document.querySelector('.hem-card.has-pic img').src.startsWith('blob:')"), f"{tag} the card shows the newest after-picture")
+        ok(pg.evaluate("document.querySelector('.hem-card.has-pic img').src.startsWith('blob:') && !document.querySelector('.hem-card.has-pic .hem-card-col')"), f"{tag} the card shows the newest after-picture")
         prog = pg.evaluate("document.querySelector('[data-room-prog]').innerText")
         ok("✓ Stil" in prog and "✓ 1 bild" in prog and "produkter valda" in prog and pg.evaluate("document.querySelector('[data-hem-next]').innerText") == "Välj budget", f"{tag} progress and the next step: {prog} → {pg.evaluate('document.querySelector(\"[data-hem-next]\").innerText')}")
         shot(pg, f"hem-{W}-cards")
@@ -158,6 +158,12 @@ with sync_playwright() as p:
         # the stylist conversation, re-openable
         pg.evaluate("RQ.shop.store.set('rumiq-chat-saved', [{ who: 'me', text: 'Varmare ljus i vardagsrummet', q: 'x' }, { who: 'ai', a: { picks: [] } }])"); go(pg, "mitt-hem", 1300)
         ok("Varmare ljus" in pg.evaluate("document.getElementById('mh-chat').innerText") and pg.evaluate("document.querySelector('#mh-chat a').getAttribute('href').includes('studio-stylist')"), f"{tag} the saved stylist conversation is here and can be opened again")
+        pg.evaluate("RQ.hem.create({ label: 'Hallen', type: 'hall', items: [{ h: 'glob-bordslampa-opalglas', v: 0 }, { h: 'flatad-forvaringskorg', v: 0 }] })"); go(pg, "mitt-hem", 1500)
+        ok(pg.evaluate("[...document.querySelectorAll('.hem-card')].find((c) => c.innerText.includes('Hallen')).querySelectorAll('.hem-card-col img').length") == 2, f"{tag} a room without a picture shows its products over the sample photo, never an empty room")
+        pg.evaluate("RQ.room.snapshot = async (id, w) => { window.__snap = [id, w]; const c = document.createElement('canvas'); c.width = 40; c.height = 25; return c.toDataURL('image/png'); }; RQ.router()"); pg.wait_for_timeout(1500)
+        card = pg.evaluate("(() => { const c = [...document.querySelectorAll('.hem-card')].find((c) => c.innerText.includes('Hallen')); return [c.classList.contains('snap'), c.querySelector('img').src.slice(0, 15), !!c.querySelector('.hem-card-col'), window.__snap && window.__snap[1]]; })()")
+        ok(card[0] and card[1].startswith("data:image/png") and not card[2] and card[3] == 900, f"{tag} with the editor's R.snapshot the card shows the room drawn with its products: {card}")
+        pg.evaluate("RQ.hem.remove(RQ.hem.rooms().find((r) => r.label === 'Hallen').id); delete RQ.room.snapshot")
         ok(not errs, f"{tag} no script errors: {errs[:3]}")
         ctx.close()
 
@@ -183,7 +189,14 @@ with sync_playwright() as p:
         card = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'); return c && [c.querySelector('h3').innerText, c.querySelectorAll('.hem-prop-items li').length, c.querySelector('.hem-promise').innerText]; })()")
         ok(card and card[0].startswith("Ditt vardagsrum i ") and card[1] >= 3 and card[2] == "Se ditt hem innan du köper.", f"{tag} the Svep result ends in a ready room proposal: {card}")
         vis = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop a, .svep-result .hem-prop button, .svep-result .hem-prop input')].filter((e) => e.offsetParent && e.getBoundingClientRect().height > 0 && !e.closest('details:not([open])')).map((e) => e.textContent.trim())")
-        ok(vis == ["Se det i ditt rum"], f"{tag} the card in Svep is one clear card with one main button, the rest behind 'Ändra rum och budget': {vis}")
+        main = [x for x in vis if not x.startswith("Visa alla")]
+        ok(main == ["Se det i ditt rum"], f"{tag} the card in Svep is one clear card with one main button, the rest behind 'Ändra rum och budget': {vis}")
+        if mob:  # the phone: three small pictures in a row with the total, "Visa alla N" opens the list
+            row = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'); return [c.querySelectorAll('.hem-prop-thumbs img').length, getComputedStyle(c.querySelector('.hem-prop-items')).display, (c.querySelector('[data-hem-all]') || {}).textContent || '', Math.round(c.getBoundingClientRect().height)]; })()")
+            ok(row[0] == 3 and row[1] == "none" and row[2].startswith("Visa alla") and row[3] < 640, f"{tag} the phone card is short: three pictures and the total, the list behind Visa alla: {row}")
+            pg.evaluate("document.querySelector('.svep-result [data-hem-all]').click()"); pg.wait_for_timeout(300)
+            ok(pg.evaluate("getComputedStyle(document.querySelector('.svep-result .hem-prop-items')).display") != "none" and pg.evaluate("document.activeElement && document.activeElement.textContent") == "Visa färre", f"{tag} Visa alla opens the list, the focus stays on the button")
+            pg.evaluate("document.querySelector('.svep-result [data-hem-all]').click()"); pg.wait_for_timeout(200)
         shot(pg, f"flow-{W}-svep")
         # the budget: a lower one keeps the set inside it and says what is left
         pg.evaluate("(() => { const r = document.querySelector('.svep-result [data-hem-budget]'); r.value = r.min * 1 + 500; r.dispatchEvent(new Event('input', { bubbles: true })); })()"); pg.wait_for_timeout(500)
