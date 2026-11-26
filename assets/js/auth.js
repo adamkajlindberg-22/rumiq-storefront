@@ -9,7 +9,7 @@
    Switch in config.js. */
 (function () {
   const RQ = window.RQ, S = RQ.shop;
-  const CFG = (window.RQ_CONFIG && window.RQ_CONFIG.auth) || { provider: "demo", social: ["google", "apple", "azure"] };
+  const CFG = (window.RQ_CONFIG && window.RQ_CONFIG.auth) || { provider: "demo", social: ["google", "apple"] };
   const NAMES = { google: "Google", apple: "Apple", azure: "Microsoft", facebook: "Facebook" };
   let sb = null, pendingCode = null;
 
@@ -81,7 +81,7 @@
     mode: CONFIGURED ? "pending" : "demo", // "supabase" once the auth server answers, "down" when it does not
     downText: DOWN,
     live: {},                // social providers switched on in Supabase
-    socials: (CFG.social || ["google", "apple", "azure"]).filter((p) => NAMES[p]),
+    socials: (CFG.social || ["google", "apple"]).filter((p) => NAMES[p]),
     providerName: (p) => NAMES[p] || "e-post",
     redirect: () => CFG.redirect || new URL("konto/", document.baseURI).href,
     ready: null,

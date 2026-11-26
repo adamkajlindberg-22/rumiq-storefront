@@ -14,7 +14,7 @@
   const BENEFITS = `<div class="auth-aside"><span class="eyebrow">Med ett gratis konto kan du</span>
     <ul class="rules" style="margin-top:1.2rem"><li>Se produkterna i en bild av ditt eget rum och spara resultatet</li><li>Samla det du sparar i egna listor, till exempel en per rum</li><li>Spara dina looks, din stil och dina samtal med stylisten</li><li>Följa och ångra beställningar med ett klick</li><li>Gå snabbare genom kassan nästa gång</li></ul>
     <p class="small" style="margin-top:1.6rem">Du kan alltid handla som gäst. Kassan kräver inget konto.</p></div>`;
-  const demoNote = () => (RQ.auth.mode === "demo" ? `<p class="note" style="margin:0 0 1.2rem">Förhandsversion: inloggningen är inte kopplad än. Knapparna skapar ett testkonto som bara finns i den här webbläsaren. Inga uppgifter skickas till Google, Apple, Microsoft eller oss.</p>` : "");
+  const demoNote = () => (RQ.auth.mode === "demo" ? `<p class="note" style="margin:0 0 1.2rem">Förhandsversion: inloggningen är inte kopplad än. Knapparna skapar ett testkonto som bara finns i den här webbläsaren. Inga uppgifter skickas till Google, Apple eller oss.</p>` : "");
 
   function authView(tab) {
     const signup = tab === "skapa";

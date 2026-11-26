@@ -44,7 +44,7 @@ window.RQ_CONFIG = {
     supabaseUrl: "https://viiqzkuwmhnnhtlcwlpi.supabase.co",
     supabaseAnonKey: "sb_publishable_Wq2AVOAvXSXt9-U90ytpMA_n9Tri6Td", // public key, safe in the browser
 
-    social: ["google", "apple", "azure"],
+    social: ["google", "apple"],
     redirect: "",
   },
   formEndpoint: "",
