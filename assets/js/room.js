@@ -1088,7 +1088,11 @@
             else { const sp = spotFor(p, R.scene().filter((x) => x.h !== h), true, null, now); if (sp) Object.assign(patch, { x: sp.x, y: sp.y, w: sp.w }, sp.sy ? { sy: sp.sy } : {}); } }
           R.update(h, patch); const nw = R.scene().find((x) => x.h === h); if (nw) { lookAt([nw]); learn(h, nw); } said(`${ON_WORD(it, to)} ${SURF[to]}.`); };
         ["#rmOn", "#rmOn2"].forEach((q) => $(q, root).addEventListener("change", (e) => { if (sel) setOn(sel, e.target.value); }));
-        const select = (h) => { if (swap && swap.h && swap.h !== h) { swap.h = null; paintSwap(); } sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); };
+        const select = (h) => { if (swap && swap.h && swap.h !== h) { swap.h = null; paintSwap(); } sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); if (h) requestAnimationFrame(actInView); };
+        // a short screen: the chosen thing's tools come up above the room's bar at the bottom, as far as the thing itself stays in sight (D7)
+        const actInView = () => { const a = $("#rmAct", root); if (!a || a.hidden || !a.getClientRects().length) return; const r = a.getBoundingClientRect(), bar = document.querySelector(".rm-bar"), bTop = bar && bar.getClientRects().length && getComputedStyle(bar).visibility !== "hidden" ? bar.getBoundingClientRect().top : innerHeight;
+          const need = r.bottom - bTop + 8; if (need <= 0) return; const el = $(".rm-item.sel", wrap), nav = $("#nav"), up = el ? el.getBoundingClientRect().top - (nav ? nav.getBoundingClientRect().bottom : 0) - 8 : need;
+          const by = Math.min(need, Math.max(0, up)); if (by > 0) window.scrollBy({ top: by, behavior: calm() ? "auto" : "smooth" }); };
         /* the selected thing at true scale: its measurements beside it, and for a rug the floor it covers, dashed */
         const paintFoot = (cur) => { const it = cur || (sel && R.scene().find((x) => x.h === sel)), poly = $("#rmArea polygon", root), lab = $("#rmAreaLab", root);
           if (!it || !it.real || !scaleAt(it)) { poly.setAttribute("points", ""); lab.hidden = true; return; }
