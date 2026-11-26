@@ -46,7 +46,7 @@
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
       surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], edge: [[71.3, 84.7, 68.5]], // the side table's top runs from 71.8 to 84.4; a mug stands at 75.6-79.3
-      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [56.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
+      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [57.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
       rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
@@ -135,10 +135,10 @@
   const spotFor = (p, list, raw, MX, over, row) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
-    const busy = (x, y, w) => ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
+    const busy = (x, y, w, k) => SORT[k || kind] === "s" && ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
     const foot = /lampa|vas|ljus|kruka/.test(p.handle) ? 0.25 : 0.4; // a lamp's shade may reach past the edge, its foot may not; a tray or a box stands on all of its width
     const overEdge = (x, y, w, k) => (k || kind) === "surface" && ((M && M.edge) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && (x - w * foot < a || x + w * foot > b)); // it would hang over the table's edge
-    const taken = (x, y, w, k) => busy(x, y, w) || overEdge(x, y, w, k) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
+    const taken = (x, y, w, k) => busy(x, y, w, k) || overEdge(x, y, w, k) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
@@ -319,7 +319,7 @@
       if (false) { const list = R.scene(); let n = 0; list.forEach((it) => { const p = RQ.byHandle(it.h); if (it.row && it.on === "golv" && p && kindOf(p) === "surface") { it.y = TABLE_Y; it.on = "bord"; it.w = +clamp(meta(p)[1] * 0.3 * (ls.get(LEARN, {}).k || 1), 4, 36).toFixed(1); n++; } });
         if (n) { spreadRows(list); R.saveScene(list, true); } } },
     /* forget the room: the photo, what stands in it and everything the editor remembers */
-    clear() { [KEY, SCENE, MODE, LEARN, "rumiq-room-night", "rumiq-room-landed", "rumiq-room-view"].forEach((k) => ls.del(k)); room = null; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; emit("room"); emit("scene"); },
+    clear() { [KEY, SCENE, MODE, LEARN, "rumiq-room-night", "rumiq-room-landed", "rumiq-room-view", "rumiq-room-way"].forEach((k) => ls.del(k)); room = null; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; emit("room"); emit("scene"); },
     /* scene */
     scene: () => { const l = ls.get(SCENE, []); return (Array.isArray(l) ? l : []).filter((it) => it && typeof it.h === "string" && RQ.byHandle(it.h) && isFinite(it.x) && isFinite(it.y) && it.w > 0); },
     /* false = the browser's storage is full and nothing was saved. Every change is a step that can be taken back;
@@ -1019,10 +1019,10 @@
     if (pre && RQ.byHandle(pre) && !room) RQ.ss && RQ.ss.set("rumiq-room-pre", pre);
     if (room && R.way() === "place") return placeView(pre); // Placera och skapa is the main way; the editor is "Justera själv"
     const want = pre && RQ.byHandle(pre) && !room ? RQ.byHandle(pre) : null; // came from a product without a room yet
-    const more = `<nav class="rm-more" aria-label="Fler sätt att välja"><a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
+    const more = `<nav class="rm-more" aria-label="Fler sätt att välja">${room ? `<button type="button" class="chip rm-toplace" id="rmToPlace">${ICO.spark}<span>Placera och skapa</span></button>` : ""}<a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
     return {
       title: pre && RQ.byHandle(pre) ? `${RQ.byHandle(pre).name} i ditt rum · RumIQ` : "Mitt rum · RumIQ",
-      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? projChips() : ""}${room ? `<p class="rm-toplace"><button type="button" class="tlink" id="rmToPlace">${ICO.spark}<span>Tillbaka till Placera och skapa</span></button></p>` : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
+      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
         ${room ? "" : more}</section>
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap" id="rmWrap" style="--ar:${(room.w / room.h).toFixed(4)}">
@@ -1463,7 +1463,7 @@
           const first = !!mapOf() && !ls.get("rumiq-room-landed", false), old = R.scene().filter((it) => it.sg).map((it) => it.h);
           if (again === true) sg.avoid = [...new Set([...sg.avoid, ...old])].slice(-14);
           const set = R.suggestSet({ style: sg.style, budget: sg.budget, avoid: sg.avoid }); if (!set.items.length && !set.count) sg.avoid = [];
-          Object.assign(sg, { left: set.left, noRoom: set.noRoom, later: [], from: null, full: set.fullTotal, min: set.min, count: set.count, shown: true, note: "" }); sgKeep();
+          Object.assign(sg, { handed: false, left: set.left, noRoom: set.noRoom, later: [], from: null, full: set.fullTotal, min: set.min, count: set.count, shown: true, note: "" }); sgKeep();
           // the set replaces the proposal that stood there (one step for Ångra); what you moved or swapped yourself stays
           const n = R.group(() => { R.saveScene(R.scene().filter((it) => !it.sg)); const put = set.items.filter((it) => R.add(it.h, true, it.v)).map((it) => it.h);
             const list = R.scene(), out = list.filter((it) => put.includes(it.h) && R.homeless(it)).map((it) => it.h); if (out.length) sg.noRoom = [...sg.noRoom, ...out];
@@ -1480,7 +1480,7 @@
         const names = (hs) => hs.map((h) => `<b>${esc(RQ.byHandle(h).name)}</b>`).join(" · ");
         const paintSugg = () => { const bx = $("#rmSugg", root), its = R.scene().filter((it) => it.sg); bx.hidden = !sg.shown;
           // what is left out stays true to the room as it is now: not what stands there, nor what something of its sort already stands in for (device review X4)
-          const scene = R.scene(); sg.noRoom = sg.noRoom.filter((h) => !scene.some((x) => x.h === h || sortOf(x.h) === sortOf(h))); sg.later = sg.later.filter((h) => !scene.some((x) => x.h === h));
+          const scene = R.scene(); sg.noRoom = sg.noRoom.filter((h) => !scene.some((x) => x.h === h || (!sg.handed && sortOf(x.h) === sortOf(h)))); // (a set you handed over keeps naming what it left out) sg.later = sg.later.filter((h) => !scene.some((x) => x.h === h));
           const mine = scene.filter((it) => !it.sg), mineTot = mine.reduce((t, it) => t + RQ.byHandle(it.h).price, 0);
           if (bx.hidden) return; const tot = its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), lo = step50(Math.max(100, sg.min || 100), true), hi = Math.max(lo + 50, step50(sg.full || tot, true)), b = sg.budget ? clamp(sg.budget, lo, hi) : hi;
           const all = Math.max(sg.count || 0, its.length), hs = its.map((it) => it.h + "::" + (it.v || 0)).sort().join(","), inCart = !!(its.length && RQ.allInCart && RQ.allInCart(its.map((it) => it.h)));
@@ -1499,7 +1499,7 @@
         // a set handed over (Svep, a proposal, a moodboard) is shown under its own name ("Från din moodboard"), with what had to
         // be left out and what waits (your own photo starts calm); Inred åt mig replaces it with a suggestion of its own
         if (R.scene().some((it) => it.sg) && ((R._leftOut || []).length || (R._later || []).length || R._from)) { const its = R.scene().filter((it) => it.sg);
-          Object.assign(sg, { shown: true, from: R._from || null, noRoom: (R._leftOut || []).slice(), later: (R._later || []).slice(), count: 0, left: [], full: its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), min: Math.min(...its.map((it) => RQ.byHandle(it.h).price)) }); R._leftOut = []; R._later = []; R._from = null; setTimeout(paintSugg, 0); }
+          Object.assign(sg, { shown: true, handed: true, from: R._from || null, noRoom: (R._leftOut || []).slice(), later: (R._later || []).slice(), count: 0, left: [], full: its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), min: Math.min(...its.map((it) => RQ.byHandle(it.h).price)) }); R._leftOut = []; R._later = []; R._from = null; setTimeout(paintSugg, 0); }
         $("#rmSugg", root).addEventListener("click", (e) => { const t = e.target.closest("[data-sty]"); if (t) { sg.style = t.dataset.sty || null; sg.avoid = []; suggest(); return; }
           if (e.target.closest("#rmSgAgain")) { suggest(true); return; }
           if (e.target.closest("#rmSgTable")) { if (!R.tableKnown()) { sg.note = "Dra först en sak till bordet i bilden, så vet rummet var bordet är."; paintSugg(); said(sg.note); return; }
