@@ -3068,7 +3068,9 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 /* moodboard */
 .mb-wrap{padding:1.4rem var(--gutter) 2rem;display:grid;gap:1rem}
 @media (min-width:900px){.mb-wrap{padding:2rem}}
-.mb-head{display:grid;gap:.3rem;padding-right:3rem;padding-top:.9rem} /* clear of the grab handle */
+.mb-head{display:grid;gap:.3rem;padding-right:3rem} /* clear of the grab handle, which has its own strip in the moodboard */
+.mb-sheet .sheet-grab{background:var(--paper);margin-bottom:0;border-radius:20px 20px 0 0} /* scrolled, the board passes under the handle, never behind a see-through bar */
+.mb-board{isolation:isolate} /* the things' layers stay inside the board */
 .mb-name input{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:560;letter-spacing:-.02em;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);padding:.2rem 0;width:100%;border-radius:0}
 .mb-board{position:relative;aspect-ratio:4 / 3;width:min(100%,calc(58vh * 4 / 3));margin-inline:auto;background:#F4F2EE;border-radius:var(--r);overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 1px var(--line)}
 @media (max-width:600px){.mb-board{aspect-ratio:1}}
