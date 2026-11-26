@@ -45,8 +45,8 @@
   const H = (RQ.hem = {});
   const fire = () => document.dispatchEvent(new CustomEvent("rq-hem"));
   H.rooms = () => (RQ.homeRooms ? RQ.homeRooms.list() : []);
-  H.room = (id) => H.rooms().find((r) => r.id === id) || null;
-  H.save = (room) => {
+  H.room = (id) => H.rooms().find((r) => r.id === id) || (H._peek && H._peek.id === id ? H._peek : null);
+  H.save = (room) => { if (room && room.peek) return room; // a borrowed proposal (the partner's page) is never saved
     const all = H.rooms(), i = all.findIndex((r) => r.id === room.id); room.updated = now();
     if (i < 0) all.unshift(room); else all[i] = room;
     RQ.homeRooms.save(all); vault.queue("rumiq-home"); fire(); return room;
@@ -139,8 +139,8 @@
       ${s.compact ? `<details class="hem-more"${s.open ? " open" : ""}><summary>Ändra rum och budget</summary><div class="hem-more-in">${typeChips(s, pr, types)}` : ""}<label class="hem-budget"><span>Budget <b>${kr(s.budget || pr.fullTotal)}</b></span><input type="range" data-hem-budget min="${Math.max(100, Math.floor(pr.min / 100) * 100)}" max="${Math.ceil(pr.fullTotal / 100) * 100}" step="100" value="${s.budget || Math.ceil(pr.fullTotal / 100) * 100}" aria-label="Budget i kronor" aria-valuetext="${esc(kr(s.budget || pr.fullTotal))}"></label>
       ${s.compact ? `<div class="ai-row small-row"><button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button><button class="tlink" type="button" data-hem-ask>Vad tycker du?</button><button class="tlink" type="button" data-hem-buy>Köp allt</button></div></div></details>` : ""}
       <div class="hem-prop-sum"><span>${its.length} ${its.length === 1 ? "produkt" : "produkter"}</span><b>${kr(pr.total)}</b></div>
-      <div class="ai-row"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>Se det i ditt rum</span></button>${s.compact ? "" : `<button class="btn ghost" type="button" data-hem-buy>Köp allt</button>`}</div>
-      ${s.compact ? "" : `<div class="ai-row small-row"><button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button>${room ? "" : `<button class="tlink" type="button" data-hem-keep>Spara i Mitt hem</button>`}<button class="tlink" type="button" data-hem-ask>Vad tycker du?</button></div>`}
+      <div class="ai-row"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>${room && H.items(room).length ? "Prova det här i rummet" : "Se det i ditt rum"}</span></button>${s.compact ? "" : `<button class="btn ghost" type="button" data-hem-buy>Köp allt</button>`}</div>
+      ${s.compact ? "" : `<div class="ai-row small-row"><button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button>${room ? "" : `<button class="tlink" type="button" data-hem-keep>Spara rummet</button>`}${s.noAsk ? "" : `<button class="tlink" type="button" data-hem-ask>Vad tycker du?</button>`}</div>`}
       <p class="small" role="status" data-hem-msg>${room ? `Hör till ${esc(H.name(room))}.` : ""}</p>`;
   };
   const typeChips = (s, pr, types) => s.from === "room" ? "" : `<div class="chips hem-prop-types" role="group" aria-label="Vilket rum?">${types.map((t) => `<button type="button" class="chip" data-hem-type="${t}" aria-pressed="${pr.type === t}">${esc(typeName(t))}</button>`).join("")}</div>`;
@@ -157,19 +157,31 @@
     if (b.matches("[data-hem-all]")) { s.all = !s.all; repaint(box, "[data-hem-all]"); return; }
     if (b.matches("[data-hem-reroll]")) { s.avoid = [...new Set([...(s.avoid || []), ...s.pr.items.map((it) => it.h)])].slice(-12); repaint(box, "[data-hem-reroll]"); return; }
     if (b.matches("[data-hem-buy]")) { RQ.addMany(s.pr.items.map((it) => it.h + "::" + it.v), b, H.title(s.pr)); return; }
-    if (b.matches("[data-hem-keep]")) { const r = ensureRoom(s); if (s.room === r.id) H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); repaint(box); RQ.toast(`${esc(H.name(r))} är sparat i Mitt hem. <a href="#mitt-hem">Visa</a>`); return; }
+    if (b.matches("[data-hem-keep]")) { const r = ensureRoom(s); if (s.room === r.id) H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); repaint(box); RQ.toast(`${esc(H.name(r))} är sparat. <a href="#mitt-hem">Visa i Sparat</a>`); return; }
     if (b.matches("[data-hem-see]")) { const r = ensureRoom(s); H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); H.openInRoom({ room: r.type, items: s.pr.items, style: s.pr.style, budget: s.budget, project: r.id }); return; }
     if (b.matches("[data-hem-ask]")) { const r = ensureRoom(s); H.patch(r.id, { items: s.pr.items, style: s.pr.style }); H.askLink(H.room(r.id), b); repaint(box); }
   });
 
   /* ------------------------------------------------------------------ into Mitt rum ("Se det i ditt rum") */
+  const OWN = "rumiq-hem-own";
+  document.addEventListener("rq-room", (e) => {
+    if (e.detail !== "room" || !RQ.room || !RQ.room.has()) return; let w = null; try { w = JSON.parse(RQ.ss.get(OWN) || "null"); } catch (x) {} if (!w || !w.type) return;
+    const g = RQ.room.get(); if (g.sample) return RQ.ss.set(OWN, ""); // a sample room has its own type
+    RQ.ss.set(OWN, ""); if (Date.now() - (w.at || 0) > 36e5 || g.type) return;
+    RQ.room.setType(w.type); if (!RQ.room._want || !RQ.room._want.style) RQ.room._want = { style: RQ.STYLES[w.style] ? w.style : null, budget: w.budget > 0 ? +w.budget : null };
+  });
   /* Into Mitt rum through the editor's own entry, RQ.room.openWith({ room, own, items, style, budget, project }) (room.js). */
-  H.openInRoom = async ({ room = null, own = false, items = [], style = null, budget = null, project = null } = {}) => {
+  H.openInRoom = async ({ room = null, own = false, items = [], style = null, budget = null, project = null, swap = null } = {}) => {
     const R = RQ.room; if (!R) return;
     document.dispatchEvent(new CustomEvent("rq-hem-go")); // the room sheet or the moodboard steps aside
     if (project) H.setActive(project);
     // the editor's own entry (room.js): sample room or own photo (with its sign-in gate), placed by its rules, tied to the project
-    const out = await R.openWith({ room, own, items: items.map((it) => (typeof it === "string" ? { h: it, v: 0 } : it)), style, budget, project });
+    // your own photo: the room type (and style) you already chose go with it, so the editor never asks "Vilket rum är det?" again.
+    // Kept for the next own photo only (it survives the sign-in step), and dropped when a sample room comes instead.
+    const t = room || (project && H.room(project) ? H.room(project).type : null);
+    RQ.ss.set(OWN, own && t ? JSON.stringify({ type: t, style, budget, at: Date.now() }) : "");
+    const out = await R.openWith({ room, own, items: items.map((it) => (typeof it === "string" ? { h: it, v: 0 } : it)), style, budget, project, swap });
+    if (out && own) { RQ.ss.set(OWN, ""); const g = R.get(); if (t && g && !g.sample && !g.type) R.setType(t); } // the photo you already had
     if (out && project && RQ.ai) H.patch(project, { pkey: RQ.ai.projectKey() }); // only once the room is really open (not while it waits for sign-in)
     return out;
   };
@@ -209,8 +221,8 @@
     return items.length ? { id: clean(id), type: RQ.roomById(type) ? type : "vardagsrum", style: RQ.STYLES[style] ? style : null, items, name } : null;
   };
   const parseReply = (raw) => { let core = raw, name = ""; const k = raw.lastIndexOf("~"); if (k > 0) { core = raw.slice(0, k); try { name = clean(decodeURIComponent(raw.slice(k + 1))); } catch (e) {} }
-    const [id, list] = core.split("."); const answers = {}; (list || "").split("_").forEach((x) => { const m = /^([0-9a-z]{4})([+-])$/.exec(x); const h = m && byPid(m[1]); if (h) answers[h] = m[2] === "+" ? 1 : 0; });
-    return Object.keys(answers).length ? { id: clean(id), answers, name } : null; };
+    const [id, list] = core.split("."); const answers = {}, alts = {}; (list || "").split("_").forEach((x) => { const m = /^([0-9a-z]{4})([+-])([0-9a-z]{4})?$/.exec(x); const h = m && byPid(m[1]); if (!h) return; answers[h] = m[2] === "+" ? 1 : 0; const o = m[3] && m[2] === "-" && byPid(m[3]); if (o && o !== h) alts[h] = o; });
+    return Object.keys(answers).length ? { id: clean(id), answers, alts, name } : null; };
   const baseShared = V.shared;
   V.shared = (payload) => {
     const p = String(payload || "");
@@ -220,24 +232,49 @@
   };
   const crumbs = () => RQ.crumbs([["Hem", "hem"], ["Vad tycker du?"]]);
   const empty = (h) => ({ title: "Vad tycker du? · RumIQ", html: `<header class="page-head wrap">${crumbs()}<h1 class="h1">${h}</h1><p class="lead">Länken saknar något eller har klippts av. Be om en ny länk.</p><div class="ctrl-row" style="margin-top:1.4rem"><a class="btn" href="#mitt-rum">Till Mitt rum</a></div></header>` });
-  // the partner's page: the proposal, and "Gillar" / "Föreslå något annat" on each thing; the answer goes back as a link
+  /* a picture of a set that is not one of your rooms (the partner's page): the editor draws it in a sample room of the type,
+     placed by its rules (R.snapshot with a borrowed project that is never saved). Resolves a data URL or null. */
+  let peekN = 0;
+  H.pictureOf = (type, items) => { const R = RQ.room; if (!R || typeof R.snapshot !== "function") return Promise.resolve(null);
+    H._peek = { id: "peek" + ++peekN, peek: true, type, items, updated: String(peekN) };
+    try { return Promise.resolve(R.snapshot(H._peek.id, 900)).catch(() => null); } catch (e) { return Promise.resolve(null); } finally { H._peek = null; } };
+  // something else of the same kind (a lamp for a lamp, a textile for a textile), for the same room, best style first
+  H.othersFor = (h, { type, style, not = [] } = {}) => { const p = RQ.byHandle(h); if (!p) return []; const no = new Set([h, ...not]);
+    const base = RQ.room && RQ.room.alternatives ? RQ.room.alternatives(h) : [];
+    const pool = (base.length ? base : RQ.PRODUCTS.filter((q) => q.cat === p.cat)).filter((q) => !no.has(q.handle));
+    const sc = (q) => (q.rooms.includes(type) ? 2 : 0) + (style && q.styles.includes(style) ? 1 : 0);
+    return pool.map((q, i) => ({ q, i })).sort((a, b) => sc(b.q) - sc(a.q) || a.i - b.i).map((x) => x.q).slice(0, 4); };
+  const sampleOf = (t) => (RQ.SAMPLE_ROOMS.find((x) => x.id === t) || RQ.SAMPLE_ROOMS[0]).img.replace("-1600", "-900");
+  // the partner's page: the room picture, and "Gillar" / "Föreslå något annat" (with a pick of the same kind) on each thing;
+  // the answer goes back as a link, and "Prova själv i Mitt rum" opens the same set (with what you suggested) in a sample room
   const askView = (A) => {
     if (!A) return empty("Förslaget gick inte att öppna.");
     const ps = A.items.map((it) => RQ.byHandle(it.h)), total = A.items.reduce((s, it) => s + vPrice(it), 0);
     const ttl = `${A.name ? esc(A.name) + "s" : "Ett"} ${roomWord(A.type)}${A.style ? ` i ${RQ.STYLES[A.style].name.split(" ")[0].toLowerCase()} stil` : ""}`;
+    const altsHtml = (p) => { const os = H.othersFor(p.handle, { type: A.type, style: A.style, not: A.items.map((it) => it.h) }); return os.length ? `<div class="hem-ask-alts" hidden><p class="small">Vad vill du ha i stället? Valfritt.</p><div class="hem-ask-altl" role="group" aria-label="Något annat i stället för ${esc(p.name)}">${os.map((q) => `<button type="button" data-alt="${q.handle}" aria-pressed="false"><img src="${RQ.cut(q)}" alt=""><span>${esc(q.name)}</span><b>${kr(q.price)}</b></button>`).join("")}</div></div>` : ""; };
     return { title: "Vad tycker du? · RumIQ",
       html: `<header class="page-head wrap">${crumbs()}<span class="eyebrow">Vad tycker du?</span><h1 class="h1">${ttl}</h1>
           <p class="lead">${ps.length} ${ps.length === 1 ? "sak" : "saker"} · ${kr(total)}. Säg vad du tycker om var och en, så skickar du svaret tillbaka med en länk. Inget konto behövs.</p></header>
-        <section class="wrap hem-ask" style="padding-bottom:5rem"><ul class="hem-ask-list">${ps.map((p) => `<li data-h="${p.handle}"><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div>
-            <div class="chips" role="group" aria-label="Vad tycker du om ${esc(p.name)}?"><button type="button" class="chip" data-like="1" aria-pressed="false">Gillar</button><button type="button" class="chip" data-like="0" aria-pressed="false">Föreslå något annat</button></div></li>`).join("")}</ul>
+        <section class="wrap hem-ask" style="padding-bottom:5rem">
+          <figure class="hem-ask-pic" id="askPic"><span class="hem-ask-im"><img src="${esc(sampleOf(A.type))}" alt="Förslaget i ett exempelrum"><span class="hem-card-col" aria-hidden="true">${ps.slice(0, 5).map((p) => `<img src="${RQ.cut(p)}" alt="">`).join("")}</span></span><figcaption class="small" id="askCap">Förslaget i ett exempelrum. Ungefärlig bild.</figcaption></figure>
+          <ul class="hem-ask-list">${ps.map((p) => `<li data-h="${p.handle}"><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div>
+            <div class="chips" role="group" aria-label="Vad tycker du om ${esc(p.name)}?"><button type="button" class="chip" data-like="1" aria-pressed="false">Gillar</button><button type="button" class="chip" data-like="0" aria-pressed="false">Föreslå något annat</button></div>${altsHtml(p)}</li>`).join("")}</ul>
           <label class="hem-ask-name">Ditt namn, om du vill<input type="text" id="askName" maxlength="30" autocomplete="given-name"></label>
-          <div class="ctrl-row"><button class="btn" type="button" id="askSend" disabled>Skicka svaret</button><a class="btn ghost" href="#mitt-rum">Prova själv i Mitt rum</a></div>
+          <div class="ctrl-row"><button class="btn" type="button" id="askSend" disabled>Skicka svaret</button><button class="btn ghost" type="button" id="askTry">${RQ.roomIco}<span>Prova själv i Mitt rum</span></button></div>
           <p class="small" id="askNote" role="status">Svara på minst en sak. Svaret finns bara i länken du skickar, vi sparar inget.</p><p class="small hem-promise">${PROMISE}</p></section>`,
       mount(root) {
-        const ans = {}, send = $("#askSend", root);
-        root.addEventListener("click", (e) => { const c = e.target.closest("[data-like]"); if (!c) return; const li = c.closest("li"); ans[li.dataset.h] = +c.dataset.like; $$("[data-like]", li).forEach((x) => x.setAttribute("aria-pressed", x === c)); send.disabled = !Object.keys(ans).length; });
+        const ans = {}, alt = {}, send = $("#askSend", root), pic = $("#askPic .hem-ask-im > img", root);
+        const now = () => A.items.map((it) => (alt[it.h] ? { h: alt[it.h], v: 0 } : it)); // the set as you would have it
+        let n = 0; const draw = () => { const k = ++n; H.pictureOf(A.type, now()).then((u) => { if (!u || k !== n || !pic.isConnected) return; pic.src = u; pic.closest("figure").classList.add("snap"); $("#askCap", root).textContent = Object.keys(alt).length ? "Så här blir det med det du föreslår. Ungefärlig bild." : "Förslaget i ett exempelrum. Ungefärlig bild."; }); };
+        draw();
+        root.addEventListener("click", (e) => {
+          const c = e.target.closest("[data-like]"), o = e.target.closest("[data-alt]");
+          if (c) { const li = c.closest("li"), h = li.dataset.h, box = $(".hem-ask-alts", li); ans[h] = +c.dataset.like; $$("[data-like]", li).forEach((x) => x.setAttribute("aria-pressed", x === c)); if (box) box.hidden = ans[h] !== 0; if (ans[h] && alt[h]) { delete alt[h]; $$("[data-alt]", li).forEach((x) => x.setAttribute("aria-pressed", "false")); draw(); } send.disabled = false; return; }
+          if (o) { const li = o.closest("li"), h = li.dataset.h, on = alt[h] !== o.dataset.alt; if (on) alt[h] = o.dataset.alt; else delete alt[h]; $$("[data-alt]", li).forEach((x) => x.setAttribute("aria-pressed", on && x === o)); draw(); }
+        });
+        $("#askTry", root).addEventListener("click", () => H.openInRoom({ room: A.type, items: now(), style: A.style }));
         send.addEventListener("click", () => { const nm = clean($("#askName", root).value);
-          const url = new URL("delad/", document.baseURI).href + "#delad-s." + A.id + "." + Object.entries(ans).map(([h, v]) => pidOf(h) + (v ? "+" : "-")).join("_") + "~" + encodeURIComponent(nm);
+          const url = new URL("delad/", document.baseURI).href + "#delad-s." + A.id + "." + Object.entries(ans).map(([h, v]) => pidOf(h) + (v ? "+" : "-" + (alt[h] ? pidOf(alt[h]) : ""))).join("_") + "~" + encodeURIComponent(nm);
           shareUrl(url, "Mitt svar", "Här är vad jag tycker om rummet.", send); $("#askNote", root).textContent = "Skicka länken tillbaka. När den öppnas hamnar svaren i rummet."; });
       } };
   };
@@ -245,11 +282,11 @@
   const replyView = (A) => {
     if (!A) return empty("Svaret gick inte att öppna.");
     const r = H.room(A.id);
-    const rows = Object.entries(A.answers).map(([h, v]) => `<li><img src="${RQ.cut(RQ.byHandle(h))}" alt=""><div><b>${esc(RQ.byHandle(h).name)}</b><span>${v ? "Gillar" : "Föreslår något annat"}</span></div></li>`).join("");
-    if (r) { const fb = (r.feedback || []).filter((f) => !(f.name === A.name && JSON.stringify(f.answers) === JSON.stringify(A.answers))); H.patch(r.id, { feedback: [{ name: A.name, answers: A.answers, at: now() }, ...fb].slice(0, 10) }); }
+    const rows = Object.entries(A.answers).map(([h, v]) => { const o = A.alts[h] && RQ.byHandle(A.alts[h]); return `<li><img src="${RQ.cut(RQ.byHandle(h))}" alt=""><div><b>${esc(RQ.byHandle(h).name)}</b><span>${v ? "Gillar" : o ? `Föreslår ${esc(o.name)} i stället` : "Föreslår något annat"}</span></div></li>`; }).join("");
+    if (r) { const same = (f) => f.name === A.name && JSON.stringify(f.answers) === JSON.stringify(A.answers) && JSON.stringify(f.alts || {}) === JSON.stringify(A.alts); const fb = (r.feedback || []).filter((f) => !same(f)); H.patch(r.id, { feedback: [{ name: A.name, answers: A.answers, alts: A.alts, at: now() }, ...fb].slice(0, 10) }); }
     return { title: "Svar på ditt rum · RumIQ",
       html: `<header class="page-head wrap">${crumbs()}<span class="eyebrow">Svar på ditt rum</span><h1 class="h1">${A.name ? `${esc(A.name)} har svarat` : "Du har fått ett svar"}</h1>
-          <p class="lead">${r ? `Svaret är sparat i ${esc(H.name(r))} i Mitt hem.` : "Rummet finns inte i den här webbläsaren, så svaret visas bara här."}</p></header>
-        <section class="wrap hem-ask" style="padding-bottom:5rem"><ul class="hem-ask-list">${rows}</ul><div class="ctrl-row">${r ? `<a class="btn" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna rummet</a>` : `<a class="btn" href="#mitt-hem">Till Mitt hem</a>`}</div></section>` };
+          <p class="lead">${r ? `Svaret är sparat i ${esc(H.name(r))}, under Sparat.` : "Rummet finns inte i den här webbläsaren, så svaret visas bara här."}</p></header>
+        <section class="wrap hem-ask" style="padding-bottom:5rem"><ul class="hem-ask-list">${rows}</ul><div class="ctrl-row">${r ? `<a class="btn" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna rummet</a>` : `<a class="btn" href="#mitt-hem">Till Sparat</a>`}</div></section>` };
   };
 })();
