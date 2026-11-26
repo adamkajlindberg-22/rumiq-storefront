@@ -54,10 +54,12 @@
   H.patch = (id, p) => { const r = H.room(id); return r ? H.save({ ...r, ...p }) : null; };
   H.create = ({ label, type, style = null, budget = null, items = [] }) => {
     const t = RQ.roomById(type) ? type : "vardagsrum";
-    const r = { id: "rm" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: t, label: String(label || "").trim().slice(0, 40) || typeName(t), style: RQ.STYLES[style] ? style : null,
+    const r = { id: "rm" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: t, label: H.uniqueName(String(label || "").trim().slice(0, 37) || typeName(t)), style: RQ.STYLES[style] ? style : null,
       budget: budget > 0 ? Math.round(budget) : null, colours: [], material: "", notes: "", items: items.slice(0, 12), bought: {}, boards: [], feedback: [], at: now() };
     return H.save(r);
   };
+  // never two rooms with the same name: "Vardagsrum", "Vardagsrum 2", "Vardagsrum 3" (device2 A4)
+  H.uniqueName = (name, not) => { const have = new Set(H.rooms().filter((r) => r.id !== not).map((r) => H.name(r).toLowerCase())); if (!have.has(name.toLowerCase())) return name; let n = 2; while (have.has(`${name} ${n}`.toLowerCase())) n++; return `${name} ${n}`; };
   H.remove = (id) => { const all = H.rooms(), r = all.find((x) => x.id === id); if (!r) return null; RQ.homeRooms.save(all.filter((x) => x.id !== id)); if (H.activeId() === id) vault.set(ACTIVE, ""); vault.queue("rumiq-home"); fire(); return r; };
   H.restore = (r) => { if (r) H.save(r); };
   H.activeId = () => { const id = S.store.get(ACTIVE, ""); return id && H.room(id) ? id : null; };
@@ -168,7 +170,10 @@
   document.addEventListener("rq-room", (e) => {
     if (e.detail !== "room" || !RQ.room || !RQ.room.has()) return; let w = null; try { w = JSON.parse(RQ.ss.get(OWN) || "null"); } catch (x) {} if (!w || !w.type) return;
     const g = RQ.room.get(); if (g.sample) return RQ.ss.set(OWN, ""); // a sample room has its own type
-    RQ.ss.set(OWN, ""); if (Date.now() - (w.at || 0) > 36e5 || g.type) return;
+    RQ.ss.set(OWN, ""); if (Date.now() - (w.at || 0) > 36e5) return;
+    // a room asked for with your own photo is made now, when the photo has really come (device2 A3), tied to this photo
+    if (w.make && !w.made) { w.made = 1; const r = H.create({ label: w.make.label, type: w.type, style: w.style, items: w.make.items || [] }); H.setActive(r.id); if (RQ.ai) H.patch(r.id, { pkey: RQ.ai.projectKey() }); }
+    if (g.type) return;
     RQ.room.setType(w.type); if (!RQ.room._want || !RQ.room._want.style) RQ.room._want = { style: RQ.STYLES[w.style] ? w.style : null, budget: w.budget > 0 ? +w.budget : null };
   });
   /* Into Mitt rum through the editor's own entry, RQ.room.openWith({ room, own, items, style, budget, project }) (room.js). */
@@ -180,7 +185,7 @@
     // your own photo: the room type (and style) you already chose go with it, so the editor never asks "Vilket rum är det?" again.
     // Kept for the next own photo only (it survives the sign-in step), and dropped when a sample room comes instead.
     const t = room || (project && H.room(project) ? H.room(project).type : null);
-    RQ.ss.set(OWN, own && t ? JSON.stringify({ type: t, style, budget, at: Date.now() }) : "");
+    RQ.ss.set(OWN, own && t ? JSON.stringify({ type: t, style, budget, at: Date.now(), make: H._make || null }) : ""); H._make = null;
     const out = await R.openWith({ room, own, items: items.map((it) => (typeof it === "string" ? { h: it, v: 0 } : it)), style, budget, project, swap, ...(title ? { title } : {}), ...(add ? { add: true } : {}) });
     if (out && own) { RQ.ss.set(OWN, ""); const g = R.get(); if (t && g && !g.sample && !g.type) R.setType(t); } // the photo you already had
     if (out && project && RQ.ai) H.patch(project, { pkey: RQ.ai.projectKey() }); // only once the room is really open (not while it waits for sign-in)

@@ -106,7 +106,10 @@
       f.addEventListener("click", (e) => { const c = e.target.closest("[data-first-style]"); if (!c) return; style = style === c.dataset.firstStyle ? null : c.dataset.firstStyle; $$("[data-first-style]", f).forEach((b) => b.setAttribute("aria-pressed", b.dataset.firstStyle === style)); });
       f.addEventListener("submit", (e) => {
         e.preventDefault(); const go = (e.submitter && e.submitter.value) || "sample", type = f.type.value;
-        const r = H.create({ label: f.label.value || typeName(type), type, style, items: style ? H.propose({ type, style }).items : [] });
+        const items = style ? H.propose({ type, style }).items : [], label = f.label.value.trim() || typeName(type), R = RQ.room;
+        // your own photo, and none in this browser yet: the gate and the photo first; the room is made when the photo really comes (device2 A3)
+        if (go === "own" && !(R && R.has && R.has() && !R.get().sample)) { H._make = { label, items }; H.openInRoom({ room: type, own: true, items, style }); return; }
+        const r = H.create({ label, type, style, items });
         H.openInRoom({ room: r.type, own: go === "own", items: H.items(r), style, project: r.id });
       });
       f.type.addEventListener("change", () => { f.label.placeholder = "Till exempel " + typeName(f.type.value); });
@@ -177,7 +180,7 @@
   }
   function wireForm(id) {
     const f = $("#hemRoomF", sbody); if (!f) return;
-    const save = () => { const x = H.room(id); if (!x) return; const n = Math.round(+String(f.budget.value).replace(/\s/g, "")); H.patch(id, { label: f.label.value.trim().slice(0, 40) || typeName(f.type.value), type: f.type.value, budget: n > 0 ? n : null, material: f.material.value.trim(), notes: f.notes.value.trim() }); $("#hemTitle", sbody).textContent = H.name(H.room(id)); };
+    const save = () => { const x = H.room(id); if (!x) return; const n = Math.round(+String(f.budget.value).replace(/\s/g, "")); H.patch(id, { label: H.uniqueName(f.label.value.trim().slice(0, 37) || typeName(f.type.value), id), type: f.type.value, budget: n > 0 ? n : null, material: f.material.value.trim(), notes: f.notes.value.trim() }); $("#hemTitle", sbody).textContent = H.name(H.room(id)); };
     f.addEventListener("input", () => { clearTimeout(f._t); f._t = setTimeout(save, 350); });
     f.addEventListener("change", save);
     f.addEventListener("click", (e) => { const c = e.target.closest("[data-room-style]"); if (!c) return; const x = H.room(id), v = x.style === c.dataset.roomStyle ? null : c.dataset.roomStyle; H.patch(id, { style: v }); $$("[data-room-style]", f).forEach((b) => b.setAttribute("aria-pressed", b.dataset.roomStyle === v)); });

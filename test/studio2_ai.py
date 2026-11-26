@@ -352,6 +352,12 @@ with sync_playwright() as p:
     for W, Hh, mob in ((390, 844, True), (1440, 900, False)):
         tag = f"[fix {W}]"
         ctx, pg, errs = new(b, mob, W, Hh)
+        # device2 A3: own photo as a guest shows the gate first; no room is made until the photo comes. A4: never two rooms with one name
+        go(pg, "mitt-hem", 1200); pg.evaluate("document.querySelector('#hemFirstF button[value=own]').click()"); pg.wait_for_timeout(900)
+        ok(pg.evaluate("RQ.hem.rooms().length") == 0 and pg.evaluate("!!document.querySelector('.roomsheet.open, .sheet.open')"), f"{tag} own photo as a guest: the gate first, no room made yet (device2 A3)")
+        pg.evaluate("RQ.room.closeSetup && RQ.room.closeSetup()"); pg.wait_for_timeout(200)
+        names = pg.evaluate("(() => { const a = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }), b = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }), c = RQ.hem.create({ type: 'vardagsrum' }); const n = [a, b, c].map((r) => r.label); [a, b, c].forEach((r) => RQ.hem.remove(r.id)); return n; })()")
+        ok(names == ["Vardagsrum", "Vardagsrum 2", "Vardagsrum 3"], f"{tag} never two rooms with the same name (device2 A4): {names}")
         # the one promise before sign-in: Mitt rum's card and the sign-in sheet say the same as Skapa ditt första rum
         go(pg, "mitt-rum", 900); pg.evaluate("document.querySelector('.sheet.open [data-room-sample]') && document.querySelector('.sheet.open [data-room-sample]').click()"); pg.wait_for_timeout(1500)
         if pg.evaluate("RQ.room.has()") is False:
