@@ -54,7 +54,7 @@ PICS = "RQ.aiLib.store.list().then((r) => r.pics.map((p) => ({ id: p.id, n: p.n,
 ROOMS = "RQ.aiLib.store.list().then((r) => Object.keys(r.rooms).length)"
 # the AI server, mocked in the page: a streamed answer (with or without a retry) or plain JSON, a square picture
 LIVE = r"""(o) => {
-  const A = RQ.auth; A.mode = 'supabase'; A.start = async () => {}; A.token = async () => 'tok';
+  const A = RQ.auth; RQ_CONFIG.studio.aiLive = true; A.mode = 'supabase'; A.start = async () => {}; A.token = async () => 'tok';
   window.__st = { signed_in: true, consent: true, plan: 'free', plan_name: 'Gratis', free_play: false, balance: 4, daily_used: 0, daily_cap: 5, quality_left: 3, period_end: '2026-12-01T00:00:00Z' };
   A.client = () => ({ rpc: async (name) => name === 'ai_status' ? { data: window.__st } : name === 'ai_quality_refund' ? { data: 2 } : { data: null } });
   RQ_CONFIG.auth.preview = false;
