@@ -358,6 +358,8 @@ with sync_playwright() as p:
         pg.evaluate("RQ.room.closeSetup && RQ.room.closeSetup()"); pg.wait_for_timeout(200)
         names = pg.evaluate("(() => { const a = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }), b = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }), c = RQ.hem.create({ type: 'vardagsrum' }); const n = [a, b, c].map((r) => r.label); [a, b, c].forEach((r) => RQ.hem.remove(r.id)); return n; })()")
         ok(names == ["Vardagsrum", "Vardagsrum 2", "Vardagsrum 3"], f"{tag} never two rooms with the same name (device2 A4): {names}")
+        sty = pg.evaluate("(() => { localStorage.setItem('rumiq-style', JSON.stringify({ style: 'klassisk', at: new Date().toISOString() })); const r = RQ.hem.create({ type: 'sovrum' }), p = RQ.hem.progress(r, 0); RQ.hem.remove(r.id); localStorage.removeItem('rumiq-style'); return [p.parts[0], p.next.act]; })()")
+        ok(sty[0] == ["Stil: klassisk", True] and sty[1] != "style", f"{tag} a style found in Svep counts as the room's style in its progress (device2 A5): {sty}")
         # the one promise before sign-in: Mitt rum's card and the sign-in sheet say the same as Skapa ditt första rum
         go(pg, "mitt-rum", 900); pg.evaluate("document.querySelector('.sheet.open [data-room-sample]') && document.querySelector('.sheet.open [data-room-sample]').click()"); pg.wait_for_timeout(1500)
         if pg.evaluate("RQ.room.has()") is False:

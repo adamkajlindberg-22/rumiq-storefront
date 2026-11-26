@@ -118,7 +118,7 @@
   function nextStep(id, btn) {
     const r = H.room(id); if (!r) return; RQ.aiLib && RQ.aiLib.pics(id).then((pics) => {
       const nx = H.progress(r, pics.length).next;
-      if (nx.act === "see") return H.openInRoom({ room: r.type, items: H.items(r), style: r.style, budget: r.budget, project: r.id });
+      if (nx.act === "see") return H.openInRoom({ room: r.type, items: H.items(r), style: H.styleOf(r), budget: r.budget, project: r.id });
       if (nx.act === "buy") return RQ.addMany(H.money(r).toBuy.map((it) => it.h + "::" + (it.v || 0)), btn, H.name(r));
       openRoom(id, nx.act);
     });
@@ -147,7 +147,7 @@
       return `<li><img src="${RQ.cut(p)}" alt=""><span><b>${esc(p.name)}</b><small>${v ? "Gillar" : o ? `Föreslår ${esc(o.name)}, ${kr(o.price)}` : "Vill ha något annat"}</small></span>${v || !inRoom.has(h) ? "" : o && !inRoom.has(o.handle) ? `<button class="btn ghost sm" type="button" data-fb-to="${h}|${o.handle}">Byt till den</button>` : `<button class="btn ghost sm" type="button" data-fb-byt="${h}">Byt</button>`}</li>`; }).join("")}</ul></div>`).join("")}</div>`; };
   const restHtml = (r, id) => { const bs = boards().filter((b) => b.room === id), has = H.items(r).length;
     // with a list already, the proposal is "something else" behind one line, so the same things are not shown twice
-    const prop = H.slot({ type: r.type, style: r.style, budget: r.budget, room: r.id, from: "room", noAsk: true, avoid: has ? H.items(r).map((it) => it.h) : [] });
+    const prop = H.slot({ type: r.type, style: H.styleOf(r), budget: r.budget, room: r.id, from: "room", noAsk: true, avoid: has ? H.items(r).map((it) => it.h) : [] });
     return `<section class="hem-sec" id="hemPropSec">${has ? `<details class="hem-more hem-other"><summary>Se ett annat förslag för rummet</summary>${prop}</details>` : prop}</section>
       <section class="hem-sec"><div class="sec-row"><h3 class="h3">Moodboards</h3><button class="btn ghost sm" type="button" data-board-new="${esc(id)}">Ny moodboard</button></div>${bs.length ? `<div class="hem-boards">${bs.map((b) => `<button type="button" class="hem-board" data-board-open="${esc(b.id)}"><span class="hem-board-ims">${b.items.slice(0, 4).map((it) => RQ.byHandle(it.h) ? `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">` : "").join("")}</span><b>${esc(b.name || "Moodboard")}</b></button>`).join("")}</div>` : `<p class="small">Samla saker fritt, utan rum, och prova dem sedan här.</p>`}</section>
       <section class="hem-sec"><h3 class="h3">Om rummet</h3><form class="hem-room-f" id="hemRoomF" novalidate>

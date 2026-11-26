@@ -74,10 +74,12 @@
   H.money = (r) => { const its = H.items(r), b = H.boughtSet(r), total = its.reduce((s, it) => s + vPrice(it), 0), spent = its.filter((it) => b.has(it.h)).reduce((s, it) => s + vPrice(it), 0);
     return { total, spent, left: r && r.budget ? r.budget - total : null, toBuy: its.filter((it) => !b.has(it.h)) }; };
   // what is done and the one next step
+  // the room's style: its own, else the one you found in Svep (your style profile) (device2 A5)
+  H.styleOf = (r) => (r && RQ.STYLES[r.style] ? r.style : ((S.style && S.style()) || {}).style || null);
   H.progress = (r, pics = 0) => {
-    const its = H.items(r), m = H.money(r);
-    const parts = [[r.style ? `Stil: ${RQ.STYLES[r.style].name.toLowerCase()}` : "Stil", !!r.style], [pics ? `${pics} ${pics === 1 ? "bild" : "bilder"}` : "Bilder", pics > 0], [its.length ? `${its.length} ${its.length === 1 ? "produkt vald" : "produkter valda"}` : "Produkter", its.length > 0], [r.budget ? `Budget ${kr(r.budget)}` : "Budget", !!r.budget]];
-    const next = !r.style ? { label: "Välj stil", act: "style" } : !its.length ? { label: "Se ett förslag", act: "propose" } : !pics ? { label: "Se det i ditt rum", act: "see" } : !r.budget ? { label: "Välj budget", act: "budget" } : m.toBuy.length ? { label: "Köp det som är kvar", act: "buy" } : { label: "Allt är köpt", act: "open" };
+    const its = H.items(r), m = H.money(r), st = H.styleOf(r);
+    const parts = [[st ? `Stil: ${RQ.STYLES[st].name.toLowerCase()}` : "Stil", !!st], [pics ? `${pics} ${pics === 1 ? "bild" : "bilder"}` : "Bilder", pics > 0], [its.length ? `${its.length} ${its.length === 1 ? "produkt vald" : "produkter valda"}` : "Produkter", its.length > 0], [r.budget ? `Budget ${kr(r.budget)}` : "Budget", !!r.budget]];
+    const next = !st ? { label: "Välj stil", act: "style" } : !its.length ? { label: "Se ett förslag", act: "propose" } : !pics ? { label: "Se det i ditt rum", act: "see" } : !r.budget ? { label: "Välj budget", act: "budget" } : m.toBuy.length ? { label: "Köp det som är kvar", act: "buy" } : { label: "Allt är köpt", act: "open" };
     return { parts, next };
   };
 
@@ -164,6 +166,11 @@
     if (b.matches("[data-hem-see]")) { const r = ensureRoom(s); H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); H.openInRoom({ room: r.type, items: s.pr.items, style: s.pr.style, budget: s.budget, project: r.id }); return; }
     if (b.matches("[data-hem-ask]")) { const r = ensureRoom(s); H.patch(r.id, { items: s.pr.items, style: s.pr.style }); repaint(box); H.askLink(H.room(r.id), $("[data-hem-ask]", box) || b); }
   });
+
+  /* Inred åt mig in a style: the room you are in takes that style (device2 A5) */
+  if (RQ.room && typeof RQ.room.suggestSet === "function") { const base = RQ.room.suggestSet;
+    RQ.room.suggestSet = function (o) { const out = base.apply(this, arguments), st = o && o.style, id = H.activeId(), r = id && H.room(id);
+      if (st && RQ.STYLES[st] && r && r.style !== st && RQ.ai && r.pkey && RQ.ai.projectKey() === r.pkey) H.patch(id, { style: st }); return out; }; }
 
   /* ------------------------------------------------------------------ into Mitt rum ("Se det i ditt rum") */
   const OWN = "rumiq-hem-own";
