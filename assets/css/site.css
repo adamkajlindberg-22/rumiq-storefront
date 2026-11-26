@@ -735,6 +735,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .search input{font-size:clamp(1.7rem,4.2vw,3.2rem);font-weight:500;letter-spacing:-.035em;border:0!important;border-radius:0;background:transparent!important;padding:.4rem 0;box-shadow:none!important}
 /* the field is an underline: focus makes it a thicker green line (no box inside the line) */
 .search .sfield{transition:border-color .2s}
+#searchRes [tabindex="-1"]:focus{outline:0}
 .search .sfield:focus-within{border-bottom:3px solid var(--accent);padding-bottom:calc(.4rem - 2px)}
 .search input:focus-visible{outline:0}
 /* the hit that Enter opens */

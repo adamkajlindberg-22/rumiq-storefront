@@ -1115,11 +1115,20 @@
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
   RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); behind(true); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); const into = (n) => { sInput.focus(); if (document.activeElement === sInput) sInput.select(); else if (n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 60); }; // the field may still be turning visible (reduced motion): try again on the next frames
+  /* Enter, or the keyboard's own Sök key (Android sends it as a form submit, sometimes without a plain Enter keydown):
+     with a mouse the marked first hit opens; on a phone the keyboard goes away so the hits show, and a single product opens */
+  const searchGo = () => {
+    clearTimeout(sT); doSearch(); const first = pick(); if (first) { first.click(); return; }
+    const prods = $$(".card .ct a", sRes); if (prods.length === 1 && sInput.value.trim()) { sInput.blur(); prods[0].click(); return; }
+    // the focus moves to the top of the hits (still inside the search), which puts the keyboard away
+    const head = $(".eyebrow, .empty h3, .chips a", sRes); if (head) { if (!head.matches("a")) head.tabIndex = -1; head.focus({ preventScroll: true }); head.scrollIntoView({ block: "nearest" }); } else sInput.blur();
+  };
+  const sForm = $("#searchForm"); if (sForm) sForm.addEventListener("submit", (e) => { e.preventDefault(); searchGo(); });
   // keys in the search: Enter puts the keyboard away on a phone and steps into the hits, the arrows walk through them
   const sItems = () => $$("a.chip, button.chip, .card .ct a, .empty a, .mag-grid a", sRes).filter((el) => el.offsetParent);
   $("#search").addEventListener("keydown", (e) => {
     const items = sItems(), i = items.indexOf(document.activeElement), inField = e.target === sInput;
-    if (e.key === "Enter" && inField) { e.preventDefault(); clearTimeout(sT); doSearch(); const first = pick(); if (first) first.click(); else sInput.blur(); return; }
+    if ((e.key === "Enter" || e.keyCode === 13) && inField && !e.isComposing) { e.preventDefault(); searchGo(); return; }
     if (e.key === "ArrowDown" && inField && items.length) { e.preventDefault(); ($(".card .ct a", sRes) || items[0]).focus(); return; }
     if (i < 0 || !/^Arrow(Down|Up|Left|Right)$/.test(e.key)) return;
     e.preventDefault(); const n = i + (/Down|Right/.test(e.key) ? 1 : -1);
