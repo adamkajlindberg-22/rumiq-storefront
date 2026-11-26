@@ -345,8 +345,8 @@ with sync_playwright() as p:
         pg.evaluate("document.querySelector('.mb-try .chip.fit').click()"); pg.wait_for_timeout(2600)
         # the editor's surface rules hold (studio2 review M8): a thing with no free surface is left out and named in the editor, never put on the floor
         inroom = pg.evaluate("RQ.room.scene().map((i) => i.h)"); note = pg.evaluate("(document.getElementById('rmSugg') || {}).innerText || ''")
-        out = [h for h in hs if h not in inroom]
-        ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.get().sample") and set(inroom) <= set(hs) and len(inroom) >= 2 and all(pg.evaluate("(h) => RQ.byHandle(h).name", h) in note for h in out), f"{tag} Prova i ett rum: the board's products placed by the editor in the sample room you chose, what does not fit named: {inroom} {out}")
+        out = [h for h in hs if h not in inroom]  # D7: a sample room's tables hold fewer lamps now (the mug's spot is taken), so one of three lamps may be all that fits
+        ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.get().sample") and set(inroom) <= set(hs) and len(inroom) >= 1 and all(pg.evaluate("(h) => RQ.byHandle(h).name", h) in note for h in out), f"{tag} Prova i ett rum: the board's products placed by the editor in the sample room you chose, what does not fit named: {inroom} {out}")
         tab = pg.evaluate("(() => { const a = RQ.hem.room(RQ.hem.activeId()); return [a && a.label, (document.querySelector('[data-proj][aria-pressed=true]') || {}).innerText || '', document.getElementById('toast').innerText] })()")
         ok(tab[0] and tab[0] in tab[1], f"{tag} a sample room from the board becomes a named room of yours, its tab chosen: {tab}")
         go(pg, "mitt-hem", 1300)

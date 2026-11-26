@@ -87,7 +87,7 @@ with sync_playwright() as p:
         lamp, throw, art, basket, rug, cush = [pg.evaluate(SPOT, h) for h in ["lysa-keramiklampa", "plad-ullblandning-havre", "affisch-linje-ekram", "flatad-forvaringskorg", "strand-jutematta", "lin-kuddfodral"]]
         ok(60 < lamp[1] < 72 and lamp[0] > 70, f"{tag} lamp stands on the side table")
         ok(art[1] < 55, f"{tag} print hangs on the wall")
-        ok(basket[1] > 78 and rug[1] > 90, f"{tag} basket and rug are on the floor")
+        ok(basket[1] > 78 and rug[1] > 85, f"{tag} basket and rug are on the floor")  # M5: the rug lies in front of the sofa in perspective (y ~89), not as a flat mat at the bottom
         ok(55 < throw[0] < 86 and 60 < throw[1] < 76 and 55 < cush[0] < 86, f"{tag} throw and cushions are on the sofa")
         ok(lamp[2] < 12 and basket[2] < 12 and art[2] < 12, f"{tag} sizes follow real measurements (lamp {lamp[2]}, basket {basket[2]})")
         ok(rug[2] > 35, f"{tag} the rug is much wider than a lamp")
