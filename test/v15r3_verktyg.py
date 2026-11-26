@@ -247,7 +247,7 @@ with sync_playwright() as p:
         pg.evaluate("RQ.room.closeSetup()")
         if not mobile:
             go(pg, "mitt-rum", 800); pg.evaluate(SAMPLE, "vardagsrum"); pg.wait_for_timeout(300); pg.evaluate("RQ.openAI()"); pg.wait_for_timeout(1500)
-            ok(pg.evaluate("document.querySelector('#aiSheet .sheet-in').getBoundingClientRect().width") <= 560, "desktop: the 'Logga in för att skapa bilden' dialog is sized to its three lines")
+            ok("Förhandsvisning utan konto" in pg.evaluate("document.querySelector('#aiSheet').innerText") and pg.evaluate("!!document.getElementById('aiGo')"), "desktop: a guest gets the honest preview demo (device2 A1), not a sign-in wall")
         ok(not errs, f"{tag} konto/sheet: no script errors {errs[:2]}")
         ctx.close()
 
