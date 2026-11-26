@@ -2344,7 +2344,7 @@ body.on-checkout .tools{grid-column:3}
 /* svep2: Svep tillsammans for 2 to 6 people */
 .gr-ppl{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem .9rem;margin:.2rem 0 0;padding:0}
 .gr-ppl li{display:flex;align-items:center;gap:.45rem;font-size:.95rem}
-.gr-av{--c:#8C8A80;display:grid;place-items:center;width:2.25rem;height:2.25rem;border-radius:50%;background:color-mix(in srgb,var(--c) 34%,var(--paper));color:var(--ink);font-weight:620;font-size:.86rem;flex:none}
+.gr-av{--c:#8C8A80;display:grid;place-items:center;width:2.25rem;height:2.25rem;border-radius:50%;background:var(--sunk);background:color-mix(in srgb,var(--c) 34%,var(--paper));color:var(--ink);font-weight:620;font-size:.86rem;flex:none}
 .gr-av[data-c="0"]{--c:#8E9A7E}.gr-av[data-c="1"]{--c:#C4A57A}.gr-av[data-c="2"]{--c:#B9876D}.gr-av[data-c="3"]{--c:#7F95A8}.gr-av[data-c="4"]{--c:#9A88A3}.gr-av[data-c="5"]{--c:#8C8A80}
 .gr-ppl .you .gr-av{background:none;border:1.5px dashed var(--field);color:var(--muted)}
 .gr-ppl .you span:last-child{color:var(--muted)}
