@@ -34,6 +34,8 @@
     "strand-jutematta": ["rug", 230, 0.37], "dagsljus-linnegardin-2-pack": ["window", 60, 2.63],
   };
   const meta = (p) => KIND[p.handle] || [p.wall ? "wall" : "surface", p.wall ? 50 : 20, 1.2];
+  /* a lamp's narrow foot: [how much of its height from the bottom, its width there as a share of the whole] (read off the cut-outs) */
+  const BASE = { "glob-bordslampa-opalglas": [0.4, 0.45], "lysa-keramiklampa": [0.5, 0.55], "svamp-uppladdningsbar-lampa": [0.6, 0.63] };
   const kindOf = (p) => meta(p)[0];
   // the sort of a thing (Byt, the partner page, Prova i Mitt rum): only the same sort stands in for it
   const SORTS = [[/lampa/, "lampa"], [/doftljus/, "doftljus"], [/ljusstake/, "ljusstake"], [/kuddfodral/, "kudde"], [/plad/, "plad"], [/paslakan/, "sang"], [/affisch|tavla|poster/, "bild"], [/korg|lada|forvaring(?!sburk)/, "forvaring"], [/kruka/, "kruka"], [/matta/, "matta"], [/gardin/, "gardin"], [/handduk/, "handduk"], [/burk/, "burk"], [/vas\b|vas-|keramikvas/, "vas"]];
@@ -45,43 +47,43 @@
      horizon h and the slope k. Rugs and curtains are [x, y, width, squash]. sun = the side the light comes from. */
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
-      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], edge: [[71.3, 84.7, 68.5]], // the side table's top runs from 71.8 to 84.4; a mug stands at 75.6-79.3
+      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5, 62.4]], edge: [[72.9, 84.6, 68.5]], // the side table's top runs from 73.1 to 84.4 (measured on a grid); a mug stands at 75.8-79.2, its top at 62.4
       cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [57.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
       rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
     sovrum: { h: 55, k: 0.95, sun: 1,
-      surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]],
+      surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]], busy: [[17.8, 21.2, 69, 64]], edge: [[7.8, 23.5, 70.4]], /* the nightstand: its own lamp (a new lamp stands in for it), a mug on a book */
       cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[47, 69.5, 19], [60, 69, 19]],
       wall: [[50, 43, 15], [62, 43, 15], [40, 43, 15]],
       floor: [[87, 89], [77, 96], [45, 98], [60, 96]],
       rug: [[63, 99, 52, 0.4]], window: [[80.6, 74, 13.5, 1.12]] },
     kok: { h: 52, k: 0.58, sun: 1, // the only free floor is the passage to the right; the hob and the sink are not places to put things
-      surface: [[70.6, 62.4, 26], [59.6, 62.2, 26], [23, 62.4, 26]],
+      surface: [[70.6, 62.4, 26], [59.6, 62.2, 26], [23, 62.4, 26]], busy: [[25.8, 34.8, 62, 37], [39.3, 57, 62.5, 46], [62.8, 66, 62, 55]], edge: [[9, 75, 62.4]], /* the counter: the board, the bowl and the pump, the sink and its tap, the vase */
       cushion: [], throw: [], bedding: [],
       wall: [[62, 38, 15], [49, 38, 15]],
       floor: [[81.5, 93], [88, 98]],
       rug: [[84, 99, 26, 0.5]], window: [[90.6, 97, 15, 1.33]] },
     hall: { h: 56, k: 0.9, sun: 1,
-      surface: [[49, 67.6, 18.5], [59, 67.6, 18.5], [39, 67.6, 18.5], [4.8, 60.4, 30], [17.3, 58.9, 30]],
+      surface: [[49, 67.6, 18.5], [59, 67.6, 18.5], [39, 67.6, 18.5], [4.8, 60.4, 30], [17.3, 58.9, 30]], busy: [[9, 14, 59.5, 47.5]], edge: [[30.5, 67, 67.6], [0, 18.8, 59.6]], /* the bench; the shelf with its own lamp */
       cushion: [[42, 67.6, 18.5]], throw: [[57, 71, 18.5]], bedding: [[49, 67.6, 18.5]],
       wall: [[41, 47, 15.5], [27, 30, 15.5]],
       floor: [[24.5, 87], [47, 94], [66, 93], [33, 96]], // beside and in front of the bench, never through it
       rug: [[46, 98, 52, 0.4]], window: [[74.4, 83, 13, 1.27]] },
     badrum: { h: 45, k: 0.69, sun: 1, // the vanity beside the basin, the shelf and the window sill; the floor between the stool and the basket
-      surface: [[37.6, 58.8, 34], [48.5, 33, 30], [79.5, 54, 28]],
+      surface: [[37.6, 58.8, 34], [48.5, 33, 30], [79.5, 54, 28]], busy: [[19.8, 37.2, 58.5, 41], [38.2, 41.4, 33, 28], [73.3, 77.7, 54.5, 34]], edge: [[16.6, 39.6, 58.8], [34.4, 53.6, 33], [72, 82.2, 54]], /* the pump and the basin, the jars on the shelf, the plant on the sill */
       cushion: [], throw: [], bedding: [],
       wall: [[56, 64, 24]],
       floor: [[50, 97], [41, 98.5], [57, 99.5]],
       rug: [[50, 100, 40, 0.35]], window: [[76.5, 55, 11, 1.06]] },
     hemmakontor: { h: 45, k: 0.55, sun: 1, // the desk around what already stands there, the empty wall, the strip of floor
-      surface: [[60.5, 62.5, 27], [77.5, 62.5, 27], [64, 67, 28]],
+      surface: [[60.5, 62.5, 27], [77.5, 62.5, 27], [64, 67, 28]], busy: [[65.3, 72.7, 64.5, 63.5], [82, 89, 66, 44]], edge: [[57.5, 86, 62.5], [59, 91, 67]], /* the desk: the phone lying on it, the plant; its own lamp and box stand behind */
       cushion: [], throw: [], bedding: [],
       wall: [[28, 50, 25], [40, 50, 25], [16, 50, 25]],
       floor: [[22, 97], [36, 97], [10, 98], [47, 97.5]],
       rug: [[28, 100, 50, 0.3]], window: [[94.5, 100, 11, 1.6]] },
     uteliv: { h: 40, k: 0.64, sun: 1, // the bench's bare end, the side table, the seat; the deck in front of the bench
-      surface: [[38, 62, 27], [65.5, 61, 27], [42.5, 62, 27]],
+      surface: [[38, 62, 27], [65.5, 61, 27], [42.5, 62, 27]], busy: [[64, 76, 60.5, 43]], edge: [[33, 44.5, 62], [63, 77, 60.5]], /* the bench's bare end; the round table holds the room's own lamp */
       cushion: [[55, 59.5, 27]], throw: [[84, 64, 26]], bedding: [],
       wall: [[39, 56, 25]],
       floor: [[38, 92], [52, 94], [24, 97]],
@@ -132,12 +134,20 @@
     [...new Set(list.filter((it) => it.row).map((it) => it.y))].forEach((y) => { const row = list.filter((it) => it.row && it.y === y).sort((a, b) => a.x - b.x), sum = row.reduce((t, it) => t + it.w, 0), k = Math.min(1, (band - 2 * (row.length + 1)) / Math.max(1, sum));
       row.forEach((it) => { it.w = +(it.w * k).toFixed(1); }); const used = row.reduce((t, it) => t + it.w, 0), gap = (band - used) / (row.length + 1); let x = lo + gap;
       row.forEach((it) => { it.x = +(x + it.w / 2).toFixed(1); x += it.w + gap; }); }); return list; };
-  const spotFor = (p, list, raw, MX, over, row) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor
+  const spotFor = (p, list, raw, MX, over, row, near) => { /* MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor; near: [x, y] the free place nearest to it (a pin put down by hand) */
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
-    const busy = (x, y, w, k) => SORT[k || kind] === "s" && ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
-    const foot = /lampa|vas|ljus|kruka/.test(p.handle) ? 0.25 : 0.4; // a lamp's shade may reach past the edge, its foot may not; a tray or a box stands on all of its width
-    const overEdge = (x, y, w, k) => (k || kind) === "surface" && ((M && M.edge) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && (x - w * foot < a || x + w * foot > b)); // it would hang over the table's edge
+    /* something in the photo stands there (a mug on the side table, the basin on the vanity): [left, right, y, top]. The
+       whole width of the thing keeps clear of it (its dashed footprint and the picture alike, review D7); a thing standing
+       behind it and higher than its top (y < top) does not touch it */
+    const tallP = (w) => w * meta(p)[2] * (MX || !room ? 1600 / 893 : room.w / room.h); /* its height in % of the photo's height */
+    const busy = (x, y, w, k) => SORT[k || kind] === "s" && ((M && M.busy) || []).some(([a, b, yy, top]) => { if (Math.abs(yy - y) >= 4 || (top != null && y < top)) return false;
+      const bs = BASE[p.handle], up = top != null ? (y - top + 1.5) / tallP(w) : 1, half = w * 0.5 * (bs && up <= bs[0] ? bs[1] : 1); /* a lamp's narrow foot may stand beside a mug that is lower than its shade */
+      return x + half > a - 0.3 && x - half < b + 0.3; });
+    const foot = /lampa|vas|ljus|kruka/.test(p.handle) ? 0.25 : 0.4; /* a lamp's shade may reach past the edge, its foot may not; a tray or a box stands on all of its width */
+    /* the tops of the tables at that height ([left, right, y]): the foot stands on one of them, never over its edge or in the air between two */
+    const edgesAt = (y) => ((M && M.edge) || []).filter(([, , yy]) => Math.abs(yy - y) < 4);
+    const overEdge = (x, y, w, k) => { if ((k || kind) !== "surface") return false; const es = edgesAt(y); return es.length > 0 && !es.some(([a, b]) => x - w * foot >= a && x + w * foot <= b); };
     const taken = (x, y, w, k) => busy(x, y, w, k) || overEdge(x, y, w, k) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
@@ -160,13 +170,23 @@
         if (kd === "window" && !M && room) { const w = clamp(80 / (meta(p)[2] * room.w / room.h), 8, 40); return { x: +Math.min(sp[0], 99 - w / 2).toFixed(1), y: sp[1], w: +w.toFixed(1), sy: sp[3] }; }
         return { x: sp[0], y: sp[1], w: sp[2], sy: sp[3] }; }
       const width = (sp) => clamp(cm * (sp[2] || floorScale(sp[1], M)) / 100 * k, 2.5, 70);
+      /* where on the surface a thing may stand: the table's top when the map knows it, else a little either side of its spots */
+      const span = (sp, w) => { const e = edgesAt(sp[1]).find(([a, b]) => sp[0] >= a && sp[0] <= b); if (e && SORT[kd] === "s") return [e[0], e[1]];
+        const row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]); return [Math.max(M ? 3 : 2 + w / 2, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), Math.min(M ? 97 : 98 - w / 2, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30))]; };
+      /* a pin put down by hand: the free place on this kind of surface nearest to where it was put (never on top of another
+         thing or of what stands in the photo); null when that surface is full */
+      if (near && M && kd !== "floor" && kd !== "rug" && kd !== "window" && kd !== "wall") { let best = null, bd = 1e9;
+        spots.forEach((sp) => { const w = width(sp), [lo, hi] = span(sp, w), x0 = clamp(near[0], lo, hi);
+          for (let d = 0; d <= hi - lo; d += 0.5) { let hit = null; for (const x of d ? [x0 + d, x0 - d] : [x0]) if (x >= lo && x <= hi && !taken(x, sp[1], w, kd)) { hit = x; break; }
+            if (hit != null) { const dd = Math.hypot(hit - near[0], (sp[1] - near[1]) * 1.6); if (dd < bd) { bd = dd; best = { x: +hit.toFixed(1), y: sp[1], w: +w.toFixed(1) }; } break; } } });
+        return best; }
       // a small thing for a table (a candle, a vase) takes a side spot first, so a lamp keeps the table's main spot and does not end
       // up at its far end against the sofa (device review X6)
       const order = M && SORT[kd] === "s" && cm < 15 && spots.length > 1 ? [...spots.slice(1), spots[0]] : spots;
       const free = order.find((sp) => !taken(sp[0], sp[1], width(sp), kd)); if (free) return { x: free[0], y: free[1], w: +width(free).toFixed(1) };
       // every mapped spot is taken: the free place on the same surface nearest to one of them (a second lamp goes to the
       // other end of the side table, not to the floor), as long as that is still on the surface
-      for (const sp of spots) { const w = width(sp), row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]), lo = Math.max(M ? 3 : 2 + w / 2, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), hi = Math.min(M ? 97 : 98 - w / 2, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30)); // its foot stays on the surface (and in your own photo, all of it inside the picture)
+      for (const sp of spots) { const w = width(sp), [lo, hi] = span(sp, w); /* its foot stays on the surface (and in your own photo, all of it inside the picture) */
         for (let d = 0.5; d <= hi - lo; d += 0.5) for (const x of [sp[0] + d, sp[0] - d]) if (x >= lo && x <= hi && !taken(x, sp[1], w, kd)) return { x: +x.toFixed(1), y: sp[1], w: +w.toFixed(1) }; }
       return null;
     };
@@ -389,7 +409,9 @@
       const n = { ...it, h: q.handle }; if (v > 0 && (q.variants || [])[v]) n.v = v; else delete n.v;
       delete n.sg; // swapped (or another colour) by hand: yours now, so Inred åt mig keeps it (device review R3)
       if (q.handle !== h) { const r = meta(p)[1] > 0 ? meta(q)[1] / meta(p)[1] : 1; n.w = +clamp(it.w * r, 1, 96).toFixed(1); n.w0 = +clamp((it.w0 || it.w) * r, 1, 96).toFixed(1); delete n.sy; const sp = spotFor(q, [], true); if (sp.sy && sp.sy !== 1) n.sy = sp.sy; delete n.real;
-        if (SURF[it.on] && !(CAN[kindOf(q)] || []).includes(it.on)) delete n.on; const tw = trueW(n); if (tw) { n.w = tw; n.real = true; } }
+        if (SURF[it.on] && !(CAN[kindOf(q)] || []).includes(it.on)) delete n.on; const tw = trueW(n); if (tw) { n.w = tw; n.real = true; }
+        /* a wider thing in a sample room keeps clear of what stands on that table (review D7): the nearest free place on it */
+        const M = mapOf(); if (M && kindAt(surfOf(n), kindOf(q)) === "surface") { const sp = spotFor(q, list.filter((x, j) => j !== i), true, M, "surface", false, [n.x, n.y]); if (sp && !sp.moved) { n.x = sp.x; n.y = sp.y; } } }
       list[i] = n; R._swapped = { from: h, to: q.handle }; return R.saveScene(list); },
     /* a colour other than the one the picture shows: the cut-out takes the colour's tone (approximate, and said so) */
     tint: (it) => { const p = RQ.byHandle(it.h); return it.v > 0 && p && (p.variants || [])[it.v] ? p.tone[it.v] || null : null; },
@@ -774,6 +796,8 @@
   /* from the AI picture ("Prova en annan färg", "Byt produkt"): Mitt rum with Byt open on that thing; colour: true opens it at
      the colours. Answers false when the thing is not in the room. */
   R.leftOut = () => (R._leftOut || []).slice();
+  /* for the tests: the sample rooms' maps and what a thing is */
+  R._maps = MAPS; R._kind = (p) => kindOf(p); R._base = (p) => BASE[p.handle] || null; R._ratio = (p) => meta(p)[2];
   /* which of these things the editor will really put in a room, by the same rules as openWith (device review R2), so a
      proposal offers only what fits and its count and total agree with the editor's:
        RQ.room.fits(items, roomType, { own: false }) -> { fit: [{ h, v }], out: [{ h, v }], later: [{ h, v }], count, total, outTotal }
@@ -888,12 +912,22 @@
   /* a pin moved to x, y (and maybe a new surface): the thing stands there at the right width; in a sample room the surface is
      the nearest one it can stand on and a table thing snaps onto that table's top */
   R.movePin = (h, x, y, sf) => { const list = R.scene(), i = list.findIndex((it) => it.h === h); if (i < 0) return false; const it = { ...list[i] }, p = RQ.byHandle(h), k = kindOf(p);
-    const s2 = sf || surfaceAt(h, x, y), M = mapOf(); it.x = +clamp(x, 1, 99).toFixed(1); it.y = +clamp(y, 4, 100).toFixed(1);
-    if (M && s2 === "golv" && kindAt(s2, k) !== "rug") { const fl = M.floor || []; const top = fl.length ? Math.min(...fl.map((f) => f[1])) : M.h + 20; if (it.y < top - 1) { const near = fl.slice().sort((a, b) => Math.abs(a[0] - x) - Math.abs(b[0] - x))[0]; it.y = near ? near[1] : top; } } // on the floor, not in mid-air at the table's height
-    if (M && s2 !== "golv" && s2 !== "vagg") { const pts = M[kindAt(s2, k)] || []; if (pts.length) { const near = pts.slice().sort((a, b) => Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y))[0]; it.y = near[1]; if (Math.abs(near[0] - x) > 12) it.x = near[0]; } }
-    if ((CAN[k] || []).includes(s2)) it.on = s2; delete it.row; delete it.sg; it.pc = true;
+    const s2 = sf || surfaceAt(h, x, y), M = mapOf(), kd = kindAt(s2, k); it.x = +clamp(x, 1, 99).toFixed(1); it.y = +clamp(y, 4, 100).toFixed(1); let sOn = s2, full = false, low = false;
+    /* on the floor, a rug too, never up the wall or in mid-air at the table's height (review B2): a sample room knows where its floor
+       begins, your own photo is taken to have floor in its lower part */
+    if (s2 === "golv") { const fl = M ? (M.floor || []).concat(kd === "rug" ? M.rug || [] : []) : []; const top = M ? (fl.length ? Math.min(...fl.map((f) => f[1])) : M.h + 20) : GENERIC.h + 12;
+      if (it.y < top - 1) { low = true; const near = M && kd !== "rug" ? (M.floor || []).slice().sort((a, b) => Math.abs(a[0] - x) - Math.abs(b[0] - x))[0] : null; it.y = near ? near[1] : top; } }
+    /* on a table, a sofa or a bed in a sample room: the free place on it nearest to where it was put, never on top of another
+       thing or of what stands in the photo (review M1, D7); a full table sends it to the floor, and the page says so */
+    if (M && s2 !== "golv" && s2 !== "vagg") { const sp = spotFor(p, list.filter((o) => o.h !== h), true, M, kd, false, [x, y]);
+      if (sp) { it.x = sp.x; it.y = sp.y; if (sp.moved === "floor") { full = true; sOn = "golv"; } } }
+    if ((CAN[k] || []).includes(sOn)) it.on = sOn; delete it.row; delete it.sg; it.pc = true;
     const wa = widthAt(it); it.w = wa.w; if (wa.sure) it.real = true; else delete it.real;
+    /* why it is not where it was put: said by the page (R.pinNote) */
+    const far = Math.hypot(it.x - x, (it.y - y) * 1.6) > 6, nm = p.name, vb = verbOf(it), can = (CAN[k] || ["golv"]).map((c) => SURF[c]);
+    R.pinNote = full ? `${SURF_DEF[s2].replace(/^./, (c) => c.toUpperCase())} är fullt, så den ${vb} ${SURF_DEF[sOn]} nu.` : low ? `${nm} ${vb} ${SURF_DEF.golv}, så den kan inte flyttas högre upp.` : far && !sf ? `${nm} kan ${INF[vb] || "stå på"} ${can.length > 1 ? can.slice(0, -1).join(", ") + " eller " + can[can.length - 1] : can[0]}, så den ${vb} ${SURF_DEF[sOn]} nu.` : far ? `Där var det fullt, så den ${vb} på närmaste lediga plats.` : "";
     list[i] = it; return R.saveScene(list); };
+  const SURF_DEF = { golv: "golvet", bord: "bordet", vagg: "väggen", sang: "sängen", soffa: "soffan" }, INF = { "står på": "stå på", "ligger på": "ligga på", "hänger på": "hänga på", "hänger vid": "hänga vid" };
   /* the order of the pins: one step earlier or later (the number on the pin follows) */
   R.pinOrder = (h, d) => { const list = R.scene(), i = list.findIndex((it) => it.h === h), j = i + d; if (i < 0 || j < 0 || j >= list.length) return false; [list[i], list[j]] = [list[j], list[i]]; return R.saveScene(list); };
   /* the preview while the AI is not switched on: the photo with the pinned things drawn where they stand, at their width */
@@ -973,13 +1007,15 @@
         stage.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; e.preventDefault(); b.setPointerCapture(e.pointerId); drag = { h: b.dataset.pin, b, x0: e.clientX, y0: e.clientY, moved: false }; });
         stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.b.style.left = x + "%"; drag.b.style.top = y + "%"; drag.x = x; drag.y = y; });
         let dragged = 0; // a drag is not also a click
-        const endDrag = () => { if (!drag) return; const d = drag; drag = null; if (d.moved) { dragged = Date.now(); sel = d.h; R.movePin(d.h, d.x, d.y); const it = R.scene().find((x) => x.h === d.h); if (it) say(`${name(d.h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); } };
+        /* where it ended up, and why when that is not where it was put (a full table, a rug that stays on the floor) */
+        const moved = (h) => { const it = R.scene().find((x) => x.h === h); if (it) say(R.pinNote || `${name(h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); };
+        const endDrag = () => { if (!drag) return; const d = drag; drag = null; if (d.moved) { dragged = Date.now(); sel = d.h; R.movePin(d.h, d.x, d.y); moved(d.h); } };
         stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", () => { drag = null; paint(); });
         // a tap, a click or Enter on a pin chooses it; a tap elsewhere in the picture moves the chosen one there
-        stage.addEventListener("click", (e) => { const pb = e.target.closest("[data-pin]"); if (pb) { if (Date.now() - dragged > 300) select(sel === pb.dataset.pin ? null : pb.dataset.pin); return; } if (!sel) { say(R.scene().length ? "Välj först en sak, i listan eller på en nål." : "Lägg till en sak först."); return; } const [x, y] = at(e); R.movePin(sel, x, y); const it = R.scene().find((q) => q.h === sel); if (it) say(`${name(sel)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); });
+        stage.addEventListener("click", (e) => { const pb = e.target.closest("[data-pin]"); if (pb) { if (Date.now() - dragged > 300) select(sel === pb.dataset.pin ? null : pb.dataset.pin); return; } if (!sel) { say(R.scene().length ? "Välj först en sak, i listan eller på en nål." : "Lägg till en sak först."); return; } const [x, y] = at(e); R.movePin(sel, x, y); moved(sel); });
         marks.addEventListener("keydown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; const h = b.dataset.pin, it = R.scene().find((x) => x.h === h); if (!it) return;
           const st = e.shiftKey ? 5 : 1, mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
-          if (mv) { e.preventDefault(); sel = h; R.movePin(h, it.x + mv[0], it.y + mv[1]); const n = R.scene().find((x) => x.h === h); if (n) say(`${Math.round(n.x)} % från vänster, ${Math.round(n.y)} % ned, ${verbOf(n)} ${SURF[surfKey(n)]}.`); return; }
+          if (mv) { e.preventDefault(); sel = h; R.movePin(h, it.x + mv[0], it.y + mv[1]); const n = R.scene().find((x) => x.h === h); if (n) say(`${Math.round(n.x)} % från vänster, ${Math.round(n.y)} % ned, ${verbOf(n)} ${SURF[surfKey(n)]}.${R.pinNote ? " " + R.pinNote : ""}`); return; }
           if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); R.remove(h); say(`${name(h)} är borttagen. Ångra med Ctrl+Z i Justera själv.`); const f = $("[data-pin]", marks); if (f) f.focus(); return; }
           if (e.key === "Escape") { select(null); } });
         pin.addEventListener("click", (e) => { if (!sel) return; const it = R.scene().find((x) => x.h === sel); if (!it) return;
@@ -1015,7 +1051,10 @@
     };
   };
   V.myRoom = (pre) => {
-    if (pre && RQ.byHandle(pre) && room && R.tryIn(pre)) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
+    /* the thing you came with from a product page while there was no room yet ("Prova med ett exempelrum", or your own photo):
+       it goes in as soon as there is a room, in Placera och skapa as in Justera själv, and it is the chosen one (review B1) */
+    if (!pre && room && RQ.ss) { const p0 = RQ.ss.get("rumiq-room-pre"); if (p0) { RQ.ss.set("rumiq-room-pre", ""); if (RQ.byHandle(p0)) pre = p0; } }
+    if (pre && RQ.byHandle(pre) && room && (R.tryIn(pre) || R.inScene(pre))) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
     if (pre && RQ.byHandle(pre) && !room) RQ.ss && RQ.ss.set("rumiq-room-pre", pre);
     if (room && R.way() === "place") return placeView(pre); // Placera och skapa is the main way; the editor is "Justera själv"
     const want = pre && RQ.byHandle(pre) && !room ? RQ.byHandle(pre) : null; // came from a product without a room yet
