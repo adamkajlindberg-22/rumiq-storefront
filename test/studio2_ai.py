@@ -344,9 +344,9 @@ with sync_playwright() as p:
         ok(ask and ask[0] == min(8, pg.evaluate("RQ.hem.rooms().length")) and len(ask[1]) == 6 and pg.evaluate("RQ.currentRoute()") == "mitt-hem", f"{tag} Prova i ett rum asks which room first: your rooms, or a sample room of a kind (the best fit marked): {ask}")
         pg.evaluate("document.querySelector('.mb-try .chip.fit').click()"); pg.wait_for_timeout(2600)
         # the editor's surface rules hold (studio2 review M8): a thing with no free surface is left out and named in the editor, never put on the floor
-        inroom = pg.evaluate("RQ.room.scene().map((i) => i.h)"); note = pg.evaluate("(document.getElementById('rmSugg') || {}).innerText || ''")
+        inroom = pg.evaluate("RQ.room.scene().map((i) => i.h)"); note = pg.evaluate("((document.getElementById('rmSugg') || {}).innerText || '') + ' ' + ((document.getElementById('plOut') || {}).innerText || '')")
         out = [h for h in hs if h not in inroom]
-        ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.get().sample") and set(inroom) <= set(hs) and len(inroom) >= 2 and all(pg.evaluate("(h) => RQ.byHandle(h).name", h) in note for h in out), f"{tag} Prova i ett rum: the board's products placed by the editor in the sample room you chose, what does not fit named: {inroom} {out}")
+        ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.get().sample") and set(inroom) <= set(hs) and len(inroom) >= 1 and all(pg.evaluate("(h) => RQ.byHandle(h).name", h) in note for h in out), f"{tag} Prova i ett rum: the board's products placed by the editor in the sample room you chose, what does not fit named: {inroom} {out}")
         tab = pg.evaluate("(() => { const a = RQ.hem.room(RQ.hem.activeId()); return [a && a.label, (document.querySelector('[data-proj][aria-pressed=true]') || {}).innerText || '', document.getElementById('toast').innerText] })()")
         ok(tab[0] and tab[0] in tab[1], f"{tag} a sample room from the board becomes a named room of yours, its tab chosen: {tab}")
         go(pg, "mitt-hem", 1300)
@@ -415,6 +415,7 @@ with sync_playwright() as p:
         pg.evaluate("document.querySelector('.ai-result [data-ai-swap]').click()"); pg.wait_for_timeout(1200)
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and not pg.evaluate("document.querySelector('.ai-sheet.open')"), f"{tag} Byt produkt opens the editor at that thing")
         # your own photo from Skapa ditt första rum: the room type and style go with it, the editor never asks again
+        pg.evaluate("RQ.hem.rooms().forEach((r) => RQ.hem.remove(r.id))")  # the demo picture above was saved into a room of its own (M8); this part starts with none
         go(pg, "mitt-hem", 1200)
         pg.fill("#hemFirstF [name=label]", "Hallen"); pg.select_option("#hemFirstF select[name=type]", "hall")
         pg.evaluate("document.querySelector('#hemFirstF [data-first-style=minimalistisk]').click()")

@@ -73,8 +73,8 @@
           <div class="rh-copy">
             <span class="eyebrow rh-promise">Se ditt hem innan du köper.</span>
             <h2 class="display">Prova produkterna i ditt rum.</h2>
-            <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Ställ in det du gillar, se vad hela rummet kostar och handla allt med en knapp.</p>
-            <ol class="rh-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Ställ in produkter</b><span>Från butiken, eller låt oss föreslå.</span></li><li><b>Handla looken</b><span>Allt du ställt in hamnar i varukorgen på en gång.</span></li></ol>
+            <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Peka ut var sakerna ska stå och se bilden med dem på plats. Sedan handlar du allt med en knapp.</p>
+            <ol class="rh-steps"><li><b>Välj rum</b><span>Ta en bild med telefonen, eller börja i ett exempelrum.</span></li><li><b>Peka ut</b><span>Välj upp till fem saker och visa var de ska stå.</span></li><li><b>Skapa bilden</b><span>Se rummet med sakerna på plats och handla allt med en knapp.</span></li></ol>
             <div class="ctrl-row" style="margin-top:2rem">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a><a class="btn ghost" href="#butik">Till butiken</a>` : `<button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup="#mitt-rum">Lägg in ditt rum</button>`}</div>
             <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
           </div>
@@ -125,7 +125,7 @@
     const C = window.RQ_CONFIG || {}, d = C.delivery || {}, mail = (C.company || {}).email || "support@rumiq.se";
     const ico = (path) => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
     const items = [
-      [ico('<path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/>'), "Se det hemma först", "Ställ in produkterna i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare."],
+      [ico('<path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/>'), "Se det hemma först", "Peka ut var produkterna ska stå i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare."],
       [ico('<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>'), d.minDays ? `Målet: hemma om ${d.minDays}–${d.maxDays} arbetsdagar` : "Leverans till ombud, paketskåp eller hem", `${d.fromCountry || "Lager i EU"}. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.`],
       [ico('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/>'), d.openPurchaseDays ? `${d.openPurchaseDays} dagars öppet köp` : "14 dagars ångerrätt", `Ångra med en knapp på sajten. ${d.returnText || ""}`.trim()],
       [ico('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'), "Du är med och väljer", "Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in."],

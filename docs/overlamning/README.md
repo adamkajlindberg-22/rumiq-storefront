@@ -19,54 +19,33 @@ Bekräftat på riktiga enheter (BrowserStack, iPhone 18 Pro, iPhone SE iOS 15 oc
 - lampan från produktsidan hamnar på bordet
 - iPhone SE-sidorna fungerar
 
-## 2. Pågående arbete (grenar på GitHub, inte publicerade)
+## 2. v15.7 (gren `claude/serene-bohr-7fc3mj`, inte publicerad än)
 
-| Gren | Innehåll | Läge |
-|---|---|---|
-| `place-merge` | **Placera och skapa** ihopslagen med v15.6. Det är den nya huvudvägen i Mitt rum: välj rum → välj produkter → peka ut var de ska stå med nålar och ytor → streckat fotavtryck i rätt skala → "Skapa bilden" ger en AI-bild. Den gamla editorn heter "Justera själv". | Hela testsviten är grön utom `v15r5_rum` D12 (rumsbilden centreras inte bredvid listan på dator) och två tester som svajar ibland. Granskningen gav **mobil 5/10, dator 6,5/10**. Den behöver rättningarna nedan innan publicering. |
-| `rum-d7` | Rum-sidans rättningar av Placera och skapa (bygger på `place-merge`) | Pågår. Se 3A. |
-| `s2-ai` | AI-sidans rättningar: en sanning för rum, bild och pris i Sparat (D5) och ärlig text (D9, M7) | Pågår. Se 3B. |
-| `device-fix` | Fixar från riktiga enheter: D1–D4, D8 | Pågår. Se 3C. |
-| `svep2` | **Svep 2**: grupp för 2–6 personer, resultatet sparas som rum, smaken synkas med kontot, rekommendationer med sanna skäl, delning som tar in folk, mätning | Rättar granskningens fynd (`granskningar/svep2.md`) plus D6. Därefter ny granskning, BrowserStack och publicering. |
+`place-merge`, `rum-d7`, `s2-ai` och `device-fix` är ihopslagna här, plus rättningarna nedan. `svep2` är inte med; den
+publiceras när dess granskning håller.
 
-Ordning för nästa release (**v15.7**):
-1. Slå ihop `rum-d7`, `s2-ai` och `device-fix` med `place-merge`.
-2. Kör hela testsviten och en ny oberoende granskning av Placera och skapa. Målet är minst 8,5/10 på mobil.
-3. Kontrollera på BrowserStack och publicera.
+Klart i v15.7:
+- **Rum-sidan:** B1, B2, M1, D7 (från `rum-d7`); M2 nålar som står för nära trycks isär, med en prick och ett streck till
+  den exakta platsen; M3 på telefon ligger den valda nålens kontroller direkt under bilden, ovanför docken; M4 en sak får
+  aldrig en yta den inte kan ha (påslakan på säng, inte golv); M5 mattan ligger framför soffan och sakerna har
+  kontaktskuggor i förhandsvisningen; M9 Mitt rum, förstasidan och Studio Plus berättar om Placera och skapa, och en tom
+  lista har "Föreslå saker"; M10 det som inte fick plats eller väntar sägs i listan ("Fick inte plats", "Väntar" med
+  "Lägg till dem"); M11 vägen tillbaka till Placera och skapa syns ovanför rumsraden.
+- **Minor:** riktig Ångra-knapp efter Ta bort, steget man är på markeras (aria-current), "Förstora bilden" bara när det
+  finns nålar, ingen toast över Skapa bilden, fotavtryckets etikett läsbar och bara för den valda saken.
+- **AI-sidan:** D5, M6, M7/D9, M8, Ändra nålarna, Vad tycker du? (från `s2-ai`); D12 bilden centreras bredvid listan på
+  dator; glappet under Köp allt i bilden borta (en CSS-krock med `.pl`); bocken vid "Bilden finns nu …" står på samma
+  rad som texten; "Bilden finns nu i {rum} under Sparat" finns på engelska.
+- **Enheter:** D1–D4, D8 (från `device-fix`). D6 finns i `svep2`.
 
-Svep 2 publiceras när dess granskning håller.
+Kvar:
+- M12 (ryck vid 4× långsammare processor) och "Mått kommer" i produktväljaren.
+- En ny oberoende granskning av Placera och skapa (målet minst 8,5/10 på mobil), BrowserStack och sedan publicering.
+- Svep 2.
 
-## 3. Kvar att göra
+## 3. Efter v15.7
 
-### A. Placera och skapa: rum-sidan (`granskningar/placera-och-skapa.md`, avsnittet RUM)
-1. **B1** Produktsida → "Prova i Mitt rum" → exempelrum tappar produkten för en ny besökare. `rumiq-room-pre` används aldrig.
-2. **B2** Mattan kan flyttas upp på väggen. Saker som hör till golvet ska alltid stå på golvet.
-3. **M1** Nålar staplas på exakt samma punkt. Säg varför när en sak hoppar.
-4. **M3** På mobil: kontrollerna för en vald nål ska ligga i en kompakt rad vid bilden, ovanför docken.
-5. **M2** Standardnålarna trängs på 360–390 px.
-6. **M4** Eget foto: rimliga ytor, till exempel påslakan på säng och inte golv.
-7. **M10** Svep-förslag, Placera och Justera själv visar olika antal och totaler. Det ska finnas en sanning.
-8. **M9** Startsidan i Mitt rum ska berätta om Placera och skapa, inte om den gamla editorn.
-9. **M5** Förhandsvisningen: mattan i perspektiv under möblerna, och kontaktskuggor.
-10. Därefter M11, M12, D7 (Glob-lampan över muggen), `v15r5_rum` D12, och sist Minor och Polish.
-
-### B. Placera och skapa: AI-sidan (samma fil, avsnittet AI)
-- **D5:** Sparat visar en gammal bild och ett gammalt pris efter ett byte.
-- **M7/D9:** ta bort "riktiga sajten" och "Demo".
-- **M6:** "Byt produkt" och "Prova en annan färg" ska skrolla valen in i synfältet.
-- **M8:** "Bilden finns nu under Sparat" stämmer inte för exempelrum.
-- "Ändra nålarna" ska ge fokus tillbaka till bilden.
-- "Vad tycker du?" ska inte ladda ner automatiskt.
-
-### C. Riktiga enheter (`granskningar/enheter-4.md`)
-- **D1:** Svep-knapparna hamnar under docken när "Din stil växer fram" visas (S26).
-- **D2:** kvällsremsan uppdateras inte live i Safari.
-- **D3:** fokusringar dröjer kvar efter tryck.
-- **D4:** iPhone SE, verktygen i Mitt rum.
-- **D6:** etiketten på Svep-knappen byts.
-- **D8:** avstavning i produktnamn.
-
-### D. Efter v15.7 (grundarens beslut, "viktigt!")
+Grundarens beslut, "viktigt!":
 1. **Konkurrentgenomgång.** Gå igenom liknande sajter: presentation, förstasida, funktioner, layout och flöde. Exempel är IKEA (Kreativ/AR), Jotex, Ellos Home, Rum21, Nordic Nest, H&M Home, Mio, Royal Design, Houzz, Wayfair och Westwing. Gör sedan en plan för att bli bäst.
 2. **Appen.** Den byggs på samma grund. Expo/React Native finns som verktyg.
 
@@ -109,6 +88,7 @@ Svep 2 publiceras när dess granskning håller.
 - `studio-server.md`: serverförslagen (ingenting är deployat).
 - `testbilder/`: godkända före/efter-bilder och den testade AI-prompten.
 
-## 7. Förslag på första instruktion i Claude Code
-> Läs CLAUDE.md och docs/overlamning/README.md. Hämta grenarna place-merge, rum-d7, s2-ai, device-fix och svep2, och
-> fortsätt mot v15.7 enligt avsnitt 2 och 3. Svara mig på svenska.
+## 7. Förslag på nästa instruktion i Claude Code
+> Läs CLAUDE.md och docs/overlamning/README.md. Fortsätt från grenen claude/serene-bohr-7fc3mj (v15.7): gör en oberoende
+> granskning av Placera och skapa på telefon och dator, rätta det den hittar, kontrollera på BrowserStack och publicera
+> när jag sagt ja. Svara mig på svenska.

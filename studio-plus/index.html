@@ -30,7 +30,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=8d151d15">
+<link rel="stylesheet" href="assets/css/site.min.css?v=b9d74d97">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -99,13 +99,13 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <main id="view" class="view first" tabindex="-1"><section class="wrap sp-hero"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="mitt-rum/">Mitt rum</a></li><li><span aria-current="page">Studio Plus</span></li></ol></nav>
         <div id="spThanks" role="status"></div>
         <div class="sp-top"><div><span class="eyebrow">Mitt rum</span><h1 class="display">Se allt hemma hos dig, i en verklighetstrogen bild.</h1>
-        <p class="lead">Ställ in produkterna i ditt eget rum och få en verklighetstrogen bild med rätt ljus och skuggor. Med Studio Plus kan du också prova väggfärg, golv, ljus och stil.</p></div>
+        <p class="lead">Peka ut var produkterna ska stå i ditt eget rum och få en verklighetstrogen bild med rätt ljus och skuggor. Med Studio Plus kan du också prova väggfärg, golv, ljus och stil.</p></div>
         <figure class="sp-pair"><div><img src="assets/img/rum/sovrum-fore-900.webp" srcset="assets/img/rum/sovrum-fore-600.webp 600w, assets/img/rum/sovrum-fore-900.webp 900w, assets/img/rum/sovrum-fore-1344.webp 1344w, assets/img/rum/sovrum-fore-2016.webp 2016w, assets/img/rum/sovrum-fore-2688.webp 2688w" sizes="(max-width: 700px) 46vw, 24rem" alt="Ett sovrum med tomt nattduksbord och bar säng" width="900" height="504" decoding="async"><span>Ditt foto</span></div><div><img src="assets/img/rum/sovrum-efter-900.webp" srcset="assets/img/rum/sovrum-efter-600.webp 600w, assets/img/rum/sovrum-efter-900.webp 900w, assets/img/rum/sovrum-efter-1344.webp 1344w, assets/img/rum/sovrum-efter-2016.webp 2016w, assets/img/rum/sovrum-efter-2688.webp 2688w" sizes="(max-width: 700px) 46vw, 24rem" alt="Samma sovrum med lampa, pläd och korg på plats" width="900" height="504" decoding="async"><span>Med sakerna på plats</span></div><figcaption>Exempel: samma rum före och efter.</figcaption></figure></div></section>
       <section class="wrap sp-plans">
         <article class="sp-plan"><span class="eyebrow">Gratis</span><h2>0 kr</h2><ul><li>5 AI-bilder i månaden</li><li>Dina produkter så nära dina platser som möjligt</li><li>Kräver ett konto</li></ul><a class="btn ghost block" href="mitt-rum/">Börja i Mitt rum</a></article>
         <article class="sp-plan plus"><span class="eyebrow">Studio Plus</span><h2>99 kr <small>/ månad</small></h2><ul><li>100 AI-bilder i månaden</li><li>Prova fritt: väggfärg, golv, ljus och stil</li><li>Ingen bindningstid, säg upp när du vill</li><li>Pris inklusive moms</li></ul>
           <div id="spBuy"><a class="btn block" href="konto/" data-after="studio-plus">Logga in för att teckna</a></div></article></section>
-      <section class="wrap sp-steps"><ol><li><b>Ta en bild av ditt rum</b><span>Eller välj ett exempelrum.</span></li><li><b>Ställ in produkterna</b><span>Dra dem dit du vill ha dem, flera på en gång.</span></li><li><b>Skapa bilden</b><span>AI:n gör ljus, skuggor och perspektiv verkliga.</span></li></ol></section>
+      <section class="wrap sp-steps"><ol><li><b>Ta en bild av ditt rum</b><span>Eller välj ett exempelrum.</span></li><li><b>Peka ut</b><span>Visa var sakerna ska stå, upp till fem på en gång.</span></li><li><b>Skapa bilden</b><span>AI:n gör ljus, skuggor och perspektiv verkliga.</span></li></ol></section>
       <section class="wrap sp-faq"><h2 class="h2">Frågor</h2>
         <details><summary>Blir bilden exakt?</summary><p>Nästan. AI:n håller platserna och produkternas form så nära som möjligt, men färg och storlek kan skilja sig något. Blev en produkt fel får du bilden tillbaka, upp till tre gånger i månaden.</p></details>
         <details><summary>Hur många bilder kan jag göra?</summary><p>5 i månaden utan kostnad, eller 100 i månaden med Studio Plus, högst 30 på ett dygn. En bild rymmer upp till 6 produkter.</p></details>
@@ -157,8 +157,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=f28022a1"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=4264e45b"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=37348fae"></script>
-<script src="assets/js/site.min.js?v=10e07d67"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=985ea209"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=d622e89a"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=3de4eb7a"></script>
+<script src="assets/js/site.min.js?v=ce4c2c8f"></script>
 </body>
 </html>

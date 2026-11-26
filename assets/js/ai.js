@@ -475,6 +475,10 @@
         ${productsList(items, swapOk())}
         ${savedLine(v)}</div></div>`, false, true);
     const fig = $("[data-ba]", body), ctl = baWire(fig, other);
+    /* desktop: the picture sits in the middle beside a longer list, not at the top of a half-empty column (r5 D12); its foot never below the sheet's visible edge */
+    const stg = $(".ai-stage", body), pad = $(".ai-pad", body), centre = () => { if (!stg || !pad || !document.contains(stg)) return; stg.style.marginTop = ""; if (!matchMedia("(min-width: 900px)").matches || pad.getBoundingClientRect().left < stg.getBoundingClientRect().right - 1) return; /* side by side only */
+      const box = stg.closest(".sheet-in"), vis = box ? box.clientHeight : innerHeight, d = Math.min((pad.offsetHeight - stg.offsetHeight) / 2, vis - stg.offsetHeight - 16); if (d > 4) stg.style.marginTop = Math.round(d) + "px"; };
+    centre(); requestAnimationFrame(centre); setTimeout(centre, 400);
     if (fresh) reveal(fig, ctl, 30);
     $$("[data-ver]", body).forEach((b) => b.addEventListener("click", () => { view.cur = +b.dataset.ver; if (view.cmp === view.cur) view.cmp = -1; viewResult(); focusBack(`[data-ver="${view.cur}"]`); }));
     $$("[data-cmp]", body).forEach((b) => b.addEventListener("click", () => { view.cmp = +b.dataset.cmp; viewResult(); focusBack(`[data-cmp="${view.cmp}"]`); }));
@@ -730,13 +734,13 @@
     html: `<section class="wrap sp-hero">${RQ.crumbs([["Hem", "hem"], ["Mitt rum", "mitt-rum"], ["Studio Plus"]])}
         <div id="spThanks" role="status"></div>
         <div class="sp-top"><div><span class="eyebrow">Mitt rum</span><h1 class="display">Se allt hemma hos dig, i en verklighetstrogen bild.</h1>
-        <p class="lead">Ställ in produkterna i ditt eget rum och få en verklighetstrogen bild med rätt ljus och skuggor. Med Studio Plus kan du också prova väggfärg, golv, ljus och stil.</p></div>
+        <p class="lead">Peka ut var produkterna ska stå i ditt eget rum och få en verklighetstrogen bild med rätt ljus och skuggor. Med Studio Plus kan du också prova väggfärg, golv, ljus och stil.</p></div>
         <figure class="sp-pair"><div><img src="assets/img/rum/sovrum-fore-900.webp" srcset="${RQ.srcset("assets/img/rum/sovrum-fore-900.webp")}" sizes="(max-width: 700px) 46vw, 24rem" alt="Ett sovrum med tomt nattduksbord och bar säng" width="900" height="504" decoding="async"><span>Ditt foto</span></div><div><img src="assets/img/rum/sovrum-efter-900.webp" srcset="${RQ.srcset("assets/img/rum/sovrum-efter-900.webp")}" sizes="(max-width: 700px) 46vw, 24rem" alt="Samma sovrum med lampa, pläd och korg på plats" width="900" height="504" decoding="async"><span>Med sakerna på plats</span></div><figcaption>Exempel: samma rum före och efter.</figcaption></figure></div></section>
       <section class="wrap sp-plans">
         <article class="sp-plan"><span class="eyebrow">Gratis</span><h2>0 kr</h2><ul><li>${FREE_IMAGES} AI-bilder i månaden</li><li>Dina produkter så nära dina platser som möjligt</li><li>Kräver ett konto</li></ul><a class="btn ghost block" href="#mitt-rum">Börja i Mitt rum</a></article>
         <article class="sp-plan plus"><span class="eyebrow">Studio Plus</span><h2>${PRICE} kr <small>/ månad</small></h2><ul><li>${PLUS_IMAGES} AI-bilder i månaden</li><li>Prova fritt: väggfärg, golv, ljus och stil</li><li>Ingen bindningstid, säg upp när du vill</li><li>Pris inklusive moms</li></ul>
           <div id="spBuy"></div></article></section>
-      <section class="wrap sp-steps"><ol><li><b>Ta en bild av ditt rum</b><span>Eller välj ett exempelrum.</span></li><li><b>Ställ in produkterna</b><span>Dra dem dit du vill ha dem, flera på en gång.</span></li><li><b>Skapa bilden</b><span>AI:n gör ljus, skuggor och perspektiv verkliga.</span></li></ol></section>
+      <section class="wrap sp-steps"><ol><li><b>Ta en bild av ditt rum</b><span>Eller välj ett exempelrum.</span></li><li><b>Peka ut</b><span>Visa var sakerna ska stå, upp till fem på en gång.</span></li><li><b>Skapa bilden</b><span>AI:n gör ljus, skuggor och perspektiv verkliga.</span></li></ol></section>
       <section class="wrap sp-faq"><h2 class="h2">Frågor</h2>
         <details><summary>Blir bilden exakt?</summary><p>Nästan. AI:n håller platserna och produkternas form så nära som möjligt, men färg och storlek kan skilja sig något. Blev en produkt fel får du bilden tillbaka, upp till tre gånger i månaden.</p></details>
         <details><summary>Hur många bilder kan jag göra?</summary><p>${FREE_IMAGES} i månaden utan kostnad, eller ${PLUS_IMAGES} i månaden med Studio Plus, högst ${LIM.dailyPlus} på ett dygn. En bild rymmer upp till ${MAXP} produkter.</p></details>

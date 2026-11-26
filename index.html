@@ -30,7 +30,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=8d151d15">
+<link rel="stylesheet" href="assets/css/site.min.css?v=b9d74d97">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -241,8 +241,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <div class="rh-copy">
             <span class="eyebrow rh-promise">Se ditt hem innan du köper.</span>
             <h2 class="display">Prova produkterna i ditt rum.</h2>
-            <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Ställ in det du gillar, se vad hela rummet kostar och handla allt med en knapp.</p>
-            <ol class="rh-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Ställ in produkter</b><span>Från butiken, eller låt oss föreslå.</span></li><li><b>Handla looken</b><span>Allt du ställt in hamnar i varukorgen på en gång.</span></li></ol>
+            <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Peka ut var sakerna ska stå och se bilden med dem på plats. Sedan handlar du allt med en knapp.</p>
+            <ol class="rh-steps"><li><b>Välj rum</b><span>Ta en bild med telefonen, eller börja i ett exempelrum.</span></li><li><b>Peka ut</b><span>Välj upp till fem saker och visa var de ska stå.</span></li><li><b>Skapa bilden</b><span>Se rummet med sakerna på plats och handla allt med en knapp.</span></li></ol>
             <div class="ctrl-row" style="margin-top:2rem"><button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup="#mitt-rum">Lägg in ditt rum</button></div>
             <p class="small" style="margin-top:1rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
           </div>
@@ -282,7 +282,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
       <section class="sec why" id="varfor" aria-labelledby="whyH"><div class="wrap">
         <div class="sec-head"><h2 class="h2" id="whyH">Därför RumIQ</h2><p>En ny butik ska vara lätt att lita på. Det här kan du räkna med.</p></div>
-        <ul class="why-grid"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><b>Se det hemma först</b><span>Ställ in produkterna i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><b>Målet: hemma om 2–5 arbetsdagar</b><span>Lager i EU. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 4v4h4"></path></svg><b>30 dagars öppet köp</b><span>Ångra med en knapp på sajten. Returen skickas till en adress i Sverige.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><b>Du är med och väljer</b><span>Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in.</span></li></ul>
+        <ul class="why-grid"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><b>Se det hemma först</b><span>Peka ut var produkterna ska stå i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"></path><path d="M14 10h4l3 3v3h-7"></path><circle cx="7" cy="17.5" r="1.6"></circle><circle cx="17" cy="17.5" r="1.6"></circle></svg><b>Målet: hemma om 2–5 arbetsdagar</b><span>Lager i EU. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 4v4h4"></path></svg><b>30 dagars öppet köp</b><span>Ångra med en knapp på sajten. Returen skickas till en adress i Sverige.</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><b>Du är med och väljer</b><span>Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in.</span></li></ul>
         <p class="why-foot">Frågor? Skriv till <a href="mailto:support@rumiq.se">support@rumiq.se</a>, eller läs mer <a href="om/">om oss</a> och <a href="sa-fungerar-det/">hur det fungerar</a>.</p>
       </div></section>
 
@@ -334,8 +334,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=f28022a1"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=4264e45b"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=37348fae"></script>
-<script src="assets/js/site.min.js?v=10e07d67"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=985ea209"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=d622e89a"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=3de4eb7a"></script>
+<script src="assets/js/site.min.js?v=ce4c2c8f"></script>
 </body>
 </html>

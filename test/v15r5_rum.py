@@ -190,10 +190,11 @@ with sync_playwright() as p:
     c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(300)
     pg.evaluate(SAMPLE, "sovrum"); pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'glob-bordslampa-opalglas', 'glod-doftljus-keramik'].forEach((h) => RQ.room.add(h, true))")
     sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || ''])")
-    ok(all(not on for _, on in sc), f"[P5 sovrum] two lamps and a candle all stand on the bedside table: {sc}")
+    # rum-d7 (D7): the free table beside what stands on it is measured, so a lamp that does not fit waits on the floor and the room says why
+    ok(sum(not on for _, on in sc) >= 2 and all(on in ("", "floor") for _, on in sc), f"[P5 sovrum] what fits stands on the bedside table, the rest on the floor (said): {sc}")
     pg.evaluate(SAMPLE, "vardagsrum"); pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'svamp-uppladdningsbar-lampa'].forEach((h) => RQ.room.add(h, true))")
     sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.x, i.on || ''])")
-    ok(all(not s[2] for s in sc) and all(72 <= s[1] <= 83 for s in sc), f"[P5 vardagsrum] a second, smaller lamp goes to the other end of the side table: {sc}")
+    ok(not sc[0][2] and 72 <= sc[0][1] <= 85.5 and all(not s[2] and 72 <= s[1] <= 85.5 or s[2] == "floor" for s in sc), f"[P5 vardagsrum] the first lamp on the side table; a second one only where it fits beside the mug, else on the floor: {sc}")
     # the side table holds two lamps beside the mug (studio review N5 freed its other end): with both there, a third does not fit
     pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'svamp-uppladdningsbar-lampa'].forEach((h) => RQ.room.add(h, true))")
     pg.goto(BASE + "mitt-rum-glob-bordslampa-opalglas/"); pg.wait_for_timeout(1600)

@@ -51,7 +51,14 @@
       [/^Köpet ångrades redan (.+)\.$/, (m) => `The purchase was already cancelled ${m[1]}.`],
       [/^På den riktiga sajten öppnas (\w+?)s egen inloggning, och du kommer tillbaka hit inloggad\. I förhandsversionen skapar vi ett testkonto i stället\.$/, (m) => `On the real site ${m[1]}'s own sign-in opens, and you come back here signed in. In the preview we create a test account instead.`],
       [/^(.+) \((\d+)\)$/, (m) => { const a = one(m[1]); return a ? `${a} (${m[2]})` : null; }],
+      /* Placera och skapa (v15.7): a room's name, and lists of things */
+      [/^Bilden finns nu i (.+) under$/, (m) => `The image is now in ${one(m[1]) || m[1]} under`],
+      [/^Fick inte plats: (.+)\. Det finns ingen ledig bordsyta för (den|dem) i rummet\.$/, (m) => `No room for: ${list(m[1])}. There is no free table top for ${m[2] === "den" ? "it" : "them"} in the room.`],
+      [/^Väntar: (.+)\.$/, (m) => `Waiting: ${list(m[1])}.`],
+      [/^(.+) är med nu\.$/, (m) => `${list(m[1])} ${m[1].includes(", ") ? "are" : "is"} in now.`],
+      [/^(.+) är borttagen\.$/, (m) => `${list(m[1])} is removed.`],
     ];
+    const list = (x) => x.split(", ").map((n) => one(n) || n).join(", ");
     function one(s) {
       if (s in D) return D[s];
       return viaTemplate(s, false) || viaTemplate(s, true);
