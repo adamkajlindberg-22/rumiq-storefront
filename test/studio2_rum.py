@@ -334,6 +334,14 @@ with sync_playwright() as p:
     ok(pg.evaluate("(h) => RQ.room.inScene(h)", to), f"[R3] the lamp you swapped in by hand ({to}) stays through Inred åt mig")
     c.close()
 
+    # device review R4: a thing with one colour says so in Byt (lamps and the throw have one colour in the range)
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); editor(pg, ["lysa-keramiklampa", "lin-kuddfodral"])
+    pg.evaluate("RQ.room.openSwap('lysa-keramiklampa')"); pg.wait_for_timeout(500)
+    ok("Finns i en färg" in pg.evaluate("document.getElementById('rmSwap').innerText") and not pg.evaluate("!!document.querySelector('#rmSwap [data-swv]')"), "[R4] Byt on a one-colour lamp says it comes in one colour")
+    pg.evaluate("RQ.room.openSwap('lin-kuddfodral')"); pg.wait_for_timeout(500)
+    ok(pg.evaluate("document.querySelectorAll('#rmSwap [data-swv]').length") == 2, "[R4] and a cushion cover shows its two colours")
+    c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
