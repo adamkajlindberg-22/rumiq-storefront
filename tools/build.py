@@ -53,7 +53,7 @@ ALIAS_PREFIX = {"mitt-rum-": "mitt-rum", "svep-rum-": "svep"}  # one near-identi
 NOINDEX = {"kassa", "konto", "skapa-konto", "mitt-hem", "onskelista", "delad", "spara-order", "angra", "for-dig",
            "nyheter", "erbjudanden", "favoriter"}
 # folders in the site root that are never route folders
-KEEP_DIRS = {"assets", "feed", "tools", "test", "node_modules"}
+KEEP_DIRS = {"assets", "feed", "tools", "test", "node_modules", "docs"}
 
 GOOGLE_CATEGORY = {
     "belysning-atmosfar": "Home & Garden > Lighting", "hem-inredning": "Home & Garden > Decor",
