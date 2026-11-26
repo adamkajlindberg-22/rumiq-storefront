@@ -11,7 +11,8 @@
   const conf = () => (window.RQ_CONFIG && window.RQ_CONFIG.studio) || {};
 
   /* ------------------------------------------------------------------ one storage layer: local now, the account later */
-  const SYNC = ["rumiq-home", "rumiq-wish", "rumiq-looks", "rumiq-boards", "rumiq-chat-saved", "rumiq-style", "rumiq-room-active"];
+  // svep2: the taste model, the style history ("Din stil över tid") and the Svep groups you are in follow the account too
+  const SYNC = ["rumiq-home", "rumiq-wish", "rumiq-looks", "rumiq-boards", "rumiq-chat-saved", "rumiq-style", "rumiq-room-active", "rumiq-taste", "rumiq-style-log", "rumiq-groups"];
   const vault = (RQ.vault = {
     keys: SYNC,
     account: () => !!conf().serverSync && !!(RQ.ai && (RQ.ai.account || RQ.ai.live)()) && !!S.customer(),
@@ -35,6 +36,8 @@
       S.store.set("rumiq-sync-at", new Date().toISOString()); return n;
     },
   });
+  // the taste model writes through the shop's own store (flow.js): every change is queued for the account here
+  if (RQ.taste) ["add", "boost", "reset"].forEach((m) => { const f = RQ.taste[m]; RQ.taste[m] = function (...a) { const out = f.apply(this, a); vault.queue("rumiq-taste"); return out; }; });
   // signed in with the account live: what this browser has goes up, what the account has comes down
   document.addEventListener("rq-auth", () => { if (vault.account()) { SYNC.forEach((k) => vault.pending.add(k)); vault.pull().then(() => vault.push()).catch(() => {}); } });
 
@@ -150,7 +153,7 @@
       ${s.compact ? "" : typeChips(s, pr, types)}
       ${pr.colours.length ? `<div class="hem-cols" role="img" aria-label="Färgerna i förslaget">${pr.colours.map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</div>` : ""}
       ${s.compact ? `<div class="hem-prop-row${s.all ? " open" : ""}"><span class="hem-prop-thumbs" aria-hidden="true">${its.slice(0, 2).map((p) => `<img src="${RQ.cut(p)}" alt="">`).join("")}${its.length > 2 ? `<i>+${its.length - 2}</i>` : ""}</span><b>${kr(pr.total)}</b>${its.length > 3 ? `<button class="tlink" type="button" data-hem-all aria-expanded="${!!s.all}">${s.all ? "Visa färre" : `Visa alla ${its.length}`}</button>` : ""}</div>` : ""}
-      <ul class="hem-prop-items${s.compact ? " compact" : ""}${s.all ? " open" : ""}">${its.map((p) => `<li data-h="${p.handle}">${s.compact ? `<span class="hem-prop-im"><img src="${RQ.cut(p)}" alt=""></span>` : `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button>`}<span>${esc(p.name)}</span><b>${kr(p.price)}</b></li>`).join("")}</ul>
+      <ul class="hem-prop-items${s.compact ? " compact" : ""}${s.all ? " open" : ""}">${its.map((p) => { const w = why(s, room, p); return `<li data-h="${p.handle}">${s.compact ? `<span class="hem-prop-im"><img src="${RQ.cut(p)}" alt=""></span>` : `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button>`}<span>${esc(p.name)}${w ? `<small class="why">${esc(w)}</small>` : ""}</span><b>${kr(p.price)}</b></li>`; }).join("")}</ul>
       ${pr.out.length ? `<p class="small hem-left">${pr.out.length === 1 ? "1 sak får" : `${pr.out.length} saker får`} inte plats i rummet och är inte med: ${pr.out.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
       ${pr.left.length ? `<p class="small hem-left">Budgeten räcker till ${its.length} av ${its.length + pr.left.length}. Kvar: ${pr.left.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
       ${s.compact ? "" : budgetHtml}
@@ -160,6 +163,9 @@
       ${s.compact ? `<details class="hem-more"${s.open ? " open" : ""}><summary>Ändra rum och budget</summary><div class="hem-more-in">${typeChips(s, pr, types)}${budgetHtml}</div></details>` : ""}
       <p class="small" role="status" data-hem-msg>${room ? `Hör till ${esc(H.name(room))}.` : ""}</p>`;
   };
+  // the reason on each thing in the proposal (RQ.why, svep.js): what the room lacks, what fits its kind and style, what you liked
+  const why = (s, room, p) => { if (!RQ.why) return ""; const w = RQ.why.of(p, { room });
+    return w || (s.style && p.styles.includes(s.style) ? `Passar stilen: ${RQ.STYLES[s.style].name}` : ""); };
   const typeChips = (s, pr, types) => s.from === "room" ? "" : `<div class="chips hem-prop-types" role="group" aria-label="Vilket rum?">${types.map((t) => `<button type="button" class="chip" data-hem-type="${t}" aria-pressed="${pr.type === t}">${esc(typeName(t))}</button>`).join("")}</div>`;
   let propUndo = null;
   document.addEventListener("click", (e) => { if (!e.target.closest("[data-hem-prop-undo]") || !propUndo) return; const u = propUndo; propUndo = null; $("#toast").classList.remove("show"); const r = H.room(u.id); if (!r) return;
