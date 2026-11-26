@@ -53,6 +53,7 @@
       [/^(.+) \((\d+)\)$/, (m) => { const a = one(m[1]); return a ? `${a} (${m[2]})` : null; }],
       /* Placera och skapa (v15.7): a room's name, and lists of things */
       [/^Bilden finns nu i (.+) under$/, (m) => `The image is now in ${one(m[1]) || m[1]} under`],
+      [/^, under (.+), på den här enheten\.$/, (m) => `, under ${one(m[1]) || m[1]}, on this device.`],
       [/^Fick inte plats: (.+)\. Det finns ingen ledig bordsyta för (den|dem) i rummet\.$/, (m) => `No room for: ${list(m[1])}. There is no free table top for ${m[2] === "den" ? "it" : "them"} in the room.`],
       [/^Väntar: (.+)\.$/, (m) => `Waiting: ${list(m[1])}.`],
       [/^(.+) är med nu\.$/, (m) => `${list(m[1])} ${m[1].includes(", ") ? "are" : "is"} in now.`],

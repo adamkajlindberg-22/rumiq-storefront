@@ -193,7 +193,7 @@ with sync_playwright() as p:
     ok(room["style"] in ("skandinavisk", "minimalistisk", "klassisk", "mjuk") and room["group"]["words"], "the room carries the group style")
     panel = pc.evaluate("[...document.querySelectorAll('.gr-room button, .gr-room a')].map((x) => x.innerText.trim())")
     total = sum(DATA[h]["price"] for h in room["items"])
-    ok(panel[0] == "Se det i ditt rum" and re.sub(r"\s", "", panel[1]) == re.sub(r"\s", "", f"Köp allt · {total:,} kr".replace(",", " ")) and "Vad tycker du?" in panel and "Öppna i Sparat" in panel, f"then Se det i ditt rum, Köp allt · total, Vad tycker du?: {panel}")
+    ok(panel[0] == "Se det i ditt rum" and re.sub(r"\s", "", panel[1]) == re.sub(r"\s", "", f"Köp allt · {total:,} kr".replace(",", " ")) and "Vad tycker du?" in panel and "Öppna i Mitt hem" in panel, f"then Se det i ditt rum, Köp allt · total, Vad tycker du?: {panel}")
     ok(pc.evaluate("document.activeElement && document.activeElement.closest('.gr-room') !== null"), "the focus moves to the new room")
     ok("svep_group_room" in pc.evaluate(EV), "counted: Gör ett rum av det")
     pc.goto(urlC); pc.wait_for_timeout(900)

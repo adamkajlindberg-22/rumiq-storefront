@@ -134,7 +134,7 @@ with sync_playwright() as p:
         ok("Goal: at your door in 2–5 working days" in body, f"{tag} English home calls the delivery time a goal")
         ok("10% off" in body and "10 % off" not in body, f"{tag} English writes 10% the English way")
         en_menu = pg.evaluate("[...document.querySelectorAll('#mnav a')].map((a) => a.textContent.trim())")
-        ok("Swipe" in en_menu and "Saved" in en_menu and "Looks" in en_menu and "Ready-made looks" not in en_menu, f"{tag} English menu: Swipe, Saved, Looks")
+        ok("Swipe" in en_menu and "My home" in en_menu and "Looks" in en_menu and "Ready-made looks" not in en_menu, f"{tag} English menu: Swipe, My home, Looks (v15.8): {en_menu}")
         pg.goto(BASE + "produkt-lin-kuddfodral/", wait_until="networkidle"); pg.wait_for_timeout(700)
         ok("Goal: at your door" in pg.evaluate(TEXT, ".lk"), f"{tag} English Leveranskoll calls the date a goal")
         ok(not re.search(r"wish ?list", pg.evaluate(ATTRS, "#view"), re.I), f"{tag} English labels say Save, not wishlist")

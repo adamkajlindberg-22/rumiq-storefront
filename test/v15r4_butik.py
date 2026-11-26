@@ -161,7 +161,7 @@ with sync_playwright() as p:
         tag = f"[home {W}]"
         ctx = context(b, W, Hh, mobile); pg = page(ctx)
         pg.goto(BASE, wait_until="load"); pg.wait_for_timeout(400)
-        pads = pg.evaluate("['.looks-sec', '.why', '.cta-band'].map((s) => getComputedStyle(document.querySelector('#view ' + s)).paddingTop)")
+        pads = pg.evaluate("['.looks-sec', '.why', '.cta-band'].map((s) => { const e = document.querySelector('#view ' + s), p = e.previousElementSibling; return p && getComputedStyle(p).backgroundColor !== getComputedStyle(e).backgroundColor ? '0px' : getComputedStyle(e).paddingTop; })")  # v15.8: Looks follows Svep's own paper band, so it keeps its own gap
         ok(all(x == "0px" for x in pads), f"{tag} no double padding between sections on the same background: {pads}")
         if mobile:
             ws = pg.evaluate("[...document.querySelectorAll('.band.settle .row .btn')].map((e) => Math.round(e.getBoundingClientRect().width))")
