@@ -325,7 +325,7 @@
       <div class="ai-sum"><span>Det här finns i bilden</span><b>${kr(itemsTotal(items))}</b></div>`;
 
   // how long pictures are kept: with the account library on (RQ_CONFIG.studio.serverLibrary) the before picture is kept beside the AI picture
-  const keepText = (cap) => { const t = ((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary ? "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem." : "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto, och under Sparat på den här enheten, tills du tar bort dem."; return cap ? t[0].toUpperCase() + t.slice(1) : t; };
+  const keepText = (cap) => { const t = ((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary ? "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem." : "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto, och i Mitt hem på den här enheten, tills du tar bort dem."; return cap ? t[0].toUpperCase() + t.slice(1) : t; };
   const viewSignin = () => show(`<div class="ai-pad"><span class="eyebrow">AI-bild av ditt rum</span><h2 id="aiTitle" class="ai-h">Logga in för att skapa bilden.</h2>
       <p class="ai-lead">${AI.promise(true)}</p>
       <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-after data-ai-close>Skapa konto</a></div></div>`, true);
@@ -336,7 +336,7 @@
       <ul class="ai-list">
         <li><b>Det här skickas:</b> ${smp ? "exempelrummets foto och hur du har ställt produkterna. Ett eget foto skickas först när du använder ett." : "fotot av ditt rum och hur du har ställt produkterna."}</li>
         <li><b>Hit:</b> RumIQ:s server i EU och bildtjänsten som skapar bilden.</li>
-        <li><b>Så länge:</b> ${smp ? `AI-bilderna sparas ${remoteLib() ? "privat i ditt konto" : "under Sparat på den här enheten"} tills du tar bort dem. Ett eget rumsfoto raderas efter 30 dagar.` : keepText()}</li>
+        <li><b>Så länge:</b> ${smp ? `AI-bilderna sparas ${remoteLib() ? "privat i ditt konto" : "i Mitt hem på den här enheten"} tills du tar bort dem. Ett eget rumsfoto raderas efter 30 dagar.` : keepText()}</li>
         <li><b>Aldrig:</b> vi använder inte dina bilder för att träna AI och visar dem inte för någon annan.</li>
       </ul>
       <label class="check ai-check"><input type="checkbox" id="aiOk"> Jag godkänner att bilden skickas för att skapa AI-bilder.</label>
@@ -455,8 +455,8 @@
   }
 
   const hemRoom = (v) => { const r = v && v.roomId && RQ.hem && RQ.hem.room(v.roomId); return r ? RQ.hem.name(r) : ""; };
-  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Bilden finns nu ${hemRoom(v) ? `i ${esc(hemRoom(v))} ` : ""}under <a href="#mitt-hem" data-ai-lib data-ai-close>Sparat</a>, på den här enheten.</span></p>`
-    : v.saved === "full" ? `<p class="ai-warn small" role="alert">Det finns inte plats på enheten, så bilden sparades inte. Ladda ner den, eller ta bort några gamla bilder under <a href="#mitt-hem" data-ai-lib data-ai-close>Sparat</a>.</p>`
+  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Bilden finns nu i <a href="#mitt-hem" data-ai-lib data-ai-close>Mitt hem</a>${hemRoom(v) ? `, under ${esc(hemRoom(v))}` : ""}, på den här enheten.</span></p>`
+    : v.saved === "full" ? `<p class="ai-warn small" role="alert">Det finns inte plats på enheten, så bilden sparades inte. Ladda ner den, eller ta bort några gamla bilder i <a href="#mitt-hem" data-ai-lib data-ai-close>Mitt hem</a>.</p>`
     : v.saved === "fail" ? `<p class="small ai-saved" role="status"><span>Bilden kunde inte sparas här.</span> <button class="tlink" type="button" id="aiSave">Försök igen</button></p>`
     : `<p class="small ai-saved" role="status"><button class="tlink" type="button" id="aiSave">Spara bilden</button></p>`;
 
@@ -574,7 +574,7 @@
   const libState = { groups: [], undo: null, host: null, filter: "" };
   const libNote = () => remoteLib() ? "AI-bilderna du har skapat i Mitt rum, med bilden före. De sparas privat i ditt konto, och ingen annan kan se dem." : "Bilderna du har skapat i Mitt rum, med bilden före. Förhandsvisningar är märkta som det. De sparas på den här enheten, och ingen annan kan se dem.";
   /* one room, one truth (device4 D5): a picture of a room whose things have changed since says so, and its Köp allt and total
-     are the room's own now (its list under Sparat), with "Skapa ny bild" for a fresh picture */
+     are the room's own now (its list i Mitt hem), with "Skapa ny bild" for a fresh picture */
   const setKey = (l) => (l || []).map((it) => it.h + "::" + (it.v || 0)).sort().join();
   const roomNow = (g) => { const id = hemOf(g), r = id && RQ.hem && RQ.hem.room(id); return r && RQ.hem.items(r).length ? r : null; };
   const staleOf = (g, v) => { const r = roomNow(g); return r && setKey(liveItems(v.items)) !== setKey(RQ.hem.items(r)) ? r : null; };
@@ -638,7 +638,7 @@
         keepKey(g.key);
       }
       RQ.room.saveScene(liveItems(v.items).map(({ v: _v, ...it }) => it));
-      // the room it belongs to under Sparat
+      // the room it belongs to i Mitt hem
       const hr = RQ.hem && v.roomId && RQ.hem.room(v.roomId);
       if (hr) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); }
       RQ.go("mitt-rum");

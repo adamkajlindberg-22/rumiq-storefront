@@ -70,13 +70,13 @@ with sync_playwright() as p:
         # 1. menus and footer: one name for each thing
         pg.goto(BASE, wait_until="networkidle"); pg.wait_for_timeout(500)
         mnav = pg.evaluate("[...document.querySelectorAll('#mnav a')].map((a) => a.textContent.trim())")
-        for name in ("Looks", "Svep", "Sparat", "Mitt rum", "Studio Plus", "Hitta rätt", "Spåra min beställning", "Handla efter rum"):
+        for name in ("Looks", "Svep", "Mitt hem", "Mitt rum", "Studio Plus", "Hitta rätt", "Spåra min beställning", "Handla efter rum"):
             ok(name in mnav, f"{tag} phone menu names {name}")
         for old in ("Färdiga looks", "Hitta din stil", "Sparat och mina rum", "Rum att handla i", "Var är mitt paket?"):
             ok(old not in mnav, f"{tag} phone menu no longer says {old}")
         foot = pg.evaluate("[...document.querySelectorAll('footer.site a, #megaShop a')].map((a) => a.textContent.trim())")
         ok("Looks" in foot and "Färdiga looks" not in foot and "Efter rum" not in foot, f"{tag} footer and shop menu use Looks and Handla efter rum")
-        ok(pg.evaluate("document.querySelector('.dock [data-dock=sparat]').textContent.trim()") == "Sparat", f"{tag} the dock says Sparat")
+        ok(pg.evaluate("document.querySelector('.dock [data-dock=sparat]').textContent.trim()") == "Mitt hem", f"{tag} the dock says Mitt hem (v15.8: Mitt rum is the tool, Mitt hem what is saved)")
 
         # 2. the home page: delivery time is a goal, the offer comes from config.js
         why = pg.evaluate(TEXT, "#varfor")
@@ -90,7 +90,7 @@ with sync_playwright() as p:
         ok("Målet: hos dig" in pg.evaluate(TEXT, ".lk"), f"{tag} Leveranskoll calls the date a goal")
         view = pg.evaluate(TEXT, "#view") + " " + pg.evaluate(ATTRS, "#view")
         ok(not re.search(r"[öÖ]nskelist|i mitt rum\b", view), f"{tag} product page uses Sparat and Mitt rum")
-        ok("Listorna finns under Sparat" in pg.evaluate("document.getElementById('view').textContent"), f"{tag} the list popover points to Sparat")
+        ok("Listorna finns i Mitt hem" in pg.evaluate("document.getElementById('view').textContent"), f"{tag} the list popover points to Sparat")
         ok(pg.evaluate("[...document.querySelectorAll('#pt-matt a')].some((a) => a.textContent.trim() === 'Mitt rum')"), f"{tag} the size tab links to Mitt rum by its name")
 
         # 4. the checkout reads the delivery time from config.js and calls it a goal

@@ -175,7 +175,7 @@ with sync_playwright() as p:
                     pg.evaluate("document.getElementById('%s').click()" % ("svYes" if k % 3 != 1 else "svNo")); pg.wait_for_timeout(260); k += 1
                 pg.wait_for_timeout(500)
                 SV = "(() => { const b = document.getElementById('svAll'); return [b.textContent, b.hasAttribute('data-open-cart')]; })()"
-                ok(pg.evaluate(SV)[0].startswith("Lägg alla i varukorgen ·"), f"{tag} Svep: the result adds first: {pg.evaluate(SV)}")
+                ok(pg.evaluate(SV)[0].startswith("Lägg de sparade i varukorgen ·"), f"{tag} Svep: the result adds first: {pg.evaluate(SV)}")
                 hs = pg.evaluate("[...new Set([...document.querySelectorAll('.sv-liked [data-sheet]')].map((x) => x.dataset.sheet))]")
                 pg.evaluate("(hs) => hs.forEach((h) => RQ.shop.addToCart(h + '::0', 1))", hs); pg.wait_for_timeout(400)
                 ok(pg.evaluate(SV) == ["I varukorgen · Visa", True], f"{tag} Svep: with all of it in the cart the button shows the cart: {pg.evaluate(SV)}")

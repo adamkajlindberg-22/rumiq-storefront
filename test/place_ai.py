@@ -135,7 +135,7 @@ with sync_playwright() as p:
             ok(bb[0] <= 60 and bb[1] >= W - 80, f"{tag} the buy button is one line, full width on a phone: {bb}")
         shot(pg, f"place-{W}-result")
         sv = pg.evaluate("(document.querySelector('.ai-sheet.open .ai-saved') || {}).innerText || ''")
-        ok("i Vardagsrum under Sparat" in sv, f"{tag} the saved line says which room the picture is in (review M8): {sv}")
+        ok("i Mitt hem, under Vardagsrum" in sv, f"{tag} the saved line says which room the picture is in (review M8): {sv}")
         ok(pg.evaluate("document.querySelector('.ai-sheet.open .ai-tag-a').innerText") == "Förhandsvisning", f"{tag} the picture's label says Förhandsvisning, not Demo (review M7)")
         pg.evaluate("RQ.shop.clearCart(); document.getElementById('aiBuy').click()"); pg.wait_for_timeout(700)
         ok(pg.evaluate("RQ.shop.cartLines().map((l) => l.id).sort().join(',')") == ",".join(sorted(pins)), f"{tag} Köp allt i bilden adds exactly those products and colours")

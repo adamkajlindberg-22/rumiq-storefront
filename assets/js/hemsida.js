@@ -78,8 +78,8 @@
     // the overview first (the room cards, or "Skapa ditt första rum"), then Alla bilder and the parts that hold something, the empty ones last
     const order = [...parts.filter((x) => x[0] === "rum"), ...parts.filter((x) => x[0] === "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && x[0] !== "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && !x[1])];
     return {
-      title: "Sparat · RumIQ",
-      html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Sparat"]])}<span class="eyebrow">Ditt hem</span><h1 class="h1">Sparat</h1><p class="lead">Dina rum, bilderna, det du gillar och din stil, samlat så att du kan fortsätta där du slutade. Allt du sparar här är privat.</p>
+      title: "Mitt hem · RumIQ",
+      html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Mitt hem"]])}<span class="eyebrow">Ditt hem</span><h1 class="h1">Mitt hem</h1><p class="lead">Dina rum, bilderna, det du gillar och din stil, samlat så att du kan fortsätta där du slutade. Allt du sparar här är privat.</p>
           <nav class="jump-nav" aria-label="På sidan">${order.map((x) => x[2]).join("")}</nav></header>
         <section class="wrap mh" style="padding-bottom:5rem;display:grid;gap:3.2rem">
           ${order.map((x) => x[3]).join("\n          ")}
@@ -260,7 +260,7 @@
       <div class="mb-strip" id="mbStrip"${tones().length || B.note ? "" : " hidden"}>${tones().length ? `<div class="mb-tones" role="img" aria-label="Färgerna på tavlan">${tones().map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</div>` : ""}${B.note ? `<p class="mb-note">${esc(B.note)}</p>` : ""}</div>
       <div class="mb-tools" role="toolbar" aria-label="Verktyg">${sp ? `<b class="mb-selname">${esc(RQ.byHandle(sp.h).name)}</b><button class="btn ghost sm" type="button" data-mb-do="smaller" aria-label="Mindre">−</button><button class="btn ghost sm" type="button" data-mb-do="bigger" aria-label="Större">+</button><button class="btn ghost sm" type="button" data-mb-do="front">Fram</button><button class="btn ghost sm" type="button" data-mb-do="back">Bak</button><button class="btn ghost sm" type="button" data-mb-do="remove">Ta bort</button><button class="tlink" type="button" data-mb-do="deselect">Klar</button>`
         : `<button class="btn sm" type="button" data-mb-do="add" aria-expanded="${addOpen}">Lägg till</button>${B.items.length > 1 ? `<button class="btn ghost sm" type="button" data-mb-do="auto">Ordna snyggt</button>` : ""}`}</div>
-      ${addOpen && !sp ? `<div class="mb-add"><div class="chips" role="group" aria-label="Var ifrån?">${[["fav", "Sparat"], ["look", "Från looks"], ["all", "Alla"]].map(([k, l]) => `<button type="button" class="chip" data-mb-tab="${k}" aria-pressed="${addTab === k}">${l}</button>`).join("")}</div><label class="mb-q"><span class="sr">Sök</span><input id="mbQ" type="search" value="${esc(addQ)}" placeholder="Sök i sortimentet"></label><div class="mb-add-list">${addList()}</div></div>` : ""}
+      ${addOpen && !sp ? `<div class="mb-add"><div class="chips" role="group" aria-label="Var ifrån?">${[["fav", "Favoriter"], ["look", "Från looks"], ["all", "Alla"]].map(([k, l]) => `<button type="button" class="chip" data-mb-tab="${k}" aria-pressed="${addTab === k}">${l}</button>`).join("")}</div><label class="mb-q"><span class="sr">Sök</span><input id="mbQ" type="search" value="${esc(addQ)}" placeholder="Sök i sortimentet"></label><div class="mb-add-list">${addList()}</div></div>` : ""}
       <label class="mb-notef">Anteckning<textarea id="mbNote" rows="2" maxlength="200" placeholder="Varför gillar du det här?">${esc(B.note || "")}</textarea></label>
       ${tryOpen && B.items.length ? tryHtml() : ""}<div class="ai-row mb-acts"><button class="btn" type="button" data-mb-do="try" aria-expanded="${tryOpen}" ${B.items.length ? "" : "disabled"}>${RQ.roomIco}<span>Prova i ett rum</span></button><button class="btn ghost" type="button" data-mb-do="save" ${B.items.length ? "" : "disabled"}>Spara som look</button><button class="btn ghost" type="button" data-mb-do="share" ${B.items.length ? "" : "disabled"}>Dela</button></div>
       <p class="small" role="status" id="mbMsg">Sparas medan du arbetar. ${H.PROMISE}</p></div>`;
@@ -317,7 +317,7 @@
     if (it && act === "front") { it.z = Math.max(...B.items.map((x) => x.z || 0)) + 1; persist(); mpaint('[data-mb-do="front"]'); return; }
     if (it && act === "back") { it.z = Math.min(...B.items.map((x) => x.z || 0)) - 1; persist(); mpaint('[data-mb-do="back"]'); return; }
     if (it && act === "remove") { B.items.splice(sel, 1); sel = null; persist(); mpaint('[data-mb-do="add"]'); return; }
-    if (act === "save") { S.saveLook(B.items.map((x) => x.h), B.name || "Min moodboard"); persist(); $("#mbMsg", mbody).innerHTML = `Sparad som look i Sparat. <a href="#mitt-hem" data-mb-close>Visa</a>`; return; }
+    if (act === "save") { S.saveLook(B.items.map((x) => x.h), B.name || "Min moodboard"); persist(); $("#mbMsg", mbody).innerHTML = `Sparad som look i Mitt hem. <a href="#mitt-hem" data-mb-close>Visa</a>`; return; }
     if (act === "share") { shareBoard(d); return; }
     if (act === "try") { tryOpen = !tryOpen; mpaint(tryOpen ? ".mb-try .chip" : '[data-mb-do="try"]'); if (tryOpen) { const t = $(".mb-try", mbody); if (t) t.scrollIntoView({ block: "nearest", behavior: calm() ? "auto" : "smooth" }); } }
   });

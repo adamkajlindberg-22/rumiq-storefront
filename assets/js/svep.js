@@ -516,7 +516,7 @@
 
   // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
   // only what belongs in this kind of room goes in, four at a time, so the room does not fill with soap pumps and desk trays;
-  // the rest stays under Sparat, and the toast says so
+  // the rest stays i Mitt hem, and the toast says so
   RQ.placeFitting = (hs) => {
     const R = RQ.room, type = R.get() && R.get().type, MAX = 4;
     const fit = hs.filter((h) => { const p = RQ.byHandle(h); return p && (!type || p.rooms.includes(type)); });
@@ -524,13 +524,13 @@
     fit.filter((h) => !already.includes(h)).forEach((h) => { if (placed.length < MAX && R.add(h, true)) placed.push(h); });
     const notFit = hs.length - fit.length, over = fit.length - already.length - placed.length, rest = notFit + over;
     const lead = placed.length ? `${placed.length} ${placed.length === 1 ? "sak står" : "saker står"} nu i rummet.` : already.length ? "De som passar står redan i rummet." : "Inget av det passar i det här rummet.";
-    const tail = !rest ? "" : notFit === hs.length ? " Det ligger kvar under Sparat." : notFit && !over ? ` De andra ${notFit} passar bättre i andra rum och ligger kvar under Sparat.` : !notFit ? ` ${over} till ligger kvar under Sparat, så att rummet inte blir för fullt.` : ` De andra ${rest} ligger kvar under Sparat. Några passar bättre i andra rum.`;
+    const tail = !rest ? "" : notFit === hs.length ? " Det ligger kvar i Mitt hem." : notFit && !over ? ` De andra ${notFit} passar bättre i andra rum och ligger kvar i Mitt hem.` : !notFit ? ` ${over} till ligger kvar i Mitt hem, så att rummet inte blir för fullt.` : ` De andra ${rest} ligger kvar i Mitt hem. Några passar bättre i andra rum.`;
     return { placed, already, rest, text: lead + tail };
   };
   // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
   const toRoom = (hs) => {
     const R = RQ.room; if (!R) return;
-    const put = () => { const r = RQ.placeFitting(hs); if (r.placed.length || r.already.length) { location.hash = "#mitt-rum"; setTimeout(() => RQ.toast(r.text), 400); } else RQ.toast(`${r.text} <a href="#mitt-hem">Se Sparat</a>`); };
+    const put = () => { const r = RQ.placeFitting(hs); if (r.placed.length || r.already.length) { location.hash = "#mitt-rum"; setTimeout(() => RQ.toast(r.text), 400); } else RQ.toast(`${r.text} <a href="#mitt-hem">Se Mitt hem</a>`); };
     if (R.has()) put(); else R.openSetup(put, { add: hs, go: "#mitt-rum" });
   };
 
@@ -564,20 +564,22 @@
       ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
         ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
       ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved, true)}
-        <div class="ctrl-row sp-acts"><button class="btn" type="button" id="svAll">Lägg alla i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="svRoomAll">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div>
 </div>` : ""}
       ${st.bagged.length ? `<p class="small">${st.bagged.length} ${st.bagged.length === 1 ? "vara ligger" : "varor ligger"} redan i varukorgen. <a href="#kassa">Till kassan</a></p>` : ""}
       ${prof.look || ra.hs.length >= 3 ? `<div class="sp-next">` : ""}${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
       ${ra.hs.length >= 3 ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Inreder ni tillsammans?</b><p>Skicka samma kort till en eller flera. När de har svept ser ni vad ni gillar gemensamt.</p>
         <button class="btn ghost sm" type="button" id="svTwoOpen" aria-expanded="false" aria-controls="svTwo">${SV.link}<span>Skicka korten</span></button>
         ${linkForm("svTwo", "Ditt namn", "Skicka korten", ls.get(NKEY, ""), "").replace("<form ", "<form hidden ")}</div></div>` : ""}${prof.look || ra.hs.length >= 3 ? "</div>" : ""}
-      <div class="ctrl-row" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep tio till</button>` : ""}<a class="btn ghost" href="#for-dig">Butiken för dig</a></div>
-      <p class="sp-links">${top.length ? `<button class="tlink" type="button" id="svShare">Dela min stil</button>` : ""}<button class="tlink" type="button" id="svAgain">Börja om från början</button></p><p class="small" id="svAgainNote" role="status"></p></div>` }; // few actions: two buttons, two quiet links
+      <div class="ctrl-row sp-main" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep tio till</button>` : `<a class="btn" href="#for-dig">Butiken för dig</a>`}</div>
+      <details class="sp-more"><summary>Fler val</summary><div class="sp-more-in">
+        ${saved.length ? `<button class="tlink" type="button" id="svAll">Lägg de sparade i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="tlink" type="button" id="svRoomAll">Se de sparade i ditt rum</button>` : ""}
+        ${more ? `<a class="tlink" href="#for-dig">Butiken för dig</a>` : ""}${top.length ? `<button class="tlink" type="button" id="svShare">Dela min stil</button>` : ""}<button class="tlink" type="button" id="svAgain">Börja om från början</button></div></details>
+      <p class="small" id="svAgainNote" role="status"></p></div>` }; // few actions: two buttons, two quiet links
   };
   const scopeNav = (scope) => `<nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="#svep"${scope ? "" : ' aria-current="true"'}>Hela butiken</a>${RQ.ROOMS.map((r) => `<a class="chip" href="#svep-rum-${r.id}"${scope === r.id ? ' aria-current="true"' : ""}>${esc(r.name)}</a>`).join("")}</nav>`;
   // keys where there is a keyboard and a mouse; on touch screens the same rows show the gesture and the button's own icon
   const legend = `<ul class="sv-legend">
-      <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true">${ICO.heart}</i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar under Sparat och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true">${ICO.heart}</i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar i Mitt hem och lär oss din stil.</span></div></li>
       <li><kbd aria-hidden="true">←</kbd><i class="sv-ti" aria-hidden="true">${ICO.x}</i><div><b>Hoppa över</b><span><em class="sv-tc">Svep åt vänster. </em>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><i class="sv-ti" aria-hidden="true">${SV.bag}</i><div><b>Lägg i varukorgen</b><span><em class="sv-tc">Svep uppåt. </em>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><i class="sv-ti" aria-hidden="true">${SV.undo}</i><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
@@ -635,7 +637,7 @@
               RQ.taste.reset(); try { localStorage.removeItem("rumiq-style"); } catch (er) {} again();
             });
             const m = $("#svMore", root); m && m.addEventListener("click", again);
-            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda")); RQ.addAllBtn(all, () => r.saved.map((p) => p.handle), () => `Lägg alla i varukorgen · ${kr(r.saved.reduce((s, p) => s + p.price, 0))}`);
+            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda")); RQ.addAllBtn(all, () => r.saved.map((p) => p.handle), () => `Lägg de sparade i varukorgen · ${kr(r.saved.reduce((s, p) => s + p.price, 0))}`);
             const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => toRoom(r.saved.map((p) => p.handle)));
             const sh = $("#svShare", root); sh && sh.addEventListener("click", () => shareStyle(r.top, (r.saved.length ? r.saved : RQ.styleProfile().liked.map(RQ.byHandle)).filter(Boolean)));
             const ans = roundAnswers(st);
@@ -686,11 +688,11 @@
   const roomPanel = (g) => {
     const H = RQ.hem, r = H && g.room && H.room(g.room); if (!r) return "";
     const its = H.items(r), gr = r.group || {}, w = gr.words || "";
-    return `<div class="gr-room" data-gr-r="${esc(r.id)}"><span class="eyebrow">Sparat i Mina rum</span><h3 class="h3" tabindex="-1">${esc(H.name(r))}</h3>
+    return `<div class="gr-room" data-gr-r="${esc(r.id)}"><span class="eyebrow">I Mitt hem</span><h3 class="h3" tabindex="-1">${esc(H.name(r))}</h3>
         ${w ? `<p class="small">${esc(w.charAt(0).toLocaleUpperCase("sv") + w.slice(1))}, er gemensamma stil.</p>` : ""}
         <span class="gr-room-ims" aria-hidden="true">${its.slice(0, 5).map((it) => `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">`).join("")}</span>
         <div class="ai-row"><button class="btn" type="button" data-gr-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-gr-buy>Köp allt · ${kr(H.money(r).total)}</button></div>
-        <div class="ai-row small-row"><button class="tlink" type="button" data-gr-ask>Vad tycker du?</button><a class="tlink" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna i Sparat</a></div></div>`;
+        <div class="ai-row small-row"><button class="tlink" type="button" data-gr-ask>Vad tycker du?</button><a class="tlink" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna i Mitt hem</a></div></div>`;
   };
   const groupResult = (g) => {
     const c = G.calc(g), n = c.n, P = (l) => l.map(RQ.byHandle).filter(Boolean), sum = (l) => P(l).reduce((s, p) => s + p.price, 0);
@@ -699,7 +701,7 @@
     // the one list shown open (what you all, or most of you, like), with one way to more like it; the rest folds away
     const block = (label, list, cls = "", more = false) => (list.length ? `<div class="sp-saved ${cls}"><span class="eyebrow">${label} · ${list.length}</span>${savedTiles(P(list), more ? "Mer som det här" : false)}</div>` : "");
     const fold = (cls, summary, body) => `<details class="gr-fold ${cls}"><summary>${summary}</summary><div class="gr-fold-in">${body}</div></details>`;
-    const acts = !alone && c.mix.length ? `<div class="gr-acts">${g.room && RQ.hem && RQ.hem.room(g.room) ? roomPanel(g) : `<div class="ctrl-row sp-acts"><button class="btn" type="button" data-gr-room>${RQ.roomIco}<span>Gör ett rum av det</span></button>${keep.length ? `<button class="btn ghost" type="button" data-gr-cart>Lägg i varukorgen · ${kr(sum(keep))}</button>` : ""}</div><p class="small gr-note">Rummet hamnar under Sparat, med er stil och det ni gillar.</p>`}</div>` : "";
+    const acts = !alone && c.mix.length ? `<div class="gr-acts">${g.room && RQ.hem && RQ.hem.room(g.room) ? roomPanel(g) : `<div class="ctrl-row sp-acts"><button class="btn" type="button" data-gr-room>${RQ.roomIco}<span>Gör ett rum av det</span></button>${keep.length ? `<button class="btn ghost" type="button" data-gr-cart>Lägg i varukorgen · ${kr(sum(keep))}</button>` : ""}</div><p class="small gr-note">Rummet hamnar i Mitt hem, med er stil och det ni gillar.</p>`}</div>` : "";
     const title = alone ? "Dina svar är klara." : c.all.length ? (n === 2 ? `Ni gillar båda ${nSaker(c.all.length)}` : `Ni gillar alla ${nSaker(c.all.length)}`) : c.most.length ? `De flesta av er gillar ${nSaker(c.most.length)}` : "Ni gillade olika saker den här gången";
     // the result goes back to the others first: right under the meter, named ("Skicka tillbaka till Anna"), for a full group too
     const sendT = alone ? "Skicka korten" : full ? "Skicka resultatet till gruppen" : n === 2 ? (named.length ? `Skicka tillbaka till <b class="sv-name">${esc(named[0].n)}</b>` : "Skicka tillbaka") : "Skicka till gruppen";
@@ -874,7 +876,7 @@
           ss.set("rumiq-svep-carry", { done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged });
           const left = ROUND - st.done.length;
           deckEl.outerHTML = `<div class="svh-done" tabindex="-1"><span class="eyebrow">${st.done.length} av ${ROUND} klara</span><h3>Snyggt. ${left} kort kvar till din stilprofil.</h3>
-            ${st.saved.length ? `<p>${st.saved.length} ${st.saved.length === 1 ? "sak har" : "saker har"} hamnat under Sparat.</p>` : `<p>Ju fler kort, desto bättre förstår vi vad du gillar.</p>`}
+            ${st.saved.length ? `<p>${st.saved.length} ${st.saved.length === 1 ? "sak har" : "saker har"} hamnat i Mitt hem.</p>` : `<p>Ju fler kort, desto bättre förstår vi vad du gillar.</p>`}
             <a class="btn" href="#svep">Fortsätt svepa</a></div>`;
         },
       });

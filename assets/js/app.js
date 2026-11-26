@@ -349,7 +349,7 @@
   const listPanel = (p) => {
     const lists = S.lists();
     const suggest = p.rooms.map((r) => RQ.roomById(r).name).filter((n) => !lists.some((l) => l.name === n));
-    return `<p class="small" style="margin-bottom:.7rem">Samla produkter per rum eller projekt. Listorna finns under Sparat och i ditt konto.</p>
+    return `<p class="small" style="margin-bottom:.7rem">Samla produkter per rum eller projekt. Listorna finns i Mitt hem och i ditt konto.</p>
       <div style="display:grid;gap:.45rem">${lists.map((l) => `<label class="check"><input type="checkbox" data-list="${l.id}" ${l.handles.includes(p.handle) ? "checked" : ""}> ${esc(l.name)} <span class="small">(${l.handles.length})</span></label>`).join("")}</div>
       ${suggest.length ? `<div class="chips" style="margin-top:.8rem">${suggest.map((n) => `<button type="button" class="chip" data-newlist="${esc(n)}">+ ${esc(n)}</button>`).join("")}</div>` : ""}
       <form id="newList" style="display:flex;gap:.5rem;margin-top:.8rem"><label class="sr" for="nl">Ny lista</label><input id="nl" placeholder="Ny lista, till exempel Sommarstugan" maxlength="40"><button class="btn sm" type="submit">Skapa</button></form>`;
@@ -560,7 +560,7 @@
     const items = cur.handles.map(RQ.byHandle).filter(Boolean);
     const total = items.reduce((s, p) => s + p.price, 0);
     return { title: "Mina listor · RumIQ",
-      html: `${head(crumbs([["Hem", "hem"], ["Sparat", "mitt-hem"], ["Mina listor"]]), "Mina listor", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
+      html: `${head(crumbs([["Hem", "hem"], ["Mitt hem", "mitt-hem"], ["Mina listor"]]), "Mina listor", "Det du har sparat och dina egna listor, till exempel en per rum. Allt finns kvar i den här webbläsaren.")}
       <section class="wrap" style="padding-bottom:6rem">
         <div class="listtabs" role="group" aria-label="Dina listor"><button class="chip" type="button" data-tab="fav" aria-pressed="${active === "fav"}">Allt sparat (${S._wish.length})</button>${lists.map((l) => `<button class="chip" type="button" data-tab="${l.id}" aria-pressed="${active === l.id}">${esc(l.name)} (${l.handles.length})</button>`).join("")}
           <form id="mkList" style="display:flex;gap:.4rem"><label class="sr" for="mkl">Ny lista</label><input id="mkl" placeholder="Ny lista" maxlength="40" style="min-height:var(--field-h-s);padding-block:0;width:11rem"><button class="chip" type="submit">Skapa</button></form></div>
@@ -589,12 +589,12 @@
     const saved = S.savedArticles().includes(slug);
     return { title: `${a.title} · RumIQ Magasin`,
       html: `<header class="page-head wrap" style="padding-bottom:0">${crumbs([["Hem", "hem"], ["Magasin", "magasin"], ["Artikel"]])}<h1 class="h1" style="max-width:22ch">${esc(a.title)}</h1><p class="lead">${esc(a.lead)}</p>
-        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${readMin(a)} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad under Sparat" : "Spara artikeln"}</button></div></header>
+        <div class="ctrl-row"><span class="eyebrow" style="align-self:center">${readMin(a)} min läsning</span><button class="chip" type="button" id="saveArt" aria-pressed="${saved}">${saved ? "Sparad i Mitt hem" : "Spara artikeln"}</button></div></header>
         <div class="wrap"><div class="article-hero reveal"><img src="${a.img.replace("-1200", "-1600")}" srcset="${RQ.srcset(a.img)}" sizes="(min-width: 1400px) 1320px, 94vw" onerror="this.removeAttribute('srcset');this.src='${a.img}'" alt=""></div></div>
         <div class="wrap"><article class="prose" style="padding-bottom:4rem">${a.body}</article></div>
         <section class="sec tight kalk"><div class="wrap"><div class="sec-head"><span class="eyebrow">Från artikeln</span><h2 class="h2">Saker som passar</h2></div>${RQ.grid(a.picks.map(RQ.byHandle).filter(Boolean))}</div></section>
         <section class="sec tight"><div class="wrap"><div class="sec-head"><span class="eyebrow">Läs mer</span></div><div class="mag-grid">${RQ.ARTICLES.filter((x) => x.slug !== slug).slice(0, 3).map(RQ.magCard).join("")}</div></div></section>`,
-      mount(root) { $("#saveArt", root).addEventListener("click", (e) => { const on = S.toggleArticle(slug); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Sparad under Sparat" : "Spara artikeln"; }); },
+      mount(root) { $("#saveArt", root).addEventListener("click", (e) => { const on = S.toggleArticle(slug); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Sparad i Mitt hem" : "Spara artikeln"; }); },
     };
   };
   V.inspiration = () => ({ html: `${head(crumbs([["Hem", "hem"], ["Rumsinspiration"]]), "Rumsinspiration", "Rum att drömma sig bort i, och idéer att ta med hem. Bilderna är illustrationer.")}
@@ -986,7 +986,7 @@
     $$("[data-count=cartline]").forEach((b) => { const n = S.cartCount(); b.textContent = n ? `${n} ${n === 1 ? "produkt" : "produkter"}` : ""; });
     $$("[data-count=wish]").forEach((b) => { const n = S._wish.length; b.textContent = n || ""; b.dataset.n = n; });
     const named = (q, base, n, one, many) => $$(q).forEach((el) => el.setAttribute("aria-label", n ? `${base}, ${n} ${n === 1 ? one : many}` : base));
-    named(".tools [data-open-cart]", "Varukorg", S.cartCount(), "vara", "varor"); named(".tools .wishlink", "Sparat", S._wish.length, "sak", "saker");
+    named(".tools [data-open-cart]", "Varukorg", S.cartCount(), "vara", "varor"); named(".tools .wishlink", "Mitt hem", S._wish.length, "sak", "saker");
     const c = S.customer(); const acc = $("#accLink"); if (acc) acc.setAttribute("aria-label", c ? "Mitt konto" : "Logga in");
   };
   const drawer = $("#cart"), scrimAll = $("#scrimAll");
@@ -1196,7 +1196,7 @@
   document.addEventListener("click", (e) => {
     const t = e.target.closest("[data-wish],[data-add],[data-open-cart],[data-close],[data-open-search],[data-q],[data-rm],[data-undo-rm],[data-line],[data-action],[data-cart-room],#burger,#mnavClose,a[href^='#']");
     if (!t) { if (!e.target.closest(".mega,.nav")) closeMega(); return; }
-    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad. <a href="#mitt-hem">Se Sparat</a>' : "Borttagen ur Sparat"); return; }
+    if (t.matches("[data-wish]")) { const on = S.toggleWish(t.dataset.wish); t.setAttribute("aria-pressed", on); if (t.classList.contains("chip")) t.textContent = on ? "Sparad" : "Spara"; if (t.closest(".pactions")) $("span", t).textContent = on ? "Sparad" : "Spara"; if (on && RQ.flyWish) RQ.flyWish(t); RQ.toast(on ? 'Sparad. <a href="#mitt-hem">Se Mitt hem</a>' : "Borttagen ur Mitt hem"); return; }
     if (t.matches("[data-add]")) {
       // a card's + on a product with several colours asks which colour (in the quick view), as Mitt rum does, instead of choosing one
       const qp = t.classList.contains("qadd") && RQ.byHandle(t.dataset.add.split("::")[0]);
@@ -1290,7 +1290,7 @@
 
   // cookie banner. On Studio pages a slim strip under the header that makes room for itself, so it never covers a tool;
   // its height is --ck-h, and the room editor is told when it comes and goes (rq-cookie)
-  let ckH = -1; const ckSize = () => requestAnimationFrame(() => { const b = $("#cookie"), h = b.classList.contains("show") && document.body.classList.contains("on-studio") ? b.offsetHeight : 0; if (h === ckH) return; ckH = h; document.documentElement.style.setProperty("--ck-h", h + "px"); document.dispatchEvent(new CustomEvent("rq-cookie")); });
+  let ckH = -1; const ckSize = () => requestAnimationFrame(() => { const b = $("#cookie"), h = b.classList.contains("show") && (document.body.classList.contains("on-studio") || matchMedia("(max-width: 700px)").matches) ? b.offsetHeight : 0; /* a phone: the strip under the header on every page */ if (h === ckH) return; ckH = h; document.documentElement.style.setProperty("--ck-h", h + "px"); document.dispatchEvent(new CustomEvent("rq-cookie")); });
   addEventListener("resize", () => { if ($("#cookie").classList.contains("show")) ckSize(); });
   new MutationObserver(ckSize).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   RQ.showCookies = (force) => {

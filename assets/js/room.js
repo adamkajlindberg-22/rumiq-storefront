@@ -17,7 +17,7 @@
   // only a picture kept in this browser counts as a room; anything else in the storage is ignored
   if (!room || typeof room !== "object" || typeof room.img !== "string" || !(/^data:image\//.test(room.img) || (room.sample && /^assets\/img\/rum\/[a-z]+-\d+\.webp$/.test(room.img))) || !(+room.w > 0) || !(+room.h > 0)) room = null;
   if (room) { room.w = +room.w; room.h = +room.h; if (!Array.isArray(room.pal)) room.pal = []; room.pal = room.pal.filter((x) => x && /^#[0-9a-f]{6}$/i.test(x.hex)); }
-  const FULL = "Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat och försök igen.";
+  const FULL = "Webbläsarens lagring är full. Ta bort ett gammalt projekt i Mitt hem och försök igen.";
 
   /* Where things belong. A lamp stands on a table, a throw lies on the sofa, a print hangs on the wall and a
      rug lies on the floor. kind = where it goes, cm = the real width of what the cut-out shows, r = the
@@ -318,7 +318,7 @@
       const next = { img: data, w: W, h: H, pal: a.pal, light: a.light, warm: a.warm, type: meta.type || null, name: meta.name || "", sample: !!meta.sample, map: meta.map || null, at: new Date().toISOString() };
       let ok = ls.set(KEY, next);
       if (!ok && cv) { data = cv.toDataURL("image/jpeg", 0.62); next.img = data; ok = ls.set(KEY, next); }
-      if (!ok) { R.lastError = "Bilden fick inte plats i webbläsarens lagring. Ta bort gamla projekt under Sparat och försök igen."; if (!sheet.classList.contains("open")) RQ.toast(R.lastError); return false; }
+      if (!ok) { R.lastError = "Bilden fick inte plats i webbläsarens lagring. Ta bort gamla projekt i Mitt hem och försök igen."; if (!sheet.classList.contains("open")) RQ.toast(R.lastError); return false; }
       room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; // a new photo: the old steps belonged to the old room
       ls.del(LEARN);
       // what stood in the old room is put where it belongs in the new one
@@ -884,6 +884,15 @@
         <p class="small" style="margin-top:1.2rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
       </div>${RQ.demoFig ? RQ.demoFig({ bare: true }) : ""}</div>`; // the picture shows what it does; no way out of Studio in it
 
+  /* v15.8 review ("which tool do I start with?"): before there is a room, Mitt rum is where you choose how to begin. The room
+     comes first (above); when you are not sure of the style yet, three clear ways in, each saying when it is the one */
+  const startWays = () => `<section class="wrap rm-ways" aria-labelledby="rmWaysT"><h2 class="h3" id="rmWaysT">Inte säker på stilen än?</h2>
+      <div class="rm-ways-g">
+        <a class="rm-way" href="#svep"><span class="rm-way-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="11" height="15" rx="2"/><path d="M19 7.5v10a2.5 2.5 0 0 1-2.5 2.5H9"/></svg></span><span><b>Svep fram din stil</b><small>Svep tio kort. Du får din stil, dina färger och ett färdigt rumsförslag att se i ditt rum.</small><em>En minut</em></span></a>
+        <a class="rm-way" href="#svep-ihop"><span class="rm-way-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.5"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8M14.5 14.6c.6-.2 1.3-.3 2-.3 2.3 0 4 1.5 4.5 4.2"/></svg></span><span><b>Svep tillsammans</b><small>Inreder ni ihop? Skicka samma kort till 1–5 personer och se vad ni alla gillar.</small><em>Utan konto</em></span></a>
+        <a class="rm-way" href="#studio-stylist"><span class="rm-way-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 6.5h15v9h-8l-4 3.5v-3.5h-3z"/></svg></span><span><b>Fråga stylisten</b><small>Beskriv rummet och vad du vill ändra. Du får råd och saker ur sortimentet.</small><em>Med egna ord</em></span></a>
+      </div></section>`;
+
   /* ================================================================ Placera och skapa (founder, 26 nov): the main way.
      Choose a room, choose up to five things, point where each goes (a numbered pin with a surface and a dashed footprint at
      true scale), then "Skapa bilden". The pins ARE the scene's things (their foot point, their surface), so "Justera själv"
@@ -969,7 +978,7 @@
         <section class="wrap pl" id="pl">
           <ol class="pl-steps" aria-label="Så går det till"><li data-step="1"><b>1</b> ${room.sample ? esc(room.name || "Exempelrummet") : "Ditt rum"} <button type="button" class="tlink" data-room-setup>Byt rum</button></li><li data-step="2"><b>2</b> Välj saker</li><li data-step="3"><b>3</b> Peka ut</li><li data-step="4"><b>4</b> Skapa bilden</li></ol>
           <div class="pl-grid"><div class="pl-left">
-            <div class="pl-stage" id="plStage"><div class="pl-in" id="plIn" style="aspect-ratio:${room.w} / ${room.h}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div></div>
+            <div class="pl-stage" id="plStage"><div class="pl-in" id="plIn" style="aspect-ratio:${room.w} / ${room.h};--ar:${(room.w / room.h).toFixed(4)}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div></div>
             <button type="button" class="tlink pl-zoom" id="plZoom" aria-pressed="false">Förstora bilden</button>
             <div class="pl-hintrow"><p class="pl-hint" id="plHint" role="status"></p><button type="button" class="tlink pl-undo" id="plUndo" hidden>Ångra</button></div>
           </div><div class="pl-right">
@@ -1025,8 +1034,8 @@
             ${(CAN[k] || ["golv"]).length < 2 ? `<p class="small pl-one">${verbOf(it).replace(/^./, (c) => c.toUpperCase())} ${SURF[surfKey(it)]}, alltid.</p>` : ""}<div class="chips" role="group" aria-label="Yta"${(CAN[k] || ["golv"]).length < 2 ? " hidden" : ""}>${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
             <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>
             <div class="pl-pin-a"><button type="button" class="btn ghost sm" data-ord="-1"${i ? "" : " disabled"}>Tidigare</button><button type="button" class="btn ghost sm" data-ord="1"${i < Math.min(list.length, PLACE_MAX) - 1 ? "" : " disabled"}>Senare</button><button type="button" class="btn ghost sm" id="plDel">Ta bort</button></div>`; };
-        const select = (h, quiet, fromList) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); if (narrow.matches && !pin.hidden && !fromList) requestAnimationFrame(() => { const hd = (document.querySelector("header") || {}).offsetHeight || 58, dk = document.querySelector(".dock"), low = dk && dk.offsetParent ? dk.getBoundingClientRect().top : innerHeight, sr = stage.getBoundingClientRect(), pr = pin.getBoundingClientRect();
-          if (pr.bottom <= low - 8 && sr.top >= hd) return; const want = sr.top + scrollY - hd - 8, need = pr.bottom + scrollY - low + 8; scrollTo({ top: Math.max(0, Math.min(want, need)), behavior: calmNow() ? "auto" : "smooth" }); }); /* the picture first: only as far as the controls need, never past the picture's top (review P1) */ const it = R.scene().find((x) => x.h === h); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
+        const select = (h, quiet, fromList) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); if (narrow.matches && !pin.hidden && !fromList) requestAnimationFrame(() => { const hd = (document.querySelector("header") || {}).offsetHeight || 58, dk = document.querySelector(".dock"), low = dk && dk.getClientRects().length && getComputedStyle(dk).display !== "none" ? Math.min(innerHeight, dk.getBoundingClientRect().top) : innerHeight, sr = stage.getBoundingClientRect(), pr = pin.getBoundingClientRect();
+          if (pr.bottom <= low - 8 && sr.top >= hd) return; const want = sr.top + scrollY - hd - 8, need = pr.bottom + scrollY - low + 8; scrollTo({ top: scrollY + Math.max(0, Math.min(want, need) - scrollY), behavior: "auto" }); }); /* the picture first: only as far as the controls need, never past the picture's top (review P1) */ const it = R.scene().find((x) => x.h === h); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
         const inner = $("#plIn", root);
         const at = (e) => { const r = inner.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 100, 1, 99), clamp((e.clientY - r.top) / r.height * 100, 4, 100)]; };
         stage.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; e.preventDefault(); b.setPointerCapture(e.pointerId); drag = { h: b.dataset.pin, b, x0: e.clientX, y0: e.clientY, moved: false }; });
@@ -1064,7 +1073,7 @@
         const placePin = () => { if (narrow.matches) stage.after(pin); else $(".pl-right", root).prepend(pin); };
         placePin(); if (narrow.addEventListener) narrow.addEventListener("change", placePin);
         // a phone: the picture twice as wide (swipe sideways), so pins close together are easy to tell apart and to place
-        const zoomTo = (h) => { const it = h && R.scene().find((x) => x.h === h); if (!it || !stage.classList.contains("big")) return; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * it.x / 100 - stage.clientWidth / 2), behavior: calmNow() ? "auto" : "smooth" }); };
+        const zoomTo = (h, now) => { const it = h && R.scene().find((x) => x.h === h); if (!it || stage.scrollWidth <= stage.clientWidth + 2) return; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * it.x / 100 - stage.clientWidth / 2), behavior: now || calmNow() ? "auto" : "smooth" }); }; /* a phone shows the room tall and wider than the screen: it follows the chosen pin */
         $("#plZoom", root).addEventListener("click", (e) => { const on = !stage.classList.contains("big"); stage.classList.toggle("big", on); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Visa hela bilden" : "Förstora bilden"; zoomTo(sel || (R.scene()[0] || {}).h); });
         $("#plSelf", root).addEventListener("click", () => { R.setWay("edit"); RQ.router(); scrollTo(0, 0); });
         $("#plCreate", root).addEventListener("click", async () => {
@@ -1083,7 +1092,8 @@
         // a thing that just came (a product page, the picker) is chosen, so the next tap in the picture puts it there
         const nw = RQ.ss && RQ.ss.get("rumiq-room-new"); if (nw && R.inScene(nw)) { RQ.ss.set("rumiq-room-new", ""); sel = nw;
           const l = R.scene(), i = l.findIndex((x) => x.h === nw); if (i >= PLACE_MAX) { const [it] = l.splice(i, 1); l.splice(PLACE_MAX - 1, 0, it); R.saveScene(l, true); } } // the five are full: the one you came with takes the fifth place
-        paint(); if (sel) say(`${name(sel)} är vald. Tryck i bilden där den ska stå.`); else if (R.scene().length) say("Tryck på en nål och sedan där i bilden den ska stå."); /* a first instruction (review P5) */
+        paint(); requestAnimationFrame(() => { const l = R.scene().slice(0, PLACE_MAX); if (!l.length || stage.scrollWidth <= stage.clientWidth + 2) return; if (sel) return zoomTo(sel, true); const mid = l.reduce((t, x) => t + x.x, 0) / l.length; stage.scrollLeft = Math.max(0, inner.offsetWidth * mid / 100 - stage.clientWidth / 2); }); /* where the things are */
+        if (sel) say(`${name(sel)} är vald. Tryck i bilden där den ska stå.`); else if (R.scene().length) say("Tryck på en nål och sedan där i bilden den ska stå."); /* a first instruction (review P5) */
         return () => { document.removeEventListener("rq-room", onRoom); if (ro) ro.disconnect(); };
       },
     };
@@ -1100,7 +1110,7 @@
     return {
       title: pre && RQ.byHandle(pre) ? `${RQ.byHandle(pre).name} i ditt rum · RumIQ` : "Mitt rum · RumIQ",
       html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
-        ${room ? "" : more}</section>
+        </section>
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap" id="rmWrap" style="--ar:${(room.w / room.h).toFixed(4)}">
             <div class="rm-stage" id="rmStage" data-sun="${(mapOf() || GENERIC).sun}" style="--ar:${(room.w / room.h).toFixed(4)};aspect-ratio:${room.w} / ${room.h}">
@@ -1126,7 +1136,7 @@
                   <button type="button" role="menuitemcheckbox" id="rmNight" aria-checked="false">${ICO.moon}<span>Kvällsljus<small>Se lamporna lysa i rummet</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmBefore" aria-checked="false">${ICO.eye}<span>Visa före<small>Rummet utan sakerna</small></span></button>
                   ${mapOf() ? "" : `<button type="button" role="menuitem" data-measure>${ICO.ruler}<span>Känd längd i bilden<small>Rätt skala för produkter med mått</small></span></button>`}
-                  <button type="button" role="menuitem" id="rmLib">${ICO.save}<span>Alla bilder<small>AI-bilder och sparade rum, under Sparat</small></span></button>
+                  <button type="button" role="menuitem" id="rmLib">${ICO.save}<span>Alla bilder<small>AI-bilder och sparade rum, i Mitt hem</small></span></button>
                   <button type="button" role="menuitem" data-room-setup>${ICO.swap}<span>Byt rum<small>Ny bild eller ett exempelrum</small></span></button>
                 </div></div>
             </div>
@@ -1176,7 +1186,7 @@
         </section>
         <div class="buybar rm-bar" id="rmBar"><div class="bb-t"><b>Hela rummet</b><span id="rmBarSum">0 kr</span></div><button class="btn sm" type="button" id="rmCart2">Lägg allt i varukorgen</button></div>
         <section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ${room.sample ? "rummet" : "ditt rum"}</h2><p>Sorterat efter hur väl färgerna går ihop med ${room.sample ? "rummet" : "ditt foto"}. Ställ in en av dem med Lägg till vid rummet.</p></div><a class="link" href="#butik">Hela butiken</a></div><div id="rmCols"></div><div id="rmFits"></div></div></section>`
-        : `<section class="wrap" style="padding-bottom:5rem">${setupBlock(want)}</section>`}`,
+        : `<section class="wrap" style="padding-bottom:2.5rem">${setupBlock(want)}</section>${startWays()}`}`,
       mount(root) {
         document.body.classList.add("on-room");
         document.body.classList.toggle("room-empty", !room);
@@ -1649,8 +1659,8 @@
         $("#rmSuggest", root).addEventListener("click", () => suggest()); $("#rmSuggest0", root).addEventListener("click", () => suggest());
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });
         $("#rmLook", root).addEventListener("click", () => { const hs = R.scene().map((it) => it.h); if (hs.length < 2) return;
-          if (S.looks().some((l) => l.handles.join() === hs.join())) { RQ.toast('Den looken är redan sparad. <a href="#mitt-hem">Se Sparat</a>'); return; }
-          S.saveLook(hs, "Mitt rum " + new Date().toLocaleDateString("sv-SE")); RQ.toast('Looken är sparad. <a href="#mitt-hem">Se Sparat</a>'); });
+          if (S.looks().some((l) => l.handles.join() === hs.join())) { RQ.toast('Den looken är redan sparad. <a href="#mitt-hem">Se Mitt hem</a>'); return; }
+          S.saveLook(hs, "Mitt rum " + new Date().toLocaleDateString("sv-SE")); RQ.toast('Looken är sparad. <a href="#mitt-hem">Se Mitt hem</a>'); });
         $("#rmCart", root).addEventListener("click", (e) => R.cartAll(e.currentTarget)); $("#rmCart2", root).addEventListener("click", (e) => R.cartAll(e.currentTarget));
         ["#rmCart", "#rmCart2"].forEach((id) => paintCart.push(RQ.addAllBtn($(id, root), () => R.scene().map((it) => it.h), () => "Lägg allt i varukorgen")));
         // evening: the room dims and every lamp and candle you placed glows, so you see the light at home
@@ -1690,18 +1700,18 @@
         $("#rmSave", root).addEventListener("click", async () => {
           try {
             const key = JSON.stringify(R.scene()) + room.at;
-            if (key === lastSave) { RQ.toast('Det här är redan sparat. <a href="#mitt-hem">Se Sparat</a>'); return; }
+            if (key === lastSave) { RQ.toast('Det här är redan sparat. <a href="#mitt-hem">Se Mitt hem</a>'); return; }
             const cv = await picture(1100), W = cv.width, H = cv.height, bg = $(".rm-bg", root);
             const before = document.createElement("canvas"); before.width = 480; before.height = Math.round(480 * H / W); before.getContext("2d").drawImage(bg, 0, 0, before.width, before.height);
             const handles = R.scene().map((it) => it.h);
             const ok = S.saveProject({ title: "Mitt rum med " + handles.map((h) => RQ.byHandle(h).name.split(" ")[0]).join(", "), img: cv.toDataURL("image/jpeg", 0.74), before: before.toDataURL("image/jpeg", 0.6), handles });
-            if (!ok) { RQ.toast("Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat."); return; }
+            if (!ok) { RQ.toast("Webbläsarens lagring är full. Ta bort ett gammalt projekt i Mitt hem."); return; }
             lastSave = key; document.dispatchEvent(new CustomEvent("rq-room-saved", { detail: { project: (S.projects()[0] || {}).id || null, active: RQ.hem && RQ.hem.activeId ? RQ.hem.activeId() : null, handles, img: cv.toDataURL("image/jpeg", 0.74) } })); // Spara happened
             if (navigator.canShare && window.isSecureContext) {
               const blob = await new Promise((r) => cv.toBlob(r, "image/jpeg", 0.86)); const file = new File([blob], "mitt-rum.jpg", { type: "image/jpeg" });
-              if (navigator.canShare({ files: [file] })) { RQ.toast('Rummet är sparat under Sparat. <a href="#" data-share-room>Dela bilden</a>'); R._share = file; return; }
+              if (navigator.canShare({ files: [file] })) { RQ.toast('Rummet är sparat i Mitt hem. <a href="#" data-share-room>Dela bilden</a>'); R._share = file; return; }
             }
-            RQ.toast('Rummet är sparat. <a href="#mitt-hem">Se Sparat</a>');
+            RQ.toast('Rummet är sparat. <a href="#mitt-hem">Se Mitt hem</a>');
           } catch (e) { RQ.toast("Bilden gick inte att spara i den här webbläsaren."); }
         });
         const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") { touched = true; const sw = R._swapped; R._swapped = null; if (sw) { if (sel === sw.from) sel = sw.to; if (swap.h === sw.from) swap.h = sw.to; seen.add(sw.to); } if (sel && !R.inScene(sel)) sel = null; if (swap.h && !R.inScene(swap.h)) swap.h = null; draw(); paintSwap(); paintSugg(); }

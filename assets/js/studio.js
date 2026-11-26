@@ -85,7 +85,7 @@
         const style = Object.entries(score).sort((a, b) => b[1] - a[1])[0][0];
         S.saveStyle({ style, room: ans.room, materials: ans.mat, feel: ans.feel, source: "quiz" });
         if (RQ.taste && RQ.taste.boost) RQ.taste.boost(style, 3);
-        $("#styleOut", root).innerHTML = RQ.styleResult(style, ans.room) + `<div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-hem">Din stil är sparad. Se Sparat</a><a class="btn ghost" href="#studio-stylist">Fråga stylisten</a></div>`;
+        $("#styleOut", root).innerHTML = RQ.styleResult(style, ans.room) + `<div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#mitt-hem">Din stil är sparad. Se Mitt hem</a><a class="btn ghost" href="#studio-stylist">Fråga stylisten</a></div>`;
         RQ.watch(root); $("#styleOut", root).scrollIntoView({ behavior: "smooth", block: "start" });
       });
     },
@@ -797,8 +797,8 @@
     ];
     const order = [...parts.filter((x) => x[0] === "bilder" && x[1]), ...parts.filter((x) => x[0] !== "bilder" && x[1]), ...parts.filter((x) => !x[1])];
     return {
-      title: "Sparat · RumIQ",
-      html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Sparat"]])}<span class="eyebrow">Ditt privata bibliotek</span><h1 class="h1">Sparat</h1><p class="lead">Det du har sparat, dina rum och mått, din stil och dina looks, samlat så att du kan fortsätta där du slutade.</p>
+      title: "Mitt hem · RumIQ",
+      html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Mitt hem"]])}<span class="eyebrow">Ditt privata bibliotek</span><h1 class="h1">Mitt hem</h1><p class="lead">Det du har sparat, dina rum och mått, din stil och dina looks, samlat så att du kan fortsätta där du slutade.</p>
           <nav class="jump-nav" aria-label="På sidan">${order.map((x) => x[2]).join("")}</nav></header>
         <section class="wrap mh" style="padding-bottom:5rem;display:grid;gap:3.2rem">
           ${order.map((x) => x[3]).join("\n          ")}

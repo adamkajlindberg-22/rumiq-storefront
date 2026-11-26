@@ -16,7 +16,7 @@
 
   const mq = (s) => matchMedia(s).matches;
   const conn = navigator.connection || {};
-  const staticHero = () => videoFailed || mq("(prefers-reduced-motion: reduce)") || mq("(max-width: 820px)") || mq("(pointer: coarse) and (max-width: 1100px)") || conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || "") || location.protocol === "file:";
+  const staticHero = () => videoFailed || mq("(prefers-reduced-motion: reduce)") || mq("(max-width: 820px)") || mq("(pointer: coarse) and (max-width: 1100px)") || conn.saveData === true || /(^|-)[23]g$/.test(conn.effectiveType || "") || location.protocol === "file:";
 
   /* a sideways row gets two arrows on a desktop (a mouse wheel does not scroll sideways); phones swipe */
   RQ.rowNav = (id, what) => `<span class="row-nav" data-row-nav="${id}"><button type="button" class="iconbtn" data-dir="-1" aria-label="Föregående ${what}" title="Föregående" disabled><svg viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button><button type="button" class="iconbtn" data-dir="1" aria-label="Nästa ${what}" title="Nästa"><svg viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button></span>`;
@@ -57,19 +57,7 @@
 
       <section class="promise" aria-label="Det här lovar vi"><ul class="wrap"><li><b>Se det hemma först</b> i en bild av ditt eget rum</li><li>${((window.RQ_CONFIG || {}).delivery || {}).openPurchaseDays ? `<b>${window.RQ_CONFIG.delivery.openPurchaseDays} dagars öppet köp</b>, ångra med en knapp` : `<b>14 dagars ångerrätt</b>, ångra med en knapp`}</li><li><b>Säker betalning</b> i Shopifys kassa</li></ul></section>
 
-      <section class="hrooms" aria-label="Handla efter rum"><div class="wrap hrooms-in">
-        ${RQ.ROOMS.map((r) => `<a class="hroom" href="#rum-${r.id}"><span class="hroom-im"><img src="assets/img/rum/${r.id}-600.webp" srcset="${RQ.srcset(`assets/img/rum/${r.id}-600.webp`)}" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>${esc(r.name)}</span></a>`).join("")}
-        <a class="hroom all" href="#butik"><span class="hroom-im"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></span><span>Alla produkter</span></a>
-      </div></section>
-
-      <section class="sec" id="utvalt">
-        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">${forYou ? "Utvalt för dig" : "Våra favoriter just nu"}</h2><p>${forYou ? "Sorterat efter det du sparat i Svep, med skälet under varje sak." : "Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning."}</p></div><a class="link" href="${forYou ? "#for-dig" : "#butik"}">${forYou ? "Hela butiken för dig" : "Alla produkter"}</a></div>
-          ${RQ.grid(featured, "feat", false, forYou && RQ.why ? RQ.why.shop() : null)}</div>
-      </section>
-
-      ${RQ.svepHome ? RQ.svepHome.html() : ""}
-
-      <section class="sec roomhero" id="ditt-rum">
+      <section class="sec roomhero dark" id="ditt-rum">
         <div class="wrap rh">
           <div class="rh-copy">
             <span class="eyebrow rh-promise">Se ditt hem innan du köper.</span>
@@ -82,6 +70,19 @@
           ${demoFig()}
         </div>
       </section>
+
+      <section class="hrooms" aria-label="Handla efter rum"><div class="wrap hrooms-in">
+        ${RQ.ROOMS.map((r) => `<a class="hroom" href="#rum-${r.id}"><span class="hroom-im"><img src="assets/img/rum/${r.id}-600.webp" srcset="${RQ.srcset(`assets/img/rum/${r.id}-600.webp`)}" sizes="(max-width: 640px) 94vw, 31rem" alt="" loading="lazy" decoding="async" width="600" height="750"></span><span>${esc(r.name)}</span></a>`).join("")}
+        <a class="hroom all" href="#butik"><span class="hroom-im"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></span><span>Alla produkter</span></a>
+      </div></section>
+
+      <section class="sec" id="utvalt">
+        <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">${forYou ? "Utvalt för dig" : "Våra favoriter just nu"}</h2><p>${forYou ? "Sorterat efter det du sparat i Svep, med skälet under varje sak." : "Saker vi tycker gör skillnad i vardagen. Valda av oss, inte efter försäljning."}</p></div><a class="link" href="${forYou ? "#for-dig" : "#butik"}">${forYou ? "Hela butiken för dig" : "Alla produkter"}</a></div>
+          ${RQ.grid(featured, "feat", false, forYou && RQ.why ? RQ.why.shop() : null)}</div>
+      </section>
+
+      ${RQ.svepHome ? RQ.svepHome.html() : ""}
+
 
 
       <section class="sec looks-sec" id="looks-hem">
@@ -126,7 +127,7 @@
     const C = window.RQ_CONFIG || {}, d = C.delivery || {}, mail = (C.company || {}).email || "support@rumiq.se";
     const ico = (path) => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
     const items = [
-      [ico('<path d="M3.5 20V10l8.5-6 8.5 6v10"/><path d="M9 20v-5.5h6V20"/>'), "Se det hemma först", "Peka ut var produkterna ska stå i en bild av ditt eget rum innan du köper. Bilden stannar i din webbläsare."],
+      [ico('<path d="M5 12.5l4.5 4.5L19 7.5"/>'), "Ärligt, hela vägen", "Vi säger vad som är exempel och vad som är gjort med AI, och du ser hela summan innan du betalar."], /* v15.8: "Se det hemma först" was said three times on the page */
       [ico('<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/>'), d.minDays ? `Målet: hemma om ${d.minDays}–${d.maxDays} arbetsdagar` : "Leverans till ombud, paketskåp eller hem", `${d.fromCountry || "Lager i EU"}. Du ser beräknat datum innan du beställer och väljer ombud, paketskåp eller hem.`],
       [ico('<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/>'), d.openPurchaseDays ? `${d.openPurchaseDays} dagars öppet köp` : "14 dagars ångerrätt", `Ångra med en knapp på sajten. ${d.returnText || ""}`.trim()],
       [ico('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'), "Du är med och väljer", "Färre, bättre saker. Rösta fram nästa produkt i Önska, så vet vi vad vi ska ta in."],
@@ -232,7 +233,7 @@
     // phones: the standing cut of the film plays once behind the headline and rests on its last frame
     const loop = $("#heroLoop", root);
     if (isStatic) {
-      if (loop && mq("(max-width: 820px)") && !mq("(prefers-reduced-motion: reduce)") && conn.saveData !== true && !/(^|-)2g$/.test(conn.effectiveType || "")) {
+      if (loop && mq("(max-width: 820px)") && !mq("(prefers-reduced-motion: reduce)") && conn.saveData !== true && !/(^|-)[23]g$/.test(conn.effectiveType || "")) {
         const noLoop = () => { loop.classList.remove("on"); showWide(true); };
         loop.src = "assets/video/hero-m.mp4"; loop.classList.add("on"); loop.defaultPlaybackRate = loop.playbackRate = 1.25; // once, in under five seconds (2.2.2)
         const pl = loop.play(); if (pl && pl.catch) pl.catch(noLoop);

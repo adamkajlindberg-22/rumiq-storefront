@@ -466,7 +466,7 @@
     if (b) { const l = lookById(b.dataset.lookAdd), host = b.closest(".lc, .look-page"); const added = addMissing(l.items, b, l.name, l); if (host && added.length) $$(".lc-line button, .lp-item", host).forEach((el, k) => { if (added.includes(el.dataset.sheet || el.dataset.h)) setTimeout(() => RQ.fly($("img", el)), k * 110); }); return; }
     const mb = e.target.closest("[data-look-buy]"); if (mb) { addMissing(mb.dataset.lookBuy.split(",").filter(Boolean), mb, mb.dataset.lookName || "Looken"); return; }
     const s = e.target.closest("[data-look-save]");
-    if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad"; RQ.toast(`Looken är sparad. <a href="#mitt-hem">Se Sparat</a>`); }
+    if (s) { const l = lookById(s.dataset.lookSave); if (!S.looks().some((x) => x.name === l.name)) S.saveLook(l.items, l.name); s.disabled = true; s.textContent = "Sparad"; RQ.toast(`Looken är sparad. <a href="#mitt-hem">Se Mitt hem</a>`); }
   });
   V.looks = () => {
     const mine = S.looks(), pct = Math.round(lookRate() * 100);

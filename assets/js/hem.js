@@ -184,7 +184,7 @@
     if (b.matches("[data-hem-all]")) { s.all = !s.all; repaint(box, "[data-hem-all]"); return; }
     if (b.matches("[data-hem-reroll]")) { s.avoid = [...new Set([...(s.avoid || []), ...s.pr.items.map((it) => it.h)])].slice(-12); repaint(box, "[data-hem-reroll]"); return; }
     if (b.matches("[data-hem-buy]")) { RQ.addMany(s.pr.items.map((it) => it.h + "::" + it.v), b, H.title(s.pr)); return; }
-    if (b.matches("[data-hem-keep]")) { const r = ensureRoom(s); if (s.room === r.id) H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); repaint(box); RQ.toast(`${esc(H.name(r))} är sparat. <a href="#mitt-hem">Visa i Sparat</a>`); return; }
+    if (b.matches("[data-hem-keep]")) { const r = ensureRoom(s); if (s.room === r.id) H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); repaint(box); RQ.toast(`${esc(H.name(r))} är sparat. <a href="#mitt-hem">Visa i Mitt hem</a>`); return; }
     if (b.matches("[data-hem-see]")) { const r = ensureRoom(s), had = H.items(r), other = had.length && !H.sameSet(r.type, s.pr.items);
       // the proposal goes into the room you have; what stood there comes back with Ångra
       if (other) propUndo = { id: r.id, items: r.items, scene: r.scene, pkey: r.pkey, sceneMap: r.sceneMap, style: r.style, budget: r.budget };
@@ -338,7 +338,7 @@
     if (r) { const same = (f) => f.name === A.name && JSON.stringify(f.answers) === JSON.stringify(A.answers) && JSON.stringify(f.alts || {}) === JSON.stringify(A.alts); const fb = (r.feedback || []).filter((f) => !same(f)); H.patch(r.id, { feedback: [{ name: A.name, answers: A.answers, alts: A.alts, at: now() }, ...fb].slice(0, 10) }); }
     return { title: "Svar på ditt rum · RumIQ",
       html: `<header class="page-head wrap">${crumbs()}<span class="eyebrow">Svar på ditt rum</span><h1 class="h1">${A.name ? `${esc(A.name)} har svarat` : "Du har fått ett svar"}</h1>
-          <p class="lead">${r ? `Svaret är sparat i ${esc(H.name(r))}, under Sparat.` : "Rummet finns inte i den här webbläsaren, så svaret visas bara här."}</p></header>
-        <section class="wrap hem-ask" style="padding-bottom:5rem"><ul class="hem-ask-list">${rows}</ul><div class="ctrl-row">${r ? `<a class="btn" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna rummet</a>` : `<a class="btn" href="#mitt-hem">Till Sparat</a>`}</div></section>` };
+          <p class="lead">${r ? `Svaret är sparat i ${esc(H.name(r))}, i Mitt hem.` : "Rummet finns inte i den här webbläsaren, så svaret visas bara här."}</p></header>
+        <section class="wrap hem-ask" style="padding-bottom:5rem"><ul class="hem-ask-list">${rows}</ul><div class="ctrl-row">${r ? `<a class="btn" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna rummet</a>` : `<a class="btn" href="#mitt-hem">Till Mitt hem</a>`}</div></section>` };
   };
 })();

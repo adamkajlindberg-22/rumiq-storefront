@@ -202,10 +202,10 @@
  },
  "mitt-hem": {
   "description": "Det du har sparat, dina rum och mått, din stil och dina looks, samlat så att du kan fortsätta där du slutade.",
-  "title": "Sparat · RumIQ"
+  "title": "Mitt hem · RumIQ"
  },
  "mitt-rum": {
-  "description": "Ta en bild av ditt rum och ställ in lampor, textil och tavlor där du vill ha dem. Se vad hela rummet kostar och handla allt på en gång. Gratis, utan konto.",
+  "description": "Välj ett exempelrum eller ta en bild av ditt rum, peka ut var lamporna, textilierna och tavlorna ska stå och se rummet med dem på plats, i rätt storlek. Handla allt på en gång.",
   "title": "Mitt rum – prova inredning i ett foto av ditt rum · RumIQ"
  },
  "nyheter": {
@@ -355,5 +355,9 @@
  "upptack": {
   "description": "Upptäck RumIQ: gå in i rummen, svep fram din stil eller välj en färdig look. Allt går att handla direkt och att se i ditt eget rum först.",
   "title": "Upptäck – rum, looks och din egen inredningsstil · RumIQ"
+ },
+ "studio": {
+  "title": "Studio – hitta din stil och se den i ditt rum · RumIQ",
+  "description": "Alla RumIQ:s verktyg på ett ställe: svep fram din stil, gör det tillsammans, fråga stylisten och se produkterna i ditt eget rum innan du köper."
  }
 }

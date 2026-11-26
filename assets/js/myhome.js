@@ -112,7 +112,7 @@
       if (!rooms.length) {
         if (!size) return "";
         const what = size.kind === "floor" ? "golvet" : size.kind === "window" ? "fönstret" : "väggen";
-        return `<a class="hf hf-ask" href="#mitt-hem"><span class="hf-ic" aria-hidden="true">${RQ.roomIco}</span><span><b>Ryms den hos dig?</b><small>Mät ${what} och spara måttet under Sparat, så räknar vi ut det åt dig.</small></span></a>`;
+        return `<a class="hf hf-ask" href="#mitt-hem"><span class="hf-ic" aria-hidden="true">${RQ.roomIco}</span><span><b>Ryms den hos dig?</b><small>Mät ${what} och spara måttet i Mitt hem, så räknar vi ut det åt dig.</small></span></a>`;
       }
       const t = RQ.taste && RQ.taste.get(), top = t && RQ.taste.top(t)[0];
       const rel = rooms.filter((r) => p.rooms.includes(r.type) || (size && fit(size, r)));
@@ -123,7 +123,7 @@
         return `<li class="${f && !f.ok ? "warn" : "ok"}"><i aria-hidden="true">${f && !f.ok ? "!" : "✓"}</i><span><b>${esc(RQ.homeRooms.label(r))}</b> <span>${line}</span></span></li>`;
       }).join("");
       return `<div class="hf" role="group" aria-label="I ditt hem"><p class="hf-h">I ditt hem${top && p.styles.includes(top) ? ` · <span>Matchar din stil</span>` : ""}</p><ul>${rows}</ul>
-        ${size && !rel.some((r) => fit(size, r)) ? `<p class="small">Lägg in måtten under <a href="#mitt-hem">Sparat</a>, så ser du om den ryms.</p>` : `<p class="small"><a href="#mitt-hem">Ändra dina rum och mått</a></p>`}</div>`;
+        ${size && !rel.some((r) => fit(size, r)) ? `<p class="small">Lägg in måtten i <a href="#mitt-hem">Mitt hem</a>, så ser du om den ryms.</p>` : `<p class="small"><a href="#mitt-hem">Ändra dina rum och mått</a></p>`}</div>`;
     },
   };
 

@@ -149,7 +149,7 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "Förhandsvisning" and pg.evaluate("document.querySelector('.ai-tag-b').innerText") == "Före", f"{tag} labelled Demo, the before side Före")
         ok(pg.evaluate("!!document.querySelector('.ai-result img.before') && !!document.querySelector('.ai-result [data-ba] input')"), f"{tag} the before picture (the room photo) is under a slider")
         ok(mid < 100 and pg.evaluate("+document.querySelector('.ai-result [data-ba] input').value") == 30, f"{tag} the made room sweeps in over the photo and settles at 30 %: {mid}")
-        sv = pg.evaluate("document.querySelector('.ai-saved').innerText"); ok("Bilden finns nu" in sv and "under Sparat" in sv, f"{tag} the picture is saved by itself, and the sheet says where (in which room, since M8): {sv}")
+        sv = pg.evaluate("document.querySelector('.ai-saved').innerText"); ok("Bilden finns nu" in sv and "i Mitt hem" in sv, f"{tag} the picture is saved by itself, and the sheet says where (in which room, since M8): {sv}")
         pics = pg.evaluate(PICS)
         ok(len(pics) == 1 and pics[0]["items"] == ",".join(h + "::0" for h in FOUR) and pics[0]["after"] and pg.evaluate(ROOMS) == 1, f"{tag} IndexedDB holds the picture, its products and colours, and the before photo once: {pics}")
         ok(pg.evaluate("document.getElementById('aiBuy').getBoundingClientRect().top < document.querySelector('.ai-prods').getBoundingClientRect().top"), f"{tag} Köp allt comes before the list")
@@ -225,7 +225,7 @@ with sync_playwright() as p:
         go(pg, "mitt-rum", 1300)
         ok(pg.evaluate("(document.querySelector('.ai-card-lib') || {}).textContent") == "Alla bilder (1)", f"{tag} Mitt rum's AI card leads to Mina rumsbilder: {pg.evaluate('(document.querySelector(\".ai-card-lib\") || {}).textContent')}")
         pg.evaluate("RQ_CONFIG.studio.aiLive = true; localStorage.removeItem('rumiq-ai-consent'); RQ.openAI()"); pg.wait_for_timeout(2000)  # the consent comes once the AI is switched on (device3 X1)
-        ok("under Sparat på den här enheten" in pg.evaluate("document.querySelector('.ai-list').innerText"), f"{tag} the consent says the same as the library: on this device")
+        ok("i Mitt hem på den här enheten" in pg.evaluate("document.querySelector('.ai-list').innerText"), f"{tag} the consent says the same as the library: on this device")
         pg.evaluate("RQ_CONFIG.studio.aiLive = false; localStorage.setItem('rumiq-ai-consent', JSON.stringify('x'))"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         go(pg, "mitt-hem", 1500)
         # Fortsätt i Mitt rum: another room in between, then back to this one, under the same project
@@ -247,7 +247,7 @@ with sync_playwright() as p:
         go(pg, "mitt-rum", 1000); create(pg, 3200)
         ok(pg.evaluate("!!document.getElementById('aiSave')") and len(pg.evaluate(PICS)) == 1, f"{tag} with the switch off nothing is saved, the sheet offers to")
         pg.evaluate("document.getElementById('aiSave').click()"); pg.wait_for_timeout(800)
-        ok(len(pg.evaluate(PICS)) == 2 and "Bilden finns nu under Sparat" in pg.evaluate("document.querySelector('.ai-saved').innerText"), f"{tag} 'Spara i Mina rumsbilder' saves it")
+        ok(len(pg.evaluate(PICS)) == 2 and "Bilden finns nu i Mitt hem" in pg.evaluate("document.querySelector('.ai-saved').innerText"), f"{tag} 'Spara i Mina rumsbilder' saves it")
         # Rensa allt also empties the library
         go(pg, "mitt-hem", 1200)
         pg.evaluate("document.getElementById('clearAll').click()"); pg.wait_for_timeout(100)

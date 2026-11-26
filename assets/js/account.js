@@ -135,11 +135,11 @@
       html: `<header class="page-head wrap" style="padding-bottom:1.5rem">${RQ.crumbs([["Hem", "hem"], ["Mitt konto"]])}<h1 class="h1">${c.name ? "Hej " + esc(c.name) : "Mitt konto"}</h1>
           <p class="lead">${prov ? `<span class="provider">${RQ.providerLogo(c.provider)} Inloggad med ${prov}</span> · ` : ""}${esc(c.email)}</p></header>
         <section class="wrap acct" style="padding-bottom:5rem">
-          <nav class="acct-nav" aria-label="Konto"><a href="#acc-oversikt" class="on" aria-current="true">Översikt</a><a href="#acc-studio">Mitt rum</a><a href="#acc-order">Beställningar</a><a href="#acc-listor">Mina listor</a><a href="#acc-profil">Profil och adress</a><a href="#acc-installningar">Inställningar</a><a href="#mitt-hem">Sparat</a></nav>
+          <nav class="acct-nav" aria-label="Konto"><a href="#acc-oversikt" class="on" aria-current="true">Översikt</a><a href="#acc-studio">Mitt rum</a><a href="#acc-order">Beställningar</a><a href="#acc-listor">Mina listor</a><a href="#acc-profil">Profil och adress</a><a href="#acc-installningar">Inställningar</a><a href="#mitt-hem">Mitt hem</a></nav>
           <div style="display:grid;gap:3.2rem;min-width:0">
             <section id="acc-oversikt"><div class="stat-grid">
               <a class="stat" href="#acc-order"><b>${orders.length}</b><span>Beställningar</span></a>
-              <a class="stat" href="#onskelista"><b>${S._wish.length}</b><span>Sparat</span></a>
+              <a class="stat" href="#onskelista"><b>${S._wish.length}</b><span>Favoriter</span></a>
               <a class="stat" href="#acc-listor"><b>${lists.length}</b><span>Listor</span></a>
               <a class="stat" href="#mitt-hem"><b>${S.projects().length}</b><span>Rumsprojekt</span></a></div></section>
             <section id="acc-studio"><div class="sec-row" style="margin-bottom:1.2rem"><h2 class="h3">Mitt rum och AI-bilder</h2><a class="link arrow" href="#studio-plus">Om Studio Plus</a></div><div data-ai-account><p class="small">Laddar…</p></div></section>
