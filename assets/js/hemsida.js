@@ -28,11 +28,14 @@
       <li><b>Lista och budget per rum</b><span>Se vad som är kvar att köpa och vad det kostar.</span></li>
       <li><b>Med dig mellan enheter</b><span>När kontot är aktivt. I dag sparas allt i den här webbläsaren.</span></li></ul>`;
   const roomCard = (r, big) => { const its = H.items(r), m = H.money(r);
-    return `<article class="hem-card${big ? " big" : ""}" data-room-card="${esc(r.id)}"><button type="button" class="hem-card-im" data-hem-open="${esc(r.id)}" aria-label="Öppna ${esc(H.name(r))}"><img src="${esc(H.picture(r) || sampleImg(r.type))}" alt="" data-room-pic="${esc(r.id)}" loading="lazy"></button>
+    return `<article class="hem-card${big ? " big" : ""}" data-room-card="${esc(r.id)}"><button type="button" class="hem-card-im" data-hem-open="${esc(r.id)}" aria-label="Öppna ${esc(H.name(r))}"><img src="${esc(H.picture(r) || sampleImg(r.type))}" alt="" data-room-pic="${esc(r.id)}" loading="lazy">${H.picture(r) ? "" : collage(r)}</button>
       <div class="hem-card-tx"><h3 class="h3"><button type="button" class="hem-card-name" data-hem-open="${esc(r.id)}">${esc(H.name(r))}</button></h3>
         <p class="hem-prog" data-room-prog="${esc(r.id)}">${progHtml(r, 0)}</p>
         <p class="small">${its.length ? `${its.length} ${its.length === 1 ? "produkt" : "produkter"} · ${kr(m.total)}${r.budget ? ` · budget ${kr(r.budget)}` : ""}` : typeName(r.type)}</p>
         <button class="btn${big ? "" : " ghost"} sm" type="button" data-hem-next="${esc(r.id)}">${esc(H.progress(r, 0).next.label)}</button></div></article>`; };
+  // never an empty room on a card: the products' cut-outs over the sample photo, until the editor can draw the room (R.snapshot)
+  const collage = (r) => { const its = H.items(r).slice(0, 4); return its.length ? `<span class="hem-card-col" data-room-col="${esc(r.id)}">${its.map((it) => `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">`).join("")}</span>` : ""; };
+  const snap = (r, im) => { const R = RQ.room; if (!R || typeof R.snapshot !== "function" || !im) return; Promise.resolve(R.snapshot(r.id, 900)).then((u) => { if (!u || !im.isConnected || im.closest(".hem-card").classList.contains("has-pic")) return; im.src = u; const c = im.parentNode.querySelector(".hem-card-col"); if (c) c.remove(); im.closest(".hem-card").classList.add("snap"); }).catch(() => {}); };
   const progHtml = (r, pics) => H.progress(r, pics).parts.map(([t, ok]) => `<span class="${ok ? "ok" : ""}">${ok ? "✓ " : ""}${esc(t)}</span>`).join("<i aria-hidden=\"true\"> · </i>");
   const chatPart = () => { const h = S.store.get("rumiq-chat-saved", []); const qs = (Array.isArray(h) ? h : []).filter((m) => m && m.who === "me");
     return qs.length ? `<div class="hem-chat"><p><b>${esc(qs[0].text.slice(0, 80))}</b> <span class="small">${qs.length} ${qs.length === 1 ? "fråga" : "frågor"}</span></p><a class="btn ghost sm" href="#studio-stylist">Fortsätt samtalet</a></div>` : ""; };
@@ -54,7 +57,8 @@
         ${looks.length ? `<div class="mylooks">${RQ.savedLooksHtml()}</div>` : bs.length ? "" : none("Inga looks än.", "Spara en färdig look, eller gör en moodboard av det du gillar.", "#looks", "Se alla looks")}</div>`],
       ["art", arts.length > 0, `<a href="#mh-art">Artiklar (${arts.length})</a>`, `<div id="mh-art"><div class="sec-head"><h2 class="h3">Sparade artiklar</h2></div>${arts.length ? `<div class="mag-grid">${arts.map(RQ.magCard).join("")}</div>` : none("Inga sparade artiklar.", "Spara en artikel i magasinet, så hamnar den här.", "#magasin", "Till magasinet")}</div>`],
     ];
-    const order = [...parts.filter((x) => x[0] === "rum" && rooms.length), ...parts.filter((x) => x[0] === "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && x[0] !== "bilder" && x[1]), ...parts.filter((x) => x[0] === "rum" && !rooms.length), ...parts.filter((x) => x[0] !== "rum" && !x[1])];
+    // the overview first (the room cards, or "Skapa ditt första rum"), then Alla bilder and the parts that hold something, the empty ones last
+    const order = [...parts.filter((x) => x[0] === "rum"), ...parts.filter((x) => x[0] === "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && x[0] !== "bilder" && x[1]), ...parts.filter((x) => x[0] !== "rum" && !x[1])];
     return {
       title: "Sparat · RumIQ",
       html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Sparat"]])}<span class="eyebrow">Ditt hem</span><h1 class="h1">Sparat</h1><p class="lead">Dina rum, bilderna, det du gillar och din stil, samlat så att du kan fortsätta där du slutade. Allt du sparar här är privat.</p>
@@ -68,7 +72,7 @@
         RQ.aiLib && RQ.aiLib.mount(root);
         // the newest after-picture on each room card, and its progress with the picture count
         if (RQ.aiLib) RQ.aiLib.pics().then((pics) => { H.rooms().forEach((r) => { const mine = pics.filter((p) => p.roomId === r.id), im = $(`[data-room-pic="${r.id}"]`, root), pr = $(`[data-room-prog="${r.id}"]`, root), nx = $(`[data-hem-next="${r.id}"]`, root);
-          if (mine[0] && im) { im.src = mine[0].url; im.closest(".hem-card").classList.add("has-pic"); } if (pr) pr.innerHTML = progHtml(r, mine.length); if (nx) nx.textContent = H.progress(r, mine.length).next.label; }); });
+          if (mine[0] && im) { im.src = mine[0].url; im.closest(".hem-card").classList.add("has-pic"); const c = im.parentNode.querySelector(".hem-card-col"); if (c) c.remove(); } else snap(r, im); if (pr) pr.innerHTML = progHtml(r, mine.length); if (nx) nx.textContent = H.progress(r, mine.length).next.label; }); });
         firstForm(root);
         const nw = $("#hemNew", root); if (nw) nw.addEventListener("click", () => { const b = $("#hemNewBox", root); b.hidden = !b.hidden; if (!b.hidden) $("input", b).focus(); });
         root.addEventListener("click", (e) => {

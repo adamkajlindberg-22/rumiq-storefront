@@ -299,7 +299,11 @@
   // the picture shows a product's first colour; when the cart holds it in another, the row says both, so the cart is not doubted
   const colourNote = (p, v = 0) => { const shown = p.variants[v] || p.variants[0], inC = [...new Set(S.cartLines().filter((l) => l.product.handle === p.handle).map((l) => l.variant && l.variant.title).filter(Boolean))];
     return inC.length && !inC.includes(shown) ? `I varukorgen: ${inC[0]} · bilden visar ${shown}` : `Bilden visar färgen ${shown}`; };
-  const productsList = (items) => `<ul class="ai-prods">${items.map((it) => { const p = RQ.byHandle(it.h), r = S.variantById(it.h + "::" + (it.v || 0)), price = r && r.variant ? r.variant.price : p.price; return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(price)}${p.variants ? ` · <em>${esc(colourNote(p, it.v || 0))}</em>` : ""}</span></div></li>`; }).join("")}</ul>
+  // Byt and another colour without starting over: the editor's Byt at that thing (room.js R.openSwap), then Skapa igen makes a new version.
+  // Shown only when the editor has it.
+  const swapOk = () => !!(RQ.room && typeof RQ.room.openSwap === "function");
+  const swapBtns = (p, swap) => swap ? `<span class="ai-swap">${(p.variants || []).length > 1 ? `<button class="tlink" type="button" data-ai-swap="${p.handle}" data-colour="1">Prova en annan färg</button>` : ""}<button class="tlink" type="button" data-ai-swap="${p.handle}">Byt produkt</button></span>` : "";
+  const productsList = (items, swap) => `<ul class="ai-prods">${items.map((it) => { const p = RQ.byHandle(it.h), r = S.variantById(it.h + "::" + (it.v || 0)), price = r && r.variant ? r.variant.price : p.price; return `<li><button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button><div><b>${esc(p.name)}</b><span>${kr(price)}${p.variants ? ` · <em>${esc(colourNote(p, it.v || 0))}</em>` : ""}</span>${swapBtns(p, swap)}</div></li>`; }).join("")}</ul>
       <div class="ai-sum"><span>Det här finns i bilden</span><b>${kr(itemsTotal(items))}</b></div>`;
 
   // how long pictures are kept: with the account library on (RQ_CONFIG.studio.serverLibrary) the before picture is kept beside the AI picture
@@ -440,7 +444,7 @@
         ${v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p><p class="small">När AI:n är igång kan du skapa nya versioner av samma rum och jämföra dem.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
         <div class="ai-row ai-buybar"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Visa någon</span></button></div>
         <div class="ai-row small-row">${v.demo ? "" : `<button class="tlink" type="button" id="aiAgain">Skapa igen<span class="ai-cost"> · 1 bild</span></button>`}<button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
-        ${productsList(items)}
+        ${productsList(items, !v.demo && swapOk())}
         ${savedLine(v)}</div></div>`, false, true);
     const fig = $("[data-ba]", body), ctl = baWire(fig, other);
     if (fresh) reveal(fig, ctl, 30);
@@ -467,6 +471,7 @@
   document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-down-now]") && view) { $("#toast").classList.remove("show"); const v = view.list[view.cur]; if (v) download(v); } });
   // on a phone the toast after Köp allt sits just above the buy bar, clear of the picture and the sheet's close button
   const toastOverBar = () => { const bar = $(".ai-buybar", body), t = $("#toast"); if (!bar || !t || innerWidth >= 900 || getComputedStyle(bar).position !== "sticky") return; const r = bar.getBoundingClientRect(); t.style.top = Math.max(8, Math.round(r.top - t.offsetHeight - 10)) + "px"; t.style.bottom = "auto"; t.style.left = Math.round((innerWidth - t.offsetWidth) / 2) + "px"; t.style.right = "auto"; };
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-ai-swap]"); if (!b || !swapOk()) return; const h = b.dataset.aiSwap, colour = !!b.dataset.colour; close(); if (RQ.currentRoute && RQ.currentRoute() !== "mitt-rum") RQ.go("mitt-rum"); setTimeout(() => RQ.room.openSwap(h, { colour }), 120); });
   const focusBack = (sel) => { const b = $(sel, body); if (b) b.focus({ preventScroll: true }); };
 
   function viewOut(st) {
