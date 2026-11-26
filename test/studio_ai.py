@@ -54,7 +54,7 @@ PICS = "RQ.aiLib.store.list().then((r) => r.pics.map((p) => ({ id: p.id, n: p.n,
 ROOMS = "RQ.aiLib.store.list().then((r) => Object.keys(r.rooms).length)"
 # the AI server, mocked in the page: a streamed answer (with or without a retry) or plain JSON, a square picture
 LIVE = r"""(o) => {
-  const A = RQ.auth; A.mode = 'supabase'; A.start = async () => {}; A.token = async () => 'tok';
+  const A = RQ.auth; RQ_CONFIG.studio.aiLive = true; A.mode = 'supabase'; A.start = async () => {}; A.token = async () => 'tok';
   window.__st = { signed_in: true, consent: true, plan: 'free', plan_name: 'Gratis', free_play: false, balance: 4, daily_used: 0, daily_cap: 5, quality_left: 3, period_end: '2026-12-01T00:00:00Z' };
   A.client = () => ({ rpc: async (name) => name === 'ai_status' ? { data: window.__st } : name === 'ai_quality_refund' ? { data: 2 } : { data: null } });
   RQ_CONFIG.auth.preview = false;
@@ -221,9 +221,9 @@ with sync_playwright() as p:
         ok(len(pg.evaluate(PICS)) == 1 and pg.evaluate(ROOMS) == 1, f"{tag} Ångra brings both back")
         go(pg, "mitt-rum", 1300)
         ok(pg.evaluate("(document.querySelector('.ai-card-lib') || {}).textContent") == "Alla bilder (1)", f"{tag} Mitt rum's AI card leads to Mina rumsbilder: {pg.evaluate('(document.querySelector(\".ai-card-lib\") || {}).textContent')}")
-        pg.evaluate("localStorage.removeItem('rumiq-ai-consent'); RQ.openAI()"); pg.wait_for_timeout(2000)
+        pg.evaluate("RQ_CONFIG.studio.aiLive = true; localStorage.removeItem('rumiq-ai-consent'); RQ.openAI()"); pg.wait_for_timeout(2000)  # the consent comes once the AI is switched on (device3 X1)
         ok("under Sparat på den här enheten" in pg.evaluate("document.querySelector('.ai-list').innerText"), f"{tag} the consent says the same as the library: on this device")
-        pg.evaluate("localStorage.setItem('rumiq-ai-consent', JSON.stringify('x'))"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+        pg.evaluate("RQ_CONFIG.studio.aiLive = false; localStorage.setItem('rumiq-ai-consent', JSON.stringify('x'))"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         go(pg, "mitt-hem", 1500)
         # Fortsätt i Mitt rum: another room in between, then back to this one, under the same project
         key0 = pg.evaluate("RQ.aiLib.store.list().then((r) => r.pics[0].project)")

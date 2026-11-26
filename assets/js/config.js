@@ -59,5 +59,5 @@ window.RQ_CONFIG = {
   // AI room pictures (Mitt rum). The founder's limits; the server enforces the same numbers in the plans table.
   // serverLibrary: true once the edge function "ai-library" is deployed (see studio-server.md): "Mina rumsbilder" then
   // comes from the private results bucket. Until then the pictures are kept on this device only, and the page says so.
-  studio: { freeImages: 5, plusImages: 100, plusPrice: 99, dailyFree: 5, dailyPlus: 30, purchaseBonus: 10, serverLibrary: false },
+  studio: { freeImages: 5, plusImages: 100, plusPrice: 99, dailyFree: 5, dailyPlus: 30, purchaseBonus: 10, serverLibrary: false, aiLive: false }, // aiLive: true once the AI server (edge function generate) has its keys; until then everyone gets the honest preview
 };
