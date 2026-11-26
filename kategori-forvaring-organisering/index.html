@@ -31,7 +31,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=e8c54252">
+<link rel="stylesheet" href="assets/css/site.min.css?v=067a38ee">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -111,7 +111,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
                 <span class="tb-l"><span class="count" id="count" role="status">3 produkter</span></span>
                 <div class="tb-r">
                   <button class="chip tb-filter" type="button" id="toggleFilters" aria-expanded="false" aria-controls="filters"><svg viewBox="0 0 24 24"><path d="M4 7h16M7 12h10M10 17h4"></path></svg><span>Filter</span><b id="fN" hidden="">0</b></button>
-                  <button class="roomtoggle" type="button" data-room-mode="" aria-pressed="false"><span class="rt-img" data-room-thumb="" data-empty="&lt;svg viewBox=&quot;0 0 24 24&quot;&gt;&lt;path d=&quot;M3.5 20V10l8.5-6 8.5 6v10&quot;/&gt;&lt;path d=&quot;M9 20v-5.5h6V20&quot;/&gt;&lt;/svg&gt;"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></span><span class="rt-t">Se allt i ditt rum</span><span class="rt-s" aria-hidden="true">I ditt rum</span><i class="sw" aria-hidden="true"></i></button>
                   <label class="sr" for="sort">Sortera</label>
                   <select class="select" id="sort"><option value="rel">Relevans</option><option value="pop">Popularitet</option><option value="asc">Pris: lågt till högt</option><option value="desc">Pris: högt till lågt</option><option value="new">Senaste</option></select>
                 </div>
@@ -121,7 +120,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#9E989022">
       <a class="ph" href="produkt-forvaringslada-filt/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/forvaringslada-filt-600.webp" srcset="assets/img/p/forvaringslada-filt-600.webp 600w, assets/img/p/forvaringslada-filt-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Förvaringslåda filt" fetchpriority="high" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/forvaringslada-filt-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="forvaringslada-filt" aria-pressed="false" aria-label="Spara Förvaringslåda filt"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="forvaringslada-filt" aria-pressed="false" tabindex="-1" aria-label="Ställ in Förvaringslåda filt i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="forvaringslada-filt" tabindex="-1" aria-label="Snabbtitt på Förvaringslåda filt"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="forvaringslada-filt::0" aria-label="Lägg till Förvaringslåda filt i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-forvaringslada-filt/">Förvaringslåda filt</a></h3><span class="price">199 kr</span></div>
@@ -130,7 +128,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#C2A57E22">
       <a class="ph" href="produkt-flatad-forvaringskorg/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/flatad-forvaringskorg-600.webp" srcset="assets/img/p/flatad-forvaringskorg-600.webp 600w, assets/img/p/flatad-forvaringskorg-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Flätad förvaringskorg" fetchpriority="high" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/flatad-forvaringskorg-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="flatad-forvaringskorg" aria-pressed="false" aria-label="Spara Flätad förvaringskorg"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="flatad-forvaringskorg" aria-pressed="false" tabindex="-1" aria-label="Ställ in Flätad förvaringskorg i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="flatad-forvaringskorg" tabindex="-1" aria-label="Snabbtitt på Flätad förvaringskorg"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="flatad-forvaringskorg::0" aria-label="Lägg till Flätad förvaringskorg i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-flatad-forvaringskorg/">Flätad förvaringskorg</a></h3><span class="price">379 kr</span></div>
@@ -139,7 +136,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#B88A5A22">
       <a class="ph" href="produkt-skrivbordsorganisator-ek/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/skrivbordsorganisator-ek-600.webp" srcset="assets/img/p/skrivbordsorganisator-ek-600.webp 600w, assets/img/p/skrivbordsorganisator-ek-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Skrivbordsorganisatör ek" loading="eager" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/skrivbordsorganisator-ek-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="skrivbordsorganisator-ek" aria-pressed="false" aria-label="Spara Skrivbordsorganisatör ek"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="skrivbordsorganisator-ek" aria-pressed="false" tabindex="-1" aria-label="Ställ in Skrivbordsorganisatör ek i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="skrivbordsorganisator-ek" tabindex="-1" aria-label="Snabbtitt på Skrivbordsorganisatör ek"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="skrivbordsorganisator-ek::0" aria-label="Lägg till Skrivbordsorganisatör ek i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-skrivbordsorganisator-ek/">Skrivbordsorganisatör ek</a></h3><span class="price">349 kr</span></div>
@@ -148,7 +144,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#F1EDE622">
       <a class="ph" href="produkt-glob-bordslampa-opalglas/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/glob-bordslampa-opalglas-600.webp" srcset="assets/img/p/glob-bordslampa-opalglas-600.webp 600w, assets/img/p/glob-bordslampa-opalglas-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Glob bordslampa opalglas" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/glob-bordslampa-opalglas-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="glob-bordslampa-opalglas" aria-pressed="false" aria-label="Spara Glob bordslampa opalglas"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="glob-bordslampa-opalglas" aria-pressed="false" tabindex="-1" aria-label="Ställ in Glob bordslampa opalglas i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="glob-bordslampa-opalglas" tabindex="-1" aria-label="Snabbtitt på Glob bordslampa opalglas"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="glob-bordslampa-opalglas::0" aria-label="Lägg till Glob bordslampa opalglas i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-glob-bordslampa-opalglas/">Glob bordslampa opalglas</a></h3><span class="price">899 kr</span></div>
@@ -157,7 +152,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#D9C7AE22">
       <a class="ph" href="produkt-lysa-keramiklampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/lysa-keramiklampa-600.webp" srcset="assets/img/p/lysa-keramiklampa-600.webp 600w, assets/img/p/lysa-keramiklampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Lysa keramiklampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/lysa-keramiklampa-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="lysa-keramiklampa" aria-pressed="false" aria-label="Spara Lysa keramiklampa"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="lysa-keramiklampa" aria-pressed="false" tabindex="-1" aria-label="Ställ in Lysa keramiklampa i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="lysa-keramiklampa" tabindex="-1" aria-label="Snabbtitt på Lysa keramiklampa"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="lysa-keramiklampa::0" aria-label="Lägg till Lysa keramiklampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-lysa-keramiklampa/">Lysa keramiklampa</a></h3><span class="price">1&nbsp;290 kr</span></div>
@@ -166,7 +160,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#F4EFE722">
       <a class="ph" href="produkt-svamp-uppladdningsbar-lampa/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/svamp-uppladdningsbar-lampa-600.webp" srcset="assets/img/p/svamp-uppladdningsbar-lampa-600.webp 600w, assets/img/p/svamp-uppladdningsbar-lampa-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Svamp uppladdningsbar lampa" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/svamp-uppladdningsbar-lampa-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="svamp-uppladdningsbar-lampa" aria-pressed="false" aria-label="Spara Svamp uppladdningsbar lampa"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="svamp-uppladdningsbar-lampa" aria-pressed="false" tabindex="-1" aria-label="Ställ in Svamp uppladdningsbar lampa i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="svamp-uppladdningsbar-lampa" tabindex="-1" aria-label="Snabbtitt på Svamp uppladdningsbar lampa"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="svamp-uppladdningsbar-lampa::0" aria-label="Lägg till Svamp uppladdningsbar lampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-svamp-uppladdningsbar-lampa/">Svamp uppladdningsbar lampa</a></h3><span class="price">699 kr</span></div>
@@ -175,7 +168,6 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     <article class="card" style="--tone:#E9E4DA22">
       <a class="ph" href="produkt-forradsburkar-glas-ek-3-pack/" tabindex="-1" aria-hidden="true"><img class="fade ok" src="assets/img/p/forradsburkar-glas-ek-3-pack-600.webp" srcset="assets/img/p/forradsburkar-glas-ek-3-pack-600.webp 600w, assets/img/p/forradsburkar-glas-ek-3-pack-900.webp 900w" sizes="(max-width:640px) 50vw, (max-width:1100px) 33vw, 25vw" alt="Förrådsburkar glas &amp; ek, 3‑pack" loading="lazy" decoding="async" width="600" height="750"><img class="hov fade" data-src="assets/img/d/forradsburkar-glas-ek-3-pack-600.webp" alt="" decoding="async" width="600" height="750" onerror="this.remove()"></a>
       <button class="iconbtn fav" type="button" data-wish="forradsburkar-glas-ek-3-pack" aria-pressed="false" aria-label="Spara Förrådsburkar glas &amp; ek, 3‑pack"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
-      <button class="iconbtn rbtn" type="button" data-room-btn="forradsburkar-glas-ek-3-pack" aria-pressed="false" tabindex="-1" aria-label="Ställ in Förrådsburkar glas &amp; ek, 3‑pack i Mitt rum"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></button>
       <button class="qv" type="button" data-sheet="forradsburkar-glas-ek-3-pack" tabindex="-1" aria-label="Snabbtitt på Förrådsburkar glas &amp; ek, 3‑pack"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="forradsburkar-glas-ek-3-pack::0" aria-label="Lägg till Förrådsburkar glas &amp; ek, 3‑pack i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg><span>Lägg till</span></button>
       <div class="ct"><h3><a href="produkt-forradsburkar-glas-ek-3-pack/">Förrådsburkar glas &amp; ek, 3‑pack</a></h3><span class="price">349 kr</span></div>
@@ -228,9 +220,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=b0686c04"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9a212fad"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=4f1fcaa3"></script>
-<script src="assets/js/site.min.js?v=6ddf579b"></script>
+<script src="assets/js/config.js?v=44aaeaba"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=2301a789"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=1d3fc0d7"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=30fa6fa9"></script>
+<script src="assets/js/site.min.js?v=c26b1ea3"></script>
 </body>
 </html>

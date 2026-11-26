@@ -31,7 +31,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=e8c54252">
+<link rel="stylesheet" href="assets/css/site.min.css?v=067a38ee">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -105,6 +105,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <ul class="lp-list"><li class="lp-item" data-h="skrivbordsorganisator-ek"><button type="button" data-sheet="skrivbordsorganisator-ek" aria-label="Snabbtitt på Skrivbordsorganisatör ek"><img src="assets/img/cut/skrivbordsorganisator-ek.webp" alt=""></button><div><b>Skrivbordsorganisatör ek</b><span>349 kr</span></div><button class="iconbtn qadd" type="button" data-add="skrivbordsorganisator-ek::0" aria-label="Lägg Skrivbordsorganisatör ek i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg></button></li><li class="lp-item" data-h="lysa-keramiklampa"><button type="button" data-sheet="lysa-keramiklampa" aria-label="Snabbtitt på Lysa keramiklampa"><img src="assets/img/cut/lysa-keramiklampa.webp" alt=""></button><div><b>Lysa keramiklampa</b><span>1&nbsp;290 kr</span></div><button class="iconbtn qadd" type="button" data-add="lysa-keramiklampa::0" aria-label="Lägg Lysa keramiklampa i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg></button></li><li class="lp-item" data-h="affisch-linje-ekram"><button type="button" data-sheet="affisch-linje-ekram" aria-label="Snabbtitt på Affisch Linje med ekram, 50 × 70"><img src="assets/img/cut/affisch-linje-ekram.webp" alt=""></button><div><b>Affisch Linje med ekram, 50 × 70</b><span>549 kr</span></div><button class="iconbtn qadd" type="button" data-add="affisch-linje-ekram::0" aria-label="Lägg Affisch Linje med ekram, 50 × 70 i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg></button></li><li class="lp-item" data-h="forvaringslada-filt"><button type="button" data-sheet="forvaringslada-filt" aria-label="Snabbtitt på Förvaringslåda filt"><img src="assets/img/cut/forvaringslada-filt.webp" alt=""></button><div><b>Förvaringslåda filt</b><span>199 kr</span></div><button class="iconbtn qadd" type="button" data-add="forvaringslada-filt::0" aria-label="Lägg Förvaringslåda filt i varukorgen"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg></button></li></ul>
             <div class="lp-sum"><span>Hela looken <small><span>Du sparar</span> 239 kr</small></span><b><s>2&nbsp;387 kr</s> 2&nbsp;148 kr</b></div>
             <div class="lp-buy" id="lpBuy"><div class="ctrl-row"><button class="btn" type="button" data-look-add="fokus" data-lookbtn="fokus">Handla looken · 2&nbsp;148 kr</button><button class="btn ghost" type="button" data-look-save="fokus">Spara looken</button></div></div>
+            <div class="ai-row lp-studio"><button class="btn ghost sm" type="button" data-hem-look="fokus"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><span>Se den i ditt rum</span></button><button class="tlink" type="button" data-board-new="" data-board-items="skrivbordsorganisator-ek,lysa-keramiklampa,affisch-linje-ekram,forvaringslada-filt" data-board-name="Fokus">Gör en moodboard</button></div>
             <p class="small" style="margin-top:1rem">Produkterna är exempel tills butiken öppnar.</p></div>
         </div></section>
         <section class="sec"><div class="wrap"><div class="sec-head"><h2 class="h2">Fler looks</h2></div><div class="looks-row"><article class="lc"><a class="lc-im" href="look-lugn-hall/"><img src="assets/img/rum/hall-900.webp" srcset="assets/img/rum/hall-600.webp 600w, assets/img/rum/hall-900.webp 900w, assets/img/rum/hall-1600.webp 1600w, assets/img/rum/hall-2400.webp 2400w, assets/img/rum/hall-3200.webp 3200w" sizes="(min-width:900px) 22rem, 90vw" alt="" loading="lazy" decoding="async" width="1600" height="893"><span class="lc-tag">Hall</span></a>
@@ -168,9 +169,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=21b82618"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=b0686c04"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9a212fad"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=4f1fcaa3"></script>
-<script src="assets/js/site.min.js?v=6ddf579b"></script>
+<script src="assets/js/config.js?v=44aaeaba"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=2301a789"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=1d3fc0d7"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=30fa6fa9"></script>
+<script src="assets/js/site.min.js?v=c26b1ea3"></script>
 </body>
 </html>
