@@ -1745,7 +1745,7 @@ html.sheet-lock{overflow:hidden}
 .sv-liked{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-top:.6rem}
 .sv-liked button{border:1px solid var(--line2);background:var(--paper);border-radius:12px;padding:.5rem;width:6.9rem;display:grid;gap:.3rem;align-content:start;font-size:.8rem;line-height:1.25;color:var(--ink2);min-width:0}
 .sv-liked button span{overflow-wrap:break-word;hyphens:manual}
-@media (max-width:640px){.sv-liked button{width:calc((100% - 1.2rem) / 3)}} /* three to a row on phones, so six saved things take two rows */
+@media (max-width:640px){.sv-liked{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;width:calc(100% + 2*var(--gutter));margin-left:calc(-1*var(--gutter));margin-right:calc(-1*var(--gutter));padding:0 var(--gutter) .2rem;scroll-padding-inline:var(--gutter)}.sv-liked::-webkit-scrollbar{display:none}.sv-liked button{flex:none;width:6.9rem;scroll-snap-align:start}.sv-liked:has(> :nth-child(4)) button:last-child{margin-right:var(--gutter)}} /* one row to swipe on phones: the result is a screen shorter (founder doc: the Svep result was long on a phone) */
 .sv-liked img{height:4rem;width:100%;object-fit:contain}
 
 /* ---------------------------------------------------------------- teasers, Upptäck, Rösta */
@@ -1899,7 +1899,7 @@ html.sheet-lock{overflow:hidden}
 .sp-links{display:flex;gap:1.6rem;justify-content:center;flex-wrap:wrap;margin-top:.4rem}
 #svShare svg{width:1.1rem;height:1.1rem;fill:none;stroke:currentColor;stroke-width:1.6;margin-right:.4rem;vertical-align:-3px}
 .svep-result .tlink{margin-top:.4rem}
-@media (max-width:640px){.sv-ctrl{gap:.6rem}.sp-row{grid-template-columns:6.8rem 1fr 2.6rem}.sp-acts{flex-direction:column;align-items:stretch;width:100%}.sp-acts .btn{justify-content:center;text-align:center}.sp-look{grid-template-columns:1fr}.sp-look-ims img{width:3.6rem;height:3.6rem}}
+@media (max-width:640px){.sv-ctrl{gap:.6rem}.sp-row{grid-template-columns:6.8rem 1fr 2.6rem}.sp-acts{flex-direction:column;align-items:stretch;width:100%}.sp-acts .btn{justify-content:center;text-align:center}.sp-look{grid-template-columns:auto 1fr;gap:.8rem;padding:.8rem}.sp-look-ims img{width:2.6rem;height:2.6rem;margin-left:-.7rem}.sp-look-ims img:nth-child(n+4){display:none}}
 @media (prefers-reduced-motion:reduce){.sv-card.hint{animation:none}.sp-bar i{animation:none}}
 
 

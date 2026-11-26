@@ -33,7 +33,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=b9d74d97">
+<link rel="stylesheet" href="assets/css/site.min.css?v=558c77a2">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -104,7 +104,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <div class="pg">
             <div class="pg-grid" id="pgGrid" style="--tone:#B88A5A22"><button type="button" class="pg-item" data-gi="0"><img class="fade ok" src="assets/img/p/skarbrada-ek-med-handtag-1400.webp" alt="Skärbräda ek med handtag, miljöbild" style="view-transition-name:pimg" fetchpriority="high" decoding="async" width="1400" height="1750" onerror="this.closest('.pg-item').remove()"><span class="tag">Exempel</span><span class="zhint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"></path></svg>Zooma</span></button><button type="button" class="pg-item" data-gi="1"><img class="fade ok" src="assets/img/d/skarbrada-ek-med-handtag-1200.webp" alt="Skärbräda ek med handtag, detalj" loading="lazy" decoding="async" width="1200" height="1200" onerror="this.closest('.pg-item').remove()"><span class="zhint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"></path></svg>Zooma</span></button><button type="button" class="pg-item cut" data-gi="2"><img class="fade ok" src="assets/img/cut/skarbrada-ek-med-handtag.webp" alt="Skärbräda ek med handtag, frilagd" loading="lazy" decoding="async" onerror="this.closest('.pg-item').remove()"><span class="zhint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"></path></svg>Zooma</span></button></div>
             
-            <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
+            <div class="pg-dots" id="pgDots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
           </div>
           <div class="pinfo">
             <a class="eyebrow" href="kategori-kok-matplats/">Kök &amp; matplats</a>
@@ -159,7 +159,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         </section>
 
         <section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ihop</h2><p>Bocka ur det du inte vill ha. Du kan ändra antal i varukorgen.</p></div><a class="link" href="mitt-rum-skarbrada-ek-med-handtag/">Bygg en look i ditt rum</a></div>
-          <div class="look"><div class="look-items"><label class="look-item"><input type="checkbox" data-look="skarbrada-ek-med-handtag" checked=""><img src="assets/img/p/skarbrada-ek-med-handtag-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Den här: Skärbräda ek med handtag</span><span class="pr">449 kr</span></label><label class="look-item"><input type="checkbox" data-look="sand-keramikvas" checked=""><img src="assets/img/p/sand-keramikvas-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Sand keramikvas</span><span class="pr">399 kr</span></label><label class="look-item"><input type="checkbox" data-look="vaffelhandduk-bomull" checked=""><img src="assets/img/p/vaffelhandduk-bomull-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Våffelhandduk bomull</span><span class="pr">299 kr</span></label><label class="look-item"><input type="checkbox" data-look="tvalpump-stengods" checked=""><img src="assets/img/p/tvalpump-stengods-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Tvålpump stengods</span><span class="pr">229 kr</span></label></div>
+          <div class="look"><div class="look-items"><label class="look-item"><input type="checkbox" data-look="skarbrada-ek-med-handtag" checked=""><img src="assets/img/p/skarbrada-ek-med-handtag-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Den här: Skärbräda ek med handtag</span><span class="pr">449 kr</span></label><label class="look-item"><input type="checkbox" data-look="sand-keramikvas" checked=""><img src="assets/img/p/sand-keramikvas-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Sand keramikvas</span><span class="pr">399 kr</span><span class="why">Samma stil: Skandinavisk</span></label><label class="look-item"><input type="checkbox" data-look="vaffelhandduk-bomull" checked=""><img src="assets/img/p/vaffelhandduk-bomull-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Våffelhandduk bomull</span><span class="pr">299 kr</span><span class="why">Samma stil: Skandinavisk</span></label><label class="look-item"><input type="checkbox" data-look="tvalpump-stengods" checked=""><img src="assets/img/p/tvalpump-stengods-600.webp" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">Tvålpump stengods</span><span class="pr">229 kr</span><span class="why">Samma stil: Skandinavisk</span></label></div>
           <div class="look-sum"><div class="sum total"><span>Totalt</span><span id="lookTotal">1&nbsp;376 kr</span></div><button class="btn block" type="button" id="lookAdd">Lägg 4 produkter i varukorgen</button></div></div></div></section>
         <section class="sec tight"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Liknande produkter</h2></div><a class="link" href="kategori-kok-matplats/">Visa alla</a></div><div class="grid ">
     <article class="card" style="--tone:#E9E4DA22">
@@ -216,8 +216,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=985ea209"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=d622e89a"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=3de4eb7a"></script>
-<script src="assets/js/site.min.js?v=ce4c2c8f"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=597a27c2"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=4acea97e"; window.RQ_HEADS_SRC = "assets/heads.json?v=025f9282";</script>
+<script src="assets/js/i18n.min.js?v=5d84b4c2"></script>
+<script src="assets/js/site.min.js?v=392aa617"></script>
 </body>
 </html>
