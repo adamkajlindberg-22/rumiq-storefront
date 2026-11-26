@@ -31,7 +31,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=067a38ee">
+<link rel="stylesheet" href="assets/css/site.min.css?v=8fbbd4a2">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -164,7 +164,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 </section>
 
 <div class="search" id="search" role="dialog" aria-modal="true" aria-label="Sök">
-  <div class="wrap"><div class="sbar"><label class="sr" for="searchInput">Sök</label><div class="sfield"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></div><button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="wrap"><div class="sbar"><label class="sr" for="searchInput">Sök</label><form class="sfield" id="searchForm" role="search" novalidate><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><input type="search" id="searchInput" placeholder="Vad letar du efter?" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search"></form><button class="iconbtn close" type="button" data-close aria-label="Stäng sök"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <p class="hint">Sök på produkt, material, rum eller färg. Vill du hellre beskriva med egna ord? Prova <a href="hitta-ratt-ord/" data-close>Hitta rätt med egna ord</a> eller fråga <a href="studio-stylist/" data-close>stylisten</a>.</p>
     <p class="sr" id="searchSaid" role="status"></p><div class="res" id="searchRes"></div></div>
 </div>
@@ -174,8 +174,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=44aaeaba"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=2301a789"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=1d3fc0d7"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=30fa6fa9"></script>
-<script src="assets/js/site.min.js?v=c26b1ea3"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=f28022a1"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=958b089f"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=47df9429"></script>
+<script src="assets/js/site.min.js?v=c69191e4"></script>
 </body>
 </html>
