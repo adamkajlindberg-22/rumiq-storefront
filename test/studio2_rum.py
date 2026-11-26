@@ -314,6 +314,17 @@ with sync_playwright() as p:
     ok(pg.evaluate("(document.querySelector('[data-sty][aria-pressed=true]') || {}).dataset.sty") == "skandinavisk" and pg.evaluate("RQ.room.scene().filter((i) => i.sg).length") >= 2, "[own] M5 and Inred åt mig starts in the style you chose")
     c.close()
 
+    # device review R2: RQ.room.fits says what the editor will put in, so the proposal's count and total agree with the editor's
+    c = ctx_for(b, 390, 844, True); pg = new_page(c)
+    for rt in ("vardagsrum", "sovrum", "kok", "badrum"):
+        pg.goto(BASE + "mitt-hem/"); pg.wait_for_timeout(600)
+        its = pg.evaluate("(t) => RQ.hem.propose({ type: t }).items.concat([{ h: 'glod-doftljus-keramik', v: 0 }, { h: 'stilla-ljusstake-massing-2-pack', v: 0 }])", rt)
+        f = pg.evaluate("([its, t]) => RQ.room.fits(its, t)", [its, rt])
+        pg.evaluate("([its, t]) => RQ.room.openWith({ room: t, items: its })", [its, rt]); pg.wait_for_timeout(1500)
+        sc = pg.evaluate("RQ.room.scene().map((i) => i.h)"); tot = pg.evaluate("RQ.room.total()")
+        ok(sorted(sc) == sorted(i["h"] for i in f["fit"]) and f["count"] == len(sc) and f["total"] == tot and f["count"] + len(f["out"]) == len({i["h"] for i in its}), f"[fits {rt}] fits() names exactly what the editor puts in, with the same total: {f['count']} {f['total']} / {len(sc)} {tot}, out {[i['h'] for i in f['out']]}")
+    c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")

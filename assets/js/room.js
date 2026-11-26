@@ -763,6 +763,24 @@
   /* from the AI picture ("Prova en annan färg", "Byt produkt"): Mitt rum with Byt open on that thing; colour: true opens it at
      the colours. Answers false when the thing is not in the room. */
   R.leftOut = () => (R._leftOut || []).slice();
+  /* which of these things the editor will really put in a room, by the same rules as openWith (device review R2), so a
+     proposal offers only what fits and its count and total agree with the editor's:
+       RQ.room.fits(items, roomType, { own: false }) -> { fit: [{ h, v }], out: [{ h, v }], later: [{ h, v }], count, total, outTotal }
+     - items: [{ h, v }] or handles; roomType: a sample room's id ("vardagsrum" ...), or null for the room open now;
+     - a sample room: each thing is placed as openWith places it; a thing for a table with no free table is out;
+     - own: true (or roomType null while your own photo is open): your own photo's rules; things for a table are out until
+       the room knows a table, and a set starts calm (at most three in; the rest is later: it fits, one tap away);
+     - count and total are of fit (what the editor shows), outTotal of out. Pure: nothing is saved, nothing is drawn. */
+  R.fits = (items, roomType = null, opt = {}) => {
+    const seen = new Set(), its = (items || []).map((it) => (typeof it === "string" ? { h: it, v: 0 } : { h: it.h, v: +it.v || 0 })).filter((it) => RQ.byHandle(it.h) && !seen.has(it.h) && seen.add(it.h)).slice(0, 16); // one of each, at most 16 (as openWith)
+    const ownNow = room && !room.sample, own = !!(opt && opt.own) || (!roomType && ownNow), sum = (l) => l.reduce((t, it) => t + RQ.byHandle(it.h).price, 0);
+    let fit = [], out = [], later = [];
+    if (own) { const plan = R.calmSet(its); out = its.filter((it) => plan.table.includes(it.h)); fit = plan.put.slice(); later = its.filter((it) => plan.later.includes(it.h)); }
+    else { const M = MAPS[roomType || (room && room.map) || "vardagsrum"] || MAPS.vardagsrum, sim = [];
+      its.forEach((it) => { const q = RQ.byHandle(it.h), k = kindOf(q), sp = spotFor(q, sim, true, M);
+        if (sp.moved === "floor" && k !== "floor" && k !== "rug") { out.push(it); return; }
+        sim.push({ h: it.h, x: sp.x, y: sp.y, w: sp.w, ...(sp.moved ? { on: sp.moved } : {}) }); fit.push(it); }); }
+    return { fit, out, later, count: fit.length, total: sum(fit), outTotal: sum(out) }; };
   /* back from signing in with an openWith plan: the photo gets its room type, the things go in as from openWith */
   R._resume = (p) => { const pr = projOf(p.project); if (p.type && room && !room.sample && !room.type && RQ.roomById(p.type)) R.setType(p.type);
     R._want = { style: p.style || null, budget: p.budget || null }; R._from = p.title || null; if (pr && RQ.hem.setActive) RQ.hem.setActive(pr.id);
