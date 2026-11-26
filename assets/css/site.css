@@ -1991,17 +1991,17 @@ html.sheet-lock{overflow:hidden}
 .ai-lcard .ai-row{margin-top:0}
 .ai-prods{list-style:none;display:grid;gap:.4rem;padding:0}
 .ai-prods li{display:grid;grid-template-columns:3rem minmax(0,1fr);gap:.7rem;align-items:center}
-.ai-prods button{border:0;background:var(--img-bg);border-radius:8px;aspect-ratio:1;padding:.25rem;display:grid;place-items:center}
+.ai-prods li > button{border:0;background:var(--img-bg);border-radius:8px;aspect-ratio:1;padding:.25rem;display:grid;place-items:center}
 .ai-prods img{max-width:100%;max-height:2.6rem;object-fit:contain}
 .ai-prods div{display:grid;font-size:.92rem}
 .ai-prods b{font-weight:560}
-.ai-prods span{color:var(--muted);font-size:.84rem}
+.ai-prods div > span:not(.ai-swap){color:var(--muted);font-size:.84rem}
 .ai-prods em{font-style:normal}
 @media (min-width:900px) and (max-height:760px){.ai-pad{padding-top:1.6rem;padding-bottom:1.6rem;gap:.75rem}.ai-prods{gap:.2rem}.ai-prods li{grid-template-columns:2.75rem minmax(0,1fr)}} /* a low laptop screen: six things and the buttons fit without scrolling the dialog */
 .ai-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.6rem}
 .ai-card{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.9rem 1rem;border-radius:var(--r);background:color-mix(in srgb,var(--accent) 10%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);margin-bottom:1.2rem}
 .ai-card div{display:grid;flex:1 1 10rem;min-width:0}
-.ai-card .btn{flex:none} /* buttons may wrap (a11y), but this short one keeps one line beside its text in the narrow Mitt rum column */
+.ai-card .btn{flex:none;min-height:2.75rem} /* buttons may wrap (a11y), but this short one keeps one line beside its text in the narrow Mitt rum column */
 .ai-card span{font-size:.84rem;color:var(--muted)}
 .rm-tool.rm-ai{color:var(--accent)}
 .ai-acct{display:grid;gap:1rem}
@@ -3037,6 +3037,11 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-ask-pic:not(.snap) .hem-ask-im > img{filter:saturate(.75) brightness(1.02)}
 .hem-ask-pic.snap .hem-card-col{display:none}
 .hem-ask-pic figcaption{color:var(--muted)}
+@media (min-width:1000px){ /* the picture beside the list, staying in view while you answer */
+  .hem-ask{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(22rem,1fr);column-gap:2.4rem;align-items:start}
+  .hem-ask > *{grid-column:2}
+  .hem-ask > .hem-ask-pic{grid-column:1;grid-row:1 / span 6;position:sticky;top:5.5rem;max-width:none;margin:0}
+}
 .hem-ask-alts{grid-column:1 / -1;display:grid;gap:.4rem}
 .hem-ask-altl{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.2rem;scrollbar-width:thin}
 .hem-ask-altl button{flex:0 0 7.6rem;display:grid;gap:.2rem;justify-items:start;text-align:left;padding:.45rem;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font:inherit;font-size:.82rem;cursor:pointer;min-height:2.75rem}
