@@ -334,6 +334,8 @@ with sync_playwright() as p:
         inroom = pg.evaluate("RQ.room.scene().map((i) => i.h)"); note = pg.evaluate("(document.getElementById('rmSugg') || {}).innerText || ''")
         out = [h for h in hs if h not in inroom]
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.get().sample") and set(inroom) <= set(hs) and len(inroom) >= 2 and all(pg.evaluate("(h) => RQ.byHandle(h).name", h) in note for h in out), f"{tag} Prova i ett rum: the board's products placed by the editor in the sample room you chose, what does not fit named: {inroom} {out}")
+        tab = pg.evaluate("(() => { const a = RQ.hem.room(RQ.hem.activeId()); return [a && a.label, (document.querySelector('[data-proj][aria-pressed=true]') || {}).innerText || '', document.getElementById('toast').innerText] })()")
+        ok(tab[0] and tab[0] in tab[1], f"{tag} a sample room from the board becomes a named room of yours, its tab chosen: {tab}")
         go(pg, "mitt-hem", 1300)
         ok(pg.evaluate("document.querySelectorAll('.hem-board').length") == 1, f"{tag} the moodboard is in Sparat")
         ok(not errs, f"{tag} no script errors: {errs[:3]}")
