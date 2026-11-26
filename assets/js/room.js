@@ -1337,7 +1337,7 @@
         const names = (hs) => hs.map((h) => `<b>${esc(RQ.byHandle(h).name)}</b>`).join(" · ");
         const paintSugg = () => { const bx = $("#rmSugg", root), its = R.scene().filter((it) => it.sg); bx.hidden = !sg.shown;
           // what is left out stays true to the room as it is now: not what stands there, nor what something of its sort already stands in for (device review X4)
-          const scene = R.scene(); sg.noRoom = sg.noRoom.filter((h) => !scene.some((x) => x.h === h || sortOf(x.h) === sortOf(h))); sg.later = sg.later.filter((h) => !scene.some((x) => x.h === h));
+          const scene = R.scene(); sg.noRoom = sg.noRoom.filter((h) => !scene.some((x) => x.h === h || (!sg.from && sortOf(x.h) === sortOf(h)))); /* a set the customer chose (moodboard, proposal) names everything left out, even a second lamp */ sg.later = sg.later.filter((h) => !scene.some((x) => x.h === h));
           const mine = scene.filter((it) => !it.sg), mineTot = mine.reduce((t, it) => t + RQ.byHandle(it.h).price, 0);
           if (bx.hidden) return; const tot = its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), lo = step50(Math.max(100, sg.min || 100), true), hi = Math.max(lo + 50, step50(sg.full || tot, true)), b = sg.budget ? clamp(sg.budget, lo, hi) : hi;
           const all = Math.max(sg.count || 0, its.length), hs = its.map((it) => it.h + "::" + (it.v || 0)).sort().join(","), inCart = !!(its.length && RQ.allInCart && RQ.allInCart(its.map((it) => it.h)));
