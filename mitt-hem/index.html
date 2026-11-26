@@ -30,7 +30,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=8fbbd4a2">
+<link rel="stylesheet" href="assets/css/site.min.css?v=8d151d15">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -107,7 +107,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <label>Slags rum<select name="type"><option value="vardagsrum" selected="">Vardagsrum</option><option value="sovrum">Sovrum</option><option value="kok">Kök</option><option value="hall">Hall</option><option value="badrum">Badrum</option><option value="hemmakontor">Hemmakontor</option><option value="uteliv">Uteliv</option></select></label>
         <fieldset class="hem-first-st"><legend>Stil <small>valfritt</small></legend><div class="chips"><button type="button" class="chip" data-first-style="skandinavisk" aria-pressed="false">Skandinavisk</button><button type="button" class="chip" data-first-style="minimalistisk" aria-pressed="false">Minimalistisk</button><button type="button" class="chip" data-first-style="klassisk" aria-pressed="false">Klassisk</button><button type="button" class="chip" data-first-style="mjuk" aria-pressed="false">Mjuk och ombonad</button></div></fieldset>
         <div class="ai-row"><button class="btn" type="submit" name="go" value="sample">Börja med ett exempelrum</button><button class="btn ghost" type="submit" name="go" value="own">Använd ditt eget foto</button></div>
-        <p class="small"><span>Ditt eget foto kräver ett gratis konto. Exempelrummen är fria.</span> <span>5 AI-bilder gratis i månaden med konto, när sajten är live. Bilderna sparas privat på den här enheten.</span></p></form></div>
+        <p class="small"><span>Ditt eget foto kräver ett gratis konto. Exempelrummen är fria.</span> <span>5 AI-bilder gratis i månaden med konto, när AI-bilderna är igång. Bilderna sparas privat på den här enheten.</span></p></form></div>
         <ul class="hem-bens" aria-label="Det här får du här">
       <li><b>Före och efter sparas</b><span>Varje AI-bild hamnar i rummet, med bilden före.</span></li>
       <li><b>Lista och budget per rum</b><span>Se vad som är kvar att köpa och vad det kostar.</span></li>
@@ -168,9 +168,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=44aaeaba"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=f28022a1"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=958b089f"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
-<script src="assets/js/i18n.min.js?v=47df9429"></script>
-<script src="assets/js/site.min.js?v=c69191e4"></script>
+<script src="assets/js/config.js?v=5b483374"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=f28022a1"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=4264e45b"; window.RQ_HEADS_SRC = "assets/heads.json?v=21d2f13d";</script>
+<script src="assets/js/i18n.min.js?v=37348fae"></script>
+<script src="assets/js/site.min.js?v=10e07d67"></script>
 </body>
 </html>
