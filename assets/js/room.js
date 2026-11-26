@@ -51,7 +51,7 @@
       cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [57.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
-      rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
+      rug: [[40, 89, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, /* the rug lies in front of the sofa, its front edge well inside the picture and clear of the side table's foot (review M5) */ // the curtain reaches the floor where the window wall meets it, its top above the picture
     sovrum: { h: 55, k: 0.95, sun: 1,
       surface: [[13.6, 70.6, 27], [19.5, 70, 27], [10, 70.2, 27]], busy: [[17.8, 21.2, 69, 64]], edge: [[7.8, 23.5, 70.4]], /* the nightstand: its own lamp (a new lamp stands in for it), a mug on a book */
       cushion: [[29, 64, 20], [38, 62, 19]], throw: [[63, 71.5, 19], [47, 70, 19]], bedding: [[47, 69.5, 19], [60, 69, 19]],
@@ -827,14 +827,20 @@
      this browser, else its sample room; things where they stand (the saved scene) or placed by the editor's rules.
      Resolves a data URL, or null when the room's photo is not in this browser. */
   const snapCache = new Map();
+  const w0h = (w, im, it) => w * im.naturalHeight / im.naturalWidth * (it.sy || 1);
   const imgOf = (src) => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
-  const drawScene = async (bg, list, W, lf) => { const H = Math.round(W * (bg.naturalHeight || bg.height) / (bg.naturalWidth || bg.width)), cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
+  const drawScene = async (bg, list, W, lf, persp) => { /* persp: the room open now, whose scale is known: a rug lies as deep as it really is */ const H = Math.round(W * (bg.naturalHeight || bg.height) / (bg.naturalWidth || bg.width)), cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
     for (const it of orderOf(list)) { const p = RQ.byHandle(it.h); let im; try { im = await imgOf(cutIn(p)); } catch (e) { continue; }
-      const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h; let src = im; const tone = R.tint(it);
+      let h = w0h(W * it.w / 100, im, it); const w = W * it.w / 100; if (persp && effKind(it) === "rug") { const rb = rugBack(it); if (rb && rb.y < it.y - 0.5) h = H * (it.y - rb.y) / 100; } /* review M5: not up the wall */
+      const x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h; let src = im; const tone = R.tint(it);
+      /* a soft contact shadow where it stands, so it rests on the table or the floor instead of floating (review M5) */
+      { const kd = effKind(it); if (kd === "surface" || kd === "floor") { const bs = BASE[p.handle], sw = w * (bs ? bs[1] : 0.9) * 0.62, sh = Math.max(2, sw * 0.16), fy = H * it.y / 100 - sh * 0.35;
+        cx.save(); const g = cx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, "rgba(30,22,14,.38)"); g.addColorStop(0.6, "rgba(30,22,14,.16)"); g.addColorStop(1, "rgba(30,22,14,0)");
+        cx.translate(W * it.x / 100, fy); cx.scale(sw, sh); cx.fillStyle = g; cx.beginPath(); cx.arc(0, 0, 1, 0, Math.PI * 2); cx.fill(); cx.restore(); } }
       if (tone) { const t = document.createElement("canvas"); t.width = Math.max(1, Math.round(w)); t.height = Math.max(1, Math.round(h)); const tx = t.getContext("2d"); tx.drawImage(im, 0, 0, t.width, t.height); tx.globalCompositeOperation = "color"; tx.fillStyle = tone; tx.fillRect(0, 0, t.width, t.height); tx.globalCompositeOperation = "destination-in"; tx.drawImage(im, 0, 0, t.width, t.height); src = t; }
       cx.save(); cx.filter = lf(it.light || 100); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(src, 0, 0, w, h); } else cx.drawImage(src, x, y, w, h); cx.restore(); }
     return cv; };
-  R.picture = async (W) => { if (!room) return null; return drawScene(await imgOf(R.url()), R.scene(), W, lightFilter); }; // the room as it stands, as a canvas
+  R.picture = async (W) => { if (!room) return null; return drawScene(await imgOf(R.url()), R.scene(), W, lightFilter, true); }; // the room as it stands, as a canvas
   R.snapshot = async (id, W = 900) => {
     const pr = projOf(id); if (!pr) return null; const key = `${id}|${W}|${pr.updated || pr.at || ""}`; if (snapCache.has(key)) return snapCache.get(key);
     const its = (RQ.hem.items(pr) || []).map((it) => ({ h: it.h, v: it.v || 0 })), here = room && pr.pkey && pr.pkey === keyNow();
@@ -875,11 +881,11 @@
   const setupBlock = (want) => `<div class="rm-empty">
       <div class="rm-empty-in">
         ${want ? `<p class="rm-want"><img src="${RQ.cut(want)}" alt=""><span><b>${esc(want.name)}</b> står i rummet så fort bilden är inne.</span></p>` : ""}
-        <h2 class="h2">Börja med en bild av ditt rum.</h2>
-        <p class="lead">Sedan ställer du in produkter där du vill ha dem, ser vad hela rummet kostar och handlar allt på en gång.</p>
+        <h2 class="h2">Placera och skapa</h2>
+        <p class="lead">Välj ett rum och några saker, och peka ut var de ska stå. Vi gör en bild av rummet med dem på plats, i rätt storlek.</p>
         <div class="ctrl-row rm-empty-acts" style="margin-top:1.6rem">${S.customer() ? `<button class="btn" type="button" data-room-setup>Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button>` // signed in: your own room first; signed out: the free sample room is the main way in
           : `<button class="btn" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button><button class="btn ghost" type="button" data-room-setup>Lägg in ditt rum</button>`}</div>
-        <ol class="rm-steps"><li><b>Ta en bild</b><span>Med telefonen, eller välj en du redan har.</span></li><li><b>Ställ in produkter</b><span>Från butiken, eller låt oss föreslå.</span></li><li><b>Handla looken</b><span>Allt i rummet hamnar i varukorgen med en knapp.</span></li></ol>
+        <ol class="rm-steps"><li><b>Välj rum</b><span>Ett av våra exempelrum, eller en bild av ditt eget.</span></li><li><b>Peka ut</b><span>Tryck där varje sak ska stå. Upp till fem åt gången.</span></li><li><b>Skapa bilden</b><span>Se rummet med sakerna på plats, och handla allt i bilden på en gång.</span></li></ol>
         <p class="small" style="margin-top:1.2rem">Bilden sparas bara i din webbläsare. Den skickas till oss först om du själv väljer att skapa en AI-bild.</p>
       </div>${RQ.demoFig ? RQ.demoFig({ bare: true }) : ""}</div>`; // the picture shows what it does; no way out of Studio in it
 
@@ -890,7 +896,10 @@
   const WAY = "rumiq-room-way", PLACE_MAX = 5;
   R.way = () => (ls.get(WAY, "place") === "edit" ? "edit" : "place");
   R.setWay = (w) => { ls.set(WAY, w === "edit" ? "edit" : "place"); };
-  const surfKey = (it) => surfOf(it);
+  /* your own photo, a thing not yet pointed out: it waits in a row on the floor, but what it will stand on is guessed from what it
+     is (a duvet cover on a bed, a table lamp on a table), and the page asks (review M4) */
+  const unpinned = (it) => !mapOf() && !it.pc && !!it.row;
+  const surfKey = (it) => (unpinned(it) ? ({ surface: "bord", floor: "golv", rug: "golv", wall: "vagg", window: "vagg", bedding: "sang", cushion: soft(), throw: soft() })[kindOf(RQ.byHandle(it.h))] || surfOf(it) : surfOf(it));
   /* the width a thing has where it stands: true scale when the room knows its scale and the thing its measurements, else
      the room's own scale with the usual width of such a thing (approximate), else the width it has */
   const widthAt = (it) => { const p = RQ.byHandle(it.h), t = trueW(it); if (t) return { w: t, sure: true };
@@ -933,7 +942,7 @@
   /* the order of the pins: one step earlier or later (the number on the pin follows) */
   R.pinOrder = (h, d) => { const list = R.scene(), i = list.findIndex((it) => it.h === h), j = i + d; if (i < 0 || j < 0 || j >= list.length) return false; [list[i], list[j]] = [list[j], list[i]]; return R.saveScene(list); };
   /* the preview while the AI is not switched on: the photo with the pinned things drawn where they stand, at their width */
-  R.preview = async (W = 1200) => { if (!room) return null; const cv = await drawScene(await imgOf(R.url()), R.scene().slice(0, PLACE_MAX), W, lightFilter); return cv.toDataURL("image/jpeg", 0.86); };
+  R.preview = async (W = 1200) => { if (!room) return null; const cv = await drawScene(await imgOf(R.url()), R.scene().slice(0, PLACE_MAX), W, lightFilter, true); return cv.toDataURL("image/jpeg", 0.86); };
   /* every way in (Mitt hem, the proposal card, Sparat, Svep's "Gör ett rum av det"): Placera och skapa with these things pinned
      by the editor's rules; the same arguments as openWith. Resolves true when it is open */
   R.place = (o = {}) => { R.setWay("place"); return R.openWith(o); };
@@ -983,21 +992,25 @@
         const say = (t) => { hint.textContent = ""; setTimeout(() => { hint.textContent = t; }, 30); };
         const name = (h) => RQ.byHandle(h).name;
         const pinLabel = (it, i) => `${i + 1} ${name(it.h)}, ${verbOf(it)} ${SURF[surfKey(it)]}, flytta med piltangenterna`;
-        const boxOf = (it) => { const p = RQ.byHandle(it.h), k = kindOf(p), ar = room.w / room.h, hP = k === "rug" ? it.w * 0.3 * ar : it.w * meta(p)[2] * (it.sy || 1) * ar; return { l: it.x - it.w / 2, t: it.y - hP, w: it.w, h: hP }; };
+        const boxOf = (it) => { const p = RQ.byHandle(it.h), k = kindOf(p), ar = room.w / room.h;
+          if (k === "rug") { const rb = rugBack(it); if (rb && rb.y < it.y - 0.5) return { l: it.x - it.w / 2, t: rb.y, w: it.w, h: it.y - rb.y, back: +((1 - rb.w / it.w) / 2 * 100).toFixed(1) }; } /* a rug lies in perspective: its back edge narrower, further up */
+          const hP = k === "rug" ? it.w * 0.3 * ar : it.w * meta(p)[2] * (it.sy || 1) * ar; return { l: it.x - it.w / 2, t: it.y - hP, w: it.w, h: hP }; };
         const paint = () => {
           const list = R.scene(), pins = list.slice(0, PLACE_MAX); if (sel && !pins.some((it) => it.h === sel)) sel = null;
           const focusH = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.pin : null;
           const sp = spread(pins), pw = inner.offsetWidth || 1;
           marks.innerHTML = `<svg class="pl-lines" aria-hidden="true">${sp.map((q) => (q.off ? `<line x1="${q.ax}" y1="${q.ay}" x2="${q.x}" y2="${q.y}"/>` : "")).join("")}</svg>` + pins.map((it, i) => { const b = boxOf(it), sure = widthAt(it).sure, q = sp[i];
-            return `<div class="pl-foot${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true"><span>${i + 1}${sure || b.w * pw / 100 < 72 ? "" : " · ungefär"}</span></div>
+            const lab = `<span>${i + 1}${sure || b.w * pw / 100 < 72 ? "" : " · ungefär"}</span>`;
+            return (b.back ? `<div class="pl-foot rug${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="${b.back},0 ${100 - b.back},0 100,100 0,100"/></svg>${lab}</div>`
+              : `<div class="pl-foot${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true">${lab}</div>`) + `
               ${q.off ? `<i class="pl-dot" style="left:${q.ax}px;top:${q.ay}px" aria-hidden="true"></i>` : ""}<button type="button" class="pl-pinb${sel === it.h ? " on" : ""}" data-pin="${it.h}" style="left:${q.x}px;top:${q.y}px" aria-label="${esc(pinLabel(it, i))}" aria-pressed="${sel === it.h}">${i + 1}</button>`; }).join("");
           $("#plLegend", root).hidden = !pins.some((it) => !widthAt(it).sure); $("#plZoom", root).hidden = !pins.length;
           $$("#plSteps li", root).forEach((li, j) => { if (j === (pins.length ? 2 : 1)) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current"); });
           if (focusH) { const f = $(`[data-pin="${focusH}"]`, marks); if (f) f.focus({ preventScroll: true }); }
           $("#plCount", root).textContent = `${Math.min(list.length, PLACE_MAX)} av ${PLACE_MAX}`;
           $("#plList", root).innerHTML = list.map((it, i) => { const p = RQ.byHandle(it.h), z = measures(p);
-            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i < PLACE_MAX ? `${verbOf(it)} ${SURF[surfKey(it)]} · ` : "Inte med i bilden · "}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty small">Inga saker än. Lägg till upp till fem, så pekar du ut var de ska stå.</li>`;
-          const over = list.length - PLACE_MAX; $("#plGoNote", root).textContent = !pins.length ? "Lägg till minst en sak först." : over > 0 ? `Bilden tar fem saker åt gången, de fem första. ${over === 1 ? "En till" : over + " till"} väntar.` : live ? "Det tar en liten stund." : "AI-bilden slås på snart. Nu ser du en förhandsvisning.";
+            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i >= PLACE_MAX ? "Väntar, inte med i bilden · " : unpinned(it) ? "Var står den? Peka ut i bilden · " : `${verbOf(it)} ${SURF[surfKey(it)]} · `}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty small">Inga saker än. Lägg till upp till fem, så pekar du ut var de ska stå. <button type="button" class="tlink" id="plSuggest">Föreslå saker åt mig</button></li>`;
+          const over = list.length - PLACE_MAX; $("#plGoNote", root).textContent = !pins.length ? "Lägg till minst en sak först." : over > 0 ? `Bilden tar fem saker åt gången: de fem första, ${kr(pins.reduce((t, it) => t + RQ.byHandle(it.h).price, 0))}. ${over === 1 ? "En till" : over + " till"} väntar i listan.` : live ? "Det tar en liten stund." : "AI-bilden slås på snart. Nu ser du en förhandsvisning.";
           $("#plCreate", root).disabled = !pins.length; $("#plAdd", root).disabled = false;
           paintPin(); };
         const paintPin = () => { const list = R.scene(), i = list.findIndex((it) => it.h === sel), it = list[i]; pin.hidden = !it || i >= PLACE_MAX; if (pin.hidden) return;
@@ -1049,7 +1062,9 @@
           if (e.target.closest("#plMeasure")) { RQ.ss && RQ.ss.set("rumiq-room-measure", "1"); R.setWay("edit"); RQ.router(); scrollTo(0, 0); return; }
           if (e.target.closest("#plDel")) { const h = sel; sel = null; R.remove(h); say(`${name(h)} är borttagen.`); return; }
           if (e.target.closest("#plPinX")) { const h = sel; select(null); const g = $(`[data-pin="${h}"]`, marks); if (g) g.focus(); } });
-        $("#plList", root).addEventListener("click", (e) => { const b = e.target.closest("[data-pick]"); if (!b) return; select(b.dataset.pick); if (innerWidth <= 900) stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); });
+        $("#plList", root).addEventListener("click", (e) => { if (e.target.closest("#plSuggest")) { /* Inred åt mig, here too (review M9): a set for the room, pinned by the editor's rules */
+            const set = R.suggestSet(R._want || {}); R.group(() => set.items.slice(0, PLACE_MAX).forEach((it) => R.add(it.h, true, it.v || 0))); const n = R.scene().length; say(n ? `${n === 1 ? "En sak" : n + " saker"} står i rummet. Välj en och peka ut var den ska stå.` : "Vi hittade inget som passar just nu. Lägg till en sak själv."); const f = $("[data-pick]", root); if (f) f.focus({ preventScroll: true }); return; }
+          const b = e.target.closest("[data-pick]"); if (!b) return; select(b.dataset.pick); if (innerWidth <= 900) stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); });
         $("#plAdd", root).addEventListener("click", () => R.openPicker());
         // a phone: the picture twice as wide (swipe sideways), so pins close together are easy to tell apart and to place
         const zoomTo = (h) => { const it = h && R.scene().find((x) => x.h === h); if (!it || !stage.classList.contains("big")) return; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * it.x / 100 - stage.clientWidth / 2), behavior: calmNow() ? "auto" : "smooth" }); };
@@ -1065,7 +1080,13 @@
           $("#plBuy", res).addEventListener("click", (e2) => RQ.addMany && RQ.addMany(pins.map((x) => x.h + "::" + (x.v || 0)), e2.currentTarget, "Allt i bilden"));
           $("#plAgain", res).addEventListener("click", () => { res.hidden = true; stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); const f = $("[data-pin]", marks); if (f) f.focus({ preventScroll: true }); });
           res.scrollIntoView({ block: "start", behavior: calmNow() ? "auto" : "smooth" }); const h2 = $("figcaption b", res); if (h2) { h2.tabIndex = -1; h2.focus({ preventScroll: true }); } });
-        const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") paint(); else if (e.detail === "room") RQ.router(); };
+        let had = new Set(R.scene().map((it) => it.h));
+        const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "room") { RQ.router(); return; } if (e.detail !== "scene") return;
+          const l = R.scene(), fresh = l.filter((it) => !had.has(it.h)); had = new Set(l.map((it) => it.h));
+          if (fresh.length === 1) { const h = fresh[0].h, i = l.findIndex((it) => it.h === h); /* a thing that just came is the chosen one, so it can be pointed out at once (M4) */
+            if (i >= PLACE_MAX) { paint(); say(`Bilden tar fem saker åt gången. ${name(h)} väntar som nummer ${i + 1}.`); RQ.toast(`Bilden tar fem saker åt gången, så ${esc(name(h))} väntar. Ta bort en, eller flytta upp den i listan.`); return; } /* M10 */
+            select(h); return; }
+          paint(); };
         document.addEventListener("rq-room", onRoom);
         // a thing that just came (a product page, the picker) is chosen, so the next tap in the picture puts it there
         const nw = RQ.ss && RQ.ss.get("rumiq-room-new"); if (nw && R.inScene(nw)) { RQ.ss.set("rumiq-room-new", ""); sel = nw;
@@ -1086,7 +1107,7 @@
     const more = `<nav class="rm-more" aria-label="Fler sätt att välja">${room ? `<button type="button" class="chip rm-toplace" id="rmToPlace">${ICO.spark}<span>Placera och skapa</span></button>` : ""}<a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
     return {
       title: pre && RQ.byHandle(pre) ? `${RQ.byHandle(pre).name} i ditt rum · RumIQ` : "Mitt rum · RumIQ",
-      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Mitt rum</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
+      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title">${room ? "" : `<p class="eyebrow">Mitt rum</p>`}<h1 class="h1" id="rmH1">${room && R.scene().length ? "Mitt rum" : "Se ditt hem innan du köper."}</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
         ${room ? "" : more}</section>
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap" id="rmWrap" style="--ar:${(room.w / room.h).toFixed(4)}">
@@ -1287,7 +1308,7 @@
           view.tx = view.sw / 2 - c[0] / 100 * w; view.ty = view.sh / 2 - c[1] / 100 * h; paintView(true); return Math.abs(view.tx - tx) + Math.abs(view.ty - ty) > 8; };
 
         const tintHtml = (it, p) => { const t = R.tint(it); return t ? `<i class="rm-tint" aria-hidden="true" style="background:${esc(t)};-webkit-mask-image:url(${cutIn(p)});mask-image:url(${cutIn(p)});transform:scaleX(${it.flip ? -1 : 1})"></i>` : ""; };
-        const draw = () => {
+        const draw = () => { { const t = $("#rmH1", root), want = R.scene().length ? "Mitt rum" : "Se ditt hem innan du köper."; if (t && t.textContent !== want) t.textContent = want; } /* an empty room invites (2b) */
           const list = R.scene(), order = R.ordered(); let fresh = 0; const news = [];
           const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h;
           const lane = new Map(nw.slice().sort((a, b) => a.x - b.x).map((it, i) => [it.h, i])); // several land from left to right
@@ -1739,7 +1760,7 @@
     const q = $("#pickQ", picker).value.trim(), t = room && room.type;
     const inG = RQ.PRODUCTS.filter((p) => !pickG || groupOf(p) === pickG); let found = inG.filter((p) => !q || hit(p, q)); if (!found.length) found = inG.filter((p) => hit(p, q, true)); // exact words first; only when nothing is found do stems and one wrong letter count
     const list = found.map((p) => ({ p, m: match(p) })).sort((a, b) => (t ? p2(b.p, t) - p2(a.p, t) : 0) || (b.m || 0) - (a.m || 0));
-    $("#pickGrid", picker).innerHTML = list.length ? list.map(({ p, m }) => `<button type="button" data-room-btn="${p.handle}" aria-pressed="${R.inScene(p.handle)}"><span class="pg-cut"><img src="${RQ.cut(p)}" alt="" loading="lazy"></span><b>${esc(p.name)}</b><span>${kr(p.price)}${m >= 60 ? `<em> · ${m} % färgmatch</em>` : ""}</span><i aria-hidden="true"></i></button>`).join("")
+    $("#pickGrid", picker).innerHTML = list.length ? list.map(({ p, m }) => `<button type="button" data-room-btn="${p.handle}" aria-pressed="${R.inScene(p.handle)}"><span class="pg-cut"><img src="${RQ.cut(p)}" alt="" loading="lazy"></span><b>${esc(p.name)}</b><span>${kr(p.price)}${m >= 60 ? `<em> · ${m} % färgmatch</em>` : ""}</span><small class="pick-m">${measures(p) ? esc(measures(p)) : "Mått kommer"}</small><i aria-hidden="true"></i></button>`).join("")
       : `<p class="pick-none">Inget i sortimentet heter så. Prova ett annat ord eller välj en grupp här ovanför.</p>`;
   };
   const p2 = (p, t) => (p.rooms.includes(t) ? 1 : 0);
