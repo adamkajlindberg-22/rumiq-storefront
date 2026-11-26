@@ -42,8 +42,8 @@
      horizon h and the slope k. Rugs and curtains are [x, y, width, squash]. sun = the side the light comes from. */
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
-      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], // the side table ends at about 84.4; a mug stands at 75.6-79.3
-      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[62.4, 72.6, 17], [80, 72, 17]], bedding: [],
+      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], edge: [[71.3, 84.7, 68.5]], // the side table's top runs from 71.8 to 84.4; a mug stands at 75.6-79.3
+      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [80, 72, 17]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
       rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
@@ -133,7 +133,8 @@
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
     const busy = (x, y, w) => ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
-    const taken = (x, y, w, k) => busy(x, y, w) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
+    const overEdge = (x, y, w, k) => (k || kind) === "surface" && ((M && M.edge) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && (x - w * 0.4 < a || x + w * 0.4 > b)); // it would hang over the table's edge
+    const taken = (x, y, w, k) => busy(x, y, w) || overEdge(x, y, w, k) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
