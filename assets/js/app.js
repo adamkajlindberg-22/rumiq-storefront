@@ -56,7 +56,11 @@
      cart's button again when the cart closes): Safari on iOS draws one there, round or square (D9, X10). A key that moves the focus
      (Tab, the arrows, Escape, Enter or Space outside a text field) brings the rings back at once. */
   const INPUT = document.documentElement;
-  document.addEventListener("pointerdown", () => { INPUT.dataset.input = "pointer"; }, true);
+  const ptr = () => { INPUT.dataset.input = "pointer"; };
+  // a tap or click in any form (also taps a test service fakes): pointer, mouse and touch events, and a click that came from a pointer
+  ["pointerdown", "mousedown", "touchstart"].forEach((t) => document.addEventListener(t, ptr, { capture: true, passive: true }));
+  document.addEventListener("click", (e) => { if (e.detail > 0 || e.pointerType) ptr(); }, true);
+  if (matchMedia("(pointer:coarse)").matches) ptr(); // a touch screen starts without rings; a key that moves the focus brings them
   document.addEventListener("keydown", (e) => { const typing = e.target.matches && e.target.matches("input,textarea,select,[contenteditable]");
     if (/^(Tab|Arrow|Escape|Home|End|Page)/.test(e.key) || ((e.key === "Enter" || e.key === " ") && !typing)) delete INPUT.dataset.input; }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";

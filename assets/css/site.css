@@ -1017,6 +1017,8 @@ details.pw[open] summary::after{content:" −"}
   .dock a,.dock button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;border:0;background:none;text-decoration:none;color:var(--muted);font-size:.75rem;font-weight:600;position:relative;-webkit-tap-highlight-color:transparent;letter-spacing:0}
   .dock svg{width:1.4rem;height:1.4rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
   .dock .on{color:var(--ink)}
+  .dock a:focus-visible,.dock button:focus-visible{outline-offset:-4px;border-radius:16px;box-shadow:none} /* the ring stays inside the dock's rounded edge (D3) */
+  @supports not (width:1lh){.dock a:focus-visible,.dock button:focus-visible{outline-color:transparent;box-shadow:inset 0 0 0 2px var(--accent)}}
   /* you are here: the page's item is ink, a little bolder, with a short accent line under it */
   .dock a.on::after{content:"";position:absolute;left:50%;bottom:.28rem;width:1.3rem;height:3px;margin-left:-.65rem;border-radius:3px;background:var(--accent)}
   .dock a.on svg{stroke-width:2}
