@@ -278,6 +278,9 @@
   const download = async (v) => { try { saveFile(await labelled(v), `rumiq-ai-bild-${stamp()}${v.n > 1 ? "-v" + v.n : ""}.jpg`); } catch (e) { RQ.toast("Bilden gick inte att ladda ner. Försök igen."); } };
   // "Vad tycker du?" (was "Visa någon"): the before and after in one picture, through the phone's own share sheet when there is one
   const share = async (v, btn) => {
+    // "Vad tycker du?": the room's link on the page too (the partner can answer on it), beside the picture (device3 X2)
+    const H = RQ.hem, rid = (v && v.roomId) || (H && H.activeId && H.activeId()), hr = rid && H && H.room(rid);
+    if (hr && H.items(hr).length && H.linkNote) H.linkNote(H.askUrl(hr), btn);
     if (btn) btn.disabled = true;
     try {
       const blob = await pairBlob(v), file = new File([blob], "rumiq-fore-efter.jpg", { type: "image/jpeg" });

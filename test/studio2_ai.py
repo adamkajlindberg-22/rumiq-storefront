@@ -184,7 +184,7 @@ with sync_playwright() as p:
     ctx, pg, errs = new(b, False, 1280, 720)
     go(pg, "mitt-hem", 1000)
     ok(pg.evaluate("RQ.vault.where()") == "local", "[vault] today everything is local")
-    pg.evaluate("""() => { window.__up = []; RQ_CONFIG.studio.serverSync = true; RQ.ai.live = () => true; RQ.shop.signIn('t@e.se', 'T', 'email');
+    pg.evaluate("""() => { window.__up = []; RQ_CONFIG.studio.serverSync = true; RQ.ai.live = () => true; RQ.ai.account = () => true; RQ.shop.signIn('t@e.se', 'T', 'email');
       RQ.auth.client = () => ({ from: () => ({ upsert: async (rows) => { window.__up.push(...rows); return { error: null }; }, select: async () => ({ data: [], error: null }) }) }); }""")
     pg.evaluate("RQ.hem.create({ label: 'Hallen', type: 'hall' })"); pg.wait_for_timeout(1700)
     ok(pg.evaluate("RQ.vault.where()") == "account" and pg.evaluate("__up.some((r) => r.key === 'rumiq-home' && JSON.stringify(r.value).includes('Hallen'))"), "[vault] with the account live, a room is pushed to the account table")
@@ -365,6 +365,15 @@ with sync_playwright() as p:
           const full = RQ.hem.propose({ type: 'vardagsrum', style: 'skandinavisk' }), lis = d.querySelectorAll('.hem-prop-items li').length, tot = +d.querySelector('.hem-prop-sum b').innerText.replace(/\\D/g, ''), note = (d.querySelector('.hem-left') || {}).innerText || '';
           d.remove(); if (had) RQ.room.fits = had; else delete RQ.room.fits; return [lis, full.items.length, tot, full.total - RQ.byHandle(full.items[0].h).price, note]; })()""")
         ok(fit[0] == fit[1] - 1 and fit[2] == fit[3] and fit[4].startswith("1 sak får inte plats"), f"{tag} the proposal card offers only what fits (RQ.room.fits), says what is left out, with the right total (device2 A7): {fit}")
+        n0 = pg.evaluate("RQ.hem.rooms().filter((r) => r.type === 'kok').length")
+        for k in range(2):  # a proposal card seen again (a new visit to Svep or Sparat) never makes a second room of that type (device3 X3)
+            pg.evaluate("(() => { const d = document.createElement('div'); d.id = 'x3'; d.innerHTML = RQ.hem.slot({ type: 'kok', style: k ? 'klassisk' : 'skandinavisk' }); document.body.appendChild(d); d.querySelector('[data-hem-see]').click(); d.remove(); })()".replace("k ?", "%d ?" % k)); pg.wait_for_timeout(2200)
+        kok = pg.evaluate("RQ.hem.rooms().filter((r) => r.type === 'kok').map((r) => r.label)")
+        ok(len(kok) == max(1, n0) and "Ångra" in pg.evaluate(TOAST), f"{tag} a second proposal for the kitchen goes into the kitchen you have, with Ångra, never a silent second room (device3 X3): {kok}")
+        pg.evaluate("document.querySelector('#toast [data-hem-prop-undo]').click()"); pg.wait_for_timeout(1800)
+        ok(len(pg.evaluate("RQ.hem.rooms().filter((r) => r.type === 'kok')")) == max(1, n0) and "som förut" in pg.evaluate(TOAST), f"{tag} Ångra puts back what stood in the room")
+        if n0 == 0: pg.evaluate("RQ.hem.rooms().filter((r) => r.type === 'kok').forEach((r) => RQ.hem.remove(r.id))")
+        go(pg, "mitt-hem", 1200)
         sty = pg.evaluate("(() => { localStorage.setItem('rumiq-style', JSON.stringify({ style: 'klassisk', at: new Date().toISOString() })); const r = RQ.hem.create({ type: 'sovrum' }), p = RQ.hem.progress(r, 0); RQ.hem.remove(r.id); localStorage.removeItem('rumiq-style'); return [p.parts[0], p.next.act]; })()")
         ok(sty[0] == ["Stil: klassisk", True] and sty[1] != "style", f"{tag} a style found in Svep counts as the room's style in its progress (device2 A5): {sty}")
         # the one promise before sign-in: Mitt rum's card and the sign-in sheet say the same as Skapa ditt första rum
