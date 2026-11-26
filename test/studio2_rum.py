@@ -243,7 +243,7 @@ with sync_playwright() as p:
     pg.goto(BASE + "svep/"); pg.wait_for_timeout(800)
     r = pg.evaluate("RQ.room.openWith({ own: true, items: [{ h: 'glob-bordslampa-opalglas', v: 0 }, { h: 'sand-keramikvas', v: 0 }] })"); pg.wait_for_timeout(500)
     ok(r is False and pg.evaluate("document.querySelector('.roomsheet').classList.contains('open')"), "[own] openWith own: the room sheet opens")
-    pg.evaluate("document.querySelector('.roomsheet .sheet-acts label.cam').click()"); pg.wait_for_timeout(300)
+    pg.evaluate("document.querySelector('.roomsheet .sheet-acts :is(label, [data-pick-out]).cam:not([hidden])').click()"); pg.wait_for_timeout(300)
     ok(pg.evaluate(MODE) == "gate", "[own] and asks you to sign in for your own photo")
     pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')"); pg.evaluate("document.querySelector('.roomsheet [data-sheet-close]').click()"); pg.evaluate("RQ.room.openWith({ own: true, items: [{ h: 'glob-bordslampa-opalglas', v: 0 }, { h: 'sand-keramikvas', v: 0 }] })"); pg.wait_for_timeout(400)
     put(pg, "rum.jpg", picture(1400, 900)); pg.wait_for_timeout(2500)
@@ -312,6 +312,48 @@ with sync_playwright() as p:
     ok(pg.evaluate("RQ.room.get().type") == "hall" and not pg.evaluate("!!document.getElementById('rmAsk')"), "[own] M5 the room type comes along, no second question")
     pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900)
     ok(pg.evaluate("(document.querySelector('[data-sty][aria-pressed=true]') || {}).dataset.sty") == "skandinavisk" and pg.evaluate("RQ.room.scene().filter((i) => i.sg).length") >= 2, "[own] M5 and Inred åt mig starts in the style you chose")
+    c.close()
+
+    # device review R2: RQ.room.fits says what the editor will put in, so the proposal's count and total agree with the editor's
+    c = ctx_for(b, 390, 844, True); pg = new_page(c)
+    for rt in ("vardagsrum", "sovrum", "kok", "badrum"):
+        pg.goto(BASE + "mitt-hem/"); pg.wait_for_timeout(600)
+        its = pg.evaluate("(t) => RQ.hem.propose({ type: t }).items.concat([{ h: 'glod-doftljus-keramik', v: 0 }, { h: 'stilla-ljusstake-massing-2-pack', v: 0 }])", rt)
+        f = pg.evaluate("([its, t]) => RQ.room.fits(its, t)", [its, rt])
+        pg.evaluate("([its, t]) => RQ.room.openWith({ room: t, items: its })", [its, rt]); pg.wait_for_timeout(1500)
+        sc = pg.evaluate("RQ.room.scene().map((i) => i.h)"); tot = pg.evaluate("RQ.room.total()")
+        ok(sorted(sc) == sorted(i["h"] for i in f["fit"]) and f["count"] == len(sc) and f["total"] == tot and f["count"] + len(f["out"]) == len({i["h"] for i in its}), f"[fits {rt}] fits() names exactly what the editor puts in, with the same total: {f['count']} {f['total']} / {len(sc)} {tot}, out {[i['h'] for i in f['out']]}")
+    c.close()
+
+    # device review R3: a thing you swapped by hand stays when Inred åt mig makes a new proposal
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(400); quiet(pg)
+    pg.evaluate("RQ.room.openWith({ room: 'vardagsrum', items: RQ.hem.propose({ type: 'vardagsrum' }).items })"); pg.wait_for_timeout(1500); quiet(pg)
+    lamp = pg.evaluate("RQ.room.scene().find((i) => /lampa/.test(i.h)).h"); to = pg.evaluate("(h) => RQ.room.alternatives(h)[0].handle", lamp)
+    pg.evaluate("([a, b]) => RQ.room.swapWith(a, b)", [lamp, to]); pg.wait_for_timeout(400)
+    pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900); pg.evaluate("document.getElementById('rmSgAgain').click()"); pg.wait_for_timeout(900)
+    ok(pg.evaluate("(h) => RQ.room.inScene(h)", to), f"[R3] the lamp you swapped in by hand ({to}) stays through Inred åt mig")
+    c.close()
+
+    # device review R4: a thing with one colour says so in Byt (lamps and the throw have one colour in the range)
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); editor(pg, ["lysa-keramiklampa", "lin-kuddfodral"])
+    pg.evaluate("RQ.room.openSwap('lysa-keramiklampa')"); pg.wait_for_timeout(500)
+    ok("Finns i en färg" in pg.evaluate("document.getElementById('rmSwap').innerText") and not pg.evaluate("!!document.querySelector('#rmSwap [data-swv]')"), "[R4] Byt on a one-colour lamp says it comes in one colour")
+    pg.evaluate("RQ.room.openSwap('lin-kuddfodral')"); pg.wait_for_timeout(500)
+    ok(pg.evaluate("document.querySelectorAll('#rmSwap [data-swv]').length") == 2, "[R4] and a cushion cover shows its two colours")
+    c.close()
+
+    # device review R5: Prova i Mitt rum from a product page goes into your active room, and takes the place of one of its sort
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-hem/"); pg.wait_for_timeout(600); quiet(pg)
+    pid = pg.evaluate("(() => { const r = RQ.hem.create ? RQ.hem.create({ type: 'vardagsrum', name: 'Vardagsrummet' }) : null; return r && (r.id || r); })()")
+    its = pg.evaluate("RQ.hem.propose({ type: 'vardagsrum' }).items")
+    pg.evaluate("([id, its]) => { RQ.hem.patch(id, { items: its }); return RQ.room.openWith({ room: 'vardagsrum', items: its, project: id }); }", [pid, its]); pg.wait_for_timeout(1500)
+    pg.evaluate("(() => { const im = new Image(); im.src = 'assets/img/rum/sovrum-1600.webp'; return new Promise((ok) => { im.onload = () => RQ.room.saveImage(im, { sample: true, map: 'sovrum', type: 'sovrum', name: 'Sovrum', src: 'assets/img/rum/sovrum-1600.webp' }).then(ok); }); })()"); pg.wait_for_timeout(800)
+    pg.evaluate("(id) => RQ.hem.setActive(id)", pid)
+    pg.goto(BASE + "produkt-lysa-keramiklampa/"); pg.wait_for_timeout(1000); quiet(pg)
+    pg.evaluate("document.querySelector('.roomcta').click()"); pg.wait_for_timeout(3000)
+    sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || ''])")
+    ok(pg.evaluate("RQ.room.get().map") == "vardagsrum" and any(h == "lysa-keramiklampa" and on != "floor" for h, on in sc), f"[R5] the lamp goes into your active room (the living room), on the table: {sc}")
+    ok(len([h for h, _ in sc if "lampa" in h]) == 1 and "står där" in pg.evaluate(TOAST_ALL if 'TOAST_ALL' in dir() else "[...document.querySelectorAll('.toast')].map((t) => t.textContent).join(' ')"), f"[R5] and takes the place of the lamp that stood there, and says so")
     c.close()
 
     b.close()

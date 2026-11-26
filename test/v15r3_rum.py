@@ -220,8 +220,9 @@ with sync_playwright() as p:
     pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(700)
     pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(400)
     ok(pg.evaluate("document.querySelectorAll('.sheet.open [data-room-sample]').length") == 7, "[D22] all seven sample rooms are in the setup sheet")
-    pg.focus(".sheet.open label.btn:not(.cam) input[data-room-file]"); pg.keyboard.press("Shift+Tab"); pg.keyboard.press("Tab"); pg.wait_for_timeout(100)
-    ok(pg.evaluate("getComputedStyle(document.activeElement.parentElement).outlineStyle") == "solid", "[D8] Välj en bild shows a focus ring")
+    # signed out, Välj en bild is a button that opens the sign-in gate (device review R1); its focus ring is its own
+    pg.focus(".sheet.open [data-pick-out]:not(.cam)"); pg.keyboard.press("Shift+Tab"); pg.keyboard.press("Tab"); pg.wait_for_timeout(100)
+    ok(pg.evaluate("(() => { const a = document.activeElement, e = a.matches('input') ? a.parentElement : a; return getComputedStyle(e).outlineStyle; })()") == "solid", "[D8] Välj en bild shows a focus ring")
     c.close()
     for room in ("badrum", "hemmakontor", "uteliv"):
         c, pg = room_page(b, 1440, 900, False, room=room)
@@ -270,7 +271,7 @@ with sync_playwright() as p:
         tag = f"[AI {W}]"
         c, pg = room_page(b, W, Hh, mob, room="sovrum", items=("lysa-keramiklampa", "plad-ullblandning-havre"))
         pg.evaluate("RQ.openAI()"); pg.wait_for_timeout(1500)
-        pg.evaluate("document.querySelector('.ai-body a.btn[data-after]:not(.ghost)').click()"); pg.wait_for_timeout(1000)
+        pg.evaluate("document.querySelector('.ai-body a[data-after]:not(.ghost)').click()")  # (device2 A1: a guest sees the preview demo, with Logga in beside it); pg.wait_for_timeout(1000)
         pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email'); location.hash = '#mitt-rum'"); pg.wait_for_timeout(1800)
         ok(pg.evaluate("document.getElementById('aiSheet').classList.contains('open')"), f"{tag} back in Mitt rum after signing in, the AI sheet opens again")
         pg.evaluate("localStorage.setItem('rumiq-ai-consent', JSON.stringify('x')); RQ.openAI()"); pg.wait_for_timeout(1600)

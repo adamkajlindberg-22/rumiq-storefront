@@ -44,7 +44,8 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--nav-h) + 1rem);scroll-padding-bottom:calc(var(--dock-h) + 1.5rem)}
+html{background:var(--bg);-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--nav-h) + 1rem);scroll-padding-bottom:calc(var(--dock-h) + 1.5rem)}
+/* the root itself carries the page colour (p4): Safari tints the strip behind its floating bars from it, so Kväll reaches there too */
 html:has(.buybar.show),html:has(body.on-room .rm-bar){scroll-padding-bottom:calc(5.5rem + env(safe-area-inset-bottom))}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.6;font-weight:400;letter-spacing:-.003em;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;overflow-x:clip;font-feature-settings:"ss01","cv11";
@@ -52,11 +53,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1.0
 img,svg,video,canvas{display:block;max-width:100%}
 a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
 i{font-style:normal} /* <i> only holds icons and small marks here; without this the browser fetches the italic font for them */
-button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button,input,select,textarea{font:inherit;font-feature-settings:inherit;font-variant-numeric:inherit;color:inherit;letter-spacing:inherit} /* the same digits in a field as in the text (Safari's own field style must not win, p3) */
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 /* the ring is two-tone: a band of the page colour under the accent line, so it shows on photos and dark surfaces too */
 :focus-visible:not([tabindex="-1"]){box-shadow:0 0 0 3px var(--bg)}
+/* Safari before 16.4 draws an outline as a square box round a round button: there the ring is a shadow that follows the
+   corners, the same two tones (lh came in the same Safari; browsers with rounded outlines but no lh get the same look) */
+@supports not (width:1lh){:focus-visible:not([tabindex="-1"]){outline-color:transparent;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent)}}
+.quiet-focus:focus-visible{outline-color:transparent!important;box-shadow:none!important} /* focused by the page right after a tap (app.js): no ring, as newer browsers do */
 ::selection{background:var(--glow);color:#22252A}
 .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .noscript{position:fixed;z-index:60;top:calc(var(--nav-h) + .6rem);left:50%;transform:translateX(-50%);width:max-content;max-width:min(92vw,36rem);margin:0;padding:.7rem 1.1rem;border-radius:12px;background:#2B2C2A;color:#F7F7F4;font-size:.92rem;line-height:1.4;box-shadow:0 8px 30px rgba(0,0,0,.18)}
@@ -87,15 +92,15 @@ a.eyebrow:hover{color:var(--ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;border:1px solid var(--ink);text-decoration:none;white-space:normal;text-wrap:balance;text-align:center;
   background:var(--fill);color:var(--on-fill);border-color:var(--fill);min-height:3.25rem;padding:.35rem 1.6rem;border-radius:var(--r-btn);font-weight:560;font-size:.98rem;letter-spacing:-.01em;
   transition:background .35s var(--ease),color .35s var(--ease),border-color .35s,transform .2s var(--ease);position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
-.btn:hover{background:color-mix(in srgb,var(--fill) 86%,var(--accent))}
+.btn:hover{background:var(--fill);background:color-mix(in srgb,var(--fill) 86%,var(--accent))}
 .btn:active{transform:scale(.985)}
 .btn:disabled,.btn[aria-disabled=true]{opacity:.4;pointer-events:none}
 .btn .dot{display:none}
-.btn.ghost{background:transparent;color:var(--ink);border-color:color-mix(in srgb,var(--ink) 35%,transparent)}
-.btn.ghost:hover{border-color:var(--ink);background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--field);border-color:color-mix(in srgb,var(--ink) 35%,transparent)}
+.btn.ghost:hover{border-color:var(--ink);background:var(--line2);background:color-mix(in srgb,var(--ink) 5%,transparent)}
 .btn.light{background:var(--paper);color:var(--ink);border-color:var(--paper)}
 .btn.champ,.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.champ:hover,.btn.accent:hover{background:color-mix(in srgb,var(--accent) 88%,var(--ink))}
+.btn.champ:hover,.btn.accent:hover{background:var(--accent);background:color-mix(in srgb,var(--accent) 88%,var(--ink))}
 .btn.sm{min-height:2.5rem;padding:0 1rem;font-size:.88rem}
 .btn.block{width:100%}
 .btn.done{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -105,7 +110,7 @@ a.eyebrow:hover{color:var(--ink)}
 .tlink{background:none;border:0;padding:0;min-height:1.5rem;color:var(--ink);font-weight:500;text-decoration:underline;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent);transition:text-decoration-color .3s}
 .tlink:hover{text-decoration-color:var(--ink)}
 .iconbtn{display:inline-grid;place-items:center;width:2.75rem;height:2.75rem;border-radius:50%;border:0;background:transparent;position:relative;transition:background .3s;text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
-.iconbtn:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.iconbtn:hover{background:var(--line2);background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .iconbtn svg{width:1.3rem;height:1.3rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .badge{position:absolute;top:.35rem;right:.25rem;min-width:1.1rem;height:1.1rem;padding:0 .28rem;border-radius:999px;background:var(--ink);color:var(--bg);font-size:.66rem;font-weight:650;display:grid;place-items:center;line-height:1;font-variant-numeric:tabular-nums}
 .badge:empty,.badge[data-n="0"]{display:none}
@@ -120,7 +125,7 @@ a.eyebrow:hover{color:var(--ink)}
 /* ---------------------------------------------------------------- header */
 .topbar{display:none}
 .nav{position:fixed;inset:0 0 auto 0;z-index:60;color:var(--ink);transition:background .5s var(--ease),color .5s var(--ease),box-shadow .5s var(--ease),transform .45s var(--ease)}
-.nav.solid,.nav.open{background:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15);box-shadow:0 1px 0 var(--line2)}
+.nav.solid,.nav.open{background:var(--bg);background:color-mix(in srgb,var(--bg) 84%,transparent);backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15);box-shadow:0 1px 0 var(--line2)}
 .nav-in{width:var(--wrap);margin:0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:var(--nav-h);gap:1rem}
 .nav-logo{justify-self:start;display:block}
 .nav-logo img{height:1.5rem;width:auto}
@@ -135,12 +140,12 @@ a.eyebrow:hover{color:var(--ink)}
 .menu svg{width:.7rem;height:.7rem;fill:none;stroke:currentColor;stroke-width:1.6;transition:transform .4s var(--ease)}
 .menu [aria-expanded=true] svg{transform:rotate(180deg)}
 .tools{justify-self:end;display:flex;align-items:center;gap:.1rem}
-.searchbtn{display:inline-flex;align-items:center;gap:.55rem;border:1px solid var(--line);background:color-mix(in srgb,var(--paper) 60%,transparent);border-radius:999px;height:2.5rem;padding:0 .9rem 0 .75rem;margin-right:.4rem;color:var(--muted);font-size:.9rem;transition:border-color .3s,color .3s}
+.searchbtn{display:inline-flex;align-items:center;gap:.55rem;border:1px solid var(--line);background:var(--paper);background:color-mix(in srgb,var(--paper) 60%,transparent);border-radius:999px;height:2.5rem;padding:0 .9rem 0 .75rem;margin-right:.4rem;color:var(--muted);font-size:.9rem;transition:border-color .3s,color .3s}
 .searchbtn:hover{border-color:var(--ink);color:var(--ink)}
 .searchbtn svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .searchbtn kbd{font:inherit;font-size:.75rem;border:1px solid var(--line);border-radius:4px;padding:0 .3rem;margin-left:.6rem}
 .lang{font-size:.82rem;font-weight:600;border:0;background:transparent;padding:.5rem .6rem;border-radius:999px;color:inherit}
-.lang:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.lang:hover{background:var(--line2);background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .burger{display:none}
 /* on the home hero the bar sits on the photograph */
 /* a soft veil keeps logo and icons readable on every frame of the film (the top right starts on a dark curtain) */
@@ -185,7 +190,7 @@ a.eyebrow:hover{color:var(--ink)}
 .mnav{position:fixed;inset:0;z-index:150;background:var(--bg);color:var(--ink);transform:translateY(100%);transition:transform .55s var(--ease),visibility 0s .55s;visibility:hidden;overflow:auto;overscroll-behavior:contain;padding:0 var(--gutter) calc(2.5rem + env(safe-area-inset-bottom))}
 .mnav.open{transform:none;visibility:visible;transition:transform .55s var(--ease)}
 /* the logo and the close button stay put; language and light come first, every row is a full finger high */
-.mnav-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;height:var(--nav-h);margin:0 calc(-1 * var(--gutter));padding:0 calc(var(--gutter) - .4rem) 0 var(--gutter);background:var(--bg);border-bottom:1px solid var(--line2)}
+.mnav-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;height:var(--nav-h);margin:0 calc(-1 * var(--gutter));padding:0 var(--gutter);background:var(--bg);border-bottom:1px solid var(--line2)}
 .mnav .close{background:none}
 .mnav-set{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.1rem}
 .mnav h4{font-size:.88rem;font-weight:500;color:var(--muted);margin:1.5rem 0 .2rem}
@@ -279,7 +284,6 @@ main{min-height:60vh}
 .card .price{font-size:.98rem;font-weight:500;white-space:nowrap}
 .card .sub{display:flex;align-items:center;gap:.6rem;margin-top:.25rem;color:var(--muted);font-size:.85rem}
 .card-why{margin-top:.3rem;color:var(--accent);font-size:.8rem;font-weight:560;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} /* svep2: a true reason, on lists made for you */
-.card .card-more{margin-top:.2rem;min-height:44px;font-size:.85rem;text-align:left}
 .card .swatches{display:flex;gap:.25rem}
 .card .swatches i{width:.65rem;height:.65rem;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
 .card .tag,.card .quick{display:none}
@@ -410,7 +414,7 @@ main{min-height:60vh}
 .pm::before,.pm::after{content:"";position:absolute;left:50%;top:50%;width:.8rem;height:1.5px;background:currentColor;transform:translate(-50%,-50%)}
 .pm::after{transform:translate(-50%,-50%) rotate(90deg);transition:transform .45s var(--ease)}
 details[open] > summary .pm::after{transform:translate(-50%,-50%) rotate(0)}
-.buybar{position:fixed;left:0;right:0;bottom:0;z-index:70;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.7rem max(var(--gutter), calc((100vw - 1360px)/2)) calc(.7rem + env(safe-area-inset-bottom));transform:translateY(110%);visibility:hidden;transition:transform .45s var(--ease),visibility 0s .45s}
+.buybar{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--paper);background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.7rem max(var(--gutter), calc((100vw - 1360px)/2)) calc(.7rem + env(safe-area-inset-bottom));transform:translateY(110%);visibility:hidden;transition:transform .45s var(--ease),visibility 0s .45s}
 .buybar.show{transform:none;visibility:visible;transition:transform .45s var(--ease)}
 /* the buy bar waits while the cookie choice is open, and steps aside on very low screens (a phone on its side): the page's own buy button is there */
 html:has(.cookie.show) .buybar.show:not(.rm-bar){transform:translateY(110%);visibility:hidden}
@@ -608,6 +612,7 @@ textarea{padding-block:.85rem}
 input::placeholder,textarea::placeholder{color:var(--muted)}
 input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 2px var(--bg)}
+@supports not (width:1lh){input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}}
 .status{font-size:.92rem;color:var(--accent);min-height:1.2em}
 .err{color:var(--danger)}
 .check{display:flex;gap:.7rem;align-items:flex-start;color:var(--ink2);font-size:.96rem;font-weight:400}
@@ -701,10 +706,22 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
   .drawer footer{gap:.55rem;padding-top:.9rem}
   .drawer footer .cart-room{border:0;background:none;padding:0;min-height:2.75rem;height:auto;font-weight:500;text-decoration:underline;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent);margin-bottom:-.5rem}
 }
+/* a short screen (iPhone SE: 548 px): the sums scroll with the things in the cart, only Till kassan stays in reach at the bottom */
+@media (max-height:700px){
+  #cart.drawer{overflow-y:auto;overscroll-behavior:contain}
+  #cart.drawer > *{flex-shrink:0}
+  #cart header{position:sticky;top:0;z-index:2;background:var(--paper)}
+  #cart .body{flex:none;overflow:visible}
+  #cart footer{display:contents}
+  #cart footer > *{margin:0 1.4rem .55rem;width:auto}
+  #cart footer > :first-child{border-top:1px solid var(--line2);margin-top:0;padding-top:.9rem}
+  #cart footer > .btn:not(.ghost){position:sticky;bottom:calc(.6rem + env(safe-area-inset-bottom));z-index:1;box-shadow:0 0 0 .8rem var(--paper)}
+  #cart footer > :last-child{margin-bottom:calc(1rem + env(safe-area-inset-bottom))}
+}
 .sum{display:flex;justify-content:space-between;font-size:.95rem}
 .sum.small{font-size:.88rem}
 .sum.total{font-size:1.1rem;font-weight:600;padding-top:.5rem;border-top:1px solid var(--line)}
-.search{position:fixed;inset:0;z-index:110;background:color-mix(in srgb,var(--bg) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:var(--ink);opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility 0s .35s;overflow:auto;overscroll-behavior:contain}
+.search{position:fixed;inset:0;z-index:110;background:var(--bg);background:color-mix(in srgb,var(--bg) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:var(--ink);opacity:0;visibility:hidden;transition:opacity .35s var(--ease),visibility 0s .35s;overflow:auto;overscroll-behavior:contain}
 .search.open{opacity:1;visibility:visible;transition:opacity .35s var(--ease)}
 .search .wrap{padding:0 0 5rem}
 /* the field and the close button stay at the top while the hits scroll under them */
@@ -721,6 +738,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .search input{font-size:clamp(1.7rem,4.2vw,3.2rem);font-weight:500;letter-spacing:-.035em;border:0!important;border-radius:0;background:transparent!important;padding:.4rem 0;box-shadow:none!important}
 /* the field is an underline: focus makes it a thicker green line (no box inside the line) */
 .search .sfield{transition:border-color .2s}
+#searchRes [tabindex="-1"]:focus{outline:0}
 .search .sfield:focus-within{border-bottom:3px solid var(--accent);padding-bottom:calc(.4rem - 2px)}
 .search input:focus-visible{outline:0}
 /* the hit that Enter opens */
@@ -792,7 +810,7 @@ footer.site .co + .ai{margin-top:.4rem}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--sunk);border-radius:var(--r-s);padding:.25rem;margin-bottom:1.5rem}
 .seg a{text-align:center;text-decoration:none;padding:.6rem;border-radius:6px;font-size:.94rem;font-weight:500;color:var(--muted);transition:background .3s,color .3s}
 .seg a[aria-selected=true]{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-:root[data-light=kvall] .seg a[aria-selected=true]{background:color-mix(in srgb,var(--ink) 16%,var(--paper))} /* the chosen tab stands out also at night */
+:root[data-light=kvall] .seg a[aria-selected=true]{background:var(--paper);background:color-mix(in srgb,var(--ink) 16%,var(--paper))} /* the chosen tab stands out also at night */
 .sso-list{display:grid;gap:.55rem}
 .sso{display:flex;align-items:center;justify-content:center;gap:.7rem;width:100%;border:1px solid var(--line);background:#fff;color:#1f1f1f;border-radius:var(--r-btn);min-height:3.1rem;padding:0 1rem;font-size:.97rem;font-weight:560;transition:border-color .3s}
 .sso:hover{border-color:#6c6e6b}
@@ -844,6 +862,7 @@ details.pw[open] summary::after{content:" −"}
 .switch input:checked + span{background:var(--accent)}
 .switch input:checked + span::after{transform:translateX(1.1rem)}
 .switch input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+@supports not (width:1lh){.switch input:focus-visible + span{outline-color:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}}
 .listtabs{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1.6rem}
 .listhead{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.4rem}
 
@@ -990,7 +1009,7 @@ details.pw[open] summary::after{content:" −"}
   footer.site .assure{grid-template-columns:1fr;gap:1rem}
   footer.site .cols{grid-template-columns:1fr 1fr}
   /* dock */
-  .dock{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:.6rem;right:.6rem;bottom:calc(.6rem + env(safe-area-inset-bottom));z-index:80;height:var(--dock-h);background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1px solid var(--line2);border-radius:18px;box-shadow:0 18px 40px -22px rgba(0,0,0,.45);transition:transform .45s var(--ease)}
+  .dock{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:.6rem;right:.6rem;bottom:calc(.6rem + env(safe-area-inset-bottom));z-index:80;height:var(--dock-h);background:var(--paper);background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1px solid var(--line2);border-radius:18px;box-shadow:0 18px 40px -22px rgba(0,0,0,.45);transition:transform .45s var(--ease)}
   .dock a,.dock button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;border:0;background:none;text-decoration:none;color:var(--muted);font-size:.75rem;font-weight:600;position:relative;-webkit-tap-highlight-color:transparent;letter-spacing:0}
   .dock svg{width:1.4rem;height:1.4rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
   .dock .on{color:var(--ink)}
@@ -1036,6 +1055,8 @@ details.pw[open] summary::after{content:" −"}
   @media (prefers-reduced-motion:reduce){.static .stage .first{object-position:72% 50%}}
   .static .band.settle{top:auto;bottom:calc(2rem + var(--dock-h));transform:none;animation:fadeUp 1.2s var(--ease) both .15s}
 }
+/* a short phone (iPhone SE: 548 px between Safari's bars): the start picture is the screen, not taller, so both buttons are above the dock */
+@media (max-width:820px) and (max-height:640px) and (orientation:portrait){.static .stage{min-height:28rem}.band.settle h1{font-size:2.6rem}.band.settle .sub{margin:1rem 0 1.3rem;font-size:1rem}}
 @media (max-width:640px){
   .grid,.cols3,.mag-grid,.grid.three{grid-template-columns:1fr 1fr;gap:2rem .7rem}
   .mag-grid{grid-template-columns:1fr}
@@ -1070,7 +1091,7 @@ details.pw[open] summary::after{content:" −"}
   .pcr .crumbs{flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
   .pcr .crumbs li:last-child{display:none}
   .pdp{padding-top:.7rem}
-  .pg-item,.pg-item:first-child,.pg-item.wide,.pg-item:nth-child(even):last-child{grid-column:auto;aspect-ratio:1/1;max-height:50svh} /* in the swipe row no slide spans: a spanning last slide would be placed first */
+  .pg-item,.pg-item:first-child,.pg-item.wide,.pg-item:nth-child(even):last-child{grid-column:auto;aspect-ratio:auto;height:min(100vw,50vh);height:min(100vw,50svh)} /* in the swipe row no slide spans: a spanning last slide would be placed first. A square, at most half the screen tall: a set height, since Safari 15 turns max-height with aspect-ratio into a narrower slide (D2) */
   .pg-dots{margin-top:.6rem}
   .pinfo .eyebrow{font-size:.84rem}
   .pinfo h1{font-size:1.75rem;margin:.3rem 0 .5rem}
@@ -1098,7 +1119,7 @@ details.pw[open] summary::after{content:" −"}
 /* ================================================================ Mitt rum */
 /* header pill */
 .roompill{display:inline-flex;align-items:center;white-space:nowrap;flex:none;gap:.5rem;height:2.5rem;padding:0 .8rem 0 .3rem;margin-right:.45rem;border-radius:999px;background:var(--fill);color:var(--on-fill);text-decoration:none;font-size:.9rem;font-weight:600;position:relative;transition:background .3s}
-.roompill:hover{background:color-mix(in srgb,var(--fill) 85%,var(--accent))}
+.roompill:hover{background:var(--fill);background:color-mix(in srgb,var(--fill) 85%,var(--accent))}
 .rp-img{width:1.9rem;height:1.9rem;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 18%,transparent)}
 .rp-img img{width:100%;height:100%;object-fit:cover}
 .rp-img svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.6}
@@ -1107,10 +1128,10 @@ details.pw[open] summary::after{content:" −"}
 :root[data-light=kvall] .roompill .rp-img{background:rgba(25,26,24,.18)}
 
 /* dock: the room sits in the middle */
-.dock-room .dr-img{width:2.3rem;height:2.3rem;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--fill);color:var(--on-fill);margin-top:-1.1rem;box-shadow:0 0 0 4px color-mix(in srgb,var(--paper) 92%,transparent),0 8px 18px -8px rgba(0,0,0,.45)}
+.dock-room .dr-img{width:2.3rem;height:2.3rem;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--fill);color:var(--on-fill);margin-top:-1.1rem;box-shadow:0 0 0 4px var(--paper),0 8px 18px -8px rgba(0,0,0,.45);box-shadow:0 0 0 4px color-mix(in srgb,var(--paper) 92%,transparent),0 8px 18px -8px rgba(0,0,0,.45)}
 .dock-room .dr-img img{width:100%;height:100%;object-fit:cover}
 .dock-room .dr-img svg{width:1.15rem!important;height:1.15rem!important}
-.dock-room.on .dr-img{box-shadow:0 0 0 4px color-mix(in srgb,var(--paper) 92%,transparent),0 0 0 6px var(--accent)}
+.dock-room.on .dr-img{box-shadow:0 0 0 4px var(--paper),0 0 0 6px var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--paper) 92%,transparent),0 0 0 6px var(--accent)}
 .dock .dock-room .badge{top:-.6rem;right:calc(50% - 1.75rem);background:var(--glow);color:#22252A}
 body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));visibility:hidden;transition:transform .45s var(--ease),visibility 0s .45s}
 
@@ -1122,7 +1143,7 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 .tb-r{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
 
 /* product page */
-.roomcta{display:flex;align-items:center;gap:.9rem;width:100%;margin-top:1.1rem;padding:.75rem .9rem .75rem .75rem;border:1px solid var(--line);border-radius:var(--r);background:color-mix(in srgb,var(--paper) 55%,transparent);text-decoration:none;color:var(--ink);text-align:left;transition:background .3s}
+.roomcta{display:flex;align-items:center;gap:.9rem;width:100%;margin-top:1.1rem;padding:.75rem .9rem .75rem .75rem;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);background:color-mix(in srgb,var(--paper) 55%,transparent);text-decoration:none;color:var(--ink);text-align:left;transition:background .3s}
 .roomcta:hover{border-color:var(--ink);background:var(--paper)}
 .roomcta .rc-img{width:3.4rem;height:3.4rem;border-radius:6px;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--sunk)}
 .roomcta .rc-img img{width:100%;height:100%;object-fit:cover}
@@ -1151,7 +1172,7 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 /* a button that is a label around a hidden file input (Ta en bild, Välj en bild): the ring shows on the button */
 label.btn:has(> input.sr:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
 .sheet-samples{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;align-items:start}
-.sheet-err{margin-top:.9rem;padding:.7rem .9rem;border-radius:var(--r-s);background:color-mix(in srgb,var(--danger) 9%,var(--paper));border:1px solid color-mix(in srgb,var(--danger) 35%,transparent);color:var(--ink);font-weight:500;font-size:.95rem}
+.sheet-err{margin-top:.9rem;padding:.7rem .9rem;border-radius:var(--r-s);background:var(--paper);background:color-mix(in srgb,var(--danger) 9%,var(--paper));border:1px solid color-mix(in srgb,var(--danger) 35%,transparent);color:var(--ink);font-weight:500;font-size:.95rem}
 .sheet-err[hidden]{display:none}
 .sheet-card.drop{outline:2px dashed var(--accent);outline-offset:-10px}
 .sheet-tip[hidden]{display:none}
@@ -1160,11 +1181,11 @@ label.btn:has(> input.sr:focus-visible){outline:2px solid var(--accent);outline-
 .sheet-samples button:hover img{opacity:.85}
 .sheet-priv{display:flex;gap:.5rem;align-items:center;margin-top:1.4rem}
 .sheet-priv svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.6;flex:none}
-.sheet-busy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:.7rem;background:color-mix(in srgb,var(--paper) 88%,transparent);font-weight:600;border-radius:inherit}
+.sheet-busy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:.7rem;background:var(--paper);background:color-mix(in srgb,var(--paper) 88%,transparent);font-weight:600;border-radius:inherit}
 /* the room sheet: a word about a dark or small photo, and signing in before your own photo goes in */
 .roomsheet h2{text-wrap:balance}
 .roomsheet h2:focus{outline:none}
-.sheet-hello{display:flex;align-items:center;gap:.5rem;width:fit-content;max-width:calc(100% - 3rem);margin:0 0 .9rem;padding:.45rem .8rem .45rem .6rem;border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,var(--paper));color:var(--accent);font-weight:600;font-size:.9rem;line-height:1.3}
+.sheet-hello{display:flex;align-items:center;gap:.5rem;width:fit-content;max-width:calc(100% - 3rem);margin:0 0 .9rem;padding:.45rem .8rem .45rem .6rem;border-radius:999px;background:var(--paper);background:color-mix(in srgb,var(--accent) 10%,var(--paper));color:var(--accent);font-weight:600;font-size:.9rem;line-height:1.3}
 .sheet-hello::before{content:"";width:1rem;height:1rem;flex:none;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/contain no-repeat}
 .sheet-hello[hidden],.sheet-check[hidden],.sheet-gate[hidden],.sheet-wait[hidden],.sheet-main[hidden],.sheet-sso[hidden]{display:none}
 .sheet-check{margin-top:1.3rem}
@@ -1290,7 +1311,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-sugg-left{margin-top:.3rem;color:var(--ink2)}
 .rm-sugg-left b{font-weight:600}
 .rm-sugg .tlink{margin-top:.3rem;min-height:2.75rem;display:inline-flex;align-items:center}
-.rm-projs{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;margin:.4rem 0 .2rem}
+.rm-projs{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;margin:.4rem 0 .2rem;padding-block:.4rem;margin-block:0 -.2rem} /* room for the keyboard ring above and below (D10) */
 .rm-projs::-webkit-scrollbar{display:none}
 .rm-projs .chip{flex:none;min-height:2.6rem;display:inline-flex;align-items:center;gap:.35rem}
 .rm-projs .chip[aria-pressed=true]{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
@@ -1384,7 +1405,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rh-item{position:absolute;transform:translate(-50%,-100%)}
 .rh-item img{width:100%}
 .rh-item::after{content:"";position:absolute;left:8%;right:8%;bottom:-3%;height:9%;background:radial-gradient(closest-side,rgba(0,0,0,.32),transparent);z-index:-1}
-.rh-card{position:absolute;right:1rem;bottom:1rem;display:flex;align-items:center;gap:1rem;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:var(--r-s);padding:.6rem .6rem .6rem 1rem;box-shadow:var(--shadow)}
+.rh-card{position:absolute;right:1rem;bottom:1rem;display:flex;align-items:center;gap:1rem;background:var(--paper);background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:var(--r-s);padding:.6rem .6rem .6rem 1rem;box-shadow:var(--shadow)}
 .rh-card > span{display:grid;line-height:1.3}
 .rh-card b{font-weight:600}
 .rh-card > span span{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums}
@@ -1431,6 +1452,8 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 }
 .card{container-type:inline-size}
 .card .qadd{bottom:auto;top:calc(125cqw - 3rem)}
+/* Safari before 16 has no container units: the same place from the card's width (a margin in % is a share of the width) */
+@supports not (top:1cqw){.card .qadd,.card .qv{top:0;margin-top:calc(125% - 3rem)}}
 
 .rm-tool.on{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
 @media (max-width:900px){
@@ -1458,7 +1481,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 @keyframes fadeOut5{to{opacity:0}}
 
 /* fly to cart */
-.flyer{position:fixed;z-index:400;object-fit:contain;pointer-events:none;border-radius:12px;background:color-mix(in srgb,var(--paper) 70%,transparent);box-shadow:0 18px 40px -18px rgba(0,0,0,.45);will-change:transform}
+.flyer{position:fixed;z-index:400;object-fit:contain;pointer-events:none;border-radius:12px;background:var(--paper);background:color-mix(in srgb,var(--paper) 70%,transparent);box-shadow:0 18px 40px -18px rgba(0,0,0,.45);will-change:transform}
 
 /* quick view on cards */
 .card .qv{position:absolute;left:.6rem;top:calc(125cqw - 3rem);z-index:2;display:inline-flex;align-items:center;gap:.4rem;height:2.4rem;padding:0 .85rem;border:0;border-radius:999px;background:rgba(247,247,244,.92);color:#22252A;font-size:.85rem;font-weight:600;opacity:0;transform:translateY(6px);transition:opacity .35s var(--ease),transform .35s var(--ease)}
@@ -1481,9 +1504,9 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .sheet.open{pointer-events:auto}
 .sheet.open .sheet-scrim{opacity:1}
 .sheet.open .sheet-in{transform:none}
-.sheet-grab{position:sticky;top:0;z-index:3;height:1.6rem;display:grid;place-items:center;touch-action:none;margin-bottom:-1.6rem}
-.sheet-grab span{width:2.6rem;height:.3rem;border-radius:9px;background:color-mix(in srgb,var(--ink) 25%,transparent)}
-.sheet-x{position:absolute;top:.7rem;right:.7rem;z-index:4;background:color-mix(in srgb,var(--paper) 85%,transparent);backdrop-filter:blur(8px)}
+.sheet-grab{position:relative;top:0;z-index:3;height:1.6rem;display:grid;place-items:center;touch-action:none;margin-bottom:-1.6rem} /* it scrolls away with the sheet: no handle floating over the text (D10) */
+.sheet-grab span{width:2.6rem;height:.3rem;border-radius:9px;background:var(--line);background:color-mix(in srgb,var(--ink) 25%,transparent)}
+.sheet-x{position:absolute;top:.7rem;right:.7rem;z-index:4;background:var(--paper);background:color-mix(in srgb,var(--paper) 85%,transparent);backdrop-filter:blur(8px)}
 .sheet-x svg{width:1.2rem;height:1.2rem}
 .sh-img{background:var(--img-bg);aspect-ratio:5/4;overflow:hidden}
 .sh-img img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1512,7 +1535,7 @@ html.sheet-lock{overflow:hidden}
 }
 
 /* ---------------------------------------------------------------- Leveranskoll */
-.lk{border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;margin:.9rem 0 .2rem;background:color-mix(in srgb,var(--paper) 55%,transparent)}
+.lk{border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;margin:.9rem 0 .2rem;background:var(--paper);background:color-mix(in srgb,var(--paper) 55%,transparent)}
 .lk-h{font-size:.84rem;font-weight:600;color:var(--muted);margin-bottom:.8rem}
 .lk ol{list-style:none;display:grid;grid-template-columns:auto auto 1fr;gap:.6rem 1.4rem;position:relative}
 .lk ol::before{content:"";position:absolute;left:.45rem;right:16%;top:.42rem;height:1px;background:var(--line)}
@@ -1582,7 +1605,7 @@ html.sheet-lock{overflow:hidden}
 .jr-room .hs-drift{transform:scale(calc(1.06 - var(--t,0) * .06));transition:transform .2s linear}
 .jr-room:not(.on) .hs{pointer-events:none}
 .jr-dots{position:absolute;right:calc((100% - var(--wrap)) / 2 - 1.6rem);top:50%;transform:translateY(-50%);display:grid;gap:.55rem;z-index:3}
-.jr-dots button{width:.55rem;height:.55rem;border-radius:50%;border:0;background:color-mix(in srgb,var(--ink) 22%,transparent);padding:0;transition:background .3s,transform .3s var(--spring)}
+.jr-dots button{width:.55rem;height:.55rem;border-radius:50%;border:0;background:var(--line);background:color-mix(in srgb,var(--ink) 22%,transparent);padding:0;transition:background .3s,transform .3s var(--spring)}
 .jr-dots button[aria-current=true]{background:var(--ink);transform:scale(1.35)}
 .journey .hs-cap{margin-top:.2rem}
 /* the note about the pictures stands with each room on wide screens; on phones, where the room fills the screen, it comes after the walk */
@@ -1691,7 +1714,7 @@ html.sheet-lock{overflow:hidden}
 .sv-info{position:absolute;left:.7rem;right:.7rem;bottom:.7rem;background:rgba(247,247,244,.94);color:#22252A;border-radius:12px;padding:.75rem .9rem;display:grid;gap:.2rem;backdrop-filter:blur(8px)}
 .sv-info div{display:flex;justify-content:space-between;gap:.8rem;font-weight:600}
 .sv-info div span{white-space:nowrap}
-.sv-info div b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-width:0}
+.sv-info div b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;min-width:0;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word} /* the whole name, on up to three lines, also on a narrow card (D10) */
 .sv-info small{color:#696B68;font-size:.8rem}
 .sv-stamp{position:absolute;top:1.1rem;padding:.35rem .8rem;border-radius:8px;font-weight:700;font-size:1.05rem;letter-spacing:-.01em;opacity:0;border:2px solid currentColor;background:rgba(247,247,244,.85)}
 .sv-stamp.yes{left:1rem;color:#2C4A3E;transform:rotate(-8deg)}
@@ -1706,6 +1729,7 @@ html.sheet-lock{overflow:hidden}
 .sv-b.room{width:3rem;height:3rem}
 .sv-b.room[aria-pressed=true]{background:var(--fill);color:var(--on-fill)}
 .sv-meta{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;justify-content:center;font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.sv-meta .sv-chip{line-height:1.25;padding-top:.12rem;padding-bottom:.12rem} /* no taller than the count beside it: the card does not move when it appears (D10) */
 .sv-chip{background:color-mix(in srgb,var(--glow) 35%,transparent);color:var(--ink);padding:.25rem .7rem;border-radius:999px;font-weight:560;animation:rqRise .6s var(--ease) both}
 .sv-keys{text-align:center}
 .svep-result{max-width:40rem;text-align:center;display:grid;gap:.8rem;justify-items:center;outline:none;animation:rqRise .6s var(--ease) both}
@@ -1792,7 +1816,7 @@ html.sheet-lock{overflow:hidden}
 /* Svep on phones: the deck and its buttons always fit above the dock */
 @media (max-width:900px) and (max-height:780px){.svep:not(.two-intro) .sv-head .lead:not(.keep){display:none}.svep .sv-head h1{font-size:1.6rem}.sv-info small{display:none}.sv-info{font-size:.92rem}}
 @media (max-width:900px){
-  .svep{padding-top:.6rem}
+  .svep{padding-top:.6rem;min-height:calc(100lvh - var(--nav-h))} /* the footer starts below the screen, so it never peeks out under the dock behind the browser's own bar */
   .svep .crumbs{display:none}
   .sv-head h1{font-size:var(--t-h1-tool)}
   .sv-head .lead{font-size:.98rem}
@@ -1806,6 +1830,7 @@ html.sheet-lock{overflow:hidden}
 .svep-result ~ .sv-meta{display:none}
 .sv-meta[hidden]{display:none}
 .svep:has(.svep-result) .sv-head .lead:not(.keep){display:none}
+@media (max-width:900px) and (max-height:700px){.svep-result{gap:.5rem}.svep-result > .h2{font-size:1.7rem}.svep-result > .lead{font-size:.98rem}} /* a short phone: the profile is compact, so the room proposal starts on the first screen (D4) */
 .sv-alldone{color:var(--ink2);font-size:.95rem}
 .sv-alldone a{margin-left:.3rem}
 /* Svep v7: pictures per card, upward = cart, undo, progress, style profile */
@@ -2006,7 +2031,7 @@ html.sheet-lock{overflow:hidden}
 .ai-prods em{font-style:normal}
 @media (min-width:900px) and (max-height:760px){.ai-pad{padding-top:1.6rem;padding-bottom:1.6rem;gap:.75rem}.ai-prods{gap:.2rem}.ai-prods li{grid-template-columns:2.75rem minmax(0,1fr)}} /* a low laptop screen: six things and the buttons fit without scrolling the dialog */
 .ai-sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:.6rem}
-.ai-card{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.9rem 1rem;border-radius:var(--r);background:color-mix(in srgb,var(--accent) 10%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);margin-bottom:1.2rem}
+.ai-card{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.9rem 1rem;border-radius:var(--r);background:var(--paper);background:color-mix(in srgb,var(--accent) 10%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);margin-bottom:1.2rem}
 .ai-card div{display:grid;flex:1 1 10rem;min-width:0}
 .ai-card .btn{flex:none;min-height:2.75rem} /* buttons may wrap (a11y), but this short one keeps one line beside its text in the narrow Mitt rum column */
 .ai-card span{font-size:.84rem;color:var(--muted)}
@@ -2027,7 +2052,7 @@ html.sheet-lock{overflow:hidden}
 @media (min-width:900px){.sp-top{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)}.sp-pair{grid-template-columns:1fr 1fr}.sp-pair img{aspect-ratio:1;object-position:0 50%}}
 @media (max-width:640px){.sp-plan.plus{order:-1}}
 .sp-hero .display{margin-top:.2rem}
-.sp-thanks{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;padding:1rem 1.2rem;border-radius:var(--r);background:color-mix(in srgb,var(--accent) 12%,var(--paper));margin:1rem 0}
+.sp-thanks{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;padding:1rem 1.2rem;border-radius:var(--r);background:var(--paper);background:color-mix(in srgb,var(--accent) 12%,var(--paper));margin:1rem 0}
 .sp-thanks span{color:var(--ink2)}
 .sp-plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:1.2rem;margin-bottom:3rem}
 .sp-plan{border:1px solid var(--line);border-radius:var(--r);padding:1.6rem;display:grid;gap:1rem;align-content:start;background:var(--paper)}
@@ -2080,7 +2105,7 @@ html.sheet-lock{overflow:hidden}
 .journey{height:calc(var(--n) * 56vh + 100vh)}
 .jr-dots{gap:.25rem}
 .jr-dots button{position:relative;width:1.5rem;height:1.5rem;background:none;display:grid;place-items:center}
-.jr-dots button::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:color-mix(in srgb,var(--ink) 22%,transparent);transition:background .3s,transform .3s var(--spring)}
+.jr-dots button::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:var(--line);background:color-mix(in srgb,var(--ink) 22%,transparent);transition:background .3s,transform .3s var(--spring)}
 .jr-dots button[aria-current=true]{background:none;transform:none}
 .jr-dots button[aria-current=true]::before{background:var(--ink);transform:scale(1.35)}
 .jr-dots button span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -2131,6 +2156,8 @@ body.on-studio:has(.cookie.show) .view{padding-top:calc(var(--nav-h) + var(--ck-
 .rm-empty .rh-fig{margin:0}
 @media (max-width:1100px){.rm-empty{grid-template-columns:1fr}.rm-empty .rh-fig{order:-1}}
 @media (max-width:640px){.rm-empty .rh-fig{order:0}.rm-empty-acts{flex-direction:column;align-items:stretch}} /* a phone: the way in first, high and above the dock; the picture after it */
+@media (max-width:640px) and (max-height:600px){.rm-top > nav:has(.crumbs){display:none}}
+@media (max-width:640px) and (max-height:760px){.rm-empty{padding:1.3rem 1.2rem}.rm-empty .h2{font-size:1.65rem}.rm-empty .lead{font-size:.98rem}.rm-empty-acts{margin-top:1rem!important}} /* a shorter phone: both ways in above the dock on the first screen (D5) */
 @media (max-width:1100px){.rm-empty .rh-card{left:1rem;right:1rem}}
 @media (min-width:901px) and (max-width:1100px) and (orientation:landscape){.rm-empty{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2rem}.rm-empty .rh-fig{order:0}.rm-empty .bav .rh-card{position:static;margin-top:.7rem;box-shadow:none;border:1px solid var(--line);justify-content:space-between}} /* a landscape tablet: the button beside the picture, on the first screen */
 footer.site .bottom > span:last-child{align-items:center}
@@ -2175,7 +2202,7 @@ body.on-checkout .tools{grid-column:3}
 .m3d::backdrop{background:rgba(15,15,13,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .m3d-in{position:absolute;inset:clamp(0rem,4vw,3rem);margin:auto;max-width:62rem;max-height:46rem;display:grid;grid-template-rows:auto 1fr auto;background:var(--paper);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
 .m3d-in header{display:flex;align-items:center;justify-content:space-between;padding:.7rem .8rem .7rem 1.2rem;border-bottom:1px solid var(--line2)}
-.m3d-stage{position:relative;min-height:0;background:radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--img-bg) 70%,#fff),var(--img-bg))}
+.m3d-stage{position:relative;min-height:0;background:radial-gradient(ellipse at 50% 70%,var(--img-bg),var(--img-bg));background:radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--img-bg) 70%,#fff),var(--img-bg))}
 .m3d-stage model-viewer{width:100%;height:100%;--poster-color:transparent}
 .m3d-wait{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted)}
 .m3d-ar{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%)}
@@ -2255,7 +2282,8 @@ body.on-checkout .tools{grid-column:3}
 /* ---------------------------------------------------------------- Svep v8: rooms, together, home taster, nudges */
 .sv-scope{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem}
 .sv-scope .chip{padding:.38rem .75rem;font-size:.85rem}
-@media (min-width:901px){.sv-scope{gap:.3rem}.sv-scope .chip{padding:.36rem .55rem;font-size:.82rem}}
+@media (min-width:901px){.sv-scope{gap:.25rem}.sv-scope .chip{padding:.36rem .48rem;font-size:.8rem}} /* all eight rooms on one row from a 1280 px screen */
+@media (min-width:901px) and (max-width:1279px){.sv-scope{display:grid;grid-template-columns:repeat(4,max-content)}.sv-scope .chip{justify-content:center;text-align:center}} /* narrower: two even rows of four, never one chip alone */
 .sv-scope .chip[aria-current=true]{background:var(--fill);border-color:var(--fill);color:var(--on-fill)}
 .sv-two-link{display:inline-flex;gap:.6rem;align-items:center;margin-top:1rem;color:var(--ink2);text-decoration:none;font-size:.92rem}
 .sv-two-link svg,.sp-two-ic svg,.svh .btn svg{width:1.25rem;height:1.25rem;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -2268,6 +2296,9 @@ body.on-checkout .tools{grid-column:3}
   .svep:has(.sv-scope) .sv-deck,.svep:has(.sv-scope) .sv-prog{width:min(26rem,86vw,max(13rem,calc((100svh - var(--nav-h) - var(--dock-h) - 20.8rem) * .77)))} /* a clear gap between the buttons and the dock */
 }
 @media (max-width:900px) and (max-height:780px){.svep:has(.sv-scope) .sv-deck,.svep:has(.sv-scope) .sv-prog{width:min(26rem,86vw,max(13rem,calc((100svh - var(--nav-h) - var(--dock-h) - 16rem) * .77)))}} /* short phones: no lead above, so the card can use that height */
+/* the shortest phones (an iPhone SE shows 548 px between Safari's bars): tighter rows and a smaller card, so the buttons stay above the dock */
+@media (max-width:900px) and (max-height:640px){.svep .sv-info{font-size:.86rem}.svep .sv-info div{flex-direction:column;gap:0}.svep .sv-head h1{font-size:1.4rem}.svep .sv-head{gap:.45rem}.svep .sv-wrap{margin-top:.55rem;gap:.4rem}
+  .svep:has(.sv-scope) .sv-deck,.svep:has(.sv-scope) .sv-prog{width:min(26rem,86vw,max(8.5rem,calc((100svh - var(--nav-h) - var(--dock-h) - env(safe-area-inset-bottom) - 14rem) * .77)))}}
 /* Svep never collapses: 320 px wide, a phone on its side and 200 % zoom (1.4.10). On its side the buttons sit beside the card. */
 @media (max-width:350px){.sv-ctrl{gap:.45rem}.sv-b{width:3.2rem;height:3.2rem}.sv-b.yes{width:3.7rem;height:3.7rem}.sv-b.room{width:2.75rem;height:2.75rem}.sv-b.bag{width:3rem;height:3rem}.sv-b.undo{width:2.5rem;height:2.5rem}}
 @media (max-width:900px) and (orientation:landscape) and (max-height:500px){
@@ -2278,7 +2309,7 @@ body.on-checkout .tools{grid-column:3}
   .svep .sv-wrap:not(:has(.svep-result)) .sv-ctrl{grid-area:ctrl;align-self:start}
 }
 /* "Kommer snart" card */
-.sv-card.soon{background:linear-gradient(160deg,color-mix(in srgb,var(--tone) 70%,#fff) 0%,var(--tone) 100%);cursor:grab}
+.sv-card.soon{background:linear-gradient(160deg,var(--tone) 0%,var(--tone) 100%);background:linear-gradient(160deg,color-mix(in srgb,var(--tone) 70%,#fff) 0%,var(--tone) 100%);cursor:grab}
 .sv-soon{position:absolute;inset:0;display:grid;align-content:center;justify-items:start;gap:.8rem;padding:2rem 1.8rem;color:#22252A}
 .sv-soon-tag{font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:rgba(247,247,244,.86);padding:.35rem .65rem;border-radius:999px}
 .sv-soon-sw{width:4.2rem;height:4.2rem;border-radius:50%;background:var(--tone);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 18px 30px -18px rgba(0,0,0,.5);margin:.6rem 0 .2rem}
@@ -2331,8 +2362,6 @@ body.on-checkout .tools{grid-column:3}
 .gr-room-ims{display:flex;gap:.4rem;justify-content:center}
 .gr-room-ims img{width:3.4rem;height:3.4rem;object-fit:contain;background:var(--sunk);border-radius:10px;padding:.3rem}
 .gr-room .ai-row{justify-content:center}
-.gr-each{width:100%;max-width:40rem;text-align:center}
-.gr-each summary{cursor:pointer;min-height:44px;display:inline-flex;align-items:center;font-weight:560;text-decoration:underline;text-underline-offset:3px}
 .gr-each .sp-saved{margin-top:1rem}
 .gr-scope{border:0;padding:0;margin:1.6rem 0 0;max-width:34rem}
 .gr-scope legend{font-weight:560;margin-bottom:.6rem}
@@ -2343,11 +2372,9 @@ body.on-checkout .tools{grid-column:3}
 .sv-linkmsg:empty{display:none}
 .sv-linkf .btn,.sv-linkf input,.sv-linkout-row .btn{min-height:44px}
 .svep-result.group .sp-links .tlink{min-height:44px;display:inline-flex;align-items:center}
-/* the saved tiles with "Mer som det här" under each, and the panel it opens */
-.sv-liked .sv-tile{display:grid;gap:.15rem;width:6.9rem;align-content:start}
-.sv-liked .sv-tile > button[data-sheet]{width:100%}
-.sv-liked .sv-more{border:0;background:none;padding:.2rem .1rem;width:100%;min-height:44px;font-size:.76rem;line-height:1.2;color:var(--ink2);text-decoration:underline;text-underline-offset:3px;border-radius:var(--r-s)}
-@media (max-width:640px){.sv-liked .sv-tile{width:calc((100% - 1.2rem) / 3)}}
+/* one way to "Mer som det här" under a list, and the panel it opens */
+.ml-way{margin-top:.7rem}
+.ml-way .btn{min-height:44px}
 .ml{width:100%;text-align:left;margin-top:1rem;padding:1.2rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);animation:rqRise .4s var(--ease) both}
 .ml-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
 .ml-head h3:focus{outline:none}
@@ -2356,6 +2383,60 @@ body.on-checkout .tools{grid-column:3}
 .ml-foot{margin-top:.6rem}
 .ml-foot .tlink{min-height:44px;display:inline-flex;align-items:center}
 @media (prefers-reduced-motion:reduce){.gr-room,.ml{animation:none}}
+/* the group result: one list open, the rest folded; two columns on a computer */
+.gr-main,.gr-side{display:grid;gap:.8rem;justify-items:center;width:100%;min-width:0}
+.gr-side{margin-top:.6rem}
+.gr-fold{width:100%;max-width:40rem;border-top:1px solid var(--line2);text-align:center}
+.gr-fold:last-of-type{border-bottom:1px solid var(--line2)}
+.gr-fold summary{cursor:pointer;min-height:48px;display:flex;align-items:center;justify-content:center;gap:.5rem;font-weight:560;list-style:none}
+.gr-fold summary::-webkit-details-marker{display:none}
+.gr-fold summary::after{content:"";width:.5rem;height:.5rem;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s var(--ease)}
+.gr-fold[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.gr-fold-in{display:grid;gap:1rem;padding:.2rem 0 1.2rem}
+.gr-again{justify-content:center}
+@media (min-width:1100px){
+  .two-done .svep-result.group{max-width:min(74rem,100%);grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);column-gap:clamp(2.5rem,5vw,5rem);align-items:start;justify-items:stretch;text-align:left}
+  .svep-result.group .gr-main,.svep-result.group .gr-side{justify-items:start}
+  .svep-result.group .gr-side{margin-top:0;padding-left:clamp(2rem,4vw,3.5rem);border-left:1px solid var(--line2)}
+  .svep-result.group .gr-ppl,.svep-result.group .sv-liked,.svep-result.group .sp-acts,.svep-result.group .gr-again{justify-content:flex-start}
+  .svep-result.group .two-meter,.svep-result.group .gr-room,.svep-result.group .sp-two,.svep-result.group .gr-fold{max-width:none}
+  .svep-result.group .gr-style{justify-items:start;border-top:0;padding-top:0;margin-top:0}
+  .svep-result.group .gr-fold,.svep-result.group .gr-fold summary{text-align:left;justify-content:flex-start}
+  .svep-result.group .gr-room{justify-items:start}.svep-result.group .gr-room .ai-row,.svep-result.group .gr-room-ims{justify-content:flex-start}
+  .svep-result.group .ml{max-width:none}
+  .two-done .svep-result.group{margin:2rem 0 0}
+  .svep-result.group .gr-acts,.svep-result.group .sp-saved{justify-items:start;text-align:left}
+  .svep-result.group .sp-saved .eyebrow{text-align:left}
+  .svep-result.group .gr-mix{border:0}.svep-result.group .gr-mix summary{font-weight:500;color:var(--muted);font-size:.9rem}
+}
+.gr-mix .sp-mix{width:100%;max-width:26rem;margin:0 auto}
+/* Vem är du? (a link opened in a browser that has not seen the group) */
+.gr-whoami{display:grid;gap:.9rem;align-content:start;justify-items:start;max-width:30rem;padding:1.4rem 1.3rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);outline:none;margin-top:1rem}
+.gr-whoami p{color:var(--ink2)}
+.gr-whoami-ppl{display:flex;flex-wrap:wrap;gap:.6rem}
+.gr-me{display:inline-flex;align-items:center;gap:.55rem;min-height:48px;padding:.3rem 1rem .3rem .35rem;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--ink);font:inherit;font-weight:560;cursor:pointer}
+.gr-me:hover{border-color:var(--ink)}
+.gr-whoami .btn svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.6;margin-right:.45rem}
+.group-join.asking .sv-legend,.group-join.asking .sv-after,.group-join.asking .gr-who,.group-join.asking .sv-head .lead{display:none} /* the question names everyone itself */
+@media (max-width:900px){.group-join .gr-whoami{margin-top:.8rem;padding:1.1rem 1rem;gap:.7rem}}
+@media (max-width:900px) and (max-height:640px){.group-join.asking .sv-head h1{font-size:1.4rem}.group-join .gr-whoami .small{display:none}.group-join .gr-whoami{margin-top:.4rem}}
+@media (min-width:901px){.svep.group-join.asking{align-items:center}.group-join .gr-whoami{margin-top:2.4rem}}
+/* the shared page on a phone: the head stays short, so the card and its buttons sit above the dock (as on Svep, device1 D4) */
+@media (max-width:900px){
+  .group-join .sv-head > .eyebrow{display:none}
+  .group-join .gr-who{margin:.5rem 0 0}
+  .group-join .gr-ppl li{font-size:.9rem}.group-join .gr-av{width:2rem;height:2rem;font-size:.8rem}
+  .group-join:not(.asking) .sv-deck,.group-join:not(.asking) .sv-prog{width:min(26rem,86vw,max(13rem,calc((100svh - var(--nav-h) - var(--dock-h) - env(safe-area-inset-bottom) - 22rem) * .77)))}
+}
+@media (max-width:900px) and (max-height:780px){
+  .group-join .sv-head .lead{font-size:.98rem;margin-top:.35rem}
+  .group-join:not(.asking) .sv-deck,.group-join:not(.asking) .sv-prog{width:min(26rem,86vw,max(10rem,calc((100svh - var(--nav-h) - var(--dock-h) - env(safe-area-inset-bottom) - 19rem) * .77)))}
+}
+@media (max-width:900px) and (max-height:640px){
+  .group-join .sv-head nav:has(.crumbs),.group-join .sv-head .lead{display:none} /* the row of who has swiped says it on the shortest phones */
+  .group-join .sv-head h1{font-size:1.4rem}.group-join .gr-who{margin-top:.35rem}
+  .group-join:not(.asking) .sv-deck,.group-join:not(.asking) .sv-prog{width:min(26rem,86vw,max(8.5rem,calc((100svh - var(--nav-h) - var(--dock-h) - env(safe-area-inset-bottom) - 13.5rem) * .77)))}
+}
 /* the taster on the home page */
 .svh{background:var(--paper);border-block:1px solid var(--line2)}
 .svh-in{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(2rem,6vw,6rem);align-items:center}
@@ -2419,7 +2500,7 @@ body.on-checkout .tools{grid-column:3}
 .hr-grid .hr-opt{color:var(--muted);font-size:.8rem;font-weight:400}
 @media (max-width:640px){.hr-grid{grid-template-columns:1fr}.hr-card{grid-template-columns:auto 1fr;}.hr-card .tlink{grid-column:2;justify-self:start}}
 /* "I ditt hem" on the product page */
-.hf{display:grid;gap:.5rem;border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;margin:.9rem 0 .2rem;background:color-mix(in srgb,var(--paper) 55%,transparent);text-decoration:none;color:inherit}
+.hf{display:grid;gap:.5rem;border:1px solid var(--line);border-radius:var(--r);padding:1rem 1.1rem;margin:.9rem 0 .2rem;background:var(--paper);background:color-mix(in srgb,var(--paper) 55%,transparent);text-decoration:none;color:inherit}
 .hf-ask{grid-template-columns:auto 1fr;align-items:center;gap:.9rem}
 .hf-ask small{display:block;color:var(--muted);font-size:.88rem}
 .hf-ask b{font-weight:600}
@@ -2519,7 +2600,7 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 .rh-photo .ba-after .rh-bg{z-index:0}
 .rh-tag{position:absolute;z-index:1;display:flex;align-items:center;gap:.45rem;transform:translate(-.55rem,-50%);pointer-events:none;white-space:nowrap}
 .rh-tag i{flex:none;width:1.1rem;height:1.1rem;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.35),0 2px 8px rgba(0,0,0,.25)}
-.rh-tag > span{padding:.32rem .6rem;border-radius:99px;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:.8rem;line-height:1.2;box-shadow:0 2px 10px rgba(0,0,0,.12);font-variant-numeric:tabular-nums}
+.rh-tag > span{padding:.32rem .6rem;border-radius:99px;background:var(--paper);background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-size:.8rem;line-height:1.2;box-shadow:0 2px 10px rgba(0,0,0,.12);font-variant-numeric:tabular-nums}
 .rh-tag b{font-weight:600}
 .rh-tag > span{transition:opacity .2s}.rh-tag > span.off{opacity:0;transition:none} /* gone at once, back softly */
 .rh-tag.l{flex-direction:row-reverse;transform:translate(calc(-100% + .55rem),-50%)}
@@ -2633,7 +2714,7 @@ html.loading-tools body::before{content:"";position:fixed;left:0;top:0;height:2p
 /* 5. Taps answer at once: no wait for a possible double-tap zoom */
 a,button,input,select,textarea,label,[role=button]{touch-action:manipulation}
 /* 6. Missing-details markers: readable in both lights */
-.pending{color:var(--ink);background:color-mix(in srgb,var(--glow) 34%,var(--paper))}
+.pending{color:var(--ink);background:var(--paper);background:color-mix(in srgb,var(--glow) 34%,var(--paper))}
 /* 7. Därför RumIQ: two by two on phones, so the home page stays short */
 @media (max-width:560px){
   .why-grid{grid-template-columns:1fr 1fr;gap:.6rem;margin-top:1.2rem}
@@ -2715,6 +2796,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-canvas{container-type:size}
 .rm-stage .rm-item{min-width:44px;min-height:44px;display:flex;align-items:flex-end;justify-content:center}
 .rm-stage .rm-item > img{width:calc(var(--w) * 1cqw);flex:none}
+@supports not (width:1cqw){.rm-stage .rm-item{min-width:0;min-height:0}} /* Safari before 16: the thing keeps its true size (the tap area cannot grow around it there) */
 @media (prefers-reduced-motion:reduce){.rm-item.land,.rm-item.land::after{animation:none}.rm-first.go{animation:none;opacity:1}}
 /* 3. Toolbar: Lägg till, Inred åt mig, Spara and Mer, on every screen */
 .rm-tools{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -2722,6 +2804,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-tool svg circle{fill:currentColor;stroke:none}
 .rm-menu{position:absolute;right:0;bottom:calc(100% + .5rem);z-index:30;display:grid;gap:.1rem;width:max-content;min-width:17rem;max-width:calc(100vw - 2 * var(--gutter));padding:.4rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper);box-shadow:0 18px 44px rgba(20,14,8,.18)}
 .rm-menu[hidden]{display:none}
+.rm-menu.down{bottom:auto;top:calc(100% + .5rem)} /* room below, none above under the header (D6) */
 .rm-menu button{display:flex;align-items:center;gap:.8rem;min-height:3.3rem;padding:.45rem .7rem;border:0;border-radius:calc(var(--r-s) - 2px);background:none;color:var(--ink);font-size:.95rem;font-weight:600;text-align:left}
 .rm-menu button:hover,.rm-menu button:focus-visible{background:var(--bg)}
 .rm-menu button svg{flex:none;width:1.3rem;height:1.3rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -2775,7 +2858,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .rm-acth > b{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:600}
   .rm-acth .rm-on{flex:none;gap:.4rem;color:var(--muted)}
   .rm-acth .rm-on select{min-height:2.5rem}
-  .rm-act .rm-bytbtn{flex-direction:row;min-height:2.75rem}
+  .rm-act .rm-bytbtn{flex-direction:row;min-height:2.75rem;padding:0 .8rem 0 .7rem} /* the label keeps air to the edge (D10) */
   .rm-bytbtn{display:inline-flex;align-items:center;gap:.35rem;flex:none;min-height:2.5rem;padding:0 .85rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font-weight:600;font-size:.88rem}
   .rm-swap,.rm-sugg{margin-left:var(--gutter);margin-right:var(--gutter)}
   .rm-cmp{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:84%;overflow-x:auto;scroll-snap-type:x mandatory;margin:1rem calc(-1*var(--gutter)) 0;padding:0 var(--gutter) .4rem;scrollbar-width:none}
@@ -2840,6 +2923,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .varlist{display:grid;gap:1rem;margin-top:1.2rem}
 .var-row{display:grid;grid-template-columns:3.4rem minmax(0,1fr);gap:.8rem;align-items:center}
 .var-row img{width:3.4rem;height:3.4rem;object-fit:contain;background:var(--img-bg);border-radius:8px;padding:.2rem}
+.var-row img.tall{object-fit:cover;object-position:50% 30%;padding:0} /* a tall cut-out (a curtain) fills the square instead of standing as a thin sliver in it */
 .var-row b{font-weight:600;font-size:.95rem}
 .var-row .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.4rem}
 .var-row .chip{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .8rem .4rem .5rem;font-size:.86rem}
@@ -2910,6 +2994,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--danger)}
 input[aria-invalid=true]:focus{border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 22%,transparent)}
 input[aria-invalid=true]:focus-visible{outline-color:var(--danger);box-shadow:0 0 0 2px var(--bg)}
+@supports not (width:1lh){input[aria-invalid=true]:focus-visible{outline-color:transparent;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--danger)}}
 input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-offset:2px}
 .status.err{color:var(--danger)}
 .crumb-btn{border:0;background:none;padding:0;font:inherit;color:var(--muted);text-decoration:underline;text-underline-offset:.2em;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
@@ -2919,7 +3004,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .ship-opt b{display:block;color:var(--ink);font-weight:500}
 .ship-opt .small{display:block}
 .ship-opt .so-p{font-family:var(--mono);white-space:nowrap;color:var(--ink)}
-.ship-opt:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.ship-opt:has(input:checked){border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--line2);background:color-mix(in srgb,var(--ink) 3%,transparent)}
 .co-sum{position:sticky;top:calc(var(--bar-h) + var(--nav-h) + 1rem)}
 .co-det>summary{list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:1rem}
 .co-det>summary::-webkit-details-marker{display:none}
@@ -3010,7 +3095,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 @media (max-width:699px){.hem-prop-acts .btn{flex:1 1 100%}} /* the two main buttons full width, one under the other */
 .hem-prop [data-hem-msg]:empty{display:none}
 .hem-prop .btn svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.6}
-.hem-first{display:grid;gap:.8rem;padding:clamp(1.3rem,3vw,2.2rem);border-radius:var(--r);background:color-mix(in srgb,var(--accent) 7%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);max-width:46rem}
+.hem-first{display:grid;gap:.8rem;padding:clamp(1.3rem,3vw,2.2rem);border-radius:var(--r);background:var(--paper);background:color-mix(in srgb,var(--accent) 7%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);max-width:46rem}
 .hem-first .h2{margin:0}
 .hem-first .eyebrow,.hem-first .lead,.hem-first-f label,.hem-first-f legend,.hem-first .small{color:var(--ink)} /* on the tinted card every text keeps full contrast */
 .hem-first-f{display:grid;gap:.9rem}
@@ -3091,7 +3176,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-money{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;border-top:1px solid var(--line);padding-top:.7rem;font-size:.94rem}
 .hem-money b{font-variant-numeric:tabular-nums}
 .hem-money .over b{color:var(--danger)}
-.hem-fb{display:grid;gap:.4rem;padding:1rem 1.1rem;border-radius:var(--r);background:color-mix(in srgb,var(--accent) 7%,var(--paper))}
+.hem-fb{display:grid;gap:.4rem;padding:1rem 1.1rem;border-radius:var(--r);background:var(--paper);background:color-mix(in srgb,var(--accent) 7%,var(--paper))}
 .hem-fb p{margin:0;font-size:.94rem}
 .hem-fb-p{display:grid;gap:.4rem}
 .hem-fb-p ul{list-style:none;margin:0;padding:0;display:grid;gap:.35rem}
@@ -3107,6 +3192,11 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-room-foot{margin:0}
 .ai-move{display:flex;align-items:center;gap:.6rem;font-size:.9rem;min-height:2.75rem}
 .ai-move select{min-height:2.75rem;max-width:12rem}
+.hem-link{display:grid;gap:.5rem;padding:.8rem .9rem;border-radius:12px;background:var(--paper);border:1px solid var(--line);background:color-mix(in srgb,var(--accent) 8%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+.hem-link p{margin:0;font-size:.9rem}
+.hem-link-row{display:flex;gap:.5rem;align-items:center}
+.hem-link input{flex:1 1 auto;min-width:0;min-height:2.75rem;font-size:.86rem;padding:0 .7rem;border:1px solid var(--field, var(--line));border-radius:10px;background:var(--paper);color:var(--ink)}
+.hem-link .btn{min-height:2.75rem;flex:none}
 .hem-ask-pic{margin:0 0 1.4rem;max-width:44rem;display:grid;gap:.45rem}
 .hem-ask-im{position:relative;display:block;aspect-ratio:3 / 2;border-radius:var(--r);overflow:hidden;background:var(--img-bg)}
 .hem-ask-im > img{width:100%;height:100%;object-fit:cover}
@@ -3137,7 +3227,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .mb-wrap{padding:1.4rem var(--gutter) 2rem;display:grid;gap:1rem}
 @media (min-width:900px){.mb-wrap{padding:2rem}}
 .mb-head{display:grid;gap:.3rem;padding-right:3rem} /* clear of the grab handle, which has its own strip in the moodboard */
-.mb-sheet .sheet-grab{background:var(--paper);margin-bottom:0;border-radius:20px 20px 0 0} /* scrolled, the board passes under the handle, never behind a see-through bar */
+.mb-sheet .sheet-grab{position:sticky;background:var(--paper);margin-bottom:0;border-radius:20px 20px 0 0} /* scrolled, the board passes under the handle, never behind a see-through bar */
 .mb-board{isolation:isolate} /* the things' layers stay inside the board */
 .mb-name input{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:560;letter-spacing:-.02em;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);padding:.2rem 0;width:100%;border-radius:0}
 .mb-board{position:relative;aspect-ratio:4 / 3;width:min(100%,calc(58vh * 4 / 3));margin-inline:auto;background:#F4F2EE;border-radius:var(--r);overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 1px var(--line)}
@@ -3179,4 +3269,4 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .rm-on select,.rm-acth .rm-on select{min-height:2.75rem}
 #rmCmpGo{min-height:2.75rem}
 #rmSelLink{display:inline-flex;align-items:center;min-height:2.75rem;min-width:2.75rem;justify-content:center}
-.rm-sugg-sty{flex-wrap:wrap}
+.rm-sugg-sty{flex-wrap:wrap;overflow:visible} /* wrapped, nothing scrolls: the keyboard ring round a chip is not clipped (D10) */

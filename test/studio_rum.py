@@ -112,7 +112,9 @@ with sync_playwright() as p:
         pg.evaluate("RQ.room.add('sand-keramikvas', true)")  # something already chosen before the room exists
         pg.evaluate("document.querySelector('.roomcta, .pinroom').click()"); pg.wait_for_timeout(1000)  # Prova i Mitt rum: Mitt rum with the lamp
         pg.evaluate("document.querySelector('#view [data-room-setup]').click()"); pg.wait_for_timeout(600)
-        hit(".roomsheet.open .sheet-acts label" + (".cam" if mob else ":not(.cam)")); pg.wait_for_timeout(600)
+        # device review R1: signed out these are buttons, not labels around the file input, so no picker can open before the gate
+        ok(pg.evaluate("[...document.querySelectorAll('.roomsheet .sheet-acts label')].every((l) => l.hidden && l.querySelector('input').disabled)") and pg.evaluate("[...document.querySelectorAll('.roomsheet .sheet-acts [data-pick-out]')].some((b) => !b.hidden && b.tagName === 'BUTTON')"), f"{tag} signed out, the picker's labels are away and buttons stand in their place")
+        hit(".roomsheet.open .sheet-acts [data-pick-out]" + (".cam" if mob else ":not(.cam)")); pg.wait_for_timeout(600)
         ok(pg.evaluate(MODE) == "gate" and pg.evaluate(TITLE) == "Logga in för att lägga in ditt rum", f"{tag} signed out, Ta en bild / Välj en bild opens the calm sign-in sheet")
         ok(pg.choosers == 0, f"{tag} and no camera or file chooser opens before signing in")
         ok(pg.evaluate("[...document.querySelectorAll('.roomsheet [data-room-gate]')].map((a) => a.textContent.trim())") == ["Logga in", "Skapa gratis konto"], f"{tag} Logga in and Skapa gratis konto")
@@ -150,7 +152,7 @@ with sync_playwright() as p:
         # (the shop's cards have no room button any more, review N3; any data-room-btn, as in the stylist's answers, works the same)
         pg.evaluate("document.getElementById('view').insertAdjacentHTML('beforeend', '<button type=button data-room-btn=lysa-keramiklampa id=tRoomBtn>x</button>'); document.getElementById('tRoomBtn').click()"); pg.wait_for_timeout(500)
         h0 = "lysa-keramiklampa"
-        pg.evaluate("document.querySelector('.roomsheet .sheet-acts label:not(.cam)').click()"); pg.wait_for_timeout(400)
+        pg.evaluate("document.querySelector('.roomsheet .sheet-acts :is(label, [data-pick-out]):not(.cam):not([hidden])').click()"); pg.wait_for_timeout(400)
         pg.evaluate("document.querySelector('.roomsheet [data-room-gate]').click()"); pg.wait_for_timeout(700)
         g = json.loads(pg.evaluate("sessionStorage.getItem('rumiq-room-gate')") or "{}")
         ok(g.get("route") == "butik" and g.get("plan", {}).get("add") == [h0], f"{tag} a product you tapped to see in your room is kept: {g}")
@@ -416,14 +418,14 @@ with sync_playwright() as p:
     # minor 6 + 7: back from signing in, one message and the next step glows; the account page says you come back; Google and the like on the gate when the sign-in server is live
     c = ctx_for(b, 390, 844, True); pg = new_page(c)
     pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(800); pg.click("#view [data-room-setup]"); pg.wait_for_timeout(400)
-    pg.evaluate("document.querySelector('.roomsheet .sheet-acts label.cam').click()"); pg.wait_for_timeout(400)
+    pg.evaluate("document.querySelector('.roomsheet .sheet-acts :is(label, [data-pick-out]).cam:not([hidden])').click()"); pg.wait_for_timeout(400)
     pg.tap(".roomsheet.open [data-room-gate]:first-child"); pg.wait_for_timeout(900)
     ok("tillbaka till ditt rum" in pg.evaluate("document.getElementById('view').innerText"), "[review] the sign-in page says you come back to your room")
     sign_in_on_page(pg)
     ok(not pg.evaluate("document.querySelector('.toast.show')") and "inloggad" in pg.evaluate("document.querySelector('.sheet-hello').textContent"), "[review] back from signing in: the sheet says it, no toast on top")
     ok(pg.evaluate("!!document.querySelector('.roomsheet .sheet-acts .btn.nudge')"), "[review] and Ta en bild glows once")
     pg.evaluate("RQ.room.closeSetup(); RQ.shop.signOut(); RQ.auth.start = () => Promise.resolve(); RQ.auth.mode = 'supabase'; RQ.auth.socials = ['google', 'apple']; window.__sso = []; RQ.auth.social = (p) => { window.__sso.push(p); return new Promise(() => {}); }; 1")
-    pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300); pg.evaluate("document.querySelector('.roomsheet .sheet-acts label.cam').click()"); pg.wait_for_timeout(400)
+    pg.evaluate("RQ.room.openSetup()"); pg.wait_for_timeout(300); pg.evaluate("document.querySelector('.roomsheet .sheet-acts :is(label, [data-pick-out]).cam:not([hidden])').click()"); pg.wait_for_timeout(400)
     ok(pg.evaluate("[...document.querySelectorAll('.roomsheet .sheet-sso [data-sso]')].map((b) => b.textContent.trim())") == ["Fortsätt med Google", "Fortsätt med Apple"] and pg.evaluate("!document.querySelector('.roomsheet .sheet-sso').hidden"), "[review] with the sign-in server live, Google, Apple and Microsoft are on the gate (minor 7)")
     pg.tap(".roomsheet .sheet-sso [data-sso=google]"); pg.wait_for_timeout(300)
     ok(pg.evaluate("window.__sso") == ["google"] and json.loads(pg.evaluate("sessionStorage.getItem('rumiq-room-gate')"))["route"] == "mitt-rum", "[review] one tap starts Google, with the step kept for the way back")

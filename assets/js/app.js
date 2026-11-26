@@ -52,9 +52,15 @@
   let toastBy = null, toastByAt = 0;
   const by = (e) => { toastBy = e.target; toastByAt = Date.now(); };
   document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
+  /* a button the page focuses itself right after a tap (the menu's close button) shows no keyboard ring: Safari 15 shows one
+     there, square (D9); newer browsers already leave it out. A key pressed shows it again. */
+  let tapAt = 0; const QUIET = "quiet-focus";
+  document.addEventListener("pointerdown", () => { tapAt = Date.now(); }, true);
+  document.addEventListener("keydown", () => { tapAt = 0; const a = document.activeElement; if (a && a.classList) a.classList.remove(QUIET); }, true);
+  document.addEventListener("focusin", (e) => { const t = e.target; if (!t.classList || Date.now() - tapAt > 1500 || t.matches("input,textarea,select,[contenteditable]")) return; t.classList.add(QUIET); t.addEventListener("blur", () => t.classList.remove(QUIET), { once: true }); }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";
   const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
-  const KEEP = ".lk, .lp-buy"; // read right after adding (the product page's Leveranskoll, a look's buy block with Visa varukorgen): never under the toast
+  const KEEP = ".lk, .lp-buy, .pinfo .priceline"; // read right after adding (the product page's Leveranskoll and its price with Prova i Mitt rum, a look's buy block with Visa varukorgen): never under the toast
   const toastPlace = (t) => {
     ["top", "bottom", "left", "right"].forEach((k) => t.style.removeProperty(k));
     if (document.getElementById("rmStage")) return;
@@ -108,7 +114,7 @@
   RQ.suits = (p) => { const r = RQ.room && RQ.room.get(), t = r && r.type; return !t || p.rooms.includes(t); };
   // a card is the product, always its own photo (the founder's decision: the room lives in Mitt rum, not on the cards)
   // why (svep2): a short true reason under the name, from RQ.why (svep.js), on lists made for you
-  RQ.card = (p, first, why, more) => {
+  RQ.card = (p, first, why) => {
     const R = RQ.room;
     const print = RQ.isPrint && RQ.isPrint(p);
     const photo = print ? `<img class="fade cutph" src="${RQ.cut(p)}" alt="${esc(p.name)}" ${first ? 'loading="eager"' : 'loading="lazy"'} decoding="async" width="461" height="600">`
@@ -123,10 +129,10 @@
       <button class="qv" type="button" data-sheet="${p.handle}" tabindex="-1" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
-      <p class="sub">${swatches(p)}</p>${why ? `<p class="card-why">${esc(why)}</p>` : ""}${more ? `<button class="tlink card-more" type="button" data-more="${p.handle}" aria-expanded="false" aria-label="Mer som det här: ${esc(p.name)}">Mer som det här</button>` : ""}
+      <p class="sub">${swatches(p)}</p>${why ? `<p class="card-why">${esc(why)}</p>` : ""}
     </article>`;
   };
-  RQ.grid = (list, cls = "", top = false, why = null, more = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "", why ? why(p) : "", more)).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
+  RQ.grid = (list, cls = "", top = false, why = null) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "", why ? why(p) : "")).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
   const crumbs = (items) => `<nav aria-label="Brödsmulor"><ol class="crumbs">${items.map(([t, h], i) => `<li>${h ? `<a href="#${h}">${esc(t)}</a>` : i === items.length - 1 ? `<span aria-current="page">${esc(t)}</span>` : esc(t)}</li>`).join("")}</ol></nav>`;
   RQ.crumbs = crumbs;
   const head = (kicker, title, lead, extra = "") => `<header class="page-head wrap">${kicker}<h1 class="h1">${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ""}${extra}</header>`;
@@ -343,6 +349,10 @@
       ${suggest.length ? `<div class="chips" style="margin-top:.8rem">${suggest.map((n) => `<button type="button" class="chip" data-newlist="${esc(n)}">+ ${esc(n)}</button>`).join("")}</div>` : ""}
       <form id="newList" style="display:flex;gap:.5rem;margin-top:.8rem"><label class="sr" for="nl">Ny lista</label><input id="nl" placeholder="Ny lista, till exempel Sommarstugan" maxlength="40"><button class="btn sm" type="submit">Skapa</button></form>`;
   };
+  /* One part of a page that fails (an older browser without something we use, a value kept in the browser that no
+     longer fits) is left out or left still; the rest of the page works. The fault is kept in RQ.partErrors for checks. */
+  RQ.partErrors = [];
+  const part = RQ.part = (name, fn, alt = "") => { try { return fn(); } catch (e) { console.error(name, e); RQ.partErrors.push(name + ": " + ((e && e.message) || e)); return alt; } };
   V.produkt = (handle) => {
     const p = RQ.byHandle(handle); if (!p) return null;
     S.markSeen(handle);
@@ -367,30 +377,30 @@
       html: `<section class="wrap pcr">${crumbs([["Hem", "hem"], ["Butik", "butik"], [c.name, "kategori-" + c.id], [p.name]])}</section>
         <section class="wrap pdp">
           <div class="pg">
-            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && RQ.film(p) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}`).join("")}</div>
+            <div class="pg-grid" id="pgGrid" style="--tone:${p.tone[0]}22">${shown.map((g, i) => `<button type="button" class="pg-item${g.cut ? " cut" : ""}" data-gi="${gal.indexOf(g)}"><img class="fade" src="${g.src}" alt="${esc(g.alt)}" ${i === 0 ? 'style="view-transition-name:pimg" fetchpriority="high"' : 'loading="lazy"'} decoding="async" ${g.cut ? "" : g.k === "detail" ? 'width="1200" height="1200"' : 'width="1400" height="1750"'} onerror="this.closest('.pg-item').remove()">${i === 0 && LAMPS.includes(p.handle) ? `<img class="pg-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" decoding="async" onerror="this.remove()">` : ""}${i === 0 ? '<span class="tag">Exempel</span>' : ""}<span class="zhint">${ic.zoom}Zooma</span></button>${i === 0 && part("film", () => RQ.film(p)) ? `<div class="pg-item pg-film"><video src="${RQ.film(p)}" poster="${RQ.img(p, 900)}" muted playsinline loop autoplay preload="metadata" aria-label="${esc(p.name)} i rörelse"></video><span class="tag">Film</span></div>` : ""}`).join("")}</div>
             ${isLamp ? `<button type="button" class="lightswitch" id="lightSw" aria-pressed="true" hidden><i></i><span>Lampan är tänd</span></button>` : ""}
             <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
           </div>
           <div class="pinfo">
             <a class="eyebrow" href="#kategori-${c.id}">${esc(c.name)}</a>
             <h1>${esc(p.name)}</h1>
-            <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span>${pinroom}</div>${RQ.shipNote(p)}
+            <div class="priceline">${RQ.priceHtml(p, "pdp")}<span class="vat">inkl. moms</span>${pinroom}</div>${part("ship", () => RQ.shipNote(p))}
             <p class="short">${esc(p.short)}</p>
             ${p.variants ? `<div class="opt"><span class="lbl">Färg: <b id="vname">${esc(vs[0].title)}</b></span><div class="swatch-row" role="radiogroup" aria-label="Färg">${vs.map((v, i) => `<button type="button" role="radio" aria-checked="${i === 0}" data-v="${v.id}"><i class="dotc" style="background:${p.tone[i] || "#ccc"}"></i>${esc(v.title)}</button>`).join("")}</div><p class="small vnote" id="vnote" hidden><span>Bilderna visar färgen</span> <b>${esc(vs[0].title)}</b>.</p></div>` : ""}
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
             <p class="small qty-note" id="qtyNote" role="status"></p><p class="sr" id="qtySaid" role="status"></p>
-            <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${RQ.payRow()}
-            <a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${hasRoom ? RQ.room.thumb() : RQ.roomIco}</span><span><b>Prova i Mitt rum</b><small>${hasRoom ? "Se den hemma hos dig och handla hela rummet på en gång." : "I ett exempelrum eller i en bild av ditt eget rum."}</small></span>${RQ.roomIco}</a>
-            ${RQ.p3d ? RQ.p3d.card(p) : ""}
+            <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${part("pay", () => RQ.payRow())}
+            <a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${hasRoom ? part("room", () => RQ.room.thumb(), RQ.roomIco) : RQ.roomIco}</span><span><b>Prova i Mitt rum</b><small>${hasRoom ? "Se den hemma hos dig och handla hela rummet på en gång." : "I ett exempelrum eller i en bild av ditt eget rum."}</small></span>${RQ.roomIco}</a>
+            ${RQ.p3d ? part("3d", () => RQ.p3d.card(p)) : ""}
             <div class="pactions">
               <button type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}<span aria-hidden="true">${S.isWished(p.handle) ? "Sparad" : "Spara"}</span></button>
-              <button type="button" id="saveRoomBtn" aria-expanded="false" aria-controls="listPanel">${ic.list}<span>Lägg i lista${S.listsWith(p.handle).length ? ` (${S.listsWith(p.handle).length})` : ""}</span></button>
+              <button type="button" id="saveRoomBtn" aria-expanded="false" aria-controls="listPanel">${ic.list}<span>Lägg i lista${part("lists", () => S.listsWith(p.handle).length, 0) ? ` (${S.listsWith(p.handle).length})` : ""}</span></button>
               <button type="button" id="shareBtn">${ic.share}<span>Dela</span></button>
             </div>
-            <div class="panel" id="listPanel" hidden style="margin-top:1rem">${listPanel(p)}</div>
-            ${RQ.delivery ? RQ.delivery.html(p) : ""}
-            ${RQ.homeFit ? RQ.homeFit.html(p) : ""}
-            <div class="example-note"><span>●</span><div><p><b>Exempelprodukt.</b> Den går inte att köpa än. Du kan prova varukorgen och kassan, men inget betalas. Bilderna är skapade med AI, så färg och detaljer kan skilja sig.</p>${RQ.notify ? RQ.notify.html(p) : ""}</div></div>
+            <div class="panel" id="listPanel" hidden style="margin-top:1rem">${part("lists", () => listPanel(p))}</div>
+            ${RQ.delivery ? part("delivery", () => RQ.delivery.html(p)) : ""}
+            ${RQ.homeFit ? part("homefit", () => RQ.homeFit.html(p)) : ""}
+            <div class="example-note"><span>●</span><div><p><b>Exempelprodukt.</b> Den går inte att köpa än. Du kan prova varukorgen och kassan, men inget betalas. Bilderna är skapade med AI, så färg och detaljer kan skilja sig.</p>${RQ.notify ? part("notify", () => RQ.notify.html(p)) : ""}</div></div>
             <div class="ptabs" data-ptabs>
               <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
               <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h2>Så använder du den</h2><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
@@ -424,6 +434,9 @@
         <script type="application/ld+json">${JSON.stringify(ld)}</script>`,
       mount(root) {
         let variant = vs[0].id;
+        /* each part starts on its own: one that fails leaves the rest of the page working (RQ.part) */
+        let io2 = null, offCart = null, lookOff = null, offScroll = null;
+        part("gallery", () => {
         const grid = $("#pgGrid", root);
         const items = () => $$(".pg-item:not(.pg-film)", grid);
         const lbList = () => items().map((b) => { const g = gal[+b.dataset.gi]; const im = $("img", b); return { src: im.currentSrc || im.src, thumb: g.thumb, alt: im.alt, cut: !!g.cut }; });
@@ -457,6 +470,8 @@
             setTimeout(() => { im.src = on ? main.src : off.src; im.alt = on ? main.alt : off.alt; im.style.opacity = 1; }, 220);
           });
         }
+        });
+        part("colours", () => {
         $$("[data-v]", $(".pinfo", root)).forEach((b) => b.addEventListener("click", () => {
           variant = b.dataset.v; $$("[data-v]", $(".pinfo", root)).forEach((x) => x.setAttribute("aria-checked", x === b));
           const vt = S.variantById(variant).variant.title;
@@ -464,6 +479,7 @@
           /* there is one set of photos: say which colour they show, and carry the choice to the buy bar */
           $("#vnote", root).hidden = variant === vs[0].id; $("#bbVar", root).textContent = " · " + vt; paintBar();
         }));
+        });
         const q = $("#qty", root), qNote = $("#qtyNote", root), MAXQ = 99;
         /* the field always shows what will be added: whole numbers from 1 to 99, corrected in the field itself */
         const qty = () => { const n = Math.round(+String(q.value).replace(",", ".")); const v = !isFinite(n) || n < 1 ? 1 : Math.min(MAXQ, n); if (String(v) !== q.value) q.value = v; qNote.textContent = n > MAXQ ? `Max ${MAXQ} per produkt.` : ""; return v; };
@@ -480,12 +496,15 @@
         const add = (btn) => { if (btn.classList.contains("done") || btn.hasAttribute("data-open-cart")) return; if (put()) { RQ.confirmAdd(btn, p.name); clearTimeout(bar2._pb); bar2._pb = setTimeout(paintBar, 1850); } };
         $("#add", root).addEventListener("click", (e) => add(e.currentTarget)); $("#add2", root).addEventListener("click", (e) => add(e.currentTarget));
         $("#buyNow", root).addEventListener("click", () => { if (!putDone) put(); location.hash = "#kassa"; }); // already added on this page: go, do not add it again
+        part("share", () => {
         /* share: the phone's own share sheet where there is one, otherwise the address is copied */
         $("#shareBtn", root).addEventListener("click", async () => {
           const url = location.href.split("#")[0], data = { title: p.name, text: `${p.name} från RumIQ`, url };
           try { if (navigator.share) { await navigator.share(data); return; } await navigator.clipboard.writeText(url); RQ.toast("Länken är kopierad."); }
           catch (e) { if (e && e.name === "AbortError") return; RQ.toast("Det gick inte att dela. Kopiera adressen i adressfältet."); }
         });
+        });
+        part("lists", () => {
         // save in a room (named lists)
         const panel = $("#listPanel", root), srb = $("#saveRoomBtn", root);
         srb.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; srb.setAttribute("aria-expanded", open); });
@@ -493,8 +512,9 @@
         panel.addEventListener("change", (e) => { const cb = e.target.closest("[data-list]"); if (!cb) return; const on = S.toggleInList(cb.dataset.list, p.handle); RQ.toast(on ? "Sparad i listan." : "Borttagen ur listan."); repaint(); });
         panel.addEventListener("click", (e) => { const b = e.target.closest("[data-newlist]"); if (!b) return; const l = S.createList(b.dataset.newlist); S.toggleInList(l.id, p.handle); RQ.toast(`Sparad i ${esc(l.name)}.`); repaint(); });
         panel.addEventListener("submit", (e) => { e.preventDefault(); const v = $("#nl", root).value.trim(); if (!v) return; const l = S.createList(v); S.toggleInList(l.id, p.handle); RQ.toast(`Sparad i ${esc(l.name)}.`); repaint(); });
+        });
         // complete the look
-        const lt = $("#lookTotal", root); let lookOff = null;
+        part("look", () => { const lt = $("#lookTotal", root);
         if (lt) {
           // the button counts only what is not in the cart yet; once all of the chosen lies there, it shows the cart
           // what already lies in the cart is marked as the look rows do, has no box to tick and is not in the sum, which then says what is added
@@ -511,12 +531,18 @@
           $("#lookAdd", root).addEventListener("click", (e) => { const b = e.currentTarget; if (b.hasAttribute("data-open-cart")) return; const sel = $$("[data-look]:checked", root).map((x) => (x.dataset.look === p.handle ? variant : x.dataset.look)); RQ.addMany(sel, b); }); // this product in the colour chosen above; nothing already in the cart twice
           upd(); let lookT = null; lookOff = S.onChange((w) => { if (w === "cart") { setTimeout(upd); clearTimeout(lookT); lookT = setTimeout(upd, 1700); } }); // again once the button has said "added"
         }
+        });
+        part("buybar", () => {
         // sticky buy bar once the buy button scrolls away (desktop); always on phones
         const bar = $("#buybar", root), buy = $(".buy", root);
-        const io2 = new IntersectionObserver(([e]) => bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || matchMedia("(max-width:900px)").matches)), { threshold: [0, 0.9] });
+        /* on a phone it comes once the customer has started to scroll: on a short screen, at first load it would lie over the name and the price (D9) */
+        let lastE = null; const showBar = () => { const e = lastE; if (e) bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || (matchMedia("(max-width:900px)").matches && scrollY > 40))); };
+        io2 = new IntersectionObserver(([e]) => { lastE = e; showBar(); }, { threshold: [0, 0.9] });
+        const onSc = () => { if (scrollY > 40) { removeEventListener("scroll", onSc); showBar(); } }; addEventListener("scroll", onSc, { passive: true }); offScroll = () => removeEventListener("scroll", onSc);
         io2.observe($("#add", root));
-        paintBar(); const offCart = S.onChange((w) => { if (w === "cart") setTimeout(paintBar); }); // after the tap that added it has run its course
-        return () => { io2.disconnect(); offCart(); clearTimeout(bar2._pb); if (lookOff) lookOff(); };
+        paintBar(); offCart = S.onChange((w) => { if (w === "cart") setTimeout(paintBar); }); // after the tap that added it has run its course
+        });
+        return () => { if (io2) io2.disconnect(); if (offCart) offCart(); if (offScroll) offScroll(); clearTimeout(bar2._pb); if (lookOff) lookOff(); };
       },
     };
   };
@@ -1099,11 +1125,20 @@
   RQ.doSearch = doSearch;
   let sT; sInput.addEventListener("input", () => { clearTimeout(sT); sT = setTimeout(doSearch, 140); });
   RQ.openSearch = () => { const from = document.activeElement; closeAll(); opener = from && from !== document.body ? from : null; $("#toast").classList.remove("show"); $("#search").classList.add("open"); behind(true); $("#search").scrollTop = 0; document.documentElement.style.overflow = "hidden"; doSearch(); const into = (n) => { sInput.focus(); if (document.activeElement === sInput) sInput.select(); else if (n) requestAnimationFrame(() => into(n - 1)); }; setTimeout(() => into(30), 60); }; // the field may still be turning visible (reduced motion): try again on the next frames
+  /* Enter, or the keyboard's own Sök key (Android sends it as a form submit, sometimes without a plain Enter keydown):
+     with a mouse the marked first hit opens; on a phone the keyboard goes away so the hits show, and a single product opens */
+  const searchGo = () => {
+    clearTimeout(sT); doSearch(); const first = pick(); if (first) { first.click(); return; }
+    const prods = $$(".card .ct a", sRes); if (prods.length === 1 && sInput.value.trim()) { sInput.blur(); prods[0].click(); return; }
+    // the focus moves to the top of the hits (still inside the search), which puts the keyboard away
+    const head = $(".eyebrow, .empty h3, .chips a", sRes); if (head) { if (!head.matches("a")) head.tabIndex = -1; head.focus({ preventScroll: true }); head.scrollIntoView({ block: "nearest" }); } else sInput.blur();
+  };
+  const sForm = $("#searchForm"); if (sForm) sForm.addEventListener("submit", (e) => { e.preventDefault(); searchGo(); });
   // keys in the search: Enter puts the keyboard away on a phone and steps into the hits, the arrows walk through them
   const sItems = () => $$("a.chip, button.chip, .card .ct a, .empty a, .mag-grid a", sRes).filter((el) => el.offsetParent);
   $("#search").addEventListener("keydown", (e) => {
     const items = sItems(), i = items.indexOf(document.activeElement), inField = e.target === sInput;
-    if (e.key === "Enter" && inField) { e.preventDefault(); clearTimeout(sT); doSearch(); const first = pick(); if (first) first.click(); else sInput.blur(); return; }
+    if ((e.key === "Enter" || e.keyCode === 13) && inField && !e.isComposing) { e.preventDefault(); searchGo(); return; }
     if (e.key === "ArrowDown" && inField && items.length) { e.preventDefault(); ($(".card .ct a", sRes) || items[0]).focus(); return; }
     if (i < 0 || !/^Arrow(Down|Up|Left|Right)$/.test(e.key)) return;
     e.preventDefault(); const n = i + (/Down|Right/.test(e.key) ? 1 : -1);
@@ -1165,6 +1200,7 @@
       return; }
     if (t.matches("[data-line]")) { const l = S.cartLines().find((x) => x.id === t.dataset.line); if (l) S.setQty(l.id, l.quantity + +t.dataset.d); return; }
     if (t.matches("[data-action=cookies]")) { RQ.showCookies(true); return; }
+    if (t.id === "burger" && $("#mnav").classList.contains("open")) { closeAll(); return; } // the burger closes what it opened (a tap while the menu slides in)
     if (t.id === "burger") { opener = t; $("#mnav").classList.add("open"); behind(true); t.setAttribute("aria-expanded", "true"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $("#mnavClose").focus(), 60); return; }
     if (t.id === "mnavClose") { closeAll(); return; }
     if (t.matches("a[data-after]")) RQ.ss.set("rumiq-after-login", "#" + t.dataset.after);

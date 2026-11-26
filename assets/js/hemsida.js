@@ -65,7 +65,7 @@
         ${rooms.length ? `<div class="hem-cards">${rooms.slice(0, 3).map((r) => roomCard(r, true)).join("")}</div>${rooms.length > 3 ? `<div class="hem-cards small">${rooms.slice(3).map((r) => roomCard(r, false)).join("")}</div>` : ""}<div id="hemNewBox" hidden>${firstRoom().replace("Skapa ditt första rum", "Skapa ett nytt rum").replace('<span class="eyebrow">Börja här</span>', "")}</div>` : firstRoom()}
         ${groupsHtml()}${benefits()}${rooms.length && RQ.homeRooms ? RQ.homeRooms.html() : ""}</div>`],
       ["bilder", aiN > 0, RQ.aiLib ? `<a href="#mh-bilder" data-ai-count>Alla bilder (${aiN})</a>` : "", RQ.aiLib ? RQ.aiLib.html() : ""],
-      ["fav", wish.length > 0, `<a href="#mh-fav">Produkter (${wish.length})</a>`, `<div id="mh-fav"><div class="sec-row"><div class="sec-head"><h2 class="h3">Produkter</h2></div>${wish.length ? `<span class="mh-favacts"><button class="btn ghost sm" type="button" data-share-wish><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6h14v-6"/></svg><span>Dela listan</span></button><a class="link" href="#onskelista">Listor per rum</a></span>` : ""}</div>${wish.length ? RQ.grid(wish, "", false, null, true) : ""}${wish.length && RQ.priceWatch ? RQ.priceWatch.html(wish.map((p) => p.handle), "mhw") : ""}${wish.length ? "" : `${none("Inget sparat än.", "Tryck på hjärtat på en produkt, så hamnar den här.", "#butik", "Till butiken")}${RQ.svepNudge ? RQ.svepNudge() : ""}`}</div>`],
+      ["fav", wish.length > 0, `<a href="#mh-fav">Produkter (${wish.length})</a>`, `<div id="mh-fav"><div class="sec-row"><div class="sec-head"><h2 class="h3">Produkter</h2></div>${wish.length ? `<span class="mh-favacts"><button class="btn ghost sm" type="button" data-share-wish><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6h14v-6"/></svg><span>Dela listan</span></button><a class="link" href="#onskelista">Listor per rum</a></span>` : ""}</div>${wish.length ? RQ.grid(wish) + (RQ.moreBtn ? RQ.moreBtn(wish.map((p) => p.handle), "Mer som det du sparat") : "") : ""}${wish.length && RQ.priceWatch ? RQ.priceWatch.html(wish.map((p) => p.handle), "mhw") : ""}${wish.length ? "" : `${none("Inget sparat än.", "Tryck på hjärtat på en produkt, så hamnar den här.", "#butik", "Till butiken")}${RQ.svepNudge ? RQ.svepNudge() : ""}`}</div>`],
       ["stil", !!style, `<a href="#mh-stil">Min stil</a>`, `<div id="mh-stil"><div class="sec-head"><h2 class="h3">Min stil</h2></div>${style ? `<div class="result"><h2>${RQ.STYLES[style.style].name}</h2><p style="margin-top:.5rem">${RQ.STYLES[style.style].text}</p><p class="small">Uppdaterad ${new Date(style.at).toLocaleDateString("sv-SE")}.</p><div class="ctrl-row"><a class="btn sm" href="#svep">Svep mer</a><a class="btn ghost sm" href="#studio-stil">Fyra snabba val</a></div></div>${overTime()}${H.slot({ type: (rooms[0] || {}).type || "vardagsrum", style: style.style, from: "stil" })}` : none("Ingen stil än.", "Svep tio kort, så får du din stilprofil och ett färdigt rumsförslag.", "#svep", "Svep fram din stil")}</div>`],
       ["chat", !!chat, `<a href="#mh-chat">Stylistsamtal</a>`, `<div id="mh-chat"><div class="sec-head"><h2 class="h3">Stylistsamtal</h2></div>${chat || none("Inget sparat samtal.", "Logga in och fråga stylisten, så sparas samtalet här.", "#studio-stylist", "Fråga stylisten")}</div>`],
       ["looks", looks.length + bs.length > 0, `<a href="#mh-looks">Looks och moodboards (${looks.length + bs.length})</a>`, `<div id="mh-looks"><div class="sec-row"><div class="sec-head"><h2 class="h3">Sparade looks och moodboards</h2></div><button class="btn ghost sm" type="button" data-board-new>Ny moodboard</button></div>
@@ -123,7 +123,10 @@
       f.addEventListener("click", (e) => { const c = e.target.closest("[data-first-style]"); if (!c) return; style = style === c.dataset.firstStyle ? null : c.dataset.firstStyle; $$("[data-first-style]", f).forEach((b) => b.setAttribute("aria-pressed", b.dataset.firstStyle === style)); });
       f.addEventListener("submit", (e) => {
         e.preventDefault(); const go = (e.submitter && e.submitter.value) || "sample", type = f.type.value;
-        const r = H.create({ label: f.label.value || typeName(type), type, style, items: style ? H.propose({ type, style }).items : [] });
+        const items = style ? H.propose({ type, style }).items : [], label = f.label.value.trim() || typeName(type), R = RQ.room;
+        // your own photo, and none in this browser yet: the gate and the photo first; the room is made when the photo really comes (device2 A3)
+        if (go === "own" && !(R && R.has && R.has() && !R.get().sample)) { H._make = { label, items }; H.openInRoom({ room: type, own: true, items, style }); return; }
+        const r = H.create({ label, type, style, items });
         H.openInRoom({ room: r.type, own: go === "own", items: H.items(r), style, project: r.id });
       });
       f.type.addEventListener("change", () => { f.label.placeholder = "Till exempel " + typeName(f.type.value); });
@@ -132,7 +135,7 @@
   function nextStep(id, btn) {
     const r = H.room(id); if (!r) return; RQ.aiLib && RQ.aiLib.pics(id).then((pics) => {
       const nx = H.progress(r, pics.length).next;
-      if (nx.act === "see") return H.openInRoom({ room: r.type, items: H.items(r), style: r.style, budget: r.budget, project: r.id });
+      if (nx.act === "see") return H.openInRoom({ room: r.type, items: H.items(r), style: H.styleOf(r), budget: r.budget, project: r.id });
       if (nx.act === "buy") return RQ.addMany(H.money(r).toBuy.map((it) => it.h + "::" + (it.v || 0)), btn, H.name(r));
       openRoom(id, nx.act);
     });
@@ -164,7 +167,7 @@
       return `<li><img src="${RQ.cut(p)}" alt=""><span><b>${esc(p.name)}</b><small>${v ? "Gillar" : o ? `Föreslår ${esc(o.name)}, ${kr(o.price)}` : "Vill ha något annat"}</small></span>${v || !inRoom.has(h) ? "" : o && !inRoom.has(o.handle) ? `<button class="btn ghost sm" type="button" data-fb-to="${h}|${o.handle}">Byt till den</button>` : `<button class="btn ghost sm" type="button" data-fb-byt="${h}">Byt</button>`}</li>`; }).join("")}</ul></div>`).join("")}</div>`; };
   const restHtml = (r, id) => { const bs = boards().filter((b) => b.room === id), has = H.items(r).length;
     // with a list already, the proposal is "something else" behind one line, so the same things are not shown twice
-    const prop = H.slot({ type: r.type, style: r.style, budget: r.budget, room: r.id, from: "room", noAsk: true, avoid: has ? H.items(r).map((it) => it.h) : [] });
+    const prop = H.slot({ type: r.type, style: H.styleOf(r), budget: r.budget, room: r.id, from: "room", noAsk: true, avoid: has ? H.items(r).map((it) => it.h) : [] });
     return `<section class="hem-sec" id="hemPropSec">${has ? `<details class="hem-more hem-other"><summary>Se ett annat förslag för rummet</summary>${prop}</details>` : prop}</section>
       <section class="hem-sec"><div class="sec-row"><h3 class="h3">Moodboards</h3><button class="btn ghost sm" type="button" data-board-new="${esc(id)}">Ny moodboard</button></div>${bs.length ? `<div class="hem-boards">${bs.map((b) => `<button type="button" class="hem-board" data-board-open="${esc(b.id)}"><span class="hem-board-ims">${b.items.slice(0, 4).map((it) => RQ.byHandle(it.h) ? `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">` : "").join("")}</span><b>${esc(b.name || "Moodboard")}</b></button>`).join("")}</div>` : `<p class="small">Samla saker fritt, utan rum, och prova dem sedan här.</p>`}</section>
       <section class="hem-sec"><h3 class="h3">Om rummet</h3><form class="hem-room-f" id="hemRoomF" novalidate>
@@ -181,7 +184,7 @@
   function openRoom(id, focus) {
     const r = H.room(id); if (!r) return; sid = id; H.setActive(id);
     sbody.innerHTML = `<div class="hem-room">
-      <div class="hem-room-h"><span class="eyebrow">${esc(typeName(r.type))}</span><h2 id="hemTitle" class="ai-h">${esc(H.name(r))}</h2>${r.group ? `<p class="hem-grp">${r.group.words ? `<span>${esc(H.name(r))}:</span> <span>${esc(r.group.words)}, er gemensamma stil.</span> ` : ""}${withWho(r.group)}. <a class="link" href="#svep-ihop-${esc(RQ.svepGroup && RQ.svepGroup.get(r.group.id) ? RQ.svepGroup.payload(RQ.svepGroup.get(r.group.id)) : r.group.link)}" data-hem-close>Ert svep</a></p>` : ""}<p class="hem-prog" id="hemProg">${progHtml(r, 0)}</p>
+      <div class="hem-room-h">${H.name(r).toLowerCase().startsWith(typeName(r.type).toLowerCase()) ? "" : `<span class="eyebrow">${esc(typeName(r.type))}</span>`}<h2 id="hemTitle" class="ai-h">${esc(H.name(r))}</h2>${r.group ? `<p class="hem-grp">${r.group.words ? `<span>${esc(H.name(r))}:</span> <span>${esc(r.group.words)}, er gemensamma stil.</span> ` : ""}${withWho(r.group)}. <a class="link" href="#svep-ihop-${esc(RQ.svepGroup && RQ.svepGroup.get(r.group.id) ? RQ.svepGroup.payload(RQ.svepGroup.get(r.group.id)) : r.group.link)}" data-hem-close>Ert svep</a></p>` : ""}<p class="hem-prog" id="hemProg">${progHtml(r, 0)}</p>
         <div class="ai-row"><button class="btn" type="button" id="hemSee">${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" id="hemAsk">Vad tycker du?</button></div></div>
       <section class="hem-sec"><h3 class="h3">Bilder</h3><div class="ai-lib-list" id="hemPics" aria-busy="true"></div></section>
       <section class="hem-sec" id="hemListSec"><h3 class="h3">Inköpslista</h3><div id="hemList">${listRows(r)}</div></section>
@@ -198,7 +201,7 @@
   }
   function wireForm(id) {
     const f = $("#hemRoomF", sbody); if (!f) return;
-    const save = () => { const x = H.room(id); if (!x) return; const n = Math.round(+String(f.budget.value).replace(/\s/g, "")); H.patch(id, { label: f.label.value.trim().slice(0, 40) || typeName(f.type.value), type: f.type.value, budget: n > 0 ? n : null, material: f.material.value.trim(), notes: f.notes.value.trim() }); $("#hemTitle", sbody).textContent = H.name(H.room(id)); };
+    const save = () => { const x = H.room(id); if (!x) return; const n = Math.round(+String(f.budget.value).replace(/\s/g, "")); H.patch(id, { label: H.uniqueName(f.label.value.trim().slice(0, 37) || typeName(f.type.value), id), type: f.type.value, budget: n > 0 ? n : null, material: f.material.value.trim(), notes: f.notes.value.trim() }); $("#hemTitle", sbody).textContent = H.name(H.room(id)); };
     f.addEventListener("input", () => { clearTimeout(f._t); f._t = setTimeout(save, 350); });
     f.addEventListener("change", save);
     f.addEventListener("click", (e) => { const c = e.target.closest("[data-room-style]"); if (!c) return; const x = H.room(id), v = x.style === c.dataset.roomStyle ? null : c.dataset.roomStyle; H.patch(id, { style: v }); $$("[data-room-style]", f).forEach((b) => b.setAttribute("aria-pressed", b.dataset.roomStyle === v)); });

@@ -37,7 +37,8 @@ srv = Srv(("127.0.0.1", 0), lambda *a, **k: H(*a, directory=str(ROOT), **k))
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 BASE = f"http://127.0.0.1:{srv.server_address[1]}/"
 UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"
-SIZES = {"390": (390, 844, True), "360": (360, 740, True), "1440": (1440, 900, False), "1280": (1280, 720, False)}
+SIZES = {"390": (390, 844, True), "360": (360, 740, True), "375s": (375, 548, True), "1440": (1440, 900, False), "1280": (1280, 720, False)}
+DOCK = "(() => { const c = document.querySelector('.sv-ctrl'), d = document.querySelector('.dock'); if (!c || !d || getComputedStyle(d).display === 'none') return [0, 1]; return [Math.round(c.getBoundingClientRect().bottom), Math.round(d.getBoundingClientRect().top)]; })()"
 
 
 def new(b, size="390", night=False, share=None, clip=True):
@@ -105,6 +106,10 @@ with sync_playwright() as p:
 
     ctxB, pb, eb = new(b, "1440", night=True, share="ok")
     pb.goto(urlA); pb.wait_for_timeout(1000)
+    wa = pb.evaluate("(() => { const w = document.querySelector('.gr-whoami'); return w && [w.querySelector('h2').innerText, [...w.querySelectorAll('[data-gr-me]')].map((b) => b.innerText.replace(/\\s+/g, ' ').trim()), !!w.querySelector('[data-gr-new]'), !document.getElementById('svDeck')]; })()")
+    ok(wa and wa[0] == "Vem är du?" and wa[1] == ["A Anna"] and wa[2] and wa[3], f"a browser that has not seen the group: 'Vem är du?' first, the names as buttons, no deck yet: {wa}")
+    pb.click("[data-gr-new]"); pb.wait_for_timeout(600)
+    ok(pb.evaluate("!!document.getElementById('svDeck') && document.querySelector('.sv-head h1').innerText") == "Din tur att svepa.", "'Jag är ny, svep korten' brings the deck")
     who = pb.evaluate("[...document.querySelectorAll('.gr-who .gr-ppl li')].map((l) => l.innerText.replace(/\\s+/g, ' ').trim())")
     ok(who == ["A Anna", "+ Du"], f"B opens A's link: who has answered, and an open place for B: {who}")
     ok(pb.evaluate("document.querySelector('.sv-head .lead').innerText") == "Svep 10 kort, så ser ni vad ni båda gillar.", "B's one line says what to do")
@@ -120,21 +125,25 @@ with sync_playwright() as p:
     ok(pb.evaluate("document.querySelector('.two-pct').innerText") == f"{round(len(ua & ub) / len(ua | ub) * 100)} % gemensamt", "two people: the meter is shared out of liked by either")
     ok(pb.evaluate("document.querySelector('.sv-head h1').innerText") == "Så här svarade ni.", "after the deck the page head says what it shows")
     ok("svep_group_completed" in pb.evaluate(EV), "counted: group completed")
+    cols = pb.evaluate("getComputedStyle(document.querySelector('.svep-result.group')).gridTemplateColumns.split(' ').length")
+    ok(cols == 2, f"on a computer the result has two columns: {cols}")
     urlB = send(pb, "Erik")
     ok(pb.evaluate("window.__shared.length") == 1 and pb.evaluate("window.__shared[0].url") == urlB and pb.evaluate("document.querySelector('#grSend .sv-linkmsg').textContent").startswith("Skickat"), "with a share sheet: Web Share gets the link, and the page says it was sent")
     ok(urlB.startswith(urlA + "_") and urlB.endswith("Erik"), f"B's link carries A and then B: {urlB[-30:]}")
 
     ctxC, pc, ec = new(b, "360")
-    pc.goto(urlB); pc.wait_for_timeout(1000)
+    pc.goto(urlB); pc.wait_for_timeout(1000); pc.click("[data-gr-new]"); pc.wait_for_timeout(600)
     ok(pc.evaluate("document.querySelector('.sv-head .lead').innerText") == "Svep 10 kort, så ser ni vad ni alla gillar.", "C: 'vad ni alla gillar'")
     swipe(pc, C)
     allL = [h for i, h in enumerate(hs) if A[i] == B[i] == C[i] == "Y"]
     most = [h for i, h in enumerate(hs) if [A[i], B[i], C[i]].count("Y") == 2]
     t3 = pc.evaluate("document.querySelector('.svep-result h2').innerText")
     ok(t3 == f"Ni gillar alla {len(allL)} saker", f"three people: 'Ni gillar alla': {t3}")
-    eyebrows = pc.evaluate("[...document.querySelectorAll('.svep-result .sp-saved > .eyebrow')].map((e) => e.innerText)")
+    eyebrows = pc.evaluate("[...document.querySelectorAll('.svep-result .gr-main .sp-saved > .eyebrow, .svep-result .gr-most summary')].map((e) => e.textContent.trim())")
     ok(f"Det ni alla gillar · {len(allL)}" in eyebrows and f"Det de flesta gillar · {len(most)}" in eyebrows, f"three people: all and most (at least half): {eyebrows}")
     ok(pc.evaluate("document.querySelectorAll('.gr-each .sp-saved').length") == 3, "three people: each one's picks")
+    ok(pc.evaluate("[...document.querySelectorAll('.svep-result details.gr-most, .svep-result details.gr-each')].map((d) => d.open)") == [False, False], "on a phone the result is short: 'de flesta' and each one's picks are folded")
+    ok(pc.evaluate("document.querySelectorAll('.svep-result [data-more]').length") == 1, "one way in to 'Mer som det här', not one per thing")
     st = pc.evaluate("document.querySelector('.gr-style .gr-style-t') && document.querySelector('.gr-style .gr-style-t').innerText")
     ok(bool(st) and pc.evaluate("document.querySelectorAll('.gr-style .sp-row').length") == 4, f"the group style: a mix of styles: {st}")
     ok(pc.evaluate("[...document.querySelectorAll('.svep-result .gr-ppl li b')].map((x) => x.innerText)") == ["Anna", "Erik", "Du"], "three people: names in the order they answered")
@@ -145,6 +154,15 @@ with sync_playwright() as p:
     ok(pa.evaluate("!!document.querySelector('.svep-result.group') && !document.getElementById('svDeck')"), "A opens the newest link: straight to the result, no deck again")
     ok(pa.evaluate("[...document.querySelectorAll('.svep-result .gr-ppl li b')].map((x) => x.innerText)") == ["Du", "Erik", "Sara"], "A's browser knows which one is A")
     ok(pa.evaluate("RQ.svepGroup.all()[0].ppl.length") == 3, "A's browser keeps all three")
+    # A opens the same link inside a messaging app (a browser that has never seen the group): one tap on 'Anna'
+    ctxW, pw_, ew = new(b, "375s")
+    pw_.goto(urlC); pw_.wait_for_timeout(1000)
+    ok(pw_.evaluate("[...document.querySelectorAll('[data-gr-me]')].map((b) => b.innerText.replace(/\\s+/g, ' ').trim())") == ["A Anna", "E Erik", "S Sara"], "Vem är du?: everyone in the group as a button")
+    nb = pw_.evaluate("(() => { const b = document.querySelector('[data-gr-new]'), d = document.querySelector('.dock'); return [Math.round(b.getBoundingClientRect().bottom), Math.round(d.getBoundingClientRect().top)]; })()")
+    ok(nb[0] <= nb[1], f"375 × 548: 'Vem är du?' and its buttons are above the dock: {nb}")
+    pw_.click("[data-gr-me]"); pw_.wait_for_timeout(900)
+    ok(pw_.evaluate("[...document.querySelectorAll('.svep-result .gr-ppl li b')].map((x) => x.innerText)") == ["Du", "Erik", "Sara"] and "svep_group_whoami" in pw_.evaluate(EV), "tapping 'Anna' shows the result as Anna, no deck")
+    ctxW.close()
 
     # ------------------------------------------------------------ the result becomes a room
     pc.click("[data-gr-room]"); pc.wait_for_timeout(600)
@@ -175,7 +193,7 @@ with sync_playwright() as p:
     ctx, pg, errs = new(b, "390")
     go(pg, "svep", 600)
     old_hs = pg.evaluate("RQ.PRODUCTS.slice(0, 6).map((p) => p.handle)")
-    pg.goto(BASE + "svep-ihop/#svep-ihop-" + "101100." + ".".join(old_hs) + "~Anna"); pg.wait_for_timeout(1000)
+    pg.goto(BASE + "svep-ihop/#svep-ihop-" + "101100." + ".".join(old_hs) + "~Anna"); pg.wait_for_timeout(1000); pg.click("[data-gr-new]"); pg.wait_for_timeout(500)
     ok(pg.evaluate("document.getElementById('svCount').textContent") == "1 av 6" and pg.evaluate("document.querySelector('.gr-who b').innerText") == "Anna", "an older link with one answer: the deck with its six cards, Anna has answered")
     swipe(pg, "YYYNNN")
     ok(pg.evaluate("document.querySelector('.svep-result h2').innerText") == "Ni gillar båda 2 saker" and pg.evaluate("document.querySelector('.two-pct').innerText") == "50 % gemensamt", "an older link: the same comparison as before")
@@ -280,11 +298,11 @@ with sync_playwright() as p:
     rs = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop-items .why')].map((w) => [w.textContent, w.closest('li').dataset.h])")
     ok(rs and all(t in ("Du gillade den i Svep", "Du har sparat den") or t.startswith(("Eftersom du gillade", "Passar din stil", "Passar stilen")) for t, h in rs), f"the proposal card: a reason on its things: {rs[:3]}")
     # Mer som det här, from Svep's result
-    pg.click(".svep-result .sv-more"); pg.wait_for_timeout(500)
+    pg.click(".svep-result [data-more]"); pg.wait_for_timeout(500)
     ml = pg.evaluate("(() => { const m = document.querySelector('.ml'); return m && [m.querySelector('h3').innerText, m.querySelectorAll('.card').length, [...m.querySelectorAll('.card-why')].map((x) => x.textContent), document.activeElement === m.querySelector('h3')]; })()")
     ok(ml and ml[0].startswith("Mer som ") and 1 <= ml[1] <= 4 and len(ml[2]) == ml[1] and ml[3], f"Mer som det här: a few like it, each with what they share, the focus on its heading: {ml}")
     seed = pg.evaluate("document.querySelector('.ml').dataset.ml")
-    sims = pg.evaluate("(h) => RQ.moreLike(h, 6).map((x) => x.p.handle)", seed)
+    sims = pg.evaluate("(h) => RQ.moreLikeMany(h.split(','), 8).map((x) => x.p.handle)", seed)
     pg.click(".ml [data-svep-seed]"); pg.wait_for_timeout(1000)
     first = pg.evaluate("(() => { const c = document.querySelector('.sv-card[aria-hidden=false]'); return c ? [c.dataset.h, (c.querySelector('.sv-why') || {}).textContent || ''] : null; })()")
     seen = pg.evaluate("Object.keys(RQ.taste.get().seen)")
@@ -302,7 +320,7 @@ with sync_playwright() as p:
     ok(all(k in en for k in ("Gör ett rum av det", "Mer som det här", "Skicka vidare", "Din stil över tid")), "English for the new words")
 
     # ------------------------------------------------------------ targets, screens, axe
-    for size in ("390", "360", "1440", "1280"):
+    for size in ("390", "360", "375s", "1440", "1280"):
         for night in (False, True):
             ctx, pg, errs = new(b, size, night=night, share="none")
             tag = f"[{size}{' evening' if night else ''}]"
@@ -311,6 +329,10 @@ with sync_playwright() as p:
             swipe(pg, "YYNYNYYNNY"); u = send(pg, "Anna")
             pg.evaluate("localStorage.removeItem('rumiq-groups')")
             pg.goto(u); pg.wait_for_timeout(900)
+            pg.click("[data-gr-new]"); pg.wait_for_timeout(600)
+            if SIZES[size][2]:
+                dk = pg.evaluate(DOCK)
+                ok(dk[1] - dk[0] >= 8, f"{tag} the shared page: the Svep buttons sit above the dock: {dk}")
             sw = pg.evaluate("document.documentElement.scrollWidth")
             ok(sw <= SIZES[size][0], f"{tag} the shared page fits the width: {sw}")
             swipe(pg, "YYYNNNYYNN")
@@ -321,11 +343,13 @@ with sync_playwright() as p:
                 RUN = """async () => { const r = await axe.run(document.querySelector('#view'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] }, resultTypes: ['violations'] });
                   return r.violations.map((v) => v.id + ': ' + v.nodes.slice(0, 2).map((x) => x.target.join(' ')).join(' | ')); }"""
                 ok(not pg.evaluate(RUN), f"[axe {tag}] the group result: {pg.evaluate(RUN)[:3]}")
-                pg.click("[data-gr-room]"); pg.wait_for_timeout(500); pg.click(".svep-result .sv-more"); pg.wait_for_timeout(500)
+                pg.click("[data-gr-room]"); pg.wait_for_timeout(500); pg.click(".svep-result [data-more]"); pg.wait_for_timeout(500)
                 ok(not pg.evaluate(RUN), f"[axe {tag}] the room panel and Mer som det här: {pg.evaluate(RUN)[:3]}")
                 go(pg, "svep-ihop"); pg.add_script_tag(content=AXE.read_text())
                 ok(not pg.evaluate(RUN), f"[axe {tag}] the intro: {pg.evaluate(RUN)[:3]}")
                 pg.goto(u); pg.wait_for_timeout(900); pg.evaluate("localStorage.removeItem('rumiq-groups')"); pg.reload(); pg.wait_for_timeout(900); pg.add_script_tag(content=AXE.read_text())
+                ok(not pg.evaluate(RUN), f"[axe {tag}] Vem är du?: {pg.evaluate(RUN)[:3]}")
+                pg.click("[data-gr-new]"); pg.wait_for_timeout(600)
                 ok(not pg.evaluate(RUN), f"[axe {tag}] the shared page with the deck: {pg.evaluate(RUN)[:3]}")
             ok(not errs, f"{tag} no script errors {errs[:3]}")
             ctx.close()

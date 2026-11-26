@@ -235,6 +235,8 @@ with sync_playwright() as p:
         pg.evaluate("RQ.hem.openRoom(RQ.hem.rooms()[0].id)"); pg.wait_for_timeout(800); pg.evaluate("document.getElementById('hemAsk').click()"); pg.wait_for_timeout(400)
         ask = pg.evaluate("window.__sent[0] || ''")
         ok("#delad-f." in ask, f"{tag} 'Vad tycker du?' makes a link: {ask[-60:]}")
+        note = pg.evaluate("(() => { const n = document.querySelector('#hemSheet .hem-link'); return n && [n.querySelector('p').innerText, n.querySelector('input').value, !!n.querySelector('[data-copy-link]')]; })()")
+        ok(note and note[0].startswith("Länken är kopierad.") and note[1] == ask and note[2], f"{tag} 'Vad tycker du?' always says so on the page, with the link in a field to copy (device2 A2): {note and note[0]}")
         ctx2, p2, e2 = new(b, mob, W, Hh)
         p2.goto(ask, wait_until="load"); p2.wait_for_timeout(1500)
         try:
@@ -350,6 +352,21 @@ with sync_playwright() as p:
     for W, Hh, mob in ((390, 844, True), (1440, 900, False)):
         tag = f"[fix {W}]"
         ctx, pg, errs = new(b, mob, W, Hh)
+        # device2 A3: own photo as a guest shows the gate first; no room is made until the photo comes. A4: never two rooms with one name
+        go(pg, "mitt-hem", 1200); pg.evaluate("document.querySelector('#hemFirstF button[value=own]').click()"); pg.wait_for_timeout(900)
+        ok(pg.evaluate("RQ.hem.rooms().length") == 0 and pg.evaluate("!!document.querySelector('.roomsheet.open, .sheet.open')"), f"{tag} own photo as a guest: the gate first, no room made yet (device2 A3)")
+        pg.evaluate("RQ.room.closeSetup && RQ.room.closeSetup()"); pg.wait_for_timeout(200)
+        names = pg.evaluate("(() => { const a = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }), b = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }), c = RQ.hem.create({ type: 'vardagsrum' }); const n = [a, b, c].map((r) => r.label); [a, b, c].forEach((r) => RQ.hem.remove(r.id)); return n; })()")
+        ok(names == ["Vardagsrum", "Vardagsrum 2", "Vardagsrum 3"], f"{tag} never two rooms with the same name (device2 A4): {names}")
+        eb = pg.evaluate("(() => { const a = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }), b = RQ.hem.create({ label: 'Gästrummet', type: 'sovrum' }); RQ.hem.openRoom(a.id); const x = (document.querySelector('#hemSheet .hem-room-h .eyebrow') || {}).textContent || ''; RQ.hem.openRoom(b.id); const y = (document.querySelector('#hemSheet .hem-room-h .eyebrow') || {}).textContent || ''; [a, b].forEach((r) => RQ.hem.remove(r.id)); return [x, y]; })()")
+        pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+        ok(eb == ["", "Sovrum"], f"{tag} the room sheet's eyebrow never repeats the title (device2 A6): {eb}")
+        fit = pg.evaluate("""(() => { const had = RQ.room.fits; RQ.room.fits = (its) => its.slice(1); const d = document.createElement('div'); d.innerHTML = RQ.hem.slot({ type: 'vardagsrum', style: 'skandinavisk' }); document.body.appendChild(d);
+          const full = RQ.hem.propose({ type: 'vardagsrum', style: 'skandinavisk' }), lis = d.querySelectorAll('.hem-prop-items li').length, tot = +d.querySelector('.hem-prop-sum b').innerText.replace(/\\D/g, ''), note = (d.querySelector('.hem-left') || {}).innerText || '';
+          d.remove(); if (had) RQ.room.fits = had; else delete RQ.room.fits; return [lis, full.items.length, tot, full.total - RQ.byHandle(full.items[0].h).price, note]; })()""")
+        ok(fit[0] == fit[1] - 1 and fit[2] == fit[3] and fit[4].startswith("1 sak får inte plats"), f"{tag} the proposal card offers only what fits (RQ.room.fits), says what is left out, with the right total (device2 A7): {fit}")
+        sty = pg.evaluate("(() => { localStorage.setItem('rumiq-style', JSON.stringify({ style: 'klassisk', at: new Date().toISOString() })); const r = RQ.hem.create({ type: 'sovrum' }), p = RQ.hem.progress(r, 0); RQ.hem.remove(r.id); localStorage.removeItem('rumiq-style'); return [p.parts[0], p.next.act]; })()")
+        ok(sty[0] == ["Stil: klassisk", True] and sty[1] != "style", f"{tag} a style found in Svep counts as the room's style in its progress (device2 A5): {sty}")
         # the one promise before sign-in: Mitt rum's card and the sign-in sheet say the same as Skapa ditt första rum
         go(pg, "mitt-rum", 900); pg.evaluate("document.querySelector('.sheet.open [data-room-sample]') && document.querySelector('.sheet.open [data-room-sample]').click()"); pg.wait_for_timeout(1500)
         if pg.evaluate("RQ.room.has()") is False:
@@ -358,7 +375,10 @@ with sync_playwright() as p:
         pg.wait_for_timeout(500)
         ok(prom.startswith("5 AI-bilder gratis i månaden med konto") and pg.evaluate("[...document.querySelectorAll('[data-ai-balance]')].every((c) => c.textContent === RQ.ai.promise())"), f"{tag} Mitt rum's AI card says the one promise: {prom}")
         pg.evaluate("RQ.openAI()"); pg.wait_for_timeout(900)
-        ok(pg.evaluate("(document.querySelector('#aiSheet .ai-lead, .ai-sheet.open .ai-lead') || {}).textContent") == pg.evaluate("RQ.ai.promise(true)"), f"{tag} the sign-in sheet says the same promise: {pg.evaluate('(document.querySelector(\'.ai-sheet.open .ai-lead\') || {}).textContent')}")
+        gtxt = pg.evaluate("(document.querySelector('.ai-sheet.open') || {}).innerText || ''")
+        ok("Förhandsvisning utan konto" in gtxt and "kräver ett gratis konto" in gtxt and pg.evaluate("!!document.getElementById('aiGo') && !document.getElementById('aiOk')"), f"{tag} a guest sees the preview demo, honestly labelled, no consent needed (nothing is sent): {gtxt[:120]}")
+        pg.evaluate("document.getElementById('aiGo').click()"); pg.wait_for_timeout(3000)
+        ok(pg.evaluate("!!document.querySelector('.ai-result')"), f"{tag} the guest's demo result shows")
         pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         # the consent for a sample room speaks of the sample room, not of "your room"
         pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email'); localStorage.removeItem('rumiq-ai-consent')"); pg.wait_for_timeout(300)

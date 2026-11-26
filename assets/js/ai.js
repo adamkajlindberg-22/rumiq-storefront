@@ -340,18 +340,20 @@
 
   async function viewCompose() {
     const st = await AI.status(true), scene = RQ.room.scene();
-    if (!st.signed_in) return viewSignin();
+    const guest = !st.signed_in && st.demo; // the preview: a guest sees the demo too (nothing is sent, nothing is charged); the real AI picture needs an account
+    if (!st.signed_in && !guest) return viewSignin();
     if (st.error) {
       show(`<div class="ai-pad"><h2 id="aiTitle" class="ai-h">Det gick inte att nå bildskaparen.</h2><p class="ai-lead">${esc(errText(st.error))}</p><div class="ai-row"><button class="btn" type="button" id="aiRetry">Försök igen</button></div></div>`);
       $("#aiRetry", body).addEventListener("click", viewCompose); return;
     }
-    if (!st.consent) return viewConsent();
+    if (!st.consent && !guest) return viewConsent();
     if (!st.demo && st.balance <= 0) return viewOut(st);
     const tooMany = scene.length > MAXP;
     if (!tooMany) chosen = null; else if (!chosen || chosen.some((h) => !scene.some((it) => it.h === h))) chosen = scene.slice(0, MAXP).map((it) => it.h);
     const shot = await AI.composite(900, chosen).catch(() => RQ.room.url());
     show(`<div class="ai-grid"><figure class="ai-fig"><img src="${shot}" alt="Din uppställning" id="aiShot"><figcaption>Din uppställning. AI:n behåller platserna och gör ljus och skuggor verkliga.</figcaption></figure>
-      <div class="ai-pad"><span class="eyebrow">${esc(balanceLine(st))}</span><h2 id="aiTitle" class="ai-h">Gör bilden verklig.</h2>
+      <div class="ai-pad"><span class="eyebrow">${guest ? "Förhandsvisning utan konto" : esc(balanceLine(st))}</span><h2 id="aiTitle" class="ai-h">Gör bilden verklig.</h2>
+        ${guest ? `<p class="small ai-guest">Här ser du hur det fungerar, utan konto. Den riktiga AI-bilden kräver ett gratis konto. <a href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a></p>` : ""}
         ${!scene.length ? `<p class="ai-warn">${errText("empty_scene")}</p>` : tooMany ? chooseHtml(scene) : `<p class="ai-lead">${scene.length} ${scene.length === 1 ? "produkt" : "produkter"} i rummet.</p>`}
         ${st.free_play ? chipsHtml(st) : ""}
         <div class="ai-row"><button class="btn" type="button" id="aiGo" ${!scene.length ? "disabled" : ""}>Skapa bild</button>${st.demo ? `<span class="small">Förhandsvisning: ingen bild dras.</span>` : `<span class="small">Använder 1 bild</span>`}</div>
