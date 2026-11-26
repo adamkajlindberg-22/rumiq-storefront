@@ -2704,6 +2704,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
 .rm-tool svg circle{fill:currentColor;stroke:none}
 .rm-menu{position:absolute;right:0;bottom:calc(100% + .5rem);z-index:30;display:grid;gap:.1rem;width:max-content;min-width:17rem;max-width:calc(100vw - 2 * var(--gutter));padding:.4rem;border:1px solid var(--line);border-radius:var(--r-s);background:var(--paper);box-shadow:0 18px 44px rgba(20,14,8,.18)}
 .rm-menu[hidden]{display:none}
+.rm-menu.down{bottom:auto;top:calc(100% + .5rem)} /* room below, none above under the header (D6) */
 .rm-menu button{display:flex;align-items:center;gap:.8rem;min-height:3.3rem;padding:.45rem .7rem;border:0;border-radius:calc(var(--r-s) - 2px);background:none;color:var(--ink);font-size:.95rem;font-weight:600;text-align:left}
 .rm-menu button:hover,.rm-menu button:focus-visible{background:var(--bg)}
 .rm-menu button svg{flex:none;width:1.3rem;height:1.3rem;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}

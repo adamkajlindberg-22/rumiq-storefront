@@ -1212,7 +1212,11 @@
         before.addEventListener("click", () => show(before.getAttribute("aria-checked") !== "true"));
         // "Mer": everything that is not Lägg till, Inred åt mig or Spara
         const more = $("#rmMore", root), menu = $("#rmMenu", root);
-        const openMenu = (on, focus) => { menu.hidden = !on; more.setAttribute("aria-expanded", on); more.classList.toggle("on", on); if (on && focus) $("button", menu).focus(); };
+        // the menu opens upward; where that would put its top under the sticky header (scrolled down), it opens downward, or the page moves (D6)
+        const placeMenu = () => { menu.classList.remove("down"); const r = menu.getBoundingClientRect(), navB = (($("#nav") || {}).getBoundingClientRect ? $("#nav").getBoundingClientRect().bottom : 0) + 8;
+          if (r.top >= navB) return; const bar = document.querySelector(".rm-bar"), below = (bar && bar.getClientRects().length ? bar.getBoundingClientRect().top : innerHeight) - more.getBoundingClientRect().bottom - 8;
+          if (below >= r.height + 8) menu.classList.add("down"); else window.scrollBy(0, r.top - navB); };
+        const openMenu = (on, focus) => { menu.hidden = !on; more.setAttribute("aria-expanded", on); more.classList.toggle("on", on); if (on) placeMenu(); if (on && focus) $("button", menu).focus({ preventScroll: true }); };
         more.addEventListener("click", () => openMenu(menu.hidden, true));
         menu.addEventListener("click", (e) => { if (e.target.closest("button")) openMenu(false); });
         menu.addEventListener("keydown", (e) => {
