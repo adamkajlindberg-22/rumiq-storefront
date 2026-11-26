@@ -235,6 +235,8 @@ with sync_playwright() as p:
         pg.evaluate("RQ.hem.openRoom(RQ.hem.rooms()[0].id)"); pg.wait_for_timeout(800); pg.evaluate("document.getElementById('hemAsk').click()"); pg.wait_for_timeout(400)
         ask = pg.evaluate("window.__sent[0] || ''")
         ok("#delad-f." in ask, f"{tag} 'Vad tycker du?' makes a link: {ask[-60:]}")
+        note = pg.evaluate("(() => { const n = document.querySelector('#hemSheet .hem-link'); return n && [n.querySelector('p').innerText, n.querySelector('input').value, !!n.querySelector('[data-copy-link]')]; })()")
+        ok(note and note[0].startswith("Länken är kopierad.") and note[1] == ask and note[2], f"{tag} 'Vad tycker du?' always says so on the page, with the link in a field to copy (device2 A2): {note and note[0]}")
         ctx2, p2, e2 = new(b, mob, W, Hh)
         p2.goto(ask, wait_until="load"); p2.wait_for_timeout(1500)
         try:

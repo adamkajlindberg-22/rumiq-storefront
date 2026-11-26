@@ -160,7 +160,7 @@
     if (b.matches("[data-hem-buy]")) { RQ.addMany(s.pr.items.map((it) => it.h + "::" + it.v), b, H.title(s.pr)); return; }
     if (b.matches("[data-hem-keep]")) { const r = ensureRoom(s); if (s.room === r.id) H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); repaint(box); RQ.toast(`${esc(H.name(r))} är sparat. <a href="#mitt-hem">Visa i Sparat</a>`); return; }
     if (b.matches("[data-hem-see]")) { const r = ensureRoom(s); H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); H.openInRoom({ room: r.type, items: s.pr.items, style: s.pr.style, budget: s.budget, project: r.id }); return; }
-    if (b.matches("[data-hem-ask]")) { const r = ensureRoom(s); H.patch(r.id, { items: s.pr.items, style: s.pr.style }); H.askLink(H.room(r.id), b); repaint(box); }
+    if (b.matches("[data-hem-ask]")) { const r = ensureRoom(s); H.patch(r.id, { items: s.pr.items, style: s.pr.style }); repaint(box); H.askLink(H.room(r.id), $("[data-hem-ask]", box) || b); }
   });
 
   /* ------------------------------------------------------------------ into Mitt rum ("Se det i ditt rum") */
@@ -209,9 +209,20 @@
   const clean = (s) => String(s || "").replace(/[^\p{L}\p{N} '-]/gu, "").trim().slice(0, 30);
   H.askUrl = (r) => { const me = clean(((S.customer && S.customer()) || {}).name || ""), its = H.items(r);
     return new URL("delad/", document.baseURI).href + "#delad-f." + [r.id, r.type, r.style || "x", its.map((it) => pidOf(it.h) + (it.v ? "~" + it.v : "")).join("_")].join(".") + "~" + encodeURIComponent(me); };
+  /* a link to send: the phone's share sheet when there is one, and always a note on the page with the link in a field to copy
+     (the share sheet can be closed, or not come at all); the note sits right under the button's row */
   const shareUrl = async (url, title, text, btn) => {
-    try { if (navigator.share) { await navigator.share({ title, text, url }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
-    try { await navigator.clipboard.writeText(url); RQ.toast("Länken är kopierad. Skicka den till vem du vill."); } catch (e) { window.prompt("Kopiera länken:", url); }
+    let shared = null; try { if (navigator.share) shared = navigator.share({ title, text, url }); } catch (e) {}
+    let copied = false; try { await navigator.clipboard.writeText(url); copied = true; } catch (e) {}
+    linkNote(url, copied, btn);
+    if (shared) shared.catch(() => {});
+  };
+  const linkNote = (url, copied, btn) => {
+    const row = btn && btn.isConnected ? btn.closest(".ai-row, .ctrl-row") || btn : null; if (!row) { RQ.toast(copied ? "Länken är kopierad." : "Kopiera länken och skicka den."); return; }
+    let n = row.nextElementSibling; if (!n || !n.matches(".hem-link")) { n = document.createElement("div"); n.className = "hem-link"; row.after(n); }
+    n.innerHTML = `<p role="status"><b>${copied ? "Länken är kopierad." : "Här är länken."}</b> Skicka den till vem du vill. Inget konto behövs för att öppna den.</p><div class="hem-link-row"><label class="sr" for="hl${++seq}">Länken</label><input id="hl${seq}" type="text" readonly value="${esc(url)}"><button class="btn ghost sm" type="button" data-copy-link>Kopiera</button></div>`;
+    const inp = $("input", n); inp.addEventListener("focus", () => inp.select());
+    $("[data-copy-link]", n).addEventListener("click", async (e) => { try { await navigator.clipboard.writeText(url); } catch (x) { inp.select(); try { document.execCommand("copy"); } catch (y) {} } e.currentTarget.textContent = "Kopierad"; $("p b", n).textContent = "Länken är kopierad."; });
   };
   H.askLink = (r, btn) => { if (!r || !H.items(r).length) { RQ.toast("Välj några saker till rummet först."); return; } shareUrl(H.askUrl(r), "Vad tycker du?", `${H.name(r)}: vad tycker du? ${PROMISE}`, btn); };
   const parseAsk = (raw) => {
