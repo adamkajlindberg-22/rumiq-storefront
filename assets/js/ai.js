@@ -189,6 +189,10 @@
   const setCount = (n) => (n > 0 ? S.store.set("rumiq-ai-n", n) : S.store.del("rumiq-ai-n")); // nothing kept when the library is empty ("Rensa allt" leaves no trace)
   const recount = () => Lib.list().then((r) => { setCount(r.pics.length); return r.pics.length; }).catch(() => 0);
   const remoteLib = () => !!((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary && live() && !!S.customer();
+  /* the one promise before sign-in, the same words everywhere (the sign-in sheet, Mitt rum's card, Skapa ditt första rum):
+     how many free pictures, honest about the preview, and where the pictures are kept */
+  AI.promise = (long) => { const s = `${FREE_IMAGES} AI-bilder gratis i månaden med konto${live() ? "" : ", när sajten är live"}`;
+    return long ? `${s}. Bilderna sparas privat ${((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary && live() ? "i ditt konto" : "på den här enheten"}.` : s; };
 
   /* the room project: one per room photo. Versions (every picture made in the same room) belong to it, and so does a
      Rumsprojekt saved from Mitt rum. "Fortsätt i Mitt rum" puts the photo back under its old key (rumiq-ai-proj). */
@@ -295,7 +299,7 @@
   document.addEventListener("click", (e) => { if (isOpen && !busy && e.target.closest && e.target.closest("[data-open-cart]")) close(); }, true);
   document.addEventListener("keydown", (e) => { if (isOpen && e.key === "Escape") { e.stopPropagation(); close(); } }, true);
 
-  const balanceLine = (st) => st.demo ? `Förhandsvisning: ${FREE_IMAGES} AI-bilder gratis i månaden med konto, när sajten är live` : `${st.balance} ${st.balance === 1 ? "bild" : "bilder"} kvar${st.plan === "plus" ? " i Studio Plus" : " den här månaden"}`;
+  const balanceLine = (st) => st.demo ? AI.promise() : `${st.balance} ${st.balance === 1 ? "bild" : "bilder"} kvar${st.plan === "plus" ? " i Studio Plus" : " den här månaden"}`;
   // the picture shows a product's first colour; when the cart holds it in another, the row says both, so the cart is not doubted
   const colourNote = (p, v = 0) => { const shown = p.variants[v] || p.variants[0], inC = [...new Set(S.cartLines().filter((l) => l.product.handle === p.handle).map((l) => l.variant && l.variant.title).filter(Boolean))];
     return inC.length && !inC.includes(shown) ? `I varukorgen: ${inC[0]} · bilden visar ${shown}` : `Bilden visar färgen ${shown}`; };
@@ -307,17 +311,18 @@
       <div class="ai-sum"><span>Det här finns i bilden</span><b>${kr(itemsTotal(items))}</b></div>`;
 
   // how long pictures are kept: with the account library on (RQ_CONFIG.studio.serverLibrary) the before picture is kept beside the AI picture
-  const keepText = (cap) => { const t = ((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary ? "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem." : "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto, och i Mina rumsbilder på den här enheten, tills du tar bort dem."; return cap ? t[0].toUpperCase() + t.slice(1) : t; };
+  const keepText = (cap) => { const t = ((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary ? "rumsfotot som skickas till bildtjänsten raderas efter 30 dagar. AI-bilderna och bilden före sparas privat i ditt konto tills du tar bort dem." : "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto, och under Sparat på den här enheten, tills du tar bort dem."; return cap ? t[0].toUpperCase() + t.slice(1) : t; };
   const viewSignin = () => show(`<div class="ai-pad"><span class="eyebrow">AI-bild av ditt rum</span><h2 id="aiTitle" class="ai-h">Logga in för att skapa bilden.</h2>
-      <p class="ai-lead">Bilderna sparas i ditt konto. Du får ${FREE_IMAGES} bilder gratis varje månad.</p>
+      <p class="ai-lead">${AI.promise(true)}</p>
       <div class="ai-row"><a class="btn" href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a><a class="btn ghost" href="#skapa-konto" data-after="mitt-rum" data-ai-after data-ai-close>Skapa konto</a></div></div>`, true);
 
   const viewConsent = () => {
-    show(`<div class="ai-pad"><span class="eyebrow">Innan första bilden</span><h2 id="aiTitle" class="ai-h">Så används din bild.</h2>
+    const smp = !!(RQ.room && RQ.room.get && (RQ.room.get() || {}).sample); // a sample room: our photo, nothing of yours but the arrangement
+    show(`<div class="ai-pad"><span class="eyebrow">Innan första bilden</span><h2 id="aiTitle" class="ai-h">${smp ? "Så används bilden." : "Så används din bild."}</h2>
       <ul class="ai-list">
-        <li><b>Det här skickas:</b> fotot av ditt rum och hur du har ställt produkterna.</li>
+        <li><b>Det här skickas:</b> ${smp ? "exempelrummets foto och hur du har ställt produkterna. Ett eget foto skickas först när du använder ett." : "fotot av ditt rum och hur du har ställt produkterna."}</li>
         <li><b>Hit:</b> RumIQ:s server i EU och bildtjänsten som skapar bilden.</li>
-        <li><b>Så länge:</b> ${keepText()}</li>
+        <li><b>Så länge:</b> ${smp ? `AI-bilderna sparas ${remoteLib() ? "privat i ditt konto" : "under Sparat på den här enheten"} tills du tar bort dem. Ett eget rumsfoto raderas efter 30 dagar.` : keepText()}</li>
         <li><b>Aldrig:</b> vi använder inte dina bilder för att träna AI och visar dem inte för någon annan.</li>
       </ul>
       <label class="check ai-check"><input type="checkbox" id="aiOk"> Jag godkänner att bilden skickas för att skapa AI-bilder.</label>
@@ -430,10 +435,10 @@
     catch (e) { return e && e.message === "full" ? "full" : "fail"; }
   }
 
-  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Sparad i <a href="#mitt-hem" data-ai-lib data-ai-close>Mina rumsbilder</a>, på den här enheten.</span></p>`
-    : v.saved === "full" ? `<p class="ai-warn small" role="alert">Det finns inte plats på enheten, så bilden sparades inte. Ladda ner den, eller ta bort några gamla bilder i <a href="#mitt-hem" data-ai-lib data-ai-close>Mina rumsbilder</a>.</p>`
+  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Bilden finns nu under <a href="#mitt-hem" data-ai-lib data-ai-close>Sparat</a>, på den här enheten.</span></p>`
+    : v.saved === "full" ? `<p class="ai-warn small" role="alert">Det finns inte plats på enheten, så bilden sparades inte. Ladda ner den, eller ta bort några gamla bilder under <a href="#mitt-hem" data-ai-lib data-ai-close>Sparat</a>.</p>`
     : v.saved === "fail" ? `<p class="small ai-saved" role="status"><span>Bilden kunde inte sparas här.</span> <button class="tlink" type="button" id="aiSave">Försök igen</button></p>`
-    : `<p class="small ai-saved" role="status"><button class="tlink" type="button" id="aiSave">Spara i Mina rumsbilder</button></p>`;
+    : `<p class="small ai-saved" role="status"><button class="tlink" type="button" id="aiSave">Spara bilden</button></p>`;
 
   function viewResult() {
     const st = AI.peek() || {}, list = view.list, v = list[view.cur], other = view.cmp >= 0 ? list[view.cmp] : null, many = list.length > 1;
@@ -444,7 +449,7 @@
         ${v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p><p class="small">När AI:n är igång kan du skapa nya versioner av samma rum och jämföra dem.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
         <div class="ai-row ai-buybar"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Visa någon</span></button></div>
         <div class="ai-row small-row">${v.demo ? "" : `<button class="tlink" type="button" id="aiAgain">Skapa igen<span class="ai-cost"> · 1 bild</span></button>`}<button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
-        ${productsList(items, !v.demo && swapOk())}
+        ${productsList(items, swapOk())}
         ${savedLine(v)}</div></div>`, false, true);
     const fig = $("[data-ba]", body), ctl = baWire(fig, other);
     if (fresh) reveal(fig, ctl, 30);
@@ -525,7 +530,7 @@
     if (!remoteLib()) setCount(n);
     host.removeAttribute("aria-busy");
     host.innerHTML = gs.length ? gs.map((g) => libCard(g, all.indexOf(g))).join("") : libState.filter && all.length ? `<p class="small">Inga bilder i det här rummet än.</p>` : `<div class="mh-none"><p><b>Inga rumsbilder än.</b> <span>Varje AI-bild du skapar i Mitt rum hamnar här, med bilden före.</span></p><a class="link" href="#mitt-rum">Till Mitt rum</a></div>`;
-    $$("[data-ai-count]").forEach((c) => (c.textContent = `Mina rumsbilder (${n})`));
+    $$("[data-ai-count]").forEach((c) => (c.textContent = `Alla bilder (${n})`));
     $$("[data-ai-proj]").forEach((c) => { const g = gs.find((x) => x.key === c.dataset.aiProj); c.innerHTML = g ? `<a class="link" href="#mh-bilder" data-ai-goto="${esc(g.key)}">${g.list.length === 1 ? "1 AI-bild" : `${g.list.length} AI-bilder`} av rummet</a>` : ""; c.hidden = !g; });
     $$(".ai-lcard", host).forEach((card) => {
       const g = all[+card.dataset.lib], v = g.list[g.cur], other = g.cmp >= 0 ? g.list[g.cmp] : null, items = liveItems(v.items);
@@ -557,7 +562,10 @@
         keepKey(g.key);
       }
       RQ.room.saveScene(liveItems(v.items).map(({ v: _v, ...it }) => it));
-      if (RQ.hem && v.roomId && RQ.hem.room(v.roomId)) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); }
+      // the room it belongs to under Sparat, unless the picture was moved there from a sample room of another kind (a bedroom
+      // picture moved to the living room opens as the bedroom it is, not under the living room's name)
+      const hr = RQ.hem && v.roomId && RQ.hem.room(v.roomId), meta = (g.room && g.room.meta) || {};
+      if (hr && (!meta.sample || !meta.type || meta.type === hr.type)) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); } else if (hr) RQ.hem.setActive(null);
       RQ.go("mitt-rum");
     } catch (e) { RQ.toast("Rummet gick inte att öppna. Försök igen."); if (btn.isConnected) btn.disabled = false; }
   }
@@ -588,7 +596,7 @@
 
   RQ.aiLib = {
     store: Lib,
-    html: () => `<div id="mh-bilder" class="ai-lib"><div class="sec-row"><div class="sec-head"><h2 class="h3" tabindex="-1">Mina rumsbilder</h2></div>
+    html: () => `<div id="mh-bilder" class="ai-lib"><div class="sec-row"><div class="sec-head"><h2 class="h3" tabindex="-1">Alla bilder</h2></div>
         <label class="switch ai-auto"><input type="checkbox" role="switch" id="aiAuto" ${autosave() ? "checked" : ""}><span></span>Spara mina AI-bilder automatiskt</label></div>
       <p class="small ai-lib-note" id="aiLibNote">${esc(libNote())}${autosave() ? "" : " Nya AI-bilder sparas inte förrän du slår på det igen."}</p>
       <div class="ai-lib-list" id="aiLib" aria-busy="true"></div></div>`,
@@ -609,12 +617,12 @@
   };
 
   /* ------------------------------------------------------------------ card in Mitt rum, balance chips */
-  AI.card = () => `<div class="ai-card"><div><b>Gör bilden verklig</b><span data-ai-balance>${FREE_IMAGES} AI-bilder gratis varje månad</span>${libCount() ? `<a class="link ai-card-lib" href="#mitt-hem" data-ai-lib>Mina rumsbilder (${libCount()})</a>` : ""}</div><button class="btn sm" type="button" data-ai-create>Skapa AI-bild</button></div>`;
+  AI.card = () => `<div class="ai-card"><div><b>Gör bilden verklig</b><span data-ai-balance>${AI.promise()}</span>${libCount() ? `<a class="link ai-card-lib" href="#mitt-hem" data-ai-lib>Alla bilder (${libCount()})</a>` : ""}</div><button class="btn sm" type="button" data-ai-create>Skapa AI-bild</button></div>`;
   AI.hydrate = async () => {
     const chips = $$("[data-ai-balance]"), acct = $("[data-ai-account]:not([data-done])");
     if (!chips.length && !acct) return;
     const st = await AI.status();
-    chips.forEach((c) => (c.textContent = st.demo || st.signed_in ? balanceLine(st) : `${FREE_IMAGES} AI-bilder gratis varje månad med konto`)); // the preview says the same thing signed in or not
+    chips.forEach((c) => (c.textContent = st.demo || st.signed_in ? balanceLine(st) : AI.promise())); // the preview says the same thing signed in or not
     if (acct) renderAccount(acct, st);
   };
   const baseShell = RQ.paintShell;

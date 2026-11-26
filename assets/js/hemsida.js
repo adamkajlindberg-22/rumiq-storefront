@@ -8,7 +8,6 @@
   const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
   const typeName = (t) => (RQ.roomById(t) || {}).name || "Rum";
   const sampleImg = (t) => (RQ.SAMPLE_ROOMS.find((x) => x.id === t) || RQ.SAMPLE_ROOMS[0]).img.replace("-1600", "-900");
-  const LIMIT = () => { const c = (window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}; return c.freeImages || 5; };
   const boards = () => S.store.get("rumiq-boards", []).filter((b) => b && b.id && Array.isArray(b.items));
   const saveBoards = (l) => RQ.vault.set("rumiq-boards", l.slice(0, 30));
 
@@ -18,11 +17,11 @@
   const firstRoom = () => `<div class="hem-first" id="hemFirst"><span class="eyebrow">Börja här</span><h3 class="h3">Skapa ditt första rum</h3>
       <p class="lead">Ge rummet ett namn och välj vilket slags rum det är. Allt du gör sedan, bilder, produkter och listor, hamnar där.</p>
       <form class="hem-first-f" id="hemFirstF" novalidate>
-        <label>Rummets namn<input name="label" maxlength="40" placeholder="Vardagsrum" autocomplete="off"></label>
+        <label>Rummets namn<input name="label" maxlength="40" placeholder="Till exempel Vardagsrum" autocomplete="off"></label>
         <label>Slags rum<select name="type">${typeOpts("vardagsrum")}</select></label>
         <fieldset class="hem-first-st"><legend>Stil <small>valfritt</small></legend><div class="chips">${styleChips(null, "data-first-style")}</div></fieldset>
         <div class="ai-row"><button class="btn" type="submit" name="go" value="sample">Börja med ett exempelrum</button><button class="btn ghost" type="submit" name="go" value="own">Använd ditt eget foto</button></div>
-        <p class="small">${S.customer() ? "" : "Ditt eget foto kräver ett gratis konto. Exempelrummen är fria. "}${RQ.ai && RQ.ai.live && RQ.ai.live() ? "" : `Förhandsvisning: ${LIMIT()} AI-bilder gratis i månaden med konto, när sajten är live.`}</p></form></div>`;
+        <p class="small">${S.customer() ? "" : "<span>Ditt eget foto kräver ett gratis konto. Exempelrummen är fria.</span> "}${RQ.ai && RQ.ai.promise ? (S.customer() && RQ.ai.live && RQ.ai.live() ? "" : `<span>${RQ.ai.promise(true)}</span>`) : ""}</p></form></div>`;
   const benefits = () => S.customer() ? "" : `<ul class="hem-bens" aria-label="Det här får du här">
       <li><b>Före och efter sparas</b><span>Varje AI-bild hamnar i rummet, med bilden före.</span></li>
       <li><b>Lista och budget per rum</b><span>Se vad som är kvar att köpa och vad det kostar.</span></li>
@@ -47,8 +46,8 @@
     const parts = [
       ["rum", true, `<a href="#mh-rum">Mina rum (${rooms.length})</a>`, `<div id="mh-rum" class="hem-rooms"><div class="sec-row"><div class="sec-head"><h2 class="h3">${rooms.length ? "Fortsätt där du slutade" : "Mina rum"}</h2></div>${rooms.length ? `<button class="btn ghost sm" type="button" id="hemNew">Nytt rum</button>` : ""}</div>
         ${rooms.length ? `<div class="hem-cards">${rooms.slice(0, 3).map((r) => roomCard(r, true)).join("")}</div>${rooms.length > 3 ? `<div class="hem-cards small">${rooms.slice(3).map((r) => roomCard(r, false)).join("")}</div>` : ""}<div id="hemNewBox" hidden>${firstRoom().replace("Skapa ditt första rum", "Skapa ett nytt rum").replace('<span class="eyebrow">Börja här</span>', "")}</div>` : firstRoom()}
-        ${benefits()}${RQ.homeRooms ? RQ.homeRooms.html() : ""}</div>`],
-      ["bilder", aiN > 0, RQ.aiLib ? `<a href="#mh-bilder" data-ai-count>Mina rumsbilder (${aiN})</a>` : "", RQ.aiLib ? RQ.aiLib.html() : ""],
+        ${benefits()}${rooms.length && RQ.homeRooms ? RQ.homeRooms.html() : ""}</div>`],
+      ["bilder", aiN > 0, RQ.aiLib ? `<a href="#mh-bilder" data-ai-count>Alla bilder (${aiN})</a>` : "", RQ.aiLib ? RQ.aiLib.html() : ""],
       ["fav", wish.length > 0, `<a href="#mh-fav">Produkter (${wish.length})</a>`, `<div id="mh-fav"><div class="sec-row"><div class="sec-head"><h2 class="h3">Produkter</h2></div>${wish.length ? `<span class="mh-favacts"><button class="btn ghost sm" type="button" data-share-wish><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6h14v-6"/></svg><span>Dela listan</span></button><a class="link" href="#onskelista">Listor per rum</a></span>` : ""}</div>${wish.length ? RQ.grid(wish) : ""}${wish.length && RQ.priceWatch ? RQ.priceWatch.html(wish.map((p) => p.handle), "mhw") : ""}${wish.length ? "" : `${none("Inget sparat än.", "Tryck på hjärtat på en produkt, så hamnar den här.", "#butik", "Till butiken")}${RQ.svepNudge ? RQ.svepNudge() : ""}`}</div>`],
       ["stil", !!style, `<a href="#mh-stil">Min stil</a>`, `<div id="mh-stil"><div class="sec-head"><h2 class="h3">Min stil</h2></div>${style ? `<div class="result"><h2>${RQ.STYLES[style.style].name}</h2><p style="margin-top:.5rem">${RQ.STYLES[style.style].text}</p><p class="small">Uppdaterad ${new Date(style.at).toLocaleDateString("sv-SE")}.</p><div class="ctrl-row"><a class="btn sm" href="#svep">Svep mer</a><a class="btn ghost sm" href="#studio-stil">Fyra snabba val</a></div></div>${H.slot({ type: (rooms[0] || {}).type || "vardagsrum", style: style.style, from: "stil" })}` : none("Ingen stil än.", "Svep tio kort, så får du din stilprofil och ett färdigt rumsförslag.", "#svep", "Svep fram din stil")}</div>`],
       ["chat", !!chat, `<a href="#mh-chat">Stylistsamtal</a>`, `<div id="mh-chat"><div class="sec-head"><h2 class="h3">Stylistsamtal</h2></div>${chat || none("Inget sparat samtal.", "Logga in och fråga stylisten, så sparas samtalet här.", "#studio-stylist", "Fråga stylisten")}</div>`],
@@ -71,8 +70,10 @@
         RQ.homeRooms && RQ.homeRooms.mount(root);
         RQ.aiLib && RQ.aiLib.mount(root);
         // the newest after-picture on each room card, and its progress with the picture count
-        if (RQ.aiLib) RQ.aiLib.pics().then((pics) => { H.rooms().forEach((r) => { const mine = pics.filter((p) => p.roomId === r.id), im = $(`[data-room-pic="${r.id}"]`, root), pr = $(`[data-room-prog="${r.id}"]`, root), nx = $(`[data-hem-next="${r.id}"]`, root);
-          if (mine[0] && im) { im.src = mine[0].url; im.closest(".hem-card").classList.add("has-pic"); const c = im.parentNode.querySelector(".hem-card-col"); if (c) c.remove(); } else snap(r, im); if (pr) pr.innerHTML = progHtml(r, mine.length); if (nx) nx.textContent = H.progress(r, mine.length).next.label; }); });
+        // (again when a picture moves to another room: the card it left shows its own state again)
+        const cards = () => RQ.aiLib && RQ.aiLib.pics().then((pics) => { if (!root.isConnected) return; H.rooms().forEach((r) => { const mine = pics.filter((p) => p.roomId === r.id), im = $(`[data-room-pic="${r.id}"]`, root), pr = $(`[data-room-prog="${r.id}"]`, root), nx = $(`[data-hem-next="${r.id}"]`, root);
+          if (mine[0] && im) { im.src = mine[0].url; im.closest(".hem-card").classList.add("has-pic"); const c = im.parentNode.querySelector(".hem-card-col"); if (c) c.remove(); } else if (im) { const card = im.closest(".hem-card"); if (card.classList.contains("has-pic")) { card.classList.remove("has-pic"); im.src = H.picture(r) || sampleImg(r.type); } snap(r, im); } if (pr) pr.innerHTML = progHtml(r, mine.length); if (nx) nx.textContent = H.progress(r, mine.length).next.label; }); });
+        cards();
         firstForm(root);
         const nw = $("#hemNew", root); if (nw) nw.addEventListener("click", () => { const b = $("#hemNewBox", root); b.hidden = !b.hidden; if (!b.hidden) $("input", b).focus(); });
         root.addEventListener("click", (e) => {
@@ -91,7 +92,7 @@
           RQ.toast("Allt sparat är borttaget."); RQ.router(); scrollTo(0, 0);
         });
         const want = RQ.ss.get("rumiq-hem-open"); if (want) { RQ.ss.set("rumiq-hem-open", ""); if (H.room(want)) setTimeout(() => openRoom(want), 60); }
-        const off = () => document.removeEventListener("rq-hem", again); const again = () => { if (!root.isConnected) return off(); };
+        let ct = 0; const off = () => document.removeEventListener("rq-hem", again); const again = () => { if (!root.isConnected) return off(); clearTimeout(ct); ct = setTimeout(cards, 150); };
         document.addEventListener("rq-hem", again);
         return RQ.jumpSpy($(".jump-nav", root), root);
       },
@@ -108,7 +109,7 @@
         const r = H.create({ label: f.label.value || typeName(type), type, style, items: style ? H.propose({ type, style }).items : [] });
         H.openInRoom({ room: r.type, own: go === "own", items: H.items(r), style, project: r.id });
       });
-      f.type.addEventListener("change", () => { if (!f.label.value) f.label.placeholder = typeName(f.type.value); });
+      f.type.addEventListener("change", () => { f.label.placeholder = "Till exempel " + typeName(f.type.value); });
     });
   }
   function nextStep(id, btn) {
@@ -128,55 +129,77 @@
   const sbody = $(".hem-body", sheet), sbox = $(".sheet-in", sheet);
   let sret = null, sid = null, undoRoom = null;
   const sopen = () => { sret = document.activeElement; RQ.closeAll && RQ.closeAll(); sheet.inert = false; sheet.classList.add("open"); sheet.setAttribute("aria-hidden", "false"); document.documentElement.classList.add("sheet-lock"); setTimeout(() => { const f = document.activeElement; if (!sbox.contains(f)) sbox.focus({ preventScroll: true }); }, 40); };
-  const sclose = () => { sheet.classList.remove("open"); sheet.setAttribute("aria-hidden", "true"); sheet.inert = true; document.documentElement.classList.remove("sheet-lock"); sid = null; RQ.aiLib && RQ.aiLib.restore(); if (sret && document.contains(sret)) sret.focus({ preventScroll: true }); if (RQ.currentRoute() === "mitt-hem") RQ.router(); };
+  const sclose = () => { const was = sid, back = sret && sret.matches && sret.matches("[data-hem-open], [data-hem-next]") ? (sret.matches("[data-hem-next]") ? `[data-hem-next="${was}"]` : `.hem-card-name[data-hem-open="${was}"]`) : null;
+    sheet.classList.remove("open"); sheet.setAttribute("aria-hidden", "true"); sheet.inert = true; document.documentElement.classList.remove("sheet-lock"); sid = null; RQ.aiLib && RQ.aiLib.restore(); if (sret && document.contains(sret)) sret.focus({ preventScroll: true });
+    if (RQ.currentRoute() !== "mitt-hem") return; const y = scrollY; RQ.router(); // the page is drawn again with what changed; the focus goes back to the same room
+    requestAnimationFrame(() => { const t = (back && $(back)) || (was && $(`.hem-card-name[data-hem-open="${was}"]`)) || $("#mh-rum h2"); if (t && RQ.currentRoute() === "mitt-hem" && !sheet.classList.contains("open") && !board.classList.contains("open")) { if (t.tagName === "H2") t.setAttribute("tabindex", "-1"); t.focus({ preventScroll: true }); scrollTo(0, y); } }); };
   sheet.addEventListener("click", (e) => { if (e.target.closest("[data-hem-close]")) sclose(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheet.classList.contains("open") && !board.classList.contains("open")) { e.stopPropagation(); sclose(); } }, true);
   const listRows = (r) => { const b = H.boughtSet(r), m = H.money(r);
     return H.items(r).length ? `<ul class="hem-list">${H.items(r).map((it) => { const p = RQ.byHandle(it.h), col = p.variants ? p.variants[it.v || 0] : ""; return `<li${b.has(it.h) ? ' class="done"' : ""}><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b><span>${kr(H.price(it))}${col ? ` · ${esc(col)}` : ""}</span></div><label class="check"><input type="checkbox" data-bought="${p.handle}" ${b.has(it.h) ? "checked" : ""}> Köpt</label></li>`; }).join("")}</ul>
       <div class="hem-money"><span>Totalt <b>${kr(m.total)}</b></span>${m.spent ? `<span>Köpt <b>${kr(m.spent)}</b></span>` : ""}${r.budget ? `<span class="${m.left < 0 ? "over" : ""}">${m.left < 0 ? "Över budget" : "Kvar av budgeten"} <b>${kr(Math.abs(m.left))}</b></span>` : ""}</div>
       ${m.toBuy.length ? `<button class="btn" type="button" id="hemBuyRest">Köp det som är kvar · ${kr(m.toBuy.reduce((s, it) => s + H.price(it), 0))}</button>` : `<p class="small">Allt i listan är köpt.</p>`}` : `<p class="small">Inga produkter i rummet än. Se förslaget nedan, eller ställ in saker i Mitt rum.</p>`; };
-  const fbHtml = (r) => (r.feedback || []).length ? `<div class="hem-fb"><h3 class="h3">Vad andra tycker</h3>${r.feedback.map((f) => `<p><b>${esc(f.name || "Någon")}</b>: ${Object.entries(f.answers).filter(([h]) => RQ.byHandle(h)).map(([h, v]) => `${esc(RQ.byHandle(h).name)} ${v ? "gillar" : "vill ha något annat"}`).join(", ")}.</p>`).join("")}</div>` : "";
-  function openRoom(id, focus) {
-    const r = H.room(id); if (!r) return; sid = id; H.setActive(id);
-    const bs = boards().filter((b) => b.room === id);
-    sbody.innerHTML = `<div class="hem-room">
-      <div class="hem-room-h"><span class="eyebrow">${esc(typeName(r.type))}</span><h2 id="hemTitle" class="ai-h">${esc(H.name(r))}</h2><p class="hem-prog" id="hemProg">${progHtml(r, 0)}</p>
-        <div class="ai-row"><button class="btn" type="button" id="hemSee">${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" id="hemAsk">Vad tycker du?</button></div></div>
-      <section class="hem-sec"><h3 class="h3">Bilder</h3><div class="ai-lib-list" id="hemPics" aria-busy="true"></div></section>
-      <section class="hem-sec" id="hemListSec"><h3 class="h3">Inköpslista</h3><div id="hemList">${listRows(r)}</div></section>
-      ${fbHtml(r)}
-      <section class="hem-sec" id="hemPropSec">${H.slot({ type: r.type, style: r.style, budget: r.budget, room: r.id, from: "room" })}</section>
+  const fbHtml = (r) => { const fb = (r.feedback || []).filter((f) => f && f.answers), inRoom = new Set(H.items(r).map((it) => it.h)); if (!fb.length) return "";
+    return `<div class="hem-fb"><h3 class="h3">Vad andra tycker</h3>${fb.map((f) => `<div class="hem-fb-p"><p><b>${esc(f.name || "Någon")}</b> svarade</p><ul>${Object.entries(f.answers).filter(([h]) => RQ.byHandle(h)).map(([h, v]) => { const p = RQ.byHandle(h), o = !v && f.alts && f.alts[h] && RQ.byHandle(f.alts[h]);
+      return `<li><img src="${RQ.cut(p)}" alt=""><span><b>${esc(p.name)}</b><small>${v ? "Gillar" : o ? `Föreslår ${esc(o.name)}, ${kr(o.price)}` : "Vill ha något annat"}</small></span>${v || !inRoom.has(h) ? "" : o && !inRoom.has(o.handle) ? `<button class="btn ghost sm" type="button" data-fb-to="${h}|${o.handle}">Byt till den</button>` : `<button class="btn ghost sm" type="button" data-fb-byt="${h}">Byt</button>`}</li>`; }).join("")}</ul></div>`).join("")}</div>`; };
+  const restHtml = (r, id) => { const bs = boards().filter((b) => b.room === id), has = H.items(r).length;
+    // with a list already, the proposal is "something else" behind one line, so the same things are not shown twice
+    const prop = H.slot({ type: r.type, style: r.style, budget: r.budget, room: r.id, from: "room", noAsk: true, avoid: has ? H.items(r).map((it) => it.h) : [] });
+    return `<section class="hem-sec" id="hemPropSec">${has ? `<details class="hem-more hem-other"><summary>Se ett annat förslag för rummet</summary>${prop}</details>` : prop}</section>
       <section class="hem-sec"><div class="sec-row"><h3 class="h3">Moodboards</h3><button class="btn ghost sm" type="button" data-board-new="${esc(id)}">Ny moodboard</button></div>${bs.length ? `<div class="hem-boards">${bs.map((b) => `<button type="button" class="hem-board" data-board-open="${esc(b.id)}"><span class="hem-board-ims">${b.items.slice(0, 4).map((it) => RQ.byHandle(it.h) ? `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">` : "").join("")}</span><b>${esc(b.name || "Moodboard")}</b></button>`).join("")}</div>` : `<p class="small">Samla saker fritt, utan rum, och prova dem sedan här.</p>`}</section>
       <section class="hem-sec"><h3 class="h3">Om rummet</h3><form class="hem-room-f" id="hemRoomF" novalidate>
         <label>Namn<input name="label" maxlength="40" value="${esc(r.label || "")}"></label>
         <label>Slags rum<select name="type">${typeOpts(r.type)}</select></label>
         <fieldset id="hemStyle"><legend>Stil</legend><div class="chips">${styleChips(r.style, "data-room-style")}</div></fieldset>
-        <label>Budget, kr<input name="budget" inputmode="numeric" value="${r.budget || ""}" placeholder="5000"></label>
+        <label>Budget, kr<input name="budget" inputmode="numeric" value="${r.budget || ""}" placeholder="Till exempel 5000"></label>
         <label>Material du gillar<input name="material" maxlength="60" value="${esc(r.material || "")}" placeholder="Ek, lin, keramik"></label>
         <div class="hem-cols-f"><span>Färger i rummet</span><div class="hem-cols" role="img" aria-label="Färgerna i rummet">${[...new Set(H.items(r).map((it) => RQ.byHandle(it.h).tone[it.v || 0] || RQ.byHandle(it.h).tone[0]))].slice(0, 6).map((c) => `<i style="background:${esc(c)}"></i>`).join("") || `<small>Kommer från produkterna du väljer.</small>`}</div></div>
         <label class="wide">Anteckningar<textarea name="notes" rows="3" maxlength="500">${esc(r.notes || "")}</textarea></label>
         <p class="small wide">${RQ.homeRooms && RQ.homeRooms.dims(r) ? `Mått: ${esc(RQ.homeRooms.dims(r))}.` : "Måtten lägger du in under Mått för dina rum på sidan."} Allt sparas medan du skriver.</p></form></section>
-      <p class="hem-room-foot"><button class="tlink" type="button" id="hemDel">Ta bort rummet</button></p></div>`;
+      <p class="hem-room-foot"><button class="tlink" type="button" id="hemDel">Ta bort rummet</button></p>`; };
+  let restT = 0;
+  function openRoom(id, focus) {
+    const r = H.room(id); if (!r) return; sid = id; H.setActive(id);
+    sbody.innerHTML = `<div class="hem-room">
+      <div class="hem-room-h"><span class="eyebrow">${esc(typeName(r.type))}</span><h2 id="hemTitle" class="ai-h">${esc(H.name(r))}</h2><p class="hem-prog" id="hemProg">${progHtml(r, 0)}</p>
+        <div class="ai-row"><button class="btn" type="button" id="hemSee">${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" id="hemAsk">Vad tycker du?</button></div></div>
+      <section class="hem-sec"><h3 class="h3">Bilder</h3><div class="ai-lib-list" id="hemPics" aria-busy="true"></div></section>
+      <section class="hem-sec" id="hemListSec"><h3 class="h3">Inköpslista</h3><div id="hemList">${listRows(r)}</div></section>
+      <div id="hemFb">${fbHtml(r)}</div><div id="hemRest"></div></div>`;
     sopen();
-    RQ.aiLib && RQ.aiLib.mountInto($("#hemPics", sbody), id);
-    RQ.aiLib && RQ.aiLib.pics(id).then((p) => { const g = $("#hemProg", sbody); if (g) g.innerHTML = progHtml(H.room(id) || r, p.length); });
-    const f = $("#hemRoomF", sbody);
+    // the rest (the proposal, moodboards, the form) right after the sheet has opened, so opening stays quick
+    cancelAnimationFrame(restT); restT = requestAnimationFrame(() => setTimeout(() => { if (sid !== id) return; const x = H.room(id) || r; $("#hemRest", sbody).outerHTML = restHtml(x, id); wireForm(id);
+      if (focus === "style") $("#hemStyle .chip", sbody).focus();
+      if (focus === "budget") $("#hemRoomF", sbody).budget.focus();
+      if (focus === "propose") { const d = $(".hem-other", sbody); if (d) d.open = true; $("#hemPropSec", sbody).scrollIntoView({ block: "start", behavior: calm() ? "auto" : "smooth" }); }
+      RQ.aiLib && RQ.aiLib.mountInto($("#hemPics", sbody), id);
+      RQ.aiLib && RQ.aiLib.pics(id).then((p) => { const g = $("#hemProg", sbody); if (g && sid === id) g.innerHTML = progHtml(H.room(id) || r, p.length); }); }, 0));
+  }
+  function wireForm(id) {
+    const f = $("#hemRoomF", sbody); if (!f) return;
     const save = () => { const x = H.room(id); if (!x) return; const n = Math.round(+String(f.budget.value).replace(/\s/g, "")); H.patch(id, { label: f.label.value.trim().slice(0, 40) || typeName(f.type.value), type: f.type.value, budget: n > 0 ? n : null, material: f.material.value.trim(), notes: f.notes.value.trim() }); $("#hemTitle", sbody).textContent = H.name(H.room(id)); };
     f.addEventListener("input", () => { clearTimeout(f._t); f._t = setTimeout(save, 350); });
     f.addEventListener("change", save);
     f.addEventListener("click", (e) => { const c = e.target.closest("[data-room-style]"); if (!c) return; const x = H.room(id), v = x.style === c.dataset.roomStyle ? null : c.dataset.roomStyle; H.patch(id, { style: v }); $$("[data-room-style]", f).forEach((b) => b.setAttribute("aria-pressed", b.dataset.roomStyle === v)); });
     f.addEventListener("submit", (e) => e.preventDefault());
-    sbody.addEventListener("change", (e) => { const c = e.target.closest("[data-bought]"); if (!c) return; const x = H.room(id), b = { ...(x.bought || {}) }; if (c.checked) b[c.dataset.bought] = new Date().toISOString(); else delete b[c.dataset.bought]; H.patch(id, { bought: b }); $("#hemList", sbody).innerHTML = listRows(H.room(id)); const again = $(`[data-bought="${c.dataset.bought}"]`, sbody); if (again) again.focus({ preventScroll: true }); });
-    sbody.addEventListener("click", (e) => {
-      if (e.target.closest("#hemBuyRest")) { const x = H.room(id); RQ.addMany(H.money(x).toBuy.map((it) => it.h + "::" + (it.v || 0)), e.target.closest("button"), H.name(x)); return; }
-      if (e.target.closest("#hemSee")) { const x = H.room(id); if (!H.items(x).length) { const pr = H.propose({ type: x.type, style: x.style, budget: x.budget }); H.patch(id, { items: pr.items }); } const y = H.room(id); sheet.classList.remove("open"); sclose(); H.openInRoom({ room: y.type, items: H.items(y), style: y.style, budget: y.budget, project: id }); return; }
-      if (e.target.closest("#hemAsk")) { H.askLink(H.room(id), e.target.closest("button")); return; }
-      if (e.target.closest("#hemDel")) { const gone = H.remove(id); undoRoom = gone; sclose(); RQ.toast(`${esc(H.name(gone))} är borttaget. <button type="button" class="tlink" data-hem-undo>Ångra</button>`, 7000); }
-    });
-    if (focus === "style") setTimeout(() => $("#hemStyle .chip", sbody).focus(), 80);
-    if (focus === "budget") setTimeout(() => f.budget.focus(), 80);
-    if (focus === "propose") setTimeout(() => { $("#hemPropSec", sbody).scrollIntoView({ block: "start", behavior: calm() ? "auto" : "smooth" }); }, 80);
   }
+  sbody.addEventListener("change", (e) => { const c = e.target.closest("[data-bought]"), id = sid; if (!c || !id) return; const x = H.room(id), b = { ...(x.bought || {}) }; if (c.checked) b[c.dataset.bought] = new Date().toISOString(); else delete b[c.dataset.bought]; H.patch(id, { bought: b }); $("#hemList", sbody).innerHTML = listRows(H.room(id)); const again = $(`[data-bought="${c.dataset.bought}"]`, sbody); if (again) again.focus({ preventScroll: true }); });
+  sbody.addEventListener("click", (e) => {
+    const id = sid; if (!id) return;
+    if (e.target.closest("#hemBuyRest")) { const x = H.room(id); RQ.addMany(H.money(x).toBuy.map((it) => it.h + "::" + (it.v || 0)), e.target.closest("button"), H.name(x)); return; }
+    if (e.target.closest("#hemSee")) { const x = H.room(id); if (!H.items(x).length) { const pr = H.propose({ type: x.type, style: x.style, budget: x.budget }); H.patch(id, { items: pr.items }); } const y = H.room(id); sclose(); H.openInRoom({ room: y.type, items: H.items(y), style: y.style, budget: y.budget, project: id }); return; }
+    if (e.target.closest("#hemAsk")) { H.askLink(H.room(id), e.target.closest("button")); return; }
+    if (e.target.closest("#hemDel")) { const gone = H.remove(id); undoRoom = gone; sclose(); RQ.toast(`${esc(H.name(gone))} är borttaget. <button type="button" class="tlink" data-hem-undo>Ångra</button>`, 7000); return; }
+    // an answer: take what was suggested in its place (the same spot in the room), or open Byt at that thing in Mitt rum
+    const to = e.target.closest("[data-fb-to]");
+    if (to) { const [h, o] = to.dataset.fbTo.split("|"), x = H.room(id); if (!x || !RQ.byHandle(o)) return;
+      H.patch(id, { items: H.items(x).map((it) => (it.h === h ? { h: o, v: 0 } : it)), scene: Array.isArray(x.scene) ? x.scene.map((it) => (it && it.h === h ? { ...it, h: o, v: 0 } : it)) : x.scene });
+      const y = H.room(id); $("#hemList", sbody).innerHTML = listRows(y); $("#hemFb", sbody).innerHTML = fbHtml(y); RQ.toast(`${esc(RQ.byHandle(o).name)} står nu i ${esc(H.name(y))}. <button type="button" class="tlink" data-fb-see>Se det i rummet</button>`);
+      const t = $("#hemFb h3", sbody); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } return; }
+    const bt = e.target.closest("[data-fb-byt]");
+    if (bt) { const y = H.room(id); sclose(); H.openInRoom({ room: y.type, items: H.items(y), style: y.style, budget: y.budget, project: id, swap: bt.dataset.fbByt }); }
+  });
+  document.addEventListener("click", (e) => { if (!e.target.closest("[data-fb-see]")) return; const y = H.room(H.activeId()); $("#toast").classList.remove("show"); if (!y) return; if (sheet.classList.contains("open")) sclose(); H.openInRoom({ room: y.type, items: H.items(y), style: y.style, budget: y.budget, project: y.id }); });
   RQ.hem.openRoom = openRoom;
   document.addEventListener("click", (e) => { if (e.target.closest("[data-hem-undo]") && undoRoom) { H.restore(undoRoom); undoRoom = null; $("#toast").classList.remove("show"); RQ.toast("Rummet är tillbaka."); if (RQ.currentRoute() === "mitt-hem") RQ.router(); } });
 
@@ -186,7 +209,7 @@
   board.innerHTML = `<div class="sheet-scrim" data-mb-close></div><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="mbTitle" tabindex="-1"><div class="sheet-grab" aria-hidden="true"><span></span></div><button class="iconbtn sheet-x" type="button" data-mb-close aria-label="Stäng">${RQ.ICO5 ? RQ.ICO5.x : "×"}</button><div class="mb-body"></div></div>`;
   document.body.appendChild(board);
   const mbody = $(".mb-body", board), mbox = $(".sheet-in", board);
-  let justDragged = false, B = null, sel = null, mret = null, addOpen = false, addTab = "fav", addQ = "";
+  let justDragged = false, B = null, sel = null, mret = null, addOpen = false, addTab = "fav", addQ = "", tryOpen = false;
   const mopen = () => { mret = document.activeElement; board.inert = false; board.classList.add("open"); board.setAttribute("aria-hidden", "false"); document.documentElement.classList.add("sheet-lock"); setTimeout(() => { if (!mbox.contains(document.activeElement)) mbox.focus({ preventScroll: true }); }, 40); };
   const mclose = () => { board.classList.remove("open"); board.setAttribute("aria-hidden", "true"); board.inert = true; if (!sheet.classList.contains("open")) document.documentElement.classList.remove("sheet-lock"); if (mret && document.contains(mret)) mret.focus({ preventScroll: true }); if (RQ.currentRoute() === "mitt-hem" && !sheet.classList.contains("open")) RQ.router(); };
   board.addEventListener("click", (e) => { if (e.target.closest("[data-mb-close]")) mclose(); });
@@ -202,22 +225,33 @@
   const mpaint = (focusSel) => {
     const room = B.room && H.room(B.room), sp = sel != null ? B.items[sel] : null;
     mbody.innerHTML = `<div class="mb-wrap"><div class="mb-head"><span class="eyebrow">Moodboard${room ? ` · ${esc(H.name(room))}` : ""}</span><label class="mb-name"><span class="sr">Namn</span><input id="mbName" maxlength="40" value="${esc(B.name || "")}" placeholder="Min moodboard"></label><h2 id="mbTitle" class="sr">Moodboard</h2></div>
-      <div class="mb-board" id="mbBoard">${mbItems()}${B.items.length ? "" : `<p class="mb-empty">Lägg till saker du gillar. Flytta dem, ändra storlek och lägg dem i lager.</p>`}
-        ${tones().length ? `<div class="mb-tones" role="img" aria-label="Färgerna på tavlan">${tones().map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</div>` : ""}${B.note ? `<p class="mb-note">${esc(B.note)}</p>` : ""}</div>
+      <div class="mb-board" id="mbBoard">${mbItems()}${B.items.length ? "" : `<p class="mb-empty">Lägg till saker du gillar. Flytta dem, ändra storlek och lägg dem i lager.</p>`}</div>
+      <div class="mb-strip" id="mbStrip"${tones().length || B.note ? "" : " hidden"}>${tones().length ? `<div class="mb-tones" role="img" aria-label="Färgerna på tavlan">${tones().map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</div>` : ""}${B.note ? `<p class="mb-note">${esc(B.note)}</p>` : ""}</div>
       <div class="mb-tools" role="toolbar" aria-label="Verktyg">${sp ? `<b class="mb-selname">${esc(RQ.byHandle(sp.h).name)}</b><button class="btn ghost sm" type="button" data-mb-do="smaller" aria-label="Mindre">−</button><button class="btn ghost sm" type="button" data-mb-do="bigger" aria-label="Större">+</button><button class="btn ghost sm" type="button" data-mb-do="front">Fram</button><button class="btn ghost sm" type="button" data-mb-do="back">Bak</button><button class="btn ghost sm" type="button" data-mb-do="remove">Ta bort</button><button class="tlink" type="button" data-mb-do="deselect">Klar</button>`
         : `<button class="btn sm" type="button" data-mb-do="add" aria-expanded="${addOpen}">Lägg till</button>${B.items.length > 1 ? `<button class="btn ghost sm" type="button" data-mb-do="auto">Ordna snyggt</button>` : ""}`}</div>
       ${addOpen && !sp ? `<div class="mb-add"><div class="chips" role="group" aria-label="Var ifrån?">${[["fav", "Sparat"], ["look", "Från looks"], ["all", "Alla"]].map(([k, l]) => `<button type="button" class="chip" data-mb-tab="${k}" aria-pressed="${addTab === k}">${l}</button>`).join("")}</div><label class="mb-q"><span class="sr">Sök</span><input id="mbQ" type="search" value="${esc(addQ)}" placeholder="Sök i sortimentet"></label><div class="mb-add-list">${addList()}</div></div>` : ""}
       <label class="mb-notef">Anteckning<textarea id="mbNote" rows="2" maxlength="200" placeholder="Varför gillar du det här?">${esc(B.note || "")}</textarea></label>
-      <div class="ai-row mb-acts"><button class="btn" type="button" data-mb-do="try" ${B.items.length ? "" : "disabled"}>${RQ.roomIco}<span>Prova i ett rum</span></button><button class="btn ghost" type="button" data-mb-do="save" ${B.items.length ? "" : "disabled"}>Spara som look</button><button class="btn ghost" type="button" data-mb-do="share" ${B.items.length ? "" : "disabled"}>Dela</button></div>
+      ${tryOpen && B.items.length ? tryHtml() : ""}<div class="ai-row mb-acts"><button class="btn" type="button" data-mb-do="try" aria-expanded="${tryOpen}" ${B.items.length ? "" : "disabled"}>${RQ.roomIco}<span>Prova i ett rum</span></button><button class="btn ghost" type="button" data-mb-do="save" ${B.items.length ? "" : "disabled"}>Spara som look</button><button class="btn ghost" type="button" data-mb-do="share" ${B.items.length ? "" : "disabled"}>Dela</button></div>
       <p class="small" role="status" id="mbMsg">Sparas medan du arbetar. ${H.PROMISE}</p></div>`;
     wireBoard();
     if (focusSel) { const f = $(focusSel, mbody); if (f) f.focus({ preventScroll: true }); }
   };
+  /* "Prova i ett rum" asks which room: one of yours (the board's own first), or a sample room of a kind (the kind most of the
+     things are made for is marked); the editor then places the things by its own rules */
+  const kindOf = () => { const n = {}; B.items.forEach((it) => { const p = RQ.byHandle(it.h); if (p) n[p.rooms[0]] = (n[p.rooms[0]] || 0) + 1; }); return Object.entries(n).sort((a, b) => b[1] - a[1]).map((x) => x[0])[0] || "vardagsrum"; };
+  const tryHtml = () => { const mine = H.rooms().sort((a, b) => (a.id === B.room ? -1 : b.id === B.room ? 1 : 0)), k = kindOf();
+    return `<div class="mb-try" role="group" aria-labelledby="mbTryH"><p id="mbTryH"><b>Vilket rum vill du prova i?</b></p>
+      ${mine.length ? `<div class="chips" role="group" aria-label="Dina rum">${mine.slice(0, 8).map((r) => `<button type="button" class="chip" data-mb-room="${esc(r.id)}">${esc(H.name(r))}</button>`).join("")}</div><p class="small">Eller ett exempelrum:</p>` : ""}
+      <div class="chips" role="group" aria-label="Exempelrum">${["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor"].map((t) => `<button type="button" class="chip${t === k ? " fit" : ""}" data-mb-sample="${t}">${esc(typeName(t))}${t === k ? `<span class="sr"> (passar sakerna bäst)</span>` : ""}</button>`).join("")}</div></div>`; };
+  const tryIn = async (r, type) => { const its = B.items.map((x) => ({ h: x.h, v: x.v || 0 })); tryOpen = false; mclose(); if (sheet.classList.contains("open")) sclose();
+    if (!r) return H.openInRoom({ room: type, items: its });
+    const out = await H.openInRoom({ room: r.type, items: [...H.items(r), ...its.filter((it) => !H.items(r).some((x) => x.h === it.h))], style: r.style, budget: r.budget, project: r.id });
+    const R = RQ.room; if (out && R && R.group) R.group(() => its.forEach((it) => { if (!R.inScene(it.h)) R.add(it.h, true, it.v); })); }; // a saved room keeps its scene; the board's things are put in beside it
   const persist = () => { B.at = new Date().toISOString(); const l = boards().filter((b) => b.id !== B.id); saveBoards([B, ...l]); if (B.room) { const r = H.room(B.room); if (r && !(r.boards || []).includes(B.id)) H.patch(B.room, { boards: [...(r.boards || []), B.id] }); } };
   function wireBoard() {
     const bd = $("#mbBoard", mbody);
     $("#mbName", mbody).addEventListener("input", (e) => { B.name = e.target.value.slice(0, 40); persist(); });
-    $("#mbNote", mbody).addEventListener("change", (e) => { B.note = e.target.value.trim().slice(0, 200); persist(); const bd2 = $("#mbBoard", mbody); let nt = $(".mb-note", bd2); if (!B.note) { if (nt) nt.remove(); return; } if (!nt) { nt = document.createElement("p"); nt.className = "mb-note"; bd2.appendChild(nt); } nt.textContent = B.note; }); // the note on the board, without drawing the field again
+    $("#mbNote", mbody).addEventListener("change", (e) => { B.note = e.target.value.trim().slice(0, 200); persist(); const bd2 = $("#mbStrip", mbody); let nt = $(".mb-note", bd2); if (!B.note) { if (nt) nt.remove(); bd2.hidden = !$(".mb-tones", bd2); return; } if (!nt) { nt = document.createElement("p"); nt.className = "mb-note"; bd2.appendChild(nt); } nt.textContent = B.note; bd2.hidden = false; }); // the note under the board (never on top of the things), without drawing the field again
     const q = $("#mbQ", mbody); if (q) q.addEventListener("input", () => { addQ = q.value; $(".mb-add-list", mbody).innerHTML = addList(); });
     // drag: a pointer moves the thing (in % of the board), arrows move the chosen one
     $$(".mb-it", bd).forEach((el) => {
@@ -235,6 +269,8 @@
     const a = e.target.closest("[data-mb-add]"); if (a) { const h = a.dataset.mbAdd, i = B.items.findIndex((it) => it.h === h);
       if (i > -1) B.items.splice(i, 1); else B.items.push({ h, v: 0, x: 50, y: 50, w: 28, z: B.items.length });
       if (i < 0 && B.items.length <= 6) B.items = autoLayout(B.items); persist(); mpaint(`[data-mb-add="${h}"]`); return; }
+    const mr = e.target.closest("[data-mb-room]"); if (mr) { const r = H.room(mr.dataset.mbRoom); if (r) tryIn(r); return; }
+    const ms = e.target.closest("[data-mb-sample]"); if (ms) { tryIn(null, ms.dataset.mbSample); return; }
     const d = e.target.closest("[data-mb-do]"); if (!d) return; const act = d.dataset.mbDo, it = sel != null ? B.items[sel] : null;
     if (act === "add") { addOpen = !addOpen; mpaint('[data-mb-do="add"]'); return; }
     if (act === "auto") { B.items = autoLayout(B.items); persist(); mpaint('[data-mb-do="auto"]'); return; }
@@ -246,7 +282,7 @@
     if (it && act === "remove") { B.items.splice(sel, 1); sel = null; persist(); mpaint('[data-mb-do="add"]'); return; }
     if (act === "save") { S.saveLook(B.items.map((x) => x.h), B.name || "Min moodboard"); persist(); $("#mbMsg", mbody).innerHTML = `Sparad som look i Sparat. <a href="#mitt-hem" data-mb-close>Visa</a>`; return; }
     if (act === "share") { shareBoard(d); return; }
-    if (act === "try") { const r = B.room && H.room(B.room); mclose(); sheet.classList.contains("open") && sclose(); H.openInRoom({ room: r ? r.type : "vardagsrum", items: B.items.map((x) => ({ h: x.h, v: x.v || 0 })), project: r ? r.id : null }); }
+    if (act === "try") { tryOpen = !tryOpen; mpaint(tryOpen ? ".mb-try .chip" : '[data-mb-do="try"]'); if (tryOpen) { const t = $(".mb-try", mbody); if (t) t.scrollIntoView({ block: "nearest", behavior: calm() ? "auto" : "smooth" }); } }
   });
   // one picture of the board (with its colours and note) and a link to the same things
   async function shareBoard(btn) {
@@ -271,7 +307,7 @@
     const old = id && boards().find((b) => b.id === id);
     B = old ? JSON.parse(JSON.stringify(old)) : { id: "mb" + Date.now().toString(36), name: preset.name || "", room: preset.room || null, items: autoLayout((preset.items || []).slice(0, 12).map((h) => ({ h, v: 0 }))), note: "", at: new Date().toISOString() };
     if (!old && B.items.length) persist();
-    sel = null; addOpen = !B.items.length; addTab = S.wishlist().length ? "fav" : "all"; addQ = ""; mpaint(); mopen();
+    sel = null; tryOpen = false; addOpen = !B.items.length; addTab = S.wishlist().length ? "fav" : "all"; addQ = ""; mpaint(); mopen();
   };
   // leaving for Mitt rum: the sheets step aside without drawing the page again
   document.addEventListener("rq-hem-go", () => { if (board.classList.contains("open")) { board.classList.remove("open"); board.inert = true; board.setAttribute("aria-hidden", "true"); } if (sheet.classList.contains("open")) { sheet.classList.remove("open"); sheet.inert = true; sheet.setAttribute("aria-hidden", "true"); sid = null; RQ.aiLib && RQ.aiLib.restore(); } document.documentElement.classList.remove("sheet-lock"); });
