@@ -193,7 +193,8 @@ with sync_playwright() as p:
     pg.evaluate(SAMPLE, "vardagsrum"); pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'svamp-uppladdningsbar-lampa'].forEach((h) => RQ.room.add(h, true))")
     sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.x, i.on || ''])")
     ok(all(not s[2] for s in sc) and all(72 <= s[1] <= 83 for s in sc), f"[P5 vardagsrum] a second, smaller lamp goes to the other end of the side table: {sc}")
-    pg.evaluate("RQ.room.saveScene([]); RQ.room.add('lysa-keramiklampa', true)")
+    # the side table holds two lamps beside the mug (studio review N5 freed its other end): with both there, a third does not fit
+    pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'svamp-uppladdningsbar-lampa'].forEach((h) => RQ.room.add(h, true))")
     pg.goto(BASE + "mitt-rum-glob-bordslampa-opalglas/"); pg.wait_for_timeout(1600)
     ts = pg.evaluate("[...document.querySelectorAll('.toast')].map((t) => t.textContent).join(' ')")
     ok(pg.evaluate("(RQ.room.scene().find((i) => i.h === 'glob-bordslampa-opalglas') || {}).on") == "floor" and "står på golvet" in ts and "Dra den dit du vill" in ts, f"[P5 vardagsrum] a lamp that does not fit says why it is on the floor, also coming from its product page: {ts[:90]}")

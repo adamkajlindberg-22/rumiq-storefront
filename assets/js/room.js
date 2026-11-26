@@ -118,9 +118,13 @@
   const TABLE_Y = 62, onTable = (k) => k === "surface" && room && !!room.type;
   /* a row is laid out again whenever something joins it: centred, evenly spread over a band a phone can show at once, the
      things made a little smaller if they would not fit (a second row behind when it is full) */
-  const spreadRows = (list) => { if (!room || mapOf()) return list; const band = clamp(110 * room.h / room.w, 56, 92);
+  const spreadRows = (list) => { if (!room || mapOf()) return list; const B = clamp(110 * room.h / room.w, 56, 92); let lo = 50 - B / 2, hi = 50 + B / 2;
+    // a curtain hangs to the floor by the side: the row keeps clear of it
+    const hung = new Map([...R.scene(), ...list].filter((it) => { const q = RQ.byHandle(it.h); return q && kindOf(q) === "window"; }).map((it) => [it.h, it]));
+    hung.forEach((c) => { if (c.x < 50) lo = Math.max(lo, c.x + c.w / 2 + 1); else hi = Math.min(hi, c.x - c.w / 2 - 1); });
+    if (hi - lo < 40) { lo = 50 - B / 2; hi = 50 + B / 2; } const band = hi - lo;
     [...new Set(list.filter((it) => it.row).map((it) => it.y))].forEach((y) => { const row = list.filter((it) => it.row && it.y === y).sort((a, b) => a.x - b.x), sum = row.reduce((t, it) => t + it.w, 0), k = Math.min(1, (band - 2 * (row.length + 1)) / Math.max(1, sum));
-      row.forEach((it) => { it.w = +(it.w * k).toFixed(1); }); const used = row.reduce((t, it) => t + it.w, 0), gap = (band - used) / (row.length + 1); let x = 50 - band / 2 + gap;
+      row.forEach((it) => { it.w = +(it.w * k).toFixed(1); }); const used = row.reduce((t, it) => t + it.w, 0), gap = (band - used) / (row.length + 1); let x = lo + gap;
       row.forEach((it) => { it.x = +(x + it.w / 2).toFixed(1); x += it.w + gap; }); }); return list; };
   const spotFor = (p, list, raw, MX, over, row) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
