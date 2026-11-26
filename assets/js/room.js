@@ -820,7 +820,8 @@
 
   /* the customer's rooms (Mitt hem): switching is one tap; the active one is marked */
   const projChips = () => { const H = RQ.hem, rs = H && H.rooms ? H.rooms() : []; if (!rs.length) return "";
-    const act = H.activeId && H.activeId();
+    // the room whose photo this is is marked even when nothing set it active (back from Sparat's "Prova igen i Studio"; studio3 review minor 4)
+    const k = keyNow(), act = (H.activeId && H.activeId()) || ((rs.find((r) => r.pkey && r.pkey === k) || {}).id) || null;
     return `<nav class="rm-projs" aria-label="Dina rum">${rs.slice(0, 6).map((r) => `<button type="button" class="chip" data-proj="${esc(r.id)}" aria-pressed="${r.id === act}">${esc(H.name(r))}</button>`).join("")}<a class="chip rm-projnew" href="#mitt-hem">${ICO.plus}<span>Nytt rum</span></a></nav>`; };
   V.myRoom = (pre) => {
     if (pre && RQ.byHandle(pre) && room && R.add(pre, true)) RQ.ss && RQ.ss.set("rumiq-room-new", pre);
