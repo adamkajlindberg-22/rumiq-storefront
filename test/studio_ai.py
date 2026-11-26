@@ -140,13 +140,13 @@ with sync_playwright() as p:
         ctx, pg, errs = new(b, mob, W, Hh)
         room(pg, FOUR)
         create(pg, 900)
-        ok("Gör i ordning förhandsvisningen" in pg.evaluate("document.getElementById('aiTitle').innerText") and "På den riktiga sajten tar AI-bilden 15–40 sekunder" in pg.evaluate("document.querySelector('.ai-wait .ai-lead').innerText"), f"{tag} the preview's wait says what the preview does")
+        ok("Gör i ordning förhandsvisningen" in pg.evaluate("document.getElementById('aiTitle').innerText") and "När AI-bilderna är igång tar bilden 15–40 sekunder" in pg.evaluate("document.querySelector('.ai-wait .ai-lead').innerText"), f"{tag} the preview's wait says what the preview does")
         pg.wait_for_timeout(1300)
         mid = pg.evaluate("+document.querySelector('.ai-result [data-ba] input').value")
         pg.wait_for_timeout(2200)
         rat = pg.evaluate(RATIO)
         ok(rat and abs(rat[0] - rat[1]) / rat[0] < 0.01 and abs(rat[0] - rat[2]) / rat[0] < 0.01, f"{tag} the picture and its frame have the room photo's shape: {rat}")
-        ok(pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "Demo" and pg.evaluate("document.querySelector('.ai-tag-b').innerText") == "Före", f"{tag} labelled Demo, the before side Före")
+        ok(pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "Förhandsvisning" and pg.evaluate("document.querySelector('.ai-tag-b').innerText") == "Före", f"{tag} labelled Demo, the before side Före")
         ok(pg.evaluate("!!document.querySelector('.ai-result img.before') && !!document.querySelector('.ai-result [data-ba] input')"), f"{tag} the before picture (the room photo) is under a slider")
         ok(mid < 100 and pg.evaluate("+document.querySelector('.ai-result [data-ba] input').value") == 30, f"{tag} the made room sweeps in over the photo and settles at 30 %: {mid}")
         ok("Bilden finns nu under Sparat" in pg.evaluate("document.querySelector('.ai-saved').innerText"), f"{tag} the picture is saved by itself, and the sheet says where")
@@ -184,8 +184,10 @@ with sync_playwright() as p:
         ok(re.match(r"rumiq-ai-bild-\d{4}-\d\d-\d\d\.jpg$", d.value.suggested_filename), f"{tag} Ladda ner gives the picture: {d.value.suggested_filename}")
         # Visa någon without a share sheet: the before and after picture is downloaded, the toast says so
         pg.evaluate("Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })")
+        pg.evaluate("document.getElementById('aiShare').click()"); pg.wait_for_timeout(900)
+        ok("Ladda ner bilden" in pg.evaluate(TOAST), f"{tag} without a share sheet the picture is offered, not downloaded by itself (place review)")
         with pg.expect_download() as d:
-            pg.evaluate("document.getElementById('aiShare').click()")
+            pg.evaluate("document.querySelector('#toast [data-ai-offer]').click()")
         pg.wait_for_timeout(300)
         ok(d.value.suggested_filename.startswith("rumiq-fore-efter-") and "före och efter" in pg.evaluate(TOAST), f"{tag} Visa någon: before and after in one picture: {d.value.suggested_filename} / {pg.evaluate(TOAST)}")
         # Visa någon with a share sheet: one picture file goes to it

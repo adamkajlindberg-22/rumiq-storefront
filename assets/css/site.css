@@ -2986,6 +2986,10 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-prop-thumbs img:first-child{margin-left:0}
 .hem-prop-thumbs i{display:grid;place-items:center;font-style:normal;font-size:.8rem;font-weight:600;color:var(--ink2)}
 .hem-card-im{position:relative}
+.hem-card-old{position:absolute;left:.7rem;top:.7rem;padding:.3rem .65rem;border-radius:999px;background:rgba(244,242,238,.94);color:#22252A;font-size:.8rem;font-weight:560}
+.ai-prev-tag{display:inline-block;margin-top:.2rem;padding:.15rem .55rem;border-radius:999px;font-size:.78rem;font-weight:560;background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink2)}
+.ai-stale{margin:0;padding:.6rem .75rem;border-radius:10px;background:color-mix(in srgb,var(--accent) 8%,var(--paper));display:flex;flex-wrap:wrap;gap:.2rem .5rem;align-items:center}
+.ai-stale .tlink{min-height:2.75rem;display:inline-flex;align-items:center}
 .hem-card-col{position:absolute;left:0;right:0;bottom:6%;display:flex;justify-content:center;align-items:flex-end;gap:2%;padding:0 6%;pointer-events:none;overflow:hidden}
 .hem-card-col img{width:19%;min-width:0;flex:0 1 19%;max-height:62%;height:auto;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(20,20,20,.25))}
 .ai-swap{display:flex;flex-wrap:wrap;gap:0 1rem}

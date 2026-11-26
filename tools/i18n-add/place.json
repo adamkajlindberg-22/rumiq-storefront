@@ -61,5 +61,20 @@
  "Inget annat av samma slag passar här.": "Nothing else of the same kind fits here.",
  "Det gick inte att byta här. Prova i Justera själv.": "It could not be swapped here. Try in Adjust yourself.",
  "Färger för {PA}": "Colours for {PA}",
- "I stället för {PA}": "Instead of {PA}"
+ "I stället för {PA}": "Instead of {PA}",
+ "Bild från tidigare": "Earlier picture",
+ "Bild från tidigare.": "Earlier picture.",
+ "Produkterna i rummet har ändrats sedan dess. Listan och priset gäller rummet nu.": "The products in the room have changed since. The list and the price are for the room now.",
+ "Skapa ny bild": "Make a new picture",
+ "Här visar vi din uppställning som den är. När AI-bilderna är igång tar bilden 15–40 sekunder.": "Here we show your arrangement as it is. When the AI images are on, the picture takes 15–40 seconds.",
+ "När AI-bilderna är igång blir din uppställning ett riktigt foto med ljus och skuggor. Här visar vi uppställningen som den är.": "When the AI images are on, your arrangement becomes a real photo with light and shadows. Here we show the arrangement as it is.",
+ "Förhandsvisning, inte en AI-bild": "Preview, not an AI image",
+ "RumIQ · Förhandsvisning": "RumIQ · Preview",
+ "Skapa igen · {0} bild": "Make again · {0} image",
+ "Ladda ner bilden": "Download the picture",
+ "Bilden med före och efter är nedladdad.": "The before and after picture is downloaded.",
+ "Skicka länken ovan. Vill du ha bilden med före och efter också?": "Send the link above. Would you like the before and after picture too?",
+ "Skicka länken. Vill du ha bilden med före och efter också?": "Send the link. Would you like the before and after picture too?",
+ "Bilderna du har skapat i Mitt rum, med bilden före. Förhandsvisningar är märkta som det. De sparas på den här enheten, och ingen annan kan se dem.": "The pictures you have made in My room, with the before picture. Previews are marked as such. They are kept on this device, and nobody else can see them.",
+ "Version {0} · Förhandsvisning": "Version {0} · Preview"
 }
