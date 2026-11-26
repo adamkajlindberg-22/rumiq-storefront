@@ -3073,7 +3073,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-room-foot{margin:0}
 .ai-move{display:flex;align-items:center;gap:.6rem;font-size:.9rem;min-height:2.75rem}
 .ai-move select{min-height:2.75rem;max-width:12rem}
-.hem-link{display:grid;gap:.5rem;padding:.8rem .9rem;border-radius:12px;background:color-mix(in srgb,var(--accent) 8%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
+.hem-link{display:grid;gap:.5rem;padding:.8rem .9rem;border-radius:12px;background:var(--paper);border:1px solid var(--line);background:color-mix(in srgb,var(--accent) 8%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent)}
 .hem-link p{margin:0;font-size:.9rem}
 .hem-link-row{display:flex;gap:.5rem;align-items:center}
 .hem-link input{flex:1 1 auto;min-width:0;min-height:2.75rem;font-size:.86rem;padding:0 .7rem;border:1px solid var(--field, var(--line));border-radius:10px;background:var(--paper);color:var(--ink)}
