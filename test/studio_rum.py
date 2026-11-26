@@ -147,8 +147,9 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.room.has() && RQ.room.get().sample") and not pg.evaluate("RQ.shop.customer()"), f"{tag} a sample room needs no account")
         # a product's room button without a room: the product is kept with the step
         pg.evaluate("RQ.room.clear()"); pg.goto(BASE + "butik/"); pg.wait_for_timeout(900); quiet(pg)
-        pg.evaluate("document.querySelector('[data-room-btn]').click()"); pg.wait_for_timeout(500)
-        h0 = pg.evaluate("document.querySelector('[data-room-btn]').dataset.roomBtn")
+        # (the shop's cards have no room button any more, review N3; any data-room-btn, as in the stylist's answers, works the same)
+        pg.evaluate("document.getElementById('view').insertAdjacentHTML('beforeend', '<button type=button data-room-btn=lysa-keramiklampa id=tRoomBtn>x</button>'); document.getElementById('tRoomBtn').click()"); pg.wait_for_timeout(500)
+        h0 = "lysa-keramiklampa"
         pg.evaluate("document.querySelector('.roomsheet .sheet-acts label:not(.cam)').click()"); pg.wait_for_timeout(400)
         pg.evaluate("document.querySelector('.roomsheet [data-room-gate]').click()"); pg.wait_for_timeout(700)
         g = json.loads(pg.evaluate("sessionStorage.getItem('rumiq-room-gate')") or "{}")
@@ -341,8 +342,8 @@ with sync_playwright() as p:
             a1 = pg.evaluate("document.getElementById('rmCanvas').getBoundingClientRect().left")
             ok(a1 < a0 - 100, f"{tag} and the camera glides across the room after them: {round(a0)} -> {round(a1)}")
             pg.wait_for_timeout(1800)
-            wv = pg.evaluate("[document.getElementById('rmCanvas').getBoundingClientRect().width, document.getElementById('rmStage').getBoundingClientRect().width]")
-            ok(wv[0] <= wv[1] + 1, f"{tag} and ends on the whole room (review minor 9): {wv}")
+            wv = pg.evaluate("(() => { const s = document.getElementById('rmStage').getBoundingClientRect(); return [...document.querySelectorAll('.rm-item')].map((e) => { const r = e.getBoundingClientRect(); return [r.left >= s.left - 2 && r.right <= s.right + 2, Math.round(Math.min(r.width, r.height))]; }); })()")
+            ok(all(v[0] and v[1] >= 44 for v in wv), f"{tag} and ends on a view that shows all of them, each at least 44 px to tap (review N1): {wv}")
         else:
             pg.wait_for_timeout(1500)
         ok(pg.evaluate("!document.getElementById('rmFirst').hidden && /hemma hos dig/.test(document.getElementById('rmFirst').textContent)") and not pg.evaluate("document.querySelector('.toast.show')"), f"{tag} the first time, one warm line on the room and no toast beside it")
@@ -380,13 +381,13 @@ with sync_playwright() as p:
         put(pg, "kok.jpg", KOK.getvalue()); pg.wait_for_timeout(2600)
         sc = {it["h"]: it for it in pg.evaluate("RQ.room.scene()")}
         rows = [sc[h] for h in ("lysa-keramiklampa", "flatad-forvaringskorg", "affisch-horisont-ekram")]
-        ok(all(r.get("row") and r.get("on") == "golv" and r["y"] >= 84 for r in rows), f"{tag} own photo: the things stand in a row on the floor, said to stand on golv: {[(r['x'], r['y']) for r in rows]}")
+        ok(all(r.get("row") and r.get("on") == "golv" and r["y"] >= 80 for r in rows), f"{tag} own photo: the things stand in a row on the floor, said to stand on golv: {[(r['x'], r['y']) for r in rows]}")
         ys = sorted(r["y"] for r in rows if r["y"] == 93); xs = sorted((r["x"] - r["w"] / 2, r["x"] + r["w"] / 2) for r in rows if r["y"] == 93)
         ok(all(a[1] <= b[0] for a, b in zip(xs, xs[1:])), f"{tag} a tidy row: none in front of another: {xs}")
         ok(sc["dagsljus-linnegardin-2-pack"]["x"] >= 80, f"{tag} the curtain hangs at the side: {sc['dagsljus-linnegardin-2-pack']['x']}")
         ok(pg.evaluate("!document.getElementById('rmFirst').hidden && document.getElementById('rmFirst').textContent") == "Dra sakerna dit du vill ha dem.", f"{tag} with one line: Dra sakerna dit du vill ha dem")
-        vis = pg.evaluate("(() => { const s = document.getElementById('rmStage').getBoundingClientRect(); return [...document.querySelectorAll('.rm-item')].every((e) => { const r = e.getBoundingClientRect(); return r.left >= s.left - 2 && r.right <= s.right + 2; }); })()")
-        ok(vis, f"{tag} and the whole room is shown, so every one of them is in view")
+        vis = pg.evaluate("(() => { const s = document.getElementById('rmStage').getBoundingClientRect(); return [...document.querySelectorAll('.rm-item')].map((e) => { const r = e.getBoundingClientRect(); return [e.dataset.h.slice(0, 6), Math.round(r.left - s.left), Math.round(s.right - r.right)]; }); })()")
+        ok(all(v[1] >= -2 and v[2] >= -2 for v in vis), f"{tag} and the view fits all of them, so every one is in view (review N1): {vis}")
         # dragged out of the row: it stands where you put it, its own kind again
         pg.evaluate("RQ.room.update('lysa-keramiklampa', { x: 60, y: 60, row: undefined, on: undefined })"); pg.wait_for_timeout(300)
         ok(pg.evaluate("RQ.room.scene().find((i) => i.h === 'lysa-keramiklampa').on") is None, f"{tag} out of the row it is no longer said to stand on the floor")
@@ -397,7 +398,7 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.room.scene().length") == 0 and pg.evaluate("!!document.querySelector('.ask-now')"), f"{tag} Inred åt mig waits for the room type and points at the question")
         pg.click("#rmHint [data-roomtype=kok]"); pg.wait_for_timeout(1800)
         ok(pg.evaluate("RQ.room.get().type") == "kok" and pg.evaluate("RQ.room.scene().length") >= 2, f"{tag} choosing Kök runs the suggestions at once")
-        ok(not pg.evaluate("document.querySelector('.toast.show')") and pg.evaluate("document.getElementById('rmFirst').textContent") == "Dra sakerna dit du vill ha dem.", f"{tag} one message only, on the room")
+        ok(not pg.evaluate("document.querySelector('.toast.show')") and pg.evaluate("document.getElementById('rmFirst').textContent").startswith("Dra sakerna dit du vill ha dem."), f"{tag} one message only, under the room")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
     # minor 3: a sample room is called an example room; polish 1: no grey box behind the selected thing; polish 6: the curtain reaches above the picture; polish 7: Shift+arrow moves 5 %

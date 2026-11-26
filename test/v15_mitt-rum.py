@@ -149,7 +149,7 @@ with sync_playwright() as p:
         pg.tap("[data-act=bigger]"); pg.wait_for_timeout(200)
         ok(pg.evaluate(SPOT, "lysa-keramiklampa")[2] > s1[2] and pg.evaluate("document.querySelector('.rm-item.sel').dataset.h") == "lysa-keramiklampa", f"{tag} 'Större' makes it bigger and it stays selected")
         pg.tap("[data-act=order]"); pg.wait_for_timeout(200)
-        ok(pg.evaluate("RQ.room.ordered()[0].h") == "lysa-keramiklampa" and pg.evaluate("document.getElementById('rmActOrder').innerText") == "Lägg framför", f"{tag} 'Lägg bakom' sends it to the back")  # r3 M3: Bakåt/Framåt renamed Lägg bakom/Lägg framför
+        ok(pg.evaluate("RQ.room.ordered()[0].h") == "lysa-keramiklampa" and pg.evaluate("document.getElementById('rmActOrderB').getAttribute('aria-label')") == "Lägg framför", f"{tag} 'Lägg bakom' sends it to the back")  # r3 M3: Bakåt/Framåt renamed Lägg bakom/Lägg framför
         pg.tap("[data-act=del]"); pg.wait_for_timeout(300)
         ok(not pg.evaluate("RQ.room.inScene('lysa-keramiklampa')") and pg.is_visible("#rmUndo"), f"{tag} 'Ta bort' offers an undo")  # r4: the Ångra button on the room is the one undo (no second link in the toast)
         pg.evaluate("document.getElementById('rmUndo').click()"); pg.wait_for_timeout(300)
@@ -239,7 +239,8 @@ with sync_playwright() as p:
         pg.evaluate("RQ.room.add('stilla-ljusstake-massing-2-pack')"); pg.wait_for_timeout(300)
         c4 = pg.evaluate(SPOT, "stilla-ljusstake-massing-2-pack")
         ok(c4[1] > 78 and "golvet" in pg.evaluate(TOAST), f"{tag} a full table: the next thing stands on the floor and you are told: {c4}")
-        ok(all(72 <= pg.evaluate(SPOT, h)[0] <= 85.5 for h in ["lysa-keramiklampa", "sand-keramikvas", "glod-doftljus-keramik"]), f"{tag} the first three stand on the table")
+        # review N5: the mug in the photo takes part of the side table, so two things stand on it (never on the mug) and the rest on the floor
+        ok(all(72 <= pg.evaluate(SPOT, h)[0] <= 85.5 and pg.evaluate(SPOT, h)[1] < 70 for h in ["lysa-keramiklampa", "sand-keramikvas"]) and not any(75.6 - 1 < pg.evaluate(SPOT, h)[0] < 79.3 + 1 and pg.evaluate(SPOT, h)[1] < 70 for h in ["lysa-keramiklampa", "sand-keramikvas", "glod-doftljus-keramik"]), f"{tag} the first two stand on the table, none on the mug")
         pg.evaluate("RQ.room.add('plad-ullblandning-havre', true)")
         ok(55 < pg.evaluate(SPOT, "plad-ullblandning-havre")[0] < 70, f"{tag} a candle on the table does not push the throw off the sofa")
         pg.wait_for_timeout(900); quiet(pg)
@@ -288,13 +289,15 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.shop.looks().length") == 1, f"{tag} 'Spara som look' twice keeps one look")
         # Inred åt mig keeps finding things, and can be undone as one step
         pg.evaluate("RQ.room.saveScene([])"); pg.wait_for_timeout(200)
+        # Studio 2: Inred åt mig gives a complete set for the room each time (style and budget optional); a new press replaces the
+        # set (what you placed yourself stays), and Ctrl+Z takes one round back
         seen = []
-        for i in range(4):
-            pg.click("#rmSuggest"); pg.wait_for_timeout(400); seen.append(pg.evaluate("RQ.room.scene().length"))
-        ok(seen[0] == 4 and seen[3] > seen[1] > seen[0], f"{tag} 'Inred åt mig' goes on suggesting: {seen}")
+        for i in range(3):
+            pg.click("#rmSuggest"); pg.wait_for_timeout(400); seen.append(sorted(pg.evaluate("RQ.room.scene().map((i) => i.h)")))
+        ok(len(seen[0]) >= 3 and all(len(x) == len(seen[0]) for x in seen), f"{tag} 'Inred åt mig' gives a whole set each time: {[len(x) for x in seen]}")
         ok(pg.evaluate("RQ.room.scene()[0].h") != "dagsljus-linnegardin-2-pack", f"{tag} the first suggestion is not the curtain")
-        before = seen[2]; pg.keyboard.press("Control+z"); pg.wait_for_timeout(300)
-        ok(pg.evaluate("RQ.room.scene().length") == before, f"{tag} Ctrl+Z takes back one round of suggestions")
+        pg.keyboard.press("Control+z"); pg.wait_for_timeout(300)
+        ok(sorted(pg.evaluate("RQ.room.scene().map((i) => i.h)")) == seen[1], f"{tag} Ctrl+Z takes back one round of suggestions")
         # the harmony shows a word, and tells sets apart
         hm = pg.evaluate("(() => { const s = (l) => { RQ.room.saveScene([]); l.forEach((h) => RQ.room.add(h, true)); return RQ.room.harmony(); }; return [s(['lysa-keramiklampa', 'sand-keramikvas']), s(['svamp-uppladdningsbar-lampa', 'terrakottakruka-rafflad'])]; })()")
         ok(hm[0]["word"] == "Samspelt" and hm[1]["word"] == "Spretigt", f"{tag} 'Går ihop' tells a matched pair from a mixed one: {[h['word'] for h in hm]}")
@@ -319,7 +322,7 @@ with sync_playwright() as p:
     pg.evaluate("RQ.room.add('sand-keramikvas', true); RQ.room.add('flatad-forvaringskorg', true)"); pg.wait_for_timeout(300)
     lamp, vase, basket = [pg.evaluate(SPOT, h) for h in ("lysa-keramiklampa", "sand-keramikvas", "flatad-forvaringskorg")]
     ok(k and k > 1.2 and abs(vase[2] / lamp[2] - 17 / 30.5) < 0.05 and abs(vase[1] - lamp[1]) < 0.2, f"[own] the next table thing keeps the scale you chose: k {k}, lamp {lamp}, vase {vase}")
-    ok(abs(basket[2] - 0.9 * (92 - 48) * 0.4 * k) < 0.4, f"[own] floor things follow the same scale: {basket}")
+    ok(abs(basket[2] - 0.9 * (basket[1] - 48) * 0.4 * k) < 0.4, f"[own] floor things follow the same scale: {basket}")  # (M1: the floor row stands at 82 %, not 92 %)
     ok(vase[2] >= 2.5, "[own] nothing becomes smaller than can be touched")
     pg.tap("#rmAsk [data-roomtype=sovrum]"); pg.wait_for_timeout(300)
     ok(pg.evaluate("RQ.room.get().type") == "sovrum" and pg.evaluate("!document.getElementById('rmAsk')"), "[own] the room type is saved from the question under the room")

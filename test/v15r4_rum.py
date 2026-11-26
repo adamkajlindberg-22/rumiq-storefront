@@ -153,7 +153,7 @@ with sync_playwright() as p:
         pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')"); pg.set_input_files(".sheet.open label.btn:not(.cam) input[data-room-file]", files=[{"name": "rum.jpg", "mimeType": "image/jpeg", "buffer": buf.getvalue()}]); pg.wait_for_timeout(2000)
         pg.evaluate("RQ.room.add('lysa-keramiklampa', true)"); lamp = pg.evaluate(SPOT, "lysa-keramiklampa")
         # studio review M1: it starts on the floor line near the front (the site does not know where the tables are), still lamp-sized
-        ok(lo <= lamp[2] <= hi and lamp[1] >= 84, f"[M12/M1 {name}] the first table lamp starts lamp-sized, on the floor line: {lamp}")
+        ok(lo - 1.5 <= lamp[2] <= hi and lamp[1] >= 80, f"[M12/M1 {name}] the first table lamp starts lamp-sized, on the floor line: {lamp}")
         c.close()
     # ---------------------------------------------------------------- look pictures: every dot on its own thing, a finger apart, sharp on large screens, no doubles
     DOTS = """() => { const st = document.querySelector('.lp-stage'), r = st.getBoundingClientRect();

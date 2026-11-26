@@ -15,7 +15,7 @@
   let room = ls.get(KEY, null), blobUrl = null, hist = [], lastTag = "", lastAt = 0;
   const emit = (what) => document.dispatchEvent(new CustomEvent("rq-room", { detail: what }));
   // only a picture kept in this browser counts as a room; anything else in the storage is ignored
-  if (!room || typeof room !== "object" || typeof room.img !== "string" || !/^data:image\//.test(room.img) || !(+room.w > 0) || !(+room.h > 0)) room = null;
+  if (!room || typeof room !== "object" || typeof room.img !== "string" || !(/^data:image\//.test(room.img) || (room.sample && /^assets\/img\/rum\/[a-z]+-\d+\.webp$/.test(room.img))) || !(+room.w > 0) || !(+room.h > 0)) room = null;
   if (room) { room.w = +room.w; room.h = +room.h; if (!Array.isArray(room.pal)) room.pal = []; room.pal = room.pal.filter((x) => x && /^#[0-9a-f]{6}$/i.test(x.hex)); }
   const FULL = "Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat och försök igen.";
 
@@ -42,7 +42,7 @@
      horizon h and the slope k. Rugs and curtains are [x, y, width, squash]. sun = the side the light comes from. */
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
-      surface: [[78, 68.8, 25], [73.4, 68.4, 25], [81.6, 68, 25]], // the side table ends at about 82.4
+      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], // the side table ends at about 84.4; a mug stands at 75.6-79.3
       cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[62.4, 72.6, 17], [80, 72, 17]], bedding: [],
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
@@ -112,11 +112,21 @@
      put in mid-air. Things go in a tidy row on the floor near the front (a second row a little further back when it is
      full), "Står på: golv", and the room says "Dra sakerna dit du vill ha dem". A curtain hangs at the side, a rug lies at
      the front, as before. Once you have moved one thing of a kind, the next follows it (LEARN). */
-  const ROWK = { surface: 1, floor: 1, cushion: 1, throw: 1, bedding: 1, wall: 1 }, ROWS = [93, 84];
+  const ROWK = { surface: 1, floor: 1, cushion: 1, throw: 1, bedding: 1, wall: 1 }, ROWS = [82, 73];
+  /* the room type is known: things for a table go on a likely table or counter at mid-height ("Står på: bord", one tap to
+     change); a kitchen's jars, candlesticks and towel are never put on the floor */
+  const TABLE_Y = 62, onTable = (k) => k === "surface" && room && !!room.type;
+  /* a row is laid out again whenever something joins it: centred, evenly spread over a band a phone can show at once, the
+     things made a little smaller if they would not fit (a second row behind when it is full) */
+  const spreadRows = (list) => { if (!room || mapOf()) return list; const band = clamp(110 * room.h / room.w, 56, 92);
+    [...new Set(list.filter((it) => it.row).map((it) => it.y))].forEach((y) => { const row = list.filter((it) => it.row && it.y === y).sort((a, b) => a.x - b.x), sum = row.reduce((t, it) => t + it.w, 0), k = Math.min(1, (band - 2 * (row.length + 1)) / Math.max(1, sum));
+      row.forEach((it) => { it.w = +(it.w * k).toFixed(1); }); const used = row.reduce((t, it) => t + it.w, 0), gap = (band - used) / (row.length + 1); let x = 50 - band / 2 + gap;
+      row.forEach((it) => { it.x = +(x + it.w / 2).toFixed(1); x += it.w + gap; }); }); return list; };
   const spotFor = (p, list, raw, MX, over, row) => { // MX: a sample room's map instead of the customer's room (the look pictures); over: put it on another kind of spot; row: may start a row on the floor
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
-    const taken = (x, y, w, k) => list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
+    const busy = (x, y, w) => ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
+    const taken = (x, y, w, k) => busy(x, y, w) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
@@ -126,11 +136,11 @@
     // your own photo: the size you gave the first thing sets the scale for the rest. Before that, a photo taken on its
     // side shows less of the room across, so the same lamp is a larger share of its width
     const k = M ? 1 : L.k > 0 ? L.k : room ? clamp((1.5 * room.h / room.w) ** 0.7, 1, 1.8) : 1;
-    if (row && !M && room && ROWK[kind]) for (const y of kind === "wall" ? ROWS.slice().reverse() : ROWS) {
-      const w = clamp(cm * floorScale(y) / 100 * k, 2.5, 40), inRow = list.filter((it) => it.row && Math.abs(it.y - y) < 1);
-      const x = (inRow.length ? Math.max(...inRow.map((it) => it.x + it.w / 2)) + 2.5 : 4) + w / 2;
-      if (x + w / 2 <= 97) return { x: +x.toFixed(1), y, w: +w.toFixed(1), row: true };
-    }
+    if (row && !M && room && ROWK[kind]) { const band = clamp(110 * room.h / room.w, 56, 92), tbl = onTable(kind);
+      for (const y of tbl ? [TABLE_Y] : ROWS) {
+        const w = clamp(cm * (tbl ? 30 : floorScale(y)) / 100 * k, 4, 36), inRow = list.filter((it) => it.row && Math.abs(it.y - y) < 1), used = inRow.reduce((t, it) => t + it.w, 0);
+        if (!inRow.length || used + w <= band * 0.92 || y === (tbl ? TABLE_Y : ROWS[ROWS.length - 1])) return { x: 50, y, w: +w.toFixed(1), row: true, table: tbl };
+      } }
     const place = (kd) => {
       const spots = G[kd] && G[kd].length ? G[kd] : null; if (!spots) return null;
       if (kd === "rug" || kd === "window") { const sp = spots[0];
@@ -254,13 +264,11 @@
     PLACE, placeFor, kindOf, cutIn, mapOf, match, lightFilter, analyse,
     has: () => !!room,
     get: () => room,
-    url() { if (!room) return null; if (!blobUrl) blobUrl = toBlobUrl(room.img); return blobUrl; },
+    url() { if (!room) return null; if (!/^data:/.test(room.img)) return room.img; if (!blobUrl) blobUrl = toBlobUrl(room.img); return blobUrl; }, // a sample room is its own file
     async saveImage(img, meta = {}) {
       await new Promise((r) => setTimeout(r, 0)); // the tap's own feedback is drawn first
-      // a sample room is already the right size: its file is kept as it is, without drawing and encoding it again (meta.src)
-      if (meta.src && (img.naturalWidth || 0) <= 1600) { try { const blob = await (await fetch(meta.src)).blob(), data = await new Promise((ok, bad) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = bad; fr.readAsDataURL(blob); });
-        if (/^data:image\//.test(data)) return R._keep(data, img.naturalWidth, img.naturalHeight, analyse(img), meta); } catch (e) {} }
-      // a panorama or a very tall strip is trimmed around its middle (to 2.2:1 or 1:2.2), so the room can be shown at a useful size
+      // a sample room is its own file: kept by its address (no drawing, no re-encoding, no large write), its colours read after the first drawing
+      if (meta.src && /^assets\/img\/rum\/[a-z]+-\d+\.webp$/.test(meta.src)) return R._keep(meta.src, img.naturalWidth, img.naturalHeight, { pal: [], light: 0.6, warm: 0, later: img }, meta);
       const nw = img.naturalWidth || img.width, nh = img.naturalHeight || img.height, sw = Math.min(nw, Math.round(nh * 2.2)), sh = Math.min(nh, Math.round(nw * 2.2)), sx = Math.round((nw - sw) / 2), sy0 = Math.round((nh - sh) / 2);
       const max = 1600, k = Math.min(1, max / Math.max(sw, sh)); // long side about 1600 px, as JPEG
       const W = Math.round(sw * k), H = Math.round(sh * k);
@@ -275,13 +283,19 @@
       room = next; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; // a new photo: the old steps belonged to the old room
       ls.del(LEARN);
       // what stood in the old room is put where it belongs in the new one
-      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved, false, null, null, true), n = { h: it.h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), ...(sp.row ? { row: true, on: "golv" } : {}), flip: false, light: 100 };
-        const tw = trueW(n); if (tw) { n.w = tw; n.real = true; } moved.push(n); });
+      const moved = []; R.scene().forEach((it) => { const sp = spotFor(RQ.byHandle(it.h), moved, false, null, null, true), n = { h: it.h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), ...(sp.row ? { row: true, on: sp.table ? "bord" : "golv" } : {}), flip: false, light: 100 };
+        const tw = trueW(n); if (tw) { n.w = tw; n.real = true; } moved.push(n); }); spreadRows(moved);
       if (moved.length) ls.set(SCENE, moved);
       R._landRow = moved.some((it) => it.row); // the editor lets them land in their row, and shows the whole room
-      emit("room"); return true;
+      emit("room");
+      if (a.later) { const at = next.at, run = () => { if (!room || room.at !== at) return; const b = analyse(a.later); Object.assign(room, { pal: b.pal, light: b.light, warm: b.warm }); ls.set(KEY, room); emit("palette"); };
+        (window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 1500 }) : (f) => setTimeout(f, 200))(() => requestAnimationFrame(() => setTimeout(run, 0))); }
+      return true;
     },
-    setType(t) { if (!room) return; room.type = t; ls.set(KEY, room); emit("type"); },
+    setType(t) { if (!room) return; room.type = t; ls.set(KEY, room); emit("type");
+      // your own photo: now that the room is known, the things for a table in the floor row go up to a likely table ("Står på: bord")
+      if (!mapOf() && t) { const list = R.scene(); let n = 0; list.forEach((it) => { const p = RQ.byHandle(it.h); if (it.row && it.on === "golv" && p && kindOf(p) === "surface") { it.y = TABLE_Y; it.on = "bord"; it.w = +clamp(meta(p)[1] * 0.3 * (ls.get(LEARN, {}).k || 1), 4, 36).toFixed(1); n++; } });
+        if (n) { spreadRows(list); R.saveScene(list, true); } } },
     /* forget the room: the photo, what stands in it and everything the editor remembers */
     clear() { [KEY, SCENE, MODE, LEARN, "rumiq-room-night", "rumiq-room-landed", "rumiq-room-view"].forEach((k) => ls.del(k)); room = null; if (blobUrl && blobUrl.startsWith("blob:")) URL.revokeObjectURL(blobUrl); blobUrl = null; hist = []; emit("room"); emit("scene"); },
     /* scene */
@@ -303,11 +317,12 @@
       const sp = spotFor(p, list, false, null, null, true);
       { const tw = trueW({ h, x: sp.x, y: sp.y, sy: sp.sy, on: sp.moved }); if (tw) { sp.w = tw; sp.real = true; // a known scale: true size from the start
           if (kindOf(p) === "window" && room) sp.y = +Math.min(sp.y, tw * meta(p)[2] * (sp.sy || 1) * room.w / room.h - 2).toFixed(1); } } // a curtain hangs from above the picture, a little above the floor if it is shorter than the room
-      list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(v > 0 && (p.variants || [])[v] ? { v } : {}), ...(sp.real ? { real: true } : {}), ...(sp.row ? { row: true, on: "golv" } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
+      list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(v > 0 && (p.variants || [])[v] ? { v } : {}), ...(sp.real ? { real: true } : {}), ...(sp.row ? { row: true, on: sp.table ? "bord" : "golv" } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
+      if (sp.row) spreadRows(list);
       if (!R.saveScene(list)) { RQ.toast(FULL); return false; }
       R.lastMoved = sp.moved ? h : null;
       if (!quiet && sp.moved) RQ.toast(`Där var det fullt, så ${esc(p.name)} står på golvet. Dra den dit du vill.`);
-      else if (!quiet) RQ.toast(/^mitt-rum/.test((RQ.currentRoute && RQ.currentRoute()) || "") ? `${esc(p.name)} står nu i ditt rum.` : `${esc(p.name)} står nu i ditt rum. <a href="#mitt-rum">Öppna</a>`);
+      else if (!quiet) RQ.toast(/^mitt-rum/.test((RQ.currentRoute && RQ.currentRoute()) || "") ? `${esc(p.name)} står nu i ${room && room.sample ? "rummet" : "ditt rum"}.` : `${esc(p.name)} står nu i ${room && room.sample ? "exempelrummet" : "ditt rum"}. <a href="#mitt-rum">Öppna</a>`);
       return true;
     },
     remove(h) { R.saveScene(R.scene().filter((it) => it.h !== h)); },
@@ -333,7 +348,7 @@
       const n = S.cartLines().filter((l) => todo.some((it) => it.h === l.product.handle)).length;
       if (!n) { RQ.toast("Det gick inte att lägga sakerna i varukorgen. Försök igen."); return; }
       RQ.confirmAdd(btn, "");
-      RQ.toast(`${n === 1 ? "1 produkt från ditt rum ligger" : n + " produkter från ditt rum ligger"} i varukorgen${todo.length < list.length ? ", resten låg redan där" : ""}. <a href="#" data-open-cart>Visa</a>`);
+      RQ.toast(`${n === 1 ? "1 produkt" : n + " produkter"} från ${room && room.sample ? "rummet" : "ditt rum"} ${n === 1 ? "ligger" : "ligger"} i varukorgen${todo.length < list.length ? ", resten låg redan där" : ""}. <a href="#" data-open-cart>Visa</a>`);
     },
     total: () => R.scene().reduce((s, it) => s + RQ.byHandle(it.h).price, 0),
     /* Byt: what can take this thing's place (the same kind of thing, for the same surface), best colour match first */
@@ -356,7 +371,8 @@
     suggestSet({ style = null, budget = null, avoid = [] } = {}) {
       const t = (room && room.type) || "vardagsrum", have = new Set(R.scene().filter((it) => !it.sg).map((it) => it.h));
       const pr = RQ.hem && RQ.hem.propose ? RQ.hem.propose({ type: t, style, budget, avoid: [...avoid, ...have] }) : null;
-      if (pr) { const items = pr.items.filter((it) => !have.has(it.h)); return { items, left: pr.left, total: items.reduce((s, it) => s + RQ.byHandle(it.h).price, 0), fullTotal: pr.fullTotal, min: pr.min, style: pr.style }; }
+      if (pr) { const off = style ? pr.items.filter((it) => !RQ.byHandle(it.h).styles.includes(style)).map((it) => it.h) : []; // a style is kept to: what is not in it is left out
+        const items = pr.items.filter((it) => !have.has(it.h) && !off.includes(it.h)); return { items, left: pr.left, total: items.reduce((s, it) => s + RQ.byHandle(it.h).price, 0), fullTotal: pr.fullTotal, min: pr.min, style: pr.style }; }
       const ps = R.suggest(4).filter((q) => !avoid.includes(q.handle) && (!style || q.styles.includes(style))); let sum = 0; const items = [], left = [];
       ps.forEach((q) => { if (!budget || sum + q.price <= budget) { items.push({ h: q.handle, v: 0 }); sum += q.price; } else left.push(q.handle); });
       return { items, left, total: sum, fullTotal: ps.reduce((s, q) => s + q.price, 0), min: ps.length ? Math.min(...ps.map((q) => q.price)) : 0, style }; },
@@ -633,13 +649,14 @@
   const projOf = (id) => (id && RQ.hem && RQ.hem.room ? RQ.hem.room(id) : null);
   const keyNow = () => (RQ.ai && RQ.ai.projectKey ? RQ.ai.projectKey() : room && room.at);
   const putIn = (items, pr) => R.group(() => {
-    const keep = pr && Array.isArray(pr.scene) && pr.pkey && pr.pkey === keyNow() ? pr.scene.filter((it) => it && RQ.byHandle(it.h) && isFinite(it.x) && isFinite(it.y) && it.w > 0) : null;
+    const mine = pr && ((pr.pkey && pr.pkey === keyNow()) || (room && room.sample && pr.sceneMap && pr.sceneMap === room.map)); // the room's own photo, or the same sample room
+    const keep = mine && Array.isArray(pr.scene) ? pr.scene.filter((it) => it && RQ.byHandle(it.h) && isFinite(it.x) && isFinite(it.y) && it.w > 0) : null;
     if (keep && keep.length) { R.saveScene(keep); return keep.length; }
     R.saveScene([]); return items.filter((it) => R.add(it.h, true, it.v || 0)).length; });
   const goRoom = (swap) => { if (swap) RQ.ss.set("rumiq-room-swap", swap); const here = (RQ.currentRoute && RQ.currentRoute()) || ""; if (here === "mitt-rum") { RQ.router(); scrollTo(0, 0); } else if (RQ.go) RQ.go("mitt-rum"); else location.hash = "#mitt-rum"; };
   R.openWith = async ({ room: type = null, own = false, items = [], style = null, budget = null, project = null, swap = null } = {}) => {
     const its = (items || []).map((it) => (typeof it === "string" ? { h: it, v: 0 } : { h: it.h, v: +it.v || 0 })).filter((it) => RQ.byHandle(it.h)).slice(0, 16);
-    const pr = projOf(project); if (project && RQ.hem && RQ.hem.setActive) RQ.hem.setActive(project);
+    const pr = projOf(project); if (RQ.hem && RQ.hem.setActive && (project || RQ.hem.activeId())) RQ.hem.setActive(project || null); // the room Mitt rum shows is the active one (none when it is not one of yours)
     R._want = { style: RQ.STYLES[style] ? style : null, budget: budget > 0 ? +budget : null }; // Inred åt mig starts from the same style and budget
     document.dispatchEvent(new CustomEvent("rq-hem-go"));
     if (own) {
@@ -653,7 +670,7 @@
       const ok = await new Promise((res) => { im.onload = () => res(true); im.onerror = () => res(false); im.src = sm.img; });
       if (!ok || !(await R.saveImage(im, { sample: true, map: sm.id, type: sm.id, name: sm.name, src: sm.img }))) { RQ.toast("Rummet gick inte att öppna. Försök igen."); return false; }
     }
-    putIn(its, pr); goRoom(swap); return true;
+    putIn(its, pr); if (pr && room && room.sample && RQ.hem.patch) RQ.hem.patch(pr.id, { sceneMap: room.map }); goRoom(swap); return true;
   };
   /* from the AI picture: open the editor with Byt on that thing */
   R.openSwap = (h) => { if (!room || !R.inScene(h)) return false; goRoom(h); return true; };
@@ -708,7 +725,7 @@
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap" id="rmWrap" style="--ar:${(room.w / room.h).toFixed(4)}">
             <div class="rm-stage" id="rmStage" data-sun="${(mapOf() || GENERIC).sun}" style="--ar:${(room.w / room.h).toFixed(4)};aspect-ratio:${room.w} / ${room.h}">
-              <p class="sr" id="rmSaid" role="status"></p><div class="rm-canvas" id="rmCanvas"><img class="rm-bg" src="${R.url()}" alt="Ditt rum" draggable="false"><div class="rm-items" id="rmItems"></div><svg class="rm-area" id="rmArea" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points=""/></svg><span class="rm-arealab" id="rmAreaLab" aria-hidden="true" hidden></span>
+              <p class="sr" id="rmSaid" role="status"></p><div class="rm-canvas" id="rmCanvas"><img class="rm-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="rm-items" id="rmItems"></div><svg class="rm-area" id="rmArea" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points=""/></svg><span class="rm-arealab" id="rmAreaLab" aria-hidden="true" hidden></span>
                 <div class="rm-ruler" id="rmRuler" hidden><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0"/></svg><button type="button" class="rm-rh" data-end="1" aria-label="Linjens ena ände. Piltangenterna flyttar den."></button><button type="button" class="rm-rh" data-end="2" aria-label="Linjens andra ände. Piltangenterna flyttar den."></button><span class="rm-rlab" id="rmRLab"></span></div></div>
               <p class="rm-rhint" id="rmRHint" role="status" hidden>Dra linjen över något du vet längden på, som en dörr.</p>
               <button type="button" class="rm-hold" id="rmHold" aria-label="Håll för före, så ser du rummet utan produkterna">${ICO.eye}<span>Håll för före</span></button>
@@ -717,8 +734,8 @@
               <button type="button" class="rm-nightchip" id="rmNightChip" aria-label="Kvällsljus är på. Stäng av" hidden>${ICO.moon}<span>Kvällsljus</span><svg class="x" viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
               <span class="rm-pos" id="rmPos" aria-hidden="true" hidden><i></i></span>
               <div class="rm-emptyhint" id="rmHint" hidden>${!room.sample && !room.type ? `<p id="rmHintT">Vilket rum är det?</p><div class="chips rm-hintask">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div>` : `<p id="rmHintT">Rummet är tomt.</p>`}<button class="btn sm light" type="button" id="rmSuggest0"${!room.sample && !room.type ? " hidden" : ""}>${ICO.wand}Inred åt mig</button></div>
-              <p class="rm-first" id="rmFirst" role="status" hidden></p>
             </div>
+            <p class="rm-first" id="rmFirst" role="status" hidden></p>
             <div class="rm-tools">
               <button type="button" class="rm-tool" id="rmAdd">${ICO.plus}<span>Lägg till</span></button>
               <button type="button" class="rm-tool" id="rmSuggest">${ICO.wand}<span>Inred åt mig</span></button>
@@ -750,7 +767,7 @@
               <div class="rm-mbtns"><button type="button" class="btn sm ghost" id="rmMOff" hidden>Ta bort</button><button type="button" class="btn sm ghost" id="rmMCancel">Avbryt</button><button type="button" class="btn sm" id="rmMDone">Klar</button></div>
             </div>
             ${!room.sample && !room.type ? `<div class="rm-ask" id="rmAsk"><span>Vilket rum är det?</span><div class="chips">${TYPES.map(([id, n]) => `<button type="button" class="chip" data-roomtype="${id}">${n}</button>`).join("")}</div></div>` : ""}
-            <p class="caption"><span id="rmScale"></span> Ljuset på produkterna anpassas efter ditt foto. <span class="rm-keys">Med tangentbordet: piltangenterna flyttar, plus och minus ändrar storlek och ${/Mac|iPhone|iPad/.test(navigator.platform || "") ? "⌘Z" : "Ctrl+Z"} ångrar.</span></p>
+            <p class="caption"><span id="rmScale"></span> ${room.sample ? "Ljuset på produkterna följer rummets ljus." : "Ljuset på produkterna anpassas efter ditt foto."} <span class="rm-keys">Med tangentbordet: piltangenterna flyttar, plus och minus ändrar storlek och ${/Mac|iPhone|iPad/.test(navigator.platform || "") ? "⌘Z" : "Ctrl+Z"} ångrar.</span></p>
             ${more}
           </div>
           <aside class="rm-side">
@@ -779,7 +796,7 @@
           </aside>
         </section>
         <div class="buybar rm-bar" id="rmBar"><div class="bb-t"><b>Hela rummet</b><span id="rmBarSum">0 kr</span></div><button class="btn sm" type="button" id="rmCart2">Lägg allt i varukorgen</button></div>
-        <section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ditt rum</h2><p>Sorterat efter hur väl färgerna går ihop med ditt foto. Tryck på rummet-knappen för att ställa in.</p></div><a class="link" href="#butik">Hela butiken</a></div>${(() => { const c = R.read(); return c ? `<div class="rm-colors"><div class="palette" role="img" aria-label="Färgerna i ditt rum">${c.pal.map((t) => `<i style="background:${t}"></i>`).join("")}</div><div><h3>Färgerna i ditt rum</h3><p>${c.text} ${c.tip}</p></div></div>` : ""; })()}<div id="rmFits"></div></div></section>`
+        <section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ${room.sample ? "rummet" : "ditt rum"}</h2><p>Sorterat efter hur väl färgerna går ihop med ${room.sample ? "rummet" : "ditt foto"}. Ställ in en av dem med Lägg till vid rummet.</p></div><a class="link" href="#butik">Hela butiken</a></div><div id="rmCols"></div><div id="rmFits"></div></div></section>`
         : `<section class="wrap" style="padding-bottom:5rem">${setupBlock(want)}</section>`}`,
       mount(root) {
         document.body.classList.add("on-room");
@@ -793,10 +810,11 @@
         const paintCart = []; // the add-all buttons follow the cart and the room (addAllBtn)
         if (fresh0) setTimeout(() => RQ.ss.set("rumiq-room-new", ""), 1600); // kept a moment: the view may be drawn twice on the way in
         if (fresh0 && R.lastMoved === fresh0 && R.inScene(fresh0)) { R.lastMoved = null; ls.set("rumiq-room-landed", true); setTimeout(() => RQ.toast(`Där var det fullt, så ${esc(RQ.byHandle(fresh0).name)} står på golvet. Dra den dit du vill.`), 700); } // it came from a product page: say why it is not on the table
-        const fits = () => { const t = room.type; const list = RQ.PRODUCTS.map((p) => ({ p, m: (match(p) || 0) + (t && p.rooms.includes(t) ? 100 : 0) })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };
+        const colsHtml = () => { const c = R.read(); return c && c.pal.length ? `<div class="rm-colors"><div class="palette" role="img" aria-label="Färgerna i ${room.sample ? "rummet" : "ditt rum"}">${c.pal.map((t) => `<i style="background:${t}"></i>`).join("")}</div><div><h3>Färgerna i ${room.sample ? "rummet" : "ditt rum"}</h3><p>${c.text} ${c.tip}</p></div></div>` : ""; };
+        const fits = () => { $("#rmCols", root).innerHTML = colsHtml(); const t = room.type; const list = RQ.PRODUCTS.map((p) => ({ p, m: (match(p) || 0) + (t && p.rooms.includes(t) ? 100 : 0) })).sort((a, b) => b.m - a.m).slice(0, 6).map((x) => x.p); $("#rmFits", root).innerHTML = RQ.grid(list, "three"); RQ.markImages && RQ.markImages(root); };
         /* things land softly the first time they are put in the room */
         const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const seen = new Set(R.scene().filter((it) => !(R._landRow && it.row)).map((it) => it.h)); if (fresh0) seen.delete(fresh0); R._landRow = false;
+        const seen = new Set(R._landRow ? [] : R.scene().map((it) => it.h)); // things carried over to a new photo all land (and the view fits all of them) if (fresh0) seen.delete(fresh0); R._landRow = false;
         let shown = R.total();
         const count = (to) => { // the room's price counts up while the things land
           const els = [$("#rmTotal", root)], from = shown; shown = to;
@@ -866,7 +884,7 @@
           const room4 = Math.max(200, innerHeight - top - (drawer || 150)), h62 = Math.min(Math.round(innerHeight * 0.62), room4, below > 260 ? below : 1e4);
           view.can = h62 * ar >= W * 1.2;                       // a wide photo: there is more to see when it is shown tall
           const near = view.can && !view.whole;
-          view.sh = Math.round(near ? h62 : Math.min(W / ar, room4)); view.sw = W;
+          view.sh = Math.round(view.fit && view.can ? clamp(view.fit, Math.min(W / ar, room4), h62) : near ? h62 : Math.min(W / ar, room4)); view.sw = W;
           view.cw = view.sh * ar; view.ch = view.sh;
           stage.style.height = view.sh + "px";
           if (!keep) { view.z = 1; const c = centre(R.scene()); view.tx = view.sw / 2 - c[0] / 100 * view.cw; view.ty = 0; }
@@ -874,14 +892,23 @@
         };
         /* several things land at once, wider than a phone shows: the camera starts at the left one and glides across while they
            land, one after the other, so you see every one arrive. 2 = touring, 1 = moved, false = stayed */
+        /* a finger or the mouse on the room stops a glide where it is, and cancels the rest of a tour */
+        let tourId = 0;
+        const stopGlide = () => { tourId++; if (!view.on || !canvas.classList.contains("glide")) return; const m = new DOMMatrix(getComputedStyle(canvas).transform); view.tx = m.e; view.ty = m.f; canvas.classList.remove("glide", "tour"); paintView(); };
         const tour = (list) => { if (!view.on || list.length < 2 || calm()) return lookAt(list) ? 1 : false;
           const w = view.cw * view.z, xs = list.map((it) => it.x / 100 * w), lo = Math.min(...xs), hi = Math.max(...xs); if (hi - lo <= view.sw * 0.7) return lookAt(list) ? 1 : false;
           const c = centre(list); view.ty = clamp(view.sh / 2 - c[1] / 100 * view.ch * view.z, view.sh - view.ch * view.z, 0); view.tx = view.sw * 0.22 - lo; paintView(true);
-          setTimeout(() => { if (!canvas.isConnected || drag || pan || pinch) return; canvas.classList.add("tour"); view.tx = view.sw * 0.78 - hi; paintView(true);
-            setTimeout(() => { canvas.classList.remove("tour"); if (canvas.isConnected && !drag && !pan && !pinch && !sel && view.can && !view.whole) wholeRoom(); }, 1700); }, 620); // and ends on the whole room
+          const id = ++tourId; setTimeout(() => { if (id !== tourId || !canvas.isConnected || drag || pan || pinch) return; canvas.classList.add("tour"); view.tx = view.sw * 0.78 - hi; paintView(true);
+            setTimeout(() => { canvas.classList.remove("tour"); if (id === tourId && canvas.isConnected && !drag && !pan && !pinch && !sel) fitGroup(R.scene().filter((x) => list.some((n) => n.h === x.h))); }, 1700); }, 620); // and ends on all of them, large enough to tap
           return 2; };
         /* the whole picture at once (for this visit; "Närmare" goes back) */
         const wholeRoom = () => { view.whole = true; stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); };
+        /* a phone shows the group of things that just landed: as tall as possible, wide enough for all of them, and never so
+           small that one of them is under 44 px to tap */
+        const fitGroup = (list) => { if (!view.on || !list.length) return; const ar = room.w / room.h, lo = Math.min(...list.map((it) => it.x - it.w / 2)), hi = Math.max(...list.map((it) => it.x + it.w / 2));
+          const gw = clamp((hi - lo + 10) / 100, 0.2, 1); // (a tiny thing keeps a 44 px tap area of its own, site.css)
+          view.fit = view.sw / (gw * ar); view.whole = false; stage.classList.add("resize"); layout(true);
+          const c = centre(list); view.tx = view.sw / 2 - c[0] / 100 * view.cw; view.ty = 0; paintView(true); setTimeout(() => stage.classList.remove("resize"), 450); };
         const centre = (list) => { if (!list.length) return [50, 50]; const xs = list.map((it) => it.x), ys = list.map((it) => it.y - (it.w * meta(RQ.byHandle(it.h))[2] * (it.sy || 1) * room.w / room.h) / 2); return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2]; };
         /* the camera glides to where something stands */
         const lookAt = (list) => { if (!view.on || !list.length) return false; const c = centre(list), w = view.cw * view.z, h = view.ch * view.z, tx = view.tx, ty = view.ty;
@@ -894,13 +921,13 @@
           const nw = order.filter((it) => !seen.has(it.h)); if (nw.length === 1 && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length) sel = nw[0].h;
           const lane = new Map(nw.slice().sort((a, b) => a.x - b.x).map((it, i) => [it.h, i])); // several land from left to right
           wrap.innerHTML = order.map((it, i) => { const p = RQ.byHandle(it.h), kind = kindOf(p), isNew = !seen.has(it.h), r = meta(p)[2]; if (isNew) news.push(it);
-            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;z-index:${i + 1}${isNew && !calm() ? `;--i:${lane.get(it.h) ?? fresh++}` : ""}"><img src="${cutIn(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}">${tintHtml(it, p)}</div>`; }).join("");
+            return `<div class="rm-item k-${kind}${p.cat === "belysning-atmosfar" ? " lamp" : ""}${sel === it.h ? " sel" : ""}${isNew && !calm() ? " land" : ""}" data-h="${it.h}" tabindex="0" role="button" aria-label="${esc(p.name)}. Dra för att flytta. Piltangenterna flyttar, plus och minus ändrar storlek, Delete tar bort." style="left:${it.x}%;top:${it.y}%;width:${it.w}%;--w:${it.w};z-index:${i + 1}${isNew && !calm() ? `;--i:${lane.get(it.h) ?? fresh++}` : ""}"><img src="${cutIn(p)}" alt="" draggable="false" style="${it.sy ? `aspect-ratio:1 / ${(r * it.sy).toFixed(3)};` : ""}transform:scaleX(${it.flip ? -1 : 1});filter:${lightFilter(it.light)}">${tintHtml(it, p)}</div>`; }).join("");
           const teach = news.length && !mapOf() && !Object.keys(ls.get(LEARN, {}) || {}).length; // own photo, nothing shown yet
           if (news.length) { const t = tour(news); wrap.style.setProperty("--pre", t ? "360ms" : "90ms"); wrap.style.setProperty("--step", t === 2 ? "300ms" : "130ms");
             const f = $("#rmFirst", root);
-            if (news.some((it) => it.row) && view.on && view.can && !view.whole) wholeRoom(); // they are in a row along the front: show all of it
-            if (teach) { f.textContent = news.some((it) => it.row) ? "Dra sakerna dit du vill ha dem." : "Dra den dit den ska stå och gör den lagom stor. Nästa sak följer efter."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); }
-            else if (!ls.get("rumiq-room-landed", false)) { ls.set("rumiq-room-landed", true); f.textContent = "Så här kan det se ut hemma hos dig."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 5200); } }
+            if (news.some((it) => it.row) && view.on) fitGroup(news); // they stand in a row: show all of them, large enough to tap
+            if (teach) { f.textContent = news.some((it) => it.row) ? (news.some((it) => it.row && it.on === "bord") ? "Dra sakerna dit du vill ha dem. Står något fel, ändra under Står på." : "Dra sakerna dit du vill ha dem.") : "Dra den dit den ska stå och gör den lagom stor. Nästa sak följer efter."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 9000); }
+            else if (!ls.get("rumiq-room-landed", false)) { ls.set("rumiq-room-landed", true); f.textContent = "Så här kan det se ut hemma hos dig."; f.hidden = false; f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); setTimeout(() => { if (f.isConnected) f.hidden = true; }, 9000); } }
           list.forEach((it) => seen.add(it.h)); [...seen].forEach((h) => { if (!list.some((it) => it.h === h)) seen.delete(h); });
           if (!list.length) $("#rmFirst", root).hidden = true; // an empty room has its own question
           $("#rmHint", root).hidden = list.length > 0; $("#rmHold", root).hidden = !list.length; toastAt(); // nothing to compare with in an empty room (and messages move in beside it when it comes)
@@ -951,9 +978,9 @@
           const p = RQ.byHandle(it.h), kind = kindOf(p), hgt = it.w * meta(p)[2] * (it.sy || 1) * room.w / room.h, f = (v) => v.toFixed(2);
           const b = kind === "rug" && rugBack(it); poly.setAttribute("points", b ? [[it.x - it.w / 2, it.y], [it.x + it.w / 2, it.y], [it.x + b.w / 2, b.y], [it.x - b.w / 2, b.y]].map(([x, y]) => `${f(x)},${f(y)}`).join(" ") : "");
           lab.hidden = false; lab.textContent = measures(p); lab.style.left = it.x + "%"; lab.style.top = (b ? (it.y + b.y) / 2 : kind === "wall" ? Math.min(98, it.y + 0.8) : it.y - hgt / 2) + "%"; lab.classList.toggle("under", kind === "wall" && !b); };
-        const live = (h, patch) => { const el = $(`.rm-item[data-h="${h}"]`, wrap); if (!el) return; if (patch.x != null) el.style.left = patch.x + "%"; if (patch.y != null) el.style.top = patch.y + "%"; if (patch.w != null) el.style.width = patch.w + "%"; };
+        const live = (h, patch) => { const el = $(`.rm-item[data-h="${h}"]`, wrap); if (!el) return; if (patch.x != null) el.style.left = patch.x + "%"; if (patch.y != null) el.style.top = patch.y + "%"; if (patch.w != null) { el.style.width = patch.w + "%"; el.style.setProperty("--w", patch.w); } };
         /* a size you choose in your own photo teaches the room its scale: the next things follow it */
-        const learn = (h, it) => { if (mapOf()) return; const p = RQ.byHandle(h), [, cm] = meta(p), kind = effKind(it), L = ls.get(LEARN, {}) || {}, base = spotFor(p, [], true, null, kind).w;
+        const learn = (h, it) => { if (mapOf()) return; const p = RQ.byHandle(h), [, cm] = meta(p), kind = effKind(it), L = ls.get(LEARN, {}) || {}, base = it.row ? cm * (it.on === "bord" ? 30 : floorScale(it.y)) / 100 : spotFor(p, [], true, null, kind).w; // a thing in the row: measured against the row's own scale
           L[kind] = { x: +it.x.toFixed(1), y: +it.y.toFixed(1), s: +(it.w / cm * 100).toFixed(2), w: +it.w.toFixed(1), sy: it.sy };
           if (kind !== "rug" && kind !== "window" && base > 0) L.k = +clamp(it.w / base, 0.4, 3).toFixed(2);
           ls.set(LEARN, L); };
@@ -969,6 +996,7 @@
         const pts = new Map(); let drag = null, pinch = null, pan = null;
         const far = (a, e) => Math.hypot(e.clientX - a.sx, e.clientY - a.sy) > 6;
         stage.addEventListener("pointerdown", (e) => {
+          if (!e.target.closest(".rm-hold,.rm-zoom,.rm-undo,.rm-nightchip")) stopGlide();
           if (meas) { if (e.target.closest(".rm-zoom") || !e.isPrimary) return; e.preventDefault(); try { stage.setPointerCapture(e.pointerId); } catch (x) {} // drawing the line: a handle moves its end, anywhere else starts a new line
             const r = canvas.getBoundingClientRect(), at = (ev) => [+clamp((ev.clientX - r.left) / r.width * 100, 0, 100).toFixed(2), +clamp((ev.clientY - r.top) / r.height * 100, 0, 100).toFixed(2)], hd = e.target.closest(".rm-rh"), [x, y] = at(e);
             mdrag = hd ? { end: hd.dataset.end, at } : { end: "2", at, was: { ...meas } }; if (!hd) Object.assign(meas, { x1: x, y1: y, x2: x, y2: y }); paintRuler(); return; }
@@ -982,7 +1010,7 @@
             else if (view.on) { const r = stage.getBoundingClientRect(); pinch = { d, z: view.z, cx: (a.x + b.x) / 2 - r.left, cy: (a.y + b.y) / 2 - r.top, tx: view.tx, ty: view.ty }; canvas.classList.remove("glide"); }
             drag = pan = null; return; }
           if (el) { select(el.dataset.h); const it = R.scene().find((x) => x.h === el.dataset.h); if (!it) return; const r = canvas.getBoundingClientRect(); const kind = kindOf(RQ.byHandle(it.h));
-            drag = { h: el.dataset.h, el, sx: e.clientX, sy: e.clientY, ox: it.x, oy: it.y, ow: it.w, w: it.w, kind, on: surfOf(it), real: !!it.real, r, x: it.x, y: it.y, hp: el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100, moved: false }; }
+            drag = { h: el.dataset.h, el, sx: e.clientX, sy: e.clientY, ox: it.x, oy: it.y, ow: it.w, w: it.w, kind, on: surfOf(it), row: !!it.row, real: !!it.real, r, x: it.x, y: it.y, hp: el.offsetHeight / Math.max(1, canvas.offsetHeight) * 100, moved: false }; }
           else if (pts.size === 1) pan = { sx: e.clientX, sy: e.clientY, tx: view.tx, ty: view.ty, moved: false };
         });
         stage.addEventListener("pointermove", (e) => {
@@ -999,7 +1027,7 @@
           drag.y = drag.oy + (e.clientY - drag.sy) / drag.r.height * 100;
           // on the floor, closer to the camera is bigger: the size follows the depth
           if (drag.real) { const tw = trueW({ ...R.scene().find((x) => x.h === drag.h), x: drag.x, y: drag.y }); if (tw) drag.w = tw; }
-          else if (drag.on === "golv") { const hz = (mapOf() || GENERIC).h; if (drag.oy - hz > 6) drag.w = fit(drag.h, drag.ow * clamp((clamp(drag.y, 8, 104) - hz) / (drag.oy - hz), 0.35, 2.6)); }
+          else if (drag.on === "golv" && (!drag.row || drag.kind === "floor" || drag.kind === "rug")) { const hz = (mapOf() || GENERIC).h; if (drag.oy - hz > 6) drag.w = fit(drag.h, drag.ow * clamp((clamp(drag.y, 8, 104) - hz) / (drag.oy - hz), 0.35, 2.6)); }
           [drag.x, drag.y] = inside(drag.x, drag.y, drag.w, drag.hp * drag.w / drag.ow);
           live(drag.h, { x: drag.x, y: drag.y, w: drag.w }); if (drag.real) paintFoot({ ...R.scene().find((x) => x.h === drag.h), x: drag.x, y: drag.y, w: drag.w });
         });
@@ -1038,8 +1066,8 @@
         const paintUndo = () => { const on = touched && R.canUndo(); if (!on && document.activeElement === undoBtn) $("#rmAdd", root).focus({ preventScroll: true }); undoBtn.hidden = !on; };
         undoBtn.addEventListener("click", () => { if (R.undo()) said("Ångrat."); });
         document.addEventListener("keydown", undoKey);
-        $("#rmZoom", root).addEventListener("click", () => { if (view.z > 1.01 && !view.whole) { view.z = 1; paintView(true); return; } view.whole = !view.whole; ls.set("rumiq-room-view", view.whole ? "whole" : "near"); stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); });
-        let lw = innerWidth; const onResize = () => { toastAt(); if (innerWidth === lw && view.on) return; lw = innerWidth; layout(); }; // a phone's address bar comes and goes: only a new width is a new layout
+        $("#rmZoom", root).addEventListener("click", () => { view.fit = 0; if (view.z > 1.01 && !view.whole) { view.z = 1; paintView(true); return; } view.whole = !view.whole; ls.set("rumiq-room-view", view.whole ? "whole" : "near"); stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); });
+        let lw = innerWidth; const onResize = () => { toastAt(); if (innerWidth === lw && view.on) return; lw = innerWidth; view.fit = 0; layout(); }; // a phone's address bar comes and goes: only a new width is a new layout
         addEventListener("resize", onResize);
         // messages come in over the top edge of the room picture (site.css), so they cover neither the title nor the controls
         const rootS = document.documentElement.style; let tRaf = 0;
@@ -1229,7 +1257,7 @@
           } catch (e) { RQ.toast("Bilden gick inte att spara i den här webbläsaren."); }
         });
         const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") { touched = true; const sw = R._swapped; R._swapped = null; if (sw) { if (sel === sw.from) sel = sw.to; if (swap.h === sw.from) swap.h = sw.to; seen.add(sw.to); } if (sel && !R.inScene(sel)) sel = null; if (swap.h && !R.inScene(swap.h)) swap.h = null; draw(); paintSwap(); paintSugg(); }
-          if (e.detail === "known") { draw(); }
+          if (e.detail === "known" || e.detail === "palette") { draw(); if (e.detail === "palette") fits(); }
           if (e.detail === "picker" && view.on) { stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); } }; // the room makes space for the drawer, and takes it back
         document.addEventListener("rq-room", onRoom);
         const onCookie = () => { if (view.on) layout(true); toastAt(); }; document.addEventListener("rq-cookie", onCookie); // the cookie strip moved the room
@@ -1330,14 +1358,14 @@
     }
     if (b.matches("[data-room-setup]")) { const to = b.dataset.roomSetup; R.openSetup(to ? () => (location.hash = to) : null, to ? { go: to } : null); return; }
     if (b.matches("[data-room-sample-now]")) { const to = b.dataset.roomSampleNow || "#butik", im = new Image(); b.setAttribute("aria-busy", "true");
-      im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum", src: im.src }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
+      im.onload = () => R.saveImage(im, { sample: true, map: "vardagsrum", type: "vardagsrum", name: "Vardagsrum", src: "assets/img/rum/vardagsrum-1600.webp" }).then((ok) => { b.removeAttribute("aria-busy"); if (!ok) return;
         // already on that page (the empty Mitt rum): a new hash would change nothing, so the page is drawn again here
         if (RQ.currentRoute && RQ.currentRoute() === to.replace(/^#/, "")) { RQ.router(); scrollTo(0, 0); RQ.toast("Klart. Här är exempelrummet."); } else location.hash = to; });
       im.onerror = () => { b.removeAttribute("aria-busy"); RQ.toast("Exempelrummet gick inte att hämta. Kontrollera uppkopplingen och försök igen."); };
       im.src = "assets/img/rum/vardagsrum-1600.webp"; return; }
     const h = b.dataset.roomBtn;
     const inPick = !!b.closest(".sheet.rmpick");
-    const go = () => { if (R.inScene(h)) { R.remove(h); b.setAttribute("aria-pressed", false); RQ.toast(document.getElementById("rmUndo") ? "Borttagen ur ditt rum." : 'Borttagen ur ditt rum. <a href="#" data-room-undo>Ångra</a>'); return; } // in Mitt rum the Ångra button is on the room
+    const go = () => { if (R.inScene(h)) { R.remove(h); b.setAttribute("aria-pressed", false); RQ.toast(document.getElementById("rmUndo") ? "Borttagen ur rummet." : 'Borttagen ur rummet. <a href="#" data-room-undo>Ångra</a>'); return; } // in Mitt rum the Ångra button is on the room
       const ok = R.add(h, inPick); b.setAttribute("aria-pressed", ok); if (ok && inPick && R.lastMoved === h) RQ.toast("Där var det fullt, så den står på golvet. Dra den dit du vill."); };
     if (!room) R.openSetup(() => { R.add(h); }, { add: [h] }); else go();
   });

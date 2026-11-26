@@ -38,7 +38,7 @@ SAMPLE = """async (r) => { const im = new Image(); await new Promise((ok) => { i
   await RQ.room.saveImage(im, { sample: true, map: r, type: r, name: r }); }"""
 SPOT = "(h) => { const it = RQ.room.scene().find((x) => x.h === h); return it ? [it.x, it.y, it.w] : null; }"
 RECT = "(s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; }"
-VISIBLE_ITEM = """(() => { const s = document.getElementById('rmStage').getBoundingClientRect(); const e = [...document.querySelectorAll('.rm-item')].find((e) => { const r = e.getBoundingClientRect(); return r.left > s.left + 10 && r.right < s.right - 10 && r.top > s.top && r.bottom < s.bottom - 60; }); return e ? e.dataset.h : null; })()"""
+VISIBLE_ITEM = """(() => { const s = document.getElementById('rmStage').getBoundingClientRect(); const e = [...document.querySelectorAll('.rm-item')].find((e) => { const r = e.getBoundingClientRect(); return r.left > s.left + 10 && r.right < s.right - 10 && r.top > s.top && r.bottom < s.bottom - 60 && document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2).closest('.rm-item') === e; }); return e ? e.dataset.h : null; })()"""
 
 
 def ctx_for(b, w, h, mobile, night=False):
@@ -134,7 +134,7 @@ with sync_playwright() as p:
         ok(pg.is_hidden("#rmUndo"), f"{tag} Ångra goes away when there is nothing to take back")
         x, y = mid(pg, "#rmSuggest"); tap(pg, cdp, x, y); pg.wait_for_timeout(900)
         h = pg.evaluate(VISIBLE_ITEM); x, y = mid(pg, f'.rm-item[data-h="{h}"]'); tap(pg, cdp, x, y)
-        ok(pg.evaluate("document.getElementById('rmActOrder').innerText") == "Lägg bakom", f"{tag} 'Bakåt' is now 'Lägg bakom'")
+        ok(pg.evaluate("document.getElementById('rmActOrderB').getAttribute('aria-label')") == "Lägg bakom", f"{tag} 'Bakåt' is now 'Lägg bakom'")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
 
@@ -184,8 +184,8 @@ with sync_playwright() as p:
     lamp, art = pg.evaluate(SPOT, "lysa-keramiklampa"), pg.evaluate(SPOT, "affisch-linje-ekram")
     # studio review M1 (supersedes M12's mid-height spots): the site does not know where the tables or a free wall are in an own photo,
     # so the first things stand in a tidy row on the floor, large enough to grab, and the room says "Dra sakerna dit du vill ha dem"
-    ok(lamp[1] >= 84 and lamp[2] >= 8, f"[M1] the first lamp stands on the floor line and is not a speck: {lamp}")
-    ok(art[1] >= 84 and art[2] >= 10 and abs(art[0] - lamp[0]) + abs(art[1] - lamp[1]) > 3, f"[M1] a print leans in the row, not on top of the lamp: {art}")
+    ok(lamp[1] >= 80 and lamp[2] >= 8, f"[M1] the first lamp stands on the floor line and is not a speck: {lamp}")  # (review N2: the row stands at 82 %, clear of the pills)
+    ok(art[1] >= 80 and art[2] >= 10 and abs(art[0] - lamp[0]) + abs(art[1] - lamp[1]) > 3, f"[M1] a print leans in the row, not on top of the lamp: {art}")
     c.close()
 
     # ---------------------------------------------------------------- M7: messages over the room picture, not the title
@@ -194,6 +194,7 @@ with sync_playwright() as p:
         # studio brief: the very first landing speaks on the room ("Så här kan det se ut hemma hos dig") without a toast beside it; this checks the toast after that
         pg.evaluate("localStorage.setItem('rumiq-room-landed', 'true')")
         pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900)
+        pg.evaluate("RQ.toast('Rummet är sparat.')"); pg.wait_for_timeout(500)  # Studio 2: Inred åt mig shows its set in the bar under the room, so a toast is raised here to check where messages come in
         t, s, hd = pg.evaluate(RECT, "#toast"), pg.evaluate(RECT, "#rmStage"), pg.evaluate(RECT, ".rm-title h1")
         ok(t[1] >= s[1] and t[1] > hd[3], f"[M7 {W}] the toast comes in over the room picture, below the title: toast {round(t[1])}, room {round(s[1])}, title {round(hd[3])}")
         hold = pg.evaluate(RECT, "#rmHold")

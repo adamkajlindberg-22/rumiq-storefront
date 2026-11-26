@@ -120,7 +120,7 @@ with sync_playwright() as p:
             if W <= 640:
                 ok(btns == ["fav", "qadd"], f"{tag} a phone card carries heart and Lägg till only: {btns}")
             else:
-                ok(btns == ["fav", "rbtn", "qv", "qadd"], f"{tag} card buttons in reading order (heart, room, Snabbtitt, Lägg till): {btns}")
+                ok(btns == ["fav", "qv", "qadd"], f"{tag} card buttons in reading order (heart, Snabbtitt, Lägg till; no room button, review N3): {btns}")
             ok(not pg.errs, f"{tag} no script errors: {pg.errs[:1]}")
             ctx.close()
     # M10, D13, D14: search with a room: best colour match first, names for the room's colours, a green underline on focus,
