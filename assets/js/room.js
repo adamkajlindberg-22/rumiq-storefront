@@ -224,17 +224,21 @@
     const W = 96, H = Math.max(1, Math.round(96 * (img.naturalHeight || img.height) / (img.naturalWidth || img.width)));
     const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
     const cx = cv.getContext("2d", { willReadFrequently: true }); cx.drawImage(img, 0, 0, W, H);
-    const d = cx.getImageData(0, 0, W, H).data, px = [];
-    for (let i = 0; i < d.length; i += 4) px.push([d[i], d[i + 1], d[i + 2]]);
-    let cs = [0.05, 0.25, 0.5, 0.75, 0.95].map((f) => px[Math.floor(f * (px.length - 1))].slice());
-    const asg = new Array(px.length).fill(0);
+    // the same k-means as before (5 colours, 9 rounds, the same start), in flat arrays and one pass per round: a few ms, not a long task (studio2 review minor 10)
+    const d = cx.getImageData(0, 0, W, H).data, n = d.length / 4, px = new Float32Array(n * 3);
+    for (let i = 0, k = 0; i < d.length; i += 4, k += 3) { px[k] = d[i]; px[k + 1] = d[i + 1]; px[k + 2] = d[i + 2]; }
+    const K = 5, cs = new Float64Array(K * 3), asg = new Uint8Array(n);
+    [0.05, 0.25, 0.5, 0.75, 0.95].forEach((f, j) => { const q = Math.floor(f * (n - 1)) * 3; cs[j * 3] = px[q]; cs[j * 3 + 1] = px[q + 1]; cs[j * 3 + 2] = px[q + 2]; });
+    const sum = new Float64Array(K * 3), cnt = new Uint32Array(K);
     for (let it = 0; it < 9; it++) {
-      px.forEach((p, i) => { let b = 0, bd = 1e9; cs.forEach((c, j) => { const dd = (p[0] - c[0]) ** 2 + (p[1] - c[1]) ** 2 + (p[2] - c[2]) ** 2; if (dd < bd) { bd = dd; b = j; } }); asg[i] = b; });
-      cs = cs.map((c, j) => { let n = 0; const s = [0, 0, 0]; px.forEach((p, i) => { if (asg[i] === j) { n++; s[0] += p[0]; s[1] += p[1]; s[2] += p[2]; } }); return n ? s.map((v) => v / n) : c; });
+      sum.fill(0); cnt.fill(0);
+      for (let i = 0, k = 0; i < n; i++, k += 3) { const r = px[k], g = px[k + 1], b = px[k + 2]; let best = 0, bd = 1e9;
+        for (let j = 0; j < K; j++) { const dr = r - cs[j * 3], dg = g - cs[j * 3 + 1], db = b - cs[j * 3 + 2], dd = dr * dr + dg * dg + db * db; if (dd < bd) { bd = dd; best = j; } }
+        asg[i] = best; cnt[best]++; sum[best * 3] += r; sum[best * 3 + 1] += g; sum[best * 3 + 2] += b; }
+      for (let j = 0; j < K; j++) if (cnt[j]) { cs[j * 3] = sum[j * 3] / cnt[j]; cs[j * 3 + 1] = sum[j * 3 + 1] / cnt[j]; cs[j * 3 + 2] = sum[j * 3 + 2] / cnt[j]; }
     }
-    const counts = cs.map((_, j) => asg.filter((a) => a === j).length);
-    const pal = cs.map((c, j) => ({ hex: rgb2hex(c), n: counts[j] / px.length })).filter((x) => x.n > 0.02).sort((a, b) => b.n - a.n);
-    const avg = [0, 1, 2].map((k) => px.reduce((s, p) => s + p[k], 0) / px.length);
+    const pal = [...Array(K).keys()].map((j) => ({ hex: rgb2hex([cs[j * 3], cs[j * 3 + 1], cs[j * 3 + 2]]), n: cnt[j] / n })).filter((x) => x.n > 0.02).sort((a, b) => b.n - a.n);
+    const avg = [0, 0, 0]; for (let k = 0; k < px.length; k += 3) { avg[0] += px[k]; avg[1] += px[k + 1]; avg[2] += px[k + 2]; } avg.forEach((v, k) => { avg[k] = v / n; });
     const light = (0.2126 * avg[0] + 0.7152 * avg[1] + 0.0722 * avg[2]) / 255;
     const warm = (avg[0] - avg[2]) / 255;
     return { pal, light, warm };
@@ -292,7 +296,10 @@
       if (moved.length) ls.set(SCENE, moved);
       R._landRow = moved.some((it) => it.row); // the editor lets them land in their row, and shows the whole room
       emit("room");
-      if (a.later) { const at = next.at, run = () => { if (!room || room.at !== at) return; const b = analyse(a.later); Object.assign(room, { pal: b.pal, light: b.light, warm: b.warm }); ls.set(KEY, room); emit("palette"); };
+      if (a.later) { const at = next.at, use = (img) => { if (!room || room.at !== at) return; const b = analyse(img); Object.assign(room, { pal: b.pal, light: b.light, warm: b.warm }); ls.set(KEY, room); emit("palette"); };
+        // the colours come from the sample's small picture, decoded off the main thread: no long task (studio2 review minor 10)
+        const run = () => { const sm = typeof next.img === "string" && /-1600\.webp$/.test(next.img) ? next.img.replace(/-1600\.webp$/, "-600.webp") : null; if (!sm) { use(a.later); return; }
+          const im = new Image(); im.src = sm; (im.decode ? im.decode() : new Promise((ok, bad) => { im.onload = ok; im.onerror = bad; })).then(() => use(im), () => use(a.later)); };
         (window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 1500 }) : (f) => setTimeout(f, 200))(() => requestAnimationFrame(() => setTimeout(run, 0))); }
       return true;
     },
@@ -1352,7 +1359,8 @@
           if (e.detail === "picker" && view.on) { stage.classList.add("resize"); layout(); setTimeout(() => stage.classList.remove("resize"), 450); } }; // the room makes space for the drawer, and takes it back
         document.addEventListener("rq-room", onRoom);
         const onCookie = () => { if (view.on) layout(true); toastAt(); }; document.addEventListener("rq-cookie", onCookie); // the cookie strip moved the room
-        layout(); draw(); fits(); toastAt();
+        // the room first; the cards under it (Passar rummet) a moment later, so opening a room is one short task (studio2 review minor 10)
+        layout(); draw(); toastAt(); const fitsLater = () => { if (document.contains(root)) fits(); }; if (window.requestIdleCallback) requestIdleCallback(fitsLater, { timeout: 600 }); else setTimeout(fitsLater, 120);
         // back from signing in that started at Skapa AI-bild: the AI sheet opens again (within half an hour)
         { const t = +((RQ.ss && RQ.ss.get("rumiq-ai-after")) || 0); if (t && S.customer()) { RQ.ss.set("rumiq-ai-after", ""); if (Date.now() - t < 18e5 && RQ.openAI) setTimeout(() => { if (root.isConnected) RQ.openAI(); }, 500); } }
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
