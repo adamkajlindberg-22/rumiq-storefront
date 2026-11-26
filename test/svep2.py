@@ -91,6 +91,9 @@ with sync_playwright() as p:
     A, B, C = "YYNYNYYNNY", "YNNYYYNNYY", "YYYNNYNNYY"
     ctxA, pa, ea = new(b, "390", share="none")
     go(pa, "svep-ihop")
+    st0 = pa.evaluate("(() => { const b = document.getElementById('grStart').getBoundingClientRect(), d = document.querySelector('.dock').getBoundingClientRect(); return [Math.round(b.bottom), Math.round(d.top)]; })()")
+    ok(st0[0] <= st0[1], f"390: 'Starta en grupp' is above the dock on the first screen: {st0}")
+    ok("Din grupp sparas bara i den här webbläsaren." in pa.evaluate("document.querySelector('.two-intro').innerText"), "the privacy line says what is true with the account not live")
     DATA = pa.evaluate("Object.fromEntries(RQ.PRODUCTS.map((p) => [p.handle, { cat: p.cat, styles: p.styles, rooms: p.rooms, tone: p.tone, name: p.name, price: p.price }]))")
     ok(pa.evaluate("!!document.getElementById('grStart')") and "två till sex" in pa.evaluate("document.querySelector('.sv-head .lead').innerText"), "intro: 'Starta en grupp', for two to six people")
     pa.click("[data-gr-scope=vardagsrum]"); pa.click("#grStart"); pa.wait_for_timeout(900)
@@ -106,8 +109,8 @@ with sync_playwright() as p:
 
     ctxB, pb, eb = new(b, "1440", night=True, share="ok")
     pb.goto(urlA); pb.wait_for_timeout(1000)
-    wa = pb.evaluate("(() => { const w = document.querySelector('.gr-whoami'); return w && [w.querySelector('h2').innerText, [...w.querySelectorAll('[data-gr-me]')].map((b) => b.innerText.replace(/\\s+/g, ' ').trim()), !!w.querySelector('[data-gr-new]'), !document.getElementById('svDeck')]; })()")
-    ok(wa and wa[0] == "Vem är du?" and wa[1] == ["A Anna"] and wa[2] and wa[3], f"a browser that has not seen the group: 'Vem är du?' first, the names as buttons, no deck yet: {wa}")
+    wa = pb.evaluate("(() => { const w = document.querySelector('.gr-invite'); return w && [document.querySelector('.sv-head h1').innerText, w.querySelectorAll('.gr-invite-cards img').length, w.querySelector('[data-gr-new]').innerText.trim(), w.querySelector('[data-gr-known]').innerText.replace(/\\s+/g, ' ').trim(), !document.getElementById('svDeck'), w.innerText.includes('Se ditt hem innan du köper.'), w.querySelector('.gr-invite-t').innerText]; })()")
+    ok(wa and wa[0] == "Anna vill veta vad du tycker." and wa[1] == 3 and wa[2] == "Svep korten" and wa[3] == "Är du Anna? Visa resultatet" and wa[4] and wa[5] and wa[6] == "Svep 10 kort, så ser ni vad ni båda gillar.", f"a friend's first screen is an invitation: who asks, three cards, Svep korten, the promise; 'Är du Anna?' small: {wa}")
     pb.click("[data-gr-new]"); pb.wait_for_timeout(600)
     ok(pb.evaluate("!!document.getElementById('svDeck') && document.querySelector('.sv-head h1').innerText") == "Din tur att svepa.", "'Jag är ny, svep korten' brings the deck")
     who = pb.evaluate("[...document.querySelectorAll('.gr-who .gr-ppl li')].map((l) => l.innerText.replace(/\\s+/g, ' ').trim())")
@@ -122,9 +125,11 @@ with sync_playwright() as p:
     t2 = pb.evaluate("document.querySelector('.svep-result h2').innerText")
     ok(t2 == f"Ni gillar båda {len(both)} saker", f"two people: 'Ni gillar båda': {t2}")
     ua, ub = {h for i, h in enumerate(hs) if A[i] == "Y"}, {h for i, h in enumerate(hs) if B[i] == "Y"}
-    ok(pb.evaluate("document.querySelector('.two-pct').innerText") == f"{round(len(ua & ub) / len(ua | ub) * 100)} % gemensamt", "two people: the meter is shared out of liked by either")
+    ok(pb.evaluate("document.querySelector('.two-pct').innerText") == f"Ni tycker {round(len(ua & ub) / len(ua | ub) * 100)} % lika", "two people: the meter is shared out of liked by either")
     ok(pb.evaluate("document.querySelector('.sv-head h1').innerText") == "Så här svarade ni.", "after the deck the page head says what it shows")
     ok("svep_group_completed" in pb.evaluate(EV), "counted: group completed")
+    sb = pb.evaluate("(() => { const s = document.querySelector('.gr-send'), m = document.querySelector('.two-meter'), a = document.querySelector('.gr-acts'); scrollTo(0, 0); return [s.querySelector('b').innerText, s.getBoundingClientRect().top > m.getBoundingClientRect().bottom, s.getBoundingClientRect().bottom < a.getBoundingClientRect().top, Math.round(s.querySelector('button[type=submit]').getBoundingClientRect().bottom), document.querySelector('#grSend label').innerText]; })()")
+    ok(sb[0] == "Skicka tillbaka till Anna" and sb[1] and sb[2] and sb[3] <= 900 and sb[4].startswith("Ditt namn"), f"'Skicka tillbaka till Anna' right under the meter, above Gör ett rum, in view at 1440 × 900: {sb}")
     cols = pb.evaluate("getComputedStyle(document.querySelector('.svep-result.group')).gridTemplateColumns.split(' ').length")
     ok(cols == 2, f"on a computer the result has two columns: {cols}")
     urlB = send(pb, "Erik")
@@ -157,12 +162,28 @@ with sync_playwright() as p:
     # A opens the same link inside a messaging app (a browser that has never seen the group): one tap on 'Anna'
     ctxW, pw_, ew = new(b, "375s")
     pw_.goto(urlC); pw_.wait_for_timeout(1000)
+    pw_.click("[data-gr-known]"); pw_.wait_for_timeout(300)
     ok(pw_.evaluate("[...document.querySelectorAll('[data-gr-me]')].map((b) => b.innerText.replace(/\\s+/g, ' ').trim())") == ["A Anna", "E Erik", "S Sara"], "Vem är du?: everyone in the group as a button")
     nb = pw_.evaluate("(() => { const b = document.querySelector('[data-gr-new]'), d = document.querySelector('.dock'); return [Math.round(b.getBoundingClientRect().bottom), Math.round(d.getBoundingClientRect().top)]; })()")
     ok(nb[0] <= nb[1], f"375 × 548: 'Vem är du?' and its buttons are above the dock: {nb}")
     pw_.click("[data-gr-me]"); pw_.wait_for_timeout(900)
     ok(pw_.evaluate("[...document.querySelectorAll('.svep-result .gr-ppl li b')].map((x) => x.innerText)") == ["Du", "Erik", "Sara"] and "svep_group_whoami" in pw_.evaluate(EV), "tapping 'Anna' shows the result as Anna, no deck")
+    ok(pw_.evaluate("document.querySelector('[data-gr-notme]').innerText.replace(/\\s+/g, ' ').trim()") == "Inte Anna? Svep själv", "the result says 'Inte Anna? Svep själv'")
+    pw_.click("[data-gr-notme]"); pw_.wait_for_timeout(900)
+    ok(pw_.evaluate("!!document.getElementById('svDeck') && RQ.svepGroup.all()[0].me === null && RQ.svepGroup.all()[0].ppl.length === 3"), "'Inte Anna?' undoes it: the deck, nobody in the group is this browser, the three answers stay")
     ctxW.close()
+    # a full group of six can send the result on (an outsider sees the result, with a link to send, no name field)
+    six = pa.evaluate("(() => { const g = RQ.svepGroup.all()[0]; return RQ.svepGroup.url({ id: 'zz66', hs: g.hs, ppl: ['Anna', 'Erik', 'Sara', 'Lo', 'Mio', 'Ida'].map((n, i) => ({ id: 'p' + i, n, b: g.ppl[0].b })) }); })()")
+    ctx6, p6, e6 = new(b, "390", share="none")
+    p6.goto(six); p6.wait_for_timeout(1000)
+    f6 = p6.evaluate("(() => { const s = document.querySelector('.gr-send'); return s && [s.querySelector('b').innerText, !s.querySelector('input[name=n]:not([type=hidden])'), s.querySelector('button[type=submit]').innerText.trim()]; })()")
+    ok(f6 and f6[0] == "Skicka resultatet till gruppen" and f6[1] and f6[2] == "Skicka resultatet", f"a full group: 'Skicka resultatet till gruppen': {f6}")
+    p6.click("#grSend button[type=submit]"); p6.wait_for_timeout(400)
+    ok(p6.evaluate("document.querySelector('#grSend .sv-linkout').value") == six or "zz66" in p6.evaluate("document.querySelector('#grSend .sv-linkout').value"), "the full group's link is copied and shown")
+    downloads = []; p6.on("download", lambda d: downloads.append(d))
+    p6.click("[data-gr-style]"); p6.wait_for_timeout(1500)
+    ok(not downloads and "Spara bilden" in p6.evaluate("document.getElementById('toast').innerText"), "Dela er stil saves no picture without asking: the link is copied, 'Spara bilden' is offered")
+    ctx6.close()
 
     # ------------------------------------------------------------ the result becomes a room
     pc.click("[data-gr-room]"); pc.wait_for_timeout(600)
@@ -180,10 +201,11 @@ with sync_playwright() as p:
     go(pc, "mitt-hem", 1500)
     card = pc.evaluate("document.querySelector('.hem-card .hem-card-grp') && document.querySelector('.hem-card .hem-card-grp').innerText")
     ok(card == "Med Anna och Erik", f"Sparat: the room card says who it is with: {card}")
+    ok(pc.evaluate("document.querySelector('.hem-grp-ppl').innerText.replace(/\\s+/g, ' ').trim()") == "Du, Anna och Erik", "Sparat: 'Du, Anna och Erik'")
     ok(pc.evaluate("document.querySelectorAll('.hem-groups li').length") == 1 and pc.evaluate("document.querySelector('.hem-groups a').getAttribute('href').startsWith('#svep-ihop-g')"), "Sparat lists the group, with a way back to the result")
     pc.evaluate("RQ.hem.openRoom(RQ.hem.rooms()[0].id)"); pc.wait_for_timeout(900)
     g = pc.evaluate("document.querySelector('#hemSheet .hem-grp').innerText")
-    ok("er gemensamma stil" in g and "Anna" in g, f"the room sheet: the group style and the people: {g}")
+    ok("er gemensamma stil" in g and "Anna" in g and not g.startswith(room["label"]), f"the room sheet: the group style and the people, the title not repeated: {g}")
     pc.keyboard.press("Escape"); pc.wait_for_timeout(400)
     for c in (ctxA, ctxB, ctxC):
         c.close()
@@ -196,7 +218,7 @@ with sync_playwright() as p:
     pg.goto(BASE + "svep-ihop/#svep-ihop-" + "101100." + ".".join(old_hs) + "~Anna"); pg.wait_for_timeout(1000); pg.click("[data-gr-new]"); pg.wait_for_timeout(500)
     ok(pg.evaluate("document.getElementById('svCount').textContent") == "1 av 6" and pg.evaluate("document.querySelector('.gr-who b').innerText") == "Anna", "an older link with one answer: the deck with its six cards, Anna has answered")
     swipe(pg, "YYYNNN")
-    ok(pg.evaluate("document.querySelector('.svep-result h2').innerText") == "Ni gillar båda 2 saker" and pg.evaluate("document.querySelector('.two-pct').innerText") == "50 % gemensamt", "an older link: the same comparison as before")
+    ok(pg.evaluate("document.querySelector('.svep-result h2').innerText") == "Ni gillar båda 2 saker" and pg.evaluate("document.querySelector('.two-pct').innerText") == "Ni tycker 50 % lika", "an older link: the same comparison as before")
     back = pg.evaluate("RQ.svepGroup.url(RQ.svepGroup.all()[0])")
     ok("#svep-ihop-gl" in back and back.endswith("a0Anna_" + back.split("_")[-1]), f"its answer goes on as a new link for the same group (today's format): {back[-40:]}")
     pg.evaluate("localStorage.removeItem('rumiq-groups')")
@@ -246,8 +268,11 @@ with sync_playwright() as p:
       const liked = (h) => T.seen[h] > 0 || RQ.shop.isWished(h), byName = (nm) => RQ.PRODUCTS.find((p) => p.name === nm);
       return [...document.querySelectorAll(sel)].map((el) => { const card = el.closest('[data-h], .card, .look-item'), a = card.querySelector('a[href*="produkt-"], [data-look]'), h = card.dataset.h || (a && (a.dataset.look || (/produkt-([a-z0-9-]+)/.exec(a.getAttribute('href')) || [])[1])), p = RQ.byHandle(h), t = el.textContent.trim();
         let good = false, m;
-        if ((m = /^Eftersom du gillade (.+)$/.exec(t))) { const q = byName(m[1]); good = !!q && q.handle !== h && liked(q.handle) && p.styles.some((s) => q.styles.includes(s)) && (p.cat === q.cat || tone(p.tone[0]) === tone(q.tone[0])); }
-        else if ((m = /^Passar din stil: (.+)$/.exec(t))) good = !!top && RQ.STYLES[top].name === m[1] && p.styles.includes(top);
+        const kind = RQ.why.kindOf, room = (q) => p.rooms.some((r) => q.rooms.includes(r)), style = (q) => p.styles.some((s) => q.styles.includes(s));
+        if (T.seen[h] < 0 && !RQ.shop.isWished(h)) good = false; // never a reason on something you said no to
+        else if ((m = /^Eftersom du gillade (.+)$/.exec(t))) { const q = byName(m[1]); good = !!q && q.handle !== h && liked(q.handle) && !liked(h) && kind(p) === kind(q) && style(q) && room(q); }
+        else if ((m = /^Samma färgton som (.+)$/.exec(t))) { const q = byName(m[1]); good = !!q && q.handle !== h && liked(q.handle) && !liked(h) && kind(p) !== kind(q) && tone(p.tone[0]) === tone(q.tone[0]) && style(q) && room(q); }
+        else if ((m = /^Passar din stil: (.+)$/.exec(t))) good = !liked(h) && !!top && RQ.STYLES[top].name === m[1] && p.styles.includes(top);
         else if ((m = /^(Passar stilen|Samma stil): (.+)$/.exec(t))) good = p.styles.some((s) => RQ.STYLES[s].name === m[2]);
         else if (t === 'Du gillade den i Svep') good = T.seen[h] > 0;
         else if (t === 'Du har sparat den') good = RQ.shop.isWished(h);
@@ -264,19 +289,24 @@ with sync_playwright() as p:
     go(pg, "", 1800)
     rs = pg.evaluate(CHECK, "#utvalt .card-why")
     ok(len(rs) >= 4 and all(r[2] for r in rs), f"home 'Utvalt för dig': true reasons: {[r for r in rs if not r[2]][:3]}")
+    rj = pg.evaluate("(() => { const T = RQ.taste.get(); return [...document.querySelectorAll('#utvalt .card h3 a')].map((a) => (/produkt-([a-z0-9-]+)/.exec(a.getAttribute('href')) || [])[1]).filter((h) => T.seen[h] < 0 && !RQ.shop.isWished(h)); })()")
+    ok(pg.evaluate("Object.values(RQ.taste.get().seen).some((v) => v < 0)") and not rj, f"home 'Utvalt för dig' never shows something you said no to: {rj}")
+    order = pg.evaluate("(() => { const T = RQ.taste.get(), l = RQ.why.forYou(RQ.PRODUCTS).map((p) => (T.seen[p.handle] < 0 && !RQ.shop.isWished(p.handle) ? 2 : T.seen[p.handle] > 0 || RQ.shop.isWished(p.handle) ? 1 : 0)); return l.every((x, i) => !i || l[i - 1] <= x); })()")
+    ok(order, "'För dig' order: new things first, then what you liked, what you said no to last")
     go(pg, "produkt-lysa-keramiklampa", 1200)
     rs = pg.evaluate(CHECK, ".look-item .why")
     ok(len(rs) >= 1 and all(r[2] for r in rs), f"product page 'Passar ihop': a true reason on each: {rs}")
     # a room with no lighting: "Saknas i ditt rum: belysning", and only then
     pg.evaluate("RQ.hem.create({ label: 'Testrum', type: 'vardagsrum', style: 'skandinavisk', items: [{ h: 'lin-kuddfodral', v: 0 }, { h: 'sand-keramikvas', v: 0 }] })")
-    gap = pg.evaluate("(() => { const r = RQ.hem.rooms()[0]; return RQ.why.gaps(r).map((p) => [p.handle, p.cat, RQ.why.of(p, { room: r })]); })()")
-    ok(any(g[1] == "belysning-atmosfar" and g[2] == "Saknas i ditt rum: belysning" for g in gap) and all(g[2].startswith("Saknas i ditt rum") for g in gap), f"a living room with no lighting: 'Saknas i ditt rum: belysning': {gap}")
-    no = pg.evaluate("(() => { const r = { type: 'vardagsrum', style: null, items: [{ h: 'glob-bordslampa-opalglas' }] }; return RQ.why.of(RQ.byHandle('lysa-keramiklampa'), { room: r, mine: false }); })()")
-    ok(not no.startswith("Saknas"), f"a room that has a lamp is never told it lacks one: {no!r}")
+    gap = pg.evaluate("(() => { const r = RQ.hem.rooms()[0]; return RQ.why.gaps(r).map((p) => [p.handle, RQ.why.kindOf(p), RQ.why.of(p, { room: r })]); })()")
+    lamp = pg.evaluate("(() => { const r = RQ.hem.rooms()[0]; return RQ.why.of(RQ.byHandle('lysa-keramiklampa'), { room: r }); })()")
+    ok(lamp == "Saknas i ditt rum: en lampa" and gap and not any(g[1] == "textil" for g in gap) and all(g[2].startswith("Saknas i ditt rum") for g in gap), f"a living room with a cushion cover and a vase: it lacks a lamp, never textile: {lamp} {gap}")
+    no = pg.evaluate("(() => { const r = { type: 'vardagsrum', style: null, items: [{ h: 'glob-bordslampa-opalglas' }, { h: 'lin-kuddfodral' }] }; return [RQ.why.of(RQ.byHandle('lysa-keramiklampa'), { room: r, mine: false }), RQ.why.of(RQ.byHandle('plad-ullblandning-havre'), { room: r, mine: false })]; })()")
+    ok(not any(x.startswith("Saknas") for x in no), f"a room that has a lamp and a textile is never told it lacks one: {no!r}")
     go(pg, "mitt-hem", 1400)
     pg.evaluate("RQ.hem.openRoom(RQ.hem.rooms().find((r) => r.label === 'Testrum').id)"); pg.wait_for_timeout(1000)
     gp = pg.evaluate("[...document.querySelectorAll('#hemSheet .hem-gaps li span')].map((s) => s.innerText)")
-    ok(any("Saknas i ditt rum: belysning" in x for x in gp), f"the room sheet: 'Saknas i rummet' with the reason: {gp}")
+    ok(gp and all(x.startswith("Saknas i ditt rum:") and "textil" not in x for x in gp), f"the room sheet: 'Saknas i rummet' with the reason: {gp}")
     pg.click("#hemSheet [data-gap-add]"); pg.wait_for_timeout(400)
     ok(pg.evaluate("RQ.hem.rooms().find((r) => r.label === 'Testrum').items.length") == 3, "Lägg till puts it in the room's list")
     ok(not errs, f"reasons: no script errors {errs[:3]}")
@@ -292,11 +322,13 @@ with sync_playwright() as p:
             chips.append(c)
         pg.click("#svYes"); pg.wait_for_timeout(330)
     pg.wait_for_timeout(800)
-    bad = pg.evaluate("""(cs) => cs.filter(([t, h]) => { const p = RQ.byHandle(h), m = /^Eftersom du gillade (.+)$/.exec(t), s = /^Passar din stil: (.+)$/.exec(t);
-      if (m) { const q = RQ.PRODUCTS.find((x) => x.name === m[1]); return !q || !p.styles.some((y) => q.styles.includes(y)); } if (s) return !p.styles.some((y) => RQ.STYLES[y].name === s[1]); return true; })""", chips)
+    bad = pg.evaluate("""(cs) => cs.filter(([t, h]) => { const p = RQ.byHandle(h), m = /^(Eftersom du gillade|Samma färgton som|Mer som) (.+)$/.exec(t), s = /^Passar din stil: (.+)$/.exec(t);
+      if (m) { const q = RQ.PRODUCTS.find((x) => x.name === m[2]); if (!q) return true; if (m[1] === 'Mer som') return false; const same = RQ.why.kindOf(p) === RQ.why.kindOf(q);
+        return !p.styles.some((y) => q.styles.includes(y)) || !p.rooms.some((r) => q.rooms.includes(r)) || (m[1] === 'Eftersom du gillade' ? !same : same); }
+      if (s) return !p.styles.some((y) => RQ.STYLES[y].name === s[1]); return true; })""", chips)
     ok(chips and not bad, f"Svep: the chip's reason holds on every card that has one: {bad} of {chips}")
     rs = pg.evaluate("[...document.querySelectorAll('.svep-result .hem-prop-items .why')].map((w) => [w.textContent, w.closest('li').dataset.h])")
-    ok(rs and all(t in ("Du gillade den i Svep", "Du har sparat den") or t.startswith(("Eftersom du gillade", "Passar din stil", "Passar stilen")) for t, h in rs), f"the proposal card: a reason on its things: {rs[:3]}")
+    ok(rs and all(t in ("Du gillade den i Svep", "Du har sparat den") or t.startswith(("Eftersom du gillade", "Samma färgton som", "Passar din stil", "Passar stilen")) for t, h in rs), f"the proposal card: a reason on its things: {rs}")
     # Mer som det här, from Svep's result
     pg.click(".svep-result [data-more]"); pg.wait_for_timeout(500)
     ml = pg.evaluate("(() => { const m = document.querySelector('.ml'); return m && [m.querySelector('h3').innerText, m.querySelectorAll('.card').length, [...m.querySelectorAll('.card-why')].map((x) => x.textContent), document.activeElement === m.querySelector('h3')]; })()")
@@ -313,7 +345,7 @@ with sync_playwright() as p:
     # ------------------------------------------------------------ the share picture and its text
     head = (ROOT / "svep-ihop/index.html").read_text(encoding="utf-8")
     ok("assets/img/og-svep.jpg" in head and 'og:image:width" content="1200"' in head and "Svep 10 kort var för sig" in head, "svep-ihop: its own share picture (1200 × 630) and a one-line description")
-    ok("assets/img/og-svep.jpg" in (ROOT / "svep/index.html").read_text(encoding="utf-8"), "svep: the same share picture")
+    ok("assets/img/og-svep-solo.jpg" in (ROOT / "svep/index.html").read_text(encoding="utf-8"), "svep: its own share picture (Svep fram din stil)")
     from PIL import Image
     ok(Image.open(ROOT / "assets/img/og-svep.jpg").size == (1200, 630) and (ROOT / "assets/img/og-svep.jpg").stat().st_size < 150_000, "the share picture is 1200 × 630 and light")
     en = json.loads((ROOT / "tools/i18n-add/svep2.json").read_text(encoding="utf-8"))
@@ -330,12 +362,17 @@ with sync_playwright() as p:
             pg.evaluate("localStorage.removeItem('rumiq-groups')")
             pg.goto(u); pg.wait_for_timeout(900)
             pg.click("[data-gr-new]"); pg.wait_for_timeout(600)
+            u44 = pg.evaluate("Math.round(document.getElementById('svUndo').getBoundingClientRect().width)")
+            ok(u44 >= 44, f"{tag} the undo button is at least 44 px: {u44}")
             if SIZES[size][2]:
                 dk = pg.evaluate(DOCK)
                 ok(dk[1] - dk[0] >= 8, f"{tag} the shared page: the Svep buttons sit above the dock: {dk}")
             sw = pg.evaluate("document.documentElement.scrollWidth")
             ok(sw <= SIZES[size][0], f"{tag} the shared page fits the width: {sw}")
             swipe(pg, "YYYNNNYYNN")
+            if SIZES[size][2]:
+                od = pg.evaluate("(() => { const y = (s) => { const e = document.querySelector(s); return e ? Math.round(e.getBoundingClientRect().top + scrollY) : -1; }; return [y('.two-meter'), y('.gr-send'), y('.gr-acts'), y('.gr-main .sp-saved')]; })()")
+                ok(od[0] < od[1] < od[2] < od[3], f"{tag} phone order: meter, send back, Gör ett rum, what you agree on: {od}")
             small = pg.evaluate("[...document.querySelectorAll('.svep-result button, .svep-result a, .svep-result summary')].filter((e) => e.offsetParent && !e.closest('.sv-liked > div > button[data-sheet]')).map((e) => [e.textContent.trim().slice(0, 20), Math.round(e.getBoundingClientRect().height)]).filter((x) => x[1] < 44 && !/^Bara|^Det /.test(x[0]))")
             ok(not small, f"{tag} the result's controls are at least 44 px high: {small[:4]}")
             if size in ("390", "1440") and AXE.exists():
@@ -348,7 +385,7 @@ with sync_playwright() as p:
                 go(pg, "svep-ihop"); pg.add_script_tag(content=AXE.read_text())
                 ok(not pg.evaluate(RUN), f"[axe {tag}] the intro: {pg.evaluate(RUN)[:3]}")
                 pg.goto(u); pg.wait_for_timeout(900); pg.evaluate("localStorage.removeItem('rumiq-groups')"); pg.reload(); pg.wait_for_timeout(900); pg.add_script_tag(content=AXE.read_text())
-                ok(not pg.evaluate(RUN), f"[axe {tag}] Vem är du?: {pg.evaluate(RUN)[:3]}")
+                ok(not pg.evaluate(RUN), f"[axe {tag}] the invitation: {pg.evaluate(RUN)[:3]}")
                 pg.click("[data-gr-new]"); pg.wait_for_timeout(600)
                 ok(not pg.evaluate(RUN), f"[axe {tag}] the shared page with the deck: {pg.evaluate(RUN)[:3]}")
             ok(not errs, f"{tag} no script errors {errs[:3]}")

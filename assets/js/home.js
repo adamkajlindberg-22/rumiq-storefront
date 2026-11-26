@@ -35,7 +35,8 @@
 
   V.home = () => {
     const forYou = RQ.taste && RQ.taste.has();
-    const featured = forYou ? RQ.taste.sort(RQ.PRODUCTS).slice(0, 8) : RQ.PRODUCTS.filter((p) => p.featured).slice(0, 8);
+    // for you: what you have not seen yet first, then what you liked; never what you said no to (svep2)
+    const featured = forYou ? (RQ.why ? RQ.why.forYou(RQ.PRODUCTS).filter((p) => !RQ.why.rejected(p.handle)) : RQ.taste.sort(RQ.PRODUCTS)).slice(0, 8) : RQ.PRODUCTS.filter((p) => p.featured).slice(0, 8);
     return {
       html: `
       <section class="hero" id="hero" aria-label="Välkommen till RumIQ">

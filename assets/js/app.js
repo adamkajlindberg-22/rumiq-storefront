@@ -189,7 +189,7 @@
     /* how many products a choice would show, given the other groups' choices (the counts follow the filters) */
     const countOf = (k, id) => all.filter((p) => passBut(p, k) && has[k](p, id)).length;
     const listFor = (srt) => {
-      const l = srt === "dig" && RQ.taste ? RQ.taste.sort(base()) : base(srt);
+      const l = srt === "dig" && RQ.taste ? (RQ.why ? RQ.why.forYou(base()) : RQ.taste.sort(base())) : base(srt); // svep2: new first, then liked, what you said no to last
       return l.filter(pass);
     };
     const nActive = () => FKEYS.reduce((n, k) => n + st[k].length, 0);
@@ -427,7 +427,7 @@
         </section>
 
         ${pairs.length ? `<section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ihop</h2><p>Bocka ur det du inte vill ha. Du kan ändra antal i varukorgen.</p></div><a class="link" href="#mitt-rum-${p.handle}">Bygg en look i ditt rum</a></div>
-          <div class="look"><div class="look-items">${look.map((x, i) => `<label class="look-item"><input type="checkbox" data-look="${x.handle}" checked><img${RQ.isPrint(x) ? ' class="cutph"' : ""} src="${RQ.thumb(x)}" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">${i === 0 ? "Den här: " : ""}${esc(x.name)}</span><span class="pr">${kr(x.price)}</span>${i && RQ.why ? `<span class="why">${esc(RQ.why.of(x, { mine: false, used: pairUsed }) || `Samma stil: ${RQ.STYLES[x.styles.find((st) => p.styles.includes(st))].name}`)}</span>` : ""}</label>`).join("")}</div>
+          <div class="look"><div class="look-items">${look.map((x, i) => `<label class="look-item"><input type="checkbox" data-look="${x.handle}" checked><img${RQ.isPrint(x) ? ' class="cutph"' : ""} src="${RQ.thumb(x)}" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">${i === 0 ? "Den här: " : ""}${esc(x.name)}</span><span class="pr">${kr(x.price)}</span>${i && RQ.why && !RQ.why.rejected(x.handle) ? `<span class="why">${esc(RQ.why.of(x, { mine: false, used: pairUsed }) || `Samma stil: ${RQ.STYLES[x.styles.find((st) => p.styles.includes(st))].name}`)}</span>` : ""}</label>`).join("")}</div>
           <div class="look-sum"><div class="sum total"><span>Totalt</span><span id="lookTotal">${kr(look.reduce((s, x) => s + x.price, 0))}</span></div><button class="btn block" type="button" id="lookAdd">Lägg ${look.length} produkter i varukorgen</button></div></div></div></section>` : ""}
         ${related.length ? `<section class="sec tight"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Liknande produkter</h2></div><a class="link" href="#kategori-${c.id}">Visa alla</a></div>${RQ.grid(related.slice(0, 4), "", false, RQ.why ? RQ.why.shop() : null)}</div></section>` : ""}
         ${seen.length ? `<section class="sec tight" style="padding-top:0"><div class="wrap"><div class="sec-head"><h2 class="h3">Du har tittat på</h2></div>${RQ.grid(seen)}</div></section>` : ""}
