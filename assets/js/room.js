@@ -889,6 +889,7 @@
      the nearest one it can stand on and a table thing snaps onto that table's top */
   R.movePin = (h, x, y, sf) => { const list = R.scene(), i = list.findIndex((it) => it.h === h); if (i < 0) return false; const it = { ...list[i] }, p = RQ.byHandle(h), k = kindOf(p);
     const s2 = sf || surfaceAt(h, x, y), M = mapOf(); it.x = +clamp(x, 1, 99).toFixed(1); it.y = +clamp(y, 4, 100).toFixed(1);
+    if (M && s2 === "golv" && kindAt(s2, k) !== "rug") { const fl = M.floor || []; const top = fl.length ? Math.min(...fl.map((f) => f[1])) : M.h + 20; if (it.y < top - 1) { const near = fl.slice().sort((a, b) => Math.abs(a[0] - x) - Math.abs(b[0] - x))[0]; it.y = near ? near[1] : top; } } // on the floor, not in mid-air at the table's height
     if (M && s2 !== "golv" && s2 !== "vagg") { const pts = M[kindAt(s2, k)] || []; if (pts.length) { const near = pts.slice().sort((a, b) => Math.hypot(a[0] - x, a[1] - y) - Math.hypot(b[0] - x, b[1] - y))[0]; it.y = near[1]; if (Math.abs(near[0] - x) > 12) it.x = near[0]; } }
     if ((CAN[k] || []).includes(s2)) it.on = s2; delete it.row; delete it.sg; it.pc = true;
     const wa = widthAt(it); it.w = wa.w; if (wa.sure) it.real = true; else delete it.real;
@@ -960,7 +961,7 @@
         const paintPin = () => { const list = R.scene(), i = list.findIndex((it) => it.h === sel), it = list[i]; pin.hidden = !it || i >= PLACE_MAX; if (pin.hidden) return;
           const p = RQ.byHandle(it.h), k = kindOf(p), z = measures(p), sure = widthAt(it).sure, ask = !mapOf() && !it.pc;
           pin.innerHTML = `<div class="pl-pin-h"><span class="pl-n">${i + 1}</span><b id="plPinT">${esc(p.name)}</b><button type="button" class="iconbtn" id="plPinX" aria-label="Klar med ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-            <p class="small">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek i bilden"}` : "Mått kommer. Storleken i bilden är ungefärlig."}</p>
+            <p class="small">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek i bilden"}` : "Mått kommer. Storleken i bilden är ungefärlig."}${!mapOf() && !(room.known && room.known.cm > 0) ? ` <button type="button" class="tlink" id="plMeasure">Ange en känd längd</button> ger rätt skala.` : ""}</p>
             <p class="pl-ask${ask ? " now" : ""}">${ask ? "Var står den?" : verbOf(it).replace(/^./, (c) => c.toUpperCase())}</p>
             <div class="chips" role="group" aria-label="Yta">${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
             <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>
@@ -969,9 +970,11 @@
         const at = (e) => { const r = stage.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 100, 1, 99), clamp((e.clientY - r.top) / r.height * 100, 4, 100)]; };
         stage.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; e.preventDefault(); b.setPointerCapture(e.pointerId); drag = { h: b.dataset.pin, b, x0: e.clientX, y0: e.clientY, moved: false }; });
         stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.b.style.left = x + "%"; drag.b.style.top = y + "%"; drag.x = x; drag.y = y; });
-        const endDrag = () => { if (!drag) return; const d = drag; drag = null; if (d.moved) { sel = d.h; R.movePin(d.h, d.x, d.y); const it = R.scene().find((x) => x.h === d.h); if (it) say(`${name(d.h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); } else select(sel === d.h ? null : d.h); };
+        let dragged = 0; // a drag is not also a click
+        const endDrag = () => { if (!drag) return; const d = drag; drag = null; if (d.moved) { dragged = Date.now(); sel = d.h; R.movePin(d.h, d.x, d.y); const it = R.scene().find((x) => x.h === d.h); if (it) say(`${name(d.h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); } };
         stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", () => { drag = null; paint(); });
-        stage.addEventListener("click", (e) => { if (e.target.closest("[data-pin]")) return; if (!sel) { say(R.scene().length ? "Välj först en sak, i listan eller på en nål." : "Lägg till en sak först."); return; } const [x, y] = at(e); R.movePin(sel, x, y); const it = R.scene().find((q) => q.h === sel); if (it) say(`${name(sel)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); });
+        // a tap, a click or Enter on a pin chooses it; a tap elsewhere in the picture moves the chosen one there
+        stage.addEventListener("click", (e) => { const pb = e.target.closest("[data-pin]"); if (pb) { if (Date.now() - dragged > 300) select(sel === pb.dataset.pin ? null : pb.dataset.pin); return; } if (!sel) { say(R.scene().length ? "Välj först en sak, i listan eller på en nål." : "Lägg till en sak först."); return; } const [x, y] = at(e); R.movePin(sel, x, y); const it = R.scene().find((q) => q.h === sel); if (it) say(`${name(sel)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); });
         marks.addEventListener("keydown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; const h = b.dataset.pin, it = R.scene().find((x) => x.h === h); if (!it) return;
           const st = e.shiftKey ? 5 : 1, mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
           if (mv) { e.preventDefault(); sel = h; R.movePin(h, it.x + mv[0], it.y + mv[1]); const n = R.scene().find((x) => x.h === h); if (n) say(`${Math.round(n.x)} % från vänster, ${Math.round(n.y)} % ned, ${verbOf(n)} ${SURF[surfKey(n)]}.`); return; }
@@ -980,6 +983,7 @@
         pin.addEventListener("click", (e) => { if (!sel) return; const it = R.scene().find((x) => x.h === sel); if (!it) return;
           const sf = e.target.closest("[data-surf]"); if (sf) { R.movePin(sel, it.x, it.y, sf.dataset.surf); const n = R.scene().find((x) => x.h === sel); say(`${name(sel)} ${verbOf(n)} ${SURF[surfKey(n)]}.`); const f = $(`[data-surf="${sf.dataset.surf}"]`, pin); if (f) f.focus({ preventScroll: true }); return; }
           const o = e.target.closest("[data-ord]"); if (o) { R.pinOrder(sel, +o.dataset.ord); const f = $(`[data-ord="${o.dataset.ord}"]`, pin); if (f && !f.disabled) f.focus({ preventScroll: true }); else { const g = $(`[data-pin="${sel}"]`, marks); if (g) g.focus(); } return; }
+          if (e.target.closest("#plMeasure")) { RQ.ss && RQ.ss.set("rumiq-room-measure", "1"); R.setWay("edit"); RQ.router(); scrollTo(0, 0); return; }
           if (e.target.closest("#plDel")) { const h = sel; sel = null; R.remove(h); say(`${name(h)} är borttagen.`); return; }
           if (e.target.closest("#plPinX")) { const h = sel; select(null); const g = $(`[data-pin="${h}"]`, marks); if (g) g.focus(); } });
         $("#plList", root).addEventListener("click", (e) => { const b = e.target.closest("[data-pick]"); if (!b) return; select(b.dataset.pick); if (innerWidth <= 900) stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); });
@@ -998,7 +1002,8 @@
         const onRoom = (e) => { if (e.detail === "scene" && R._quiet) return; if (e.detail === "scene") paint(); else if (e.detail === "room") RQ.router(); };
         document.addEventListener("rq-room", onRoom);
         // a thing that just came (a product page, the picker) is chosen, so the next tap in the picture puts it there
-        const nw = RQ.ss && RQ.ss.get("rumiq-room-new"); if (nw && R.inScene(nw)) { RQ.ss.set("rumiq-room-new", ""); sel = nw; }
+        const nw = RQ.ss && RQ.ss.get("rumiq-room-new"); if (nw && R.inScene(nw)) { RQ.ss.set("rumiq-room-new", ""); sel = nw;
+          const l = R.scene(), i = l.findIndex((x) => x.h === nw); if (i >= PLACE_MAX) { const [it] = l.splice(i, 1); l.splice(PLACE_MAX - 1, 0, it); R.saveScene(l, true); } } // the five are full: the one you came with takes the fifth place
         paint(); if (sel) say(`${name(sel)} är vald. Tryck i bilden där den ska stå.`);
         return () => document.removeEventListener("rq-room", onRoom);
       },
@@ -1558,6 +1563,7 @@
         root.addEventListener("click", (e) => { const b = e.target.closest("[data-proj]"); if (!b || !RQ.hem) return; const r = RQ.hem.room(b.dataset.proj); if (!r || b.getAttribute("aria-pressed") === "true") return;
           $$("[data-proj]", root).forEach((x) => x.setAttribute("aria-pressed", x === b)); R.openWith({ room: r.type, items: RQ.hem.items(r), style: r.style, budget: r.budget, project: r.id }); });
         $("#rmToPlace", root).addEventListener("click", () => { R.setWay("place"); RQ.router(); scrollTo(0, 0); });
+        if (RQ.ss && RQ.ss.get("rumiq-room-measure") === "1") { RQ.ss.set("rumiq-room-measure", ""); if (!mapOf()) setTimeout(() => measure(true), 300); } // from Placera och skapa: "Ange en känd längd"
         $("#rmSuggest", root).addEventListener("click", () => suggest()); $("#rmSuggest0", root).addEventListener("click", () => suggest());
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });
         $("#rmLook", root).addEventListener("click", () => { const hs = R.scene().map((it) => it.h); if (hs.length < 2) return;
