@@ -929,7 +929,8 @@
         <section class="wrap pl" id="pl">
           <ol class="pl-steps" aria-label="Så går det till"><li><b>1</b> ${room.sample ? esc(room.name || "Exempelrummet") : "Ditt rum"} <button type="button" class="tlink" data-room-setup>Byt rum</button></li><li><b>2</b> Välj saker</li><li><b>3</b> Peka ut</li><li><b>4</b> Skapa bilden</li></ol>
           <div class="pl-grid"><div class="pl-left">
-            <div class="pl-stage" id="plStage" style="aspect-ratio:${room.w} / ${room.h}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div>
+            <div class="pl-stage" id="plStage"><div class="pl-in" id="plIn" style="aspect-ratio:${room.w} / ${room.h}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div></div>
+            <button type="button" class="tlink pl-zoom" id="plZoom" aria-pressed="false">Förstora bilden</button>
             <p class="pl-hint" id="plHint" role="status"></p>
           </div><div class="pl-right">
             <div class="pl-pin" id="plPin" role="group" aria-labelledby="plPinT" hidden></div>
@@ -966,8 +967,9 @@
             <div class="chips" role="group" aria-label="Yta">${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
             <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>
             <div class="pl-pin-a"><button type="button" class="btn ghost sm" data-ord="-1"${i ? "" : " disabled"}>Tidigare</button><button type="button" class="btn ghost sm" data-ord="1"${i < Math.min(list.length, PLACE_MAX) - 1 ? "" : " disabled"}>Senare</button><button type="button" class="btn ghost sm" id="plDel">Ta bort</button></div>`; };
-        const select = (h, quiet) => { sel = h; paint(); if (!h || quiet) return; const it = R.scene().find((x) => x.h === h); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
-        const at = (e) => { const r = stage.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 100, 1, 99), clamp((e.clientY - r.top) / r.height * 100, 4, 100)]; };
+        const select = (h, quiet) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); const it = R.scene().find((x) => x.h === h); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
+        const inner = $("#plIn", root);
+        const at = (e) => { const r = inner.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 100, 1, 99), clamp((e.clientY - r.top) / r.height * 100, 4, 100)]; };
         stage.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; e.preventDefault(); b.setPointerCapture(e.pointerId); drag = { h: b.dataset.pin, b, x0: e.clientX, y0: e.clientY, moved: false }; });
         stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.b.style.left = x + "%"; drag.b.style.top = y + "%"; drag.x = x; drag.y = y; });
         let dragged = 0; // a drag is not also a click
@@ -988,6 +990,9 @@
           if (e.target.closest("#plPinX")) { const h = sel; select(null); const g = $(`[data-pin="${h}"]`, marks); if (g) g.focus(); } });
         $("#plList", root).addEventListener("click", (e) => { const b = e.target.closest("[data-pick]"); if (!b) return; select(b.dataset.pick); if (innerWidth <= 900) stage.scrollIntoView({ block: "nearest", behavior: calmNow() ? "auto" : "smooth" }); });
         $("#plAdd", root).addEventListener("click", () => R.openPicker());
+        // a phone: the picture twice as wide (swipe sideways), so pins close together are easy to tell apart and to place
+        const zoomTo = (h) => { const it = h && R.scene().find((x) => x.h === h); if (!it || !stage.classList.contains("big")) return; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * it.x / 100 - stage.clientWidth / 2), behavior: calmNow() ? "auto" : "smooth" }); };
+        $("#plZoom", root).addEventListener("click", (e) => { const on = !stage.classList.contains("big"); stage.classList.toggle("big", on); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Visa hela bilden" : "Förstora bilden"; zoomTo(sel || (R.scene()[0] || {}).h); });
         $("#plSelf", root).addEventListener("click", () => { R.setWay("edit"); RQ.router(); scrollTo(0, 0); });
         $("#plCreate", root).addEventListener("click", async () => {
           const detail = { pins: R.pins(), room: { src: R.url(), w: room.w, h: room.h, type: room.type || null, sample: !!room.sample, map: room.map || null, known: room.known || null } };

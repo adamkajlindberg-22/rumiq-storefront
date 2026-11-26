@@ -123,7 +123,7 @@ RUN_AXE = """async () => { const r = await axe.run(document, { runOnly: { type: 
 SET = [{"h": "glob-bordslampa-opalglas"}, {"h": "strand-jutematta"}, {"h": "affisch-linje-ekram"}, {"h": "plad-ullblandning-havre"}]
 PINS = "RQ.room.pins()"
 BTN = "(h) => { const r = document.querySelector(`[data-pin='${h}']`).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width, r.height]; }"
-STAGE = "(() => { const r = document.getElementById('plStage').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()"
+STAGE = "(() => { const r = document.getElementById('plIn').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()"
 
 
 def place(pg, items=SET, room="vardagsrum"):
@@ -148,7 +148,7 @@ with sync_playwright() as p:
         ok(labels[0] == "1 Glob bordslampa opalglas, står på bord, flytta med piltangenterna" and len(labels) == 4, f"{tag} each pin is a button with its number, name and surface: {labels[0]}")
         sizes = pg.evaluate("[...document.querySelectorAll('[data-pin], #plPin button, #pl .pl-li, #plAdd, #plCreate, #plSelf, .pl-steps .tlink')].filter((e) => e.offsetParent).map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
         ok(all(w >= 44 and h >= 44 for w, h in sizes), f"{tag} every tap target is at least 44 px: {[s for s in sizes if min(s) < 44][:3]}")
-        fw = pg.evaluate("(() => { const st = document.getElementById('plStage').getBoundingClientRect(); return [...document.querySelectorAll('.pl-foot')].map((f) => +(f.getBoundingClientRect().width / st.width * 100).toFixed(1)); })()")
+        fw = pg.evaluate("(() => { const st = document.getElementById('plIn').getBoundingClientRect(); return [...document.querySelectorAll('.pl-foot')].map((f) => +(f.getBoundingClientRect().width / st.width * 100).toFixed(1)); })()")
         ok(all(abs(a - x["w"]) < 1.2 for a, x in zip(fw, pins)) and "ungefär" in pg.evaluate("document.querySelectorAll('.pl-foot')[0].textContent"), f"{tag} the dashed footprints are drawn at the things' widths, the estimated one says ungefär: {fw}")
         st = pg.evaluate(STAGE); ok(st[1] + st[3] <= Hh + 2 or mob and st[3] > 120, f"{tag} the picture is on the first screen: {st}")
         # choose a pin, change its surface, move it with a tap
@@ -208,6 +208,19 @@ with sync_playwright() as p:
         ok(pg.evaluate("!!document.getElementById('plStage')"), f"{tag} and Tillbaka till Placera och skapa comes back")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
+
+
+    # a phone: Förstora bilden makes the picture twice as wide; a pin is placed the same way there
+    c = ctx_for(b, 360, 740, True); pg = new_page(c); place(pg)
+    pg.evaluate("document.querySelector('[data-pick=glob-bordslampa-opalglas]').click()"); pg.wait_for_timeout(200)
+    pg.tap("#plZoom"); pg.wait_for_timeout(600)
+    z = pg.evaluate("(() => { const s = document.getElementById('plStage'), i = document.getElementById('plIn'); return [i.offsetWidth / s.clientWidth, s.scrollLeft > 0, document.getElementById('plZoom').getAttribute('aria-pressed')]; })()")
+    ok(z[0] > 1.9 and z[1] and z[2] == "true", f"[zoom 360] Förstora bilden: twice as wide, scrolled to the chosen lamp: {z}")
+    st = pg.evaluate(STAGE); sx = pg.evaluate("document.getElementById('plStage').getBoundingClientRect().left")
+    tx = st[0] + st[2] * 0.80; pg.touchscreen.tap(tx, st[1] + st[3] * 0.66); pg.wait_for_timeout(400)
+    g = next(x for x in pg.evaluate(PINS) if x["h"] == "glob-bordslampa-opalglas")
+    ok(abs(g["x"] - 80) < 4 and g["surface"] == "bord", f"[zoom 360] and a tap on the side table puts the lamp there: {g}")
+    c.close()
 
     # at most five in the picture; the rest is said
     c = ctx_for(b, 390, 844, True); pg = new_page(c)
