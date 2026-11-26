@@ -157,7 +157,9 @@ with sync_playwright() as p:
         # Prova igen i Studio: the editor with the same room and products, the room active again
         pg.evaluate("document.querySelector('#mh-bilder [data-lib-cont]').click()"); pg.wait_for_timeout(1800)
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and pg.evaluate("RQ.room.scene().length") >= 3, f"{tag} 'Prova igen i Studio' opens the editor with the picture's room and products")
-        ok(pg.evaluate("RQ.hem.activeId()") != pg.evaluate("RQ.hem.rooms().find((r) => r.label === 'Sovrummet').id"), f"{tag} a living-room picture moved to the bedroom opens as the living room it is, not under the bedroom's name")
+        g4 = pg.evaluate("(() => { const s = RQ.hem.rooms().find((r) => r.label === 'Sovrummet'); return [RQ.hem.activeId() === s.id, RQ.room.get().map, (document.querySelector('[data-proj][aria-pressed=true]') || {}).innerText || ''] })()")
+        ok(g4[0] and g4[1] == "sovrum" and "Sovrummet" in g4[2], f"{tag} a living-room picture moved to the bedroom opens the bedroom (its tab chosen) with the picture's things: {g4}")
+        ok(not pg.evaluate("document.getElementById('toast').classList.contains('show')") or "Sovrummet" not in pg.evaluate(TOAST), f"{tag} the toast about the move does not follow onto the next page")
         # a room goes, and comes back
         go(pg, "mitt-hem", 1500); n0 = pg.evaluate("RQ.hem.rooms().length")
         pg.evaluate("RQ.hem.openRoom(RQ.hem.rooms()[0].id)"); pg.wait_for_timeout(700); pg.evaluate("document.getElementById('hemDel').click()"); pg.wait_for_timeout(600)

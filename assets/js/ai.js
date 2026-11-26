@@ -555,6 +555,14 @@
   async function continueIn(g, v, btn) {
     btn.disabled = true;
     try {
+      // moved to a room of another kind than the sample room it was made in: that room opens (its tab chosen) with the picture's things
+      const hr0 = RQ.hem && v.roomId && RQ.hem.room(v.roomId), m0 = (g.room && g.room.meta) || {};
+      if (hr0 && m0.sample && m0.type && m0.type !== hr0.type) {
+        const its = liveItems(v.items).map((it) => ({ h: it.h, v: it.v || 0 })), R = RQ.room;
+        const out = await RQ.hem.openInRoom({ room: hr0.type, items: its, style: hr0.style, budget: hr0.budget, project: hr0.id });
+        if (out && R.group) R.group(() => its.forEach((it) => { if (!R.inScene(it.h)) R.add(it.h, true, it.v); }));
+        return;
+      }
       if (AI.projectKey() !== g.key) {
         const src = (g.room && blobUrl(g.room.photo)) || v.before; if (!src) throw new Error("photo");
         const im = await load(src); const okay = await RQ.room.saveImage(im, (g.room && g.room.meta) || {});
@@ -562,10 +570,9 @@
         keepKey(g.key);
       }
       RQ.room.saveScene(liveItems(v.items).map(({ v: _v, ...it }) => it));
-      // the room it belongs to under Sparat, unless the picture was moved there from a sample room of another kind (a bedroom
-      // picture moved to the living room opens as the bedroom it is, not under the living room's name)
-      const hr = RQ.hem && v.roomId && RQ.hem.room(v.roomId), meta = (g.room && g.room.meta) || {};
-      if (hr && (!meta.sample || !meta.type || meta.type === hr.type)) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); } else if (hr) RQ.hem.setActive(null);
+      // the room it belongs to under Sparat
+      const hr = RQ.hem && v.roomId && RQ.hem.room(v.roomId);
+      if (hr) { RQ.hem.setActive(v.roomId); RQ.hem.patch(v.roomId, { pkey: g.key }); }
       RQ.go("mitt-rum");
     } catch (e) { RQ.toast("Rummet gick inte att öppna. Försök igen."); if (btn.isConnected) btn.disabled = false; }
   }
