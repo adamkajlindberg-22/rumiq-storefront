@@ -59,10 +59,12 @@
   <url>
     <loc>https://adamkajlindberg-22.github.io/rumiq-storefront/svep/</loc>
     <lastmod>2026-11-26</lastmod>
+    <image:image><image:loc>https://adamkajlindberg-22.github.io/rumiq-storefront/assets/img/og-svep-solo.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://adamkajlindberg-22.github.io/rumiq-storefront/svep-ihop/</loc>
     <lastmod>2026-11-26</lastmod>
+    <image:image><image:loc>https://adamkajlindberg-22.github.io/rumiq-storefront/assets/img/og-svep.jpg</image:loc></image:image>
   </url>
   <url>
     <loc>https://adamkajlindberg-22.github.io/rumiq-storefront/presentkort/</loc>
