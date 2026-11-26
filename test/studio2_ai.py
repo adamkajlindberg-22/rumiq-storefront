@@ -302,7 +302,10 @@ with sync_playwright() as p:
         ok(d.value.suggested_filename == "rumiq-moodboard.jpg" and "#delad-" in pg.evaluate("window.__sent[0] || ''"), f"{tag} share: one picture and a link to the same things")
         hs = sorted(i["h"] for i in bd["items"])
         pg.evaluate("document.querySelector('[data-mb-do=try]').click()"); pg.wait_for_timeout(2600)
-        ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and sorted(pg.evaluate("RQ.room.scene().map((i) => i.h)")) == hs, f"{tag} Prova i ett rum: the board's products placed by the editor")
+        # the editor's surface rules hold (studio2 review M8): a table thing with no free table is left out and named in the editor, never put on the floor
+        inroom = pg.evaluate("RQ.room.scene().map((i) => i.h)"); note = pg.evaluate("(document.getElementById('rmSugg') || {}).innerText || ''")
+        out = [h for h in hs if h not in inroom]
+        ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and set(inroom) <= set(hs) and len(inroom) >= 2 and all(pg.evaluate("(h) => RQ.byHandle(h).name", h) in note for h in out), f"{tag} Prova i ett rum: the board's products placed by the editor, what does not fit named: {inroom} {out}")
         go(pg, "mitt-hem", 1300)
         ok(pg.evaluate("document.querySelectorAll('.hem-board').length") == 1, f"{tag} the moodboard is in Sparat")
         ok(not errs, f"{tag} no script errors: {errs[:3]}")
