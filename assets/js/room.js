@@ -380,6 +380,7 @@
     swapWith(h, to, v) { const list = R.scene(), i = list.findIndex((it) => it.h === h); if (i < 0) return false; const it = list[i], p = RQ.byHandle(h), q = RQ.byHandle(to || h); if (!q) return false;
       if (q.handle !== h && list.some((x) => x.h === q.handle)) return false;
       const n = { ...it, h: q.handle }; if (v > 0 && (q.variants || [])[v]) n.v = v; else delete n.v;
+      delete n.sg; // swapped (or another colour) by hand: yours now, so Inred åt mig keeps it (device review R3)
       if (q.handle !== h) { const r = meta(p)[1] > 0 ? meta(q)[1] / meta(p)[1] : 1; n.w = +clamp(it.w * r, 1, 96).toFixed(1); n.w0 = +clamp((it.w0 || it.w) * r, 1, 96).toFixed(1); delete n.sy; const sp = spotFor(q, [], true); if (sp.sy && sp.sy !== 1) n.sy = sp.sy; delete n.real;
         if (SURF[it.on] && !(CAN[kindOf(q)] || []).includes(it.on)) delete n.on; const tw = trueW(n); if (tw) { n.w = tw; n.real = true; } }
       list[i] = n; R._swapped = { from: h, to: q.handle }; return R.saveScene(list); },

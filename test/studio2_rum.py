@@ -325,6 +325,15 @@ with sync_playwright() as p:
         ok(sorted(sc) == sorted(i["h"] for i in f["fit"]) and f["count"] == len(sc) and f["total"] == tot and f["count"] + len(f["out"]) == len({i["h"] for i in its}), f"[fits {rt}] fits() names exactly what the editor puts in, with the same total: {f['count']} {f['total']} / {len(sc)} {tot}, out {[i['h'] for i in f['out']]}")
     c.close()
 
+    # device review R3: a thing you swapped by hand stays when Inred åt mig makes a new proposal
+    c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(400); quiet(pg)
+    pg.evaluate("RQ.room.openWith({ room: 'vardagsrum', items: RQ.hem.propose({ type: 'vardagsrum' }).items })"); pg.wait_for_timeout(1500); quiet(pg)
+    lamp = pg.evaluate("RQ.room.scene().find((i) => /lampa/.test(i.h)).h"); to = pg.evaluate("(h) => RQ.room.alternatives(h)[0].handle", lamp)
+    pg.evaluate("([a, b]) => RQ.room.swapWith(a, b)", [lamp, to]); pg.wait_for_timeout(400)
+    pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(900); pg.evaluate("document.getElementById('rmSgAgain').click()"); pg.wait_for_timeout(900)
+    ok(pg.evaluate("(h) => RQ.room.inScene(h)", to), f"[R3] the lamp you swapped in by hand ({to}) stays through Inred åt mig")
+    c.close()
+
     b.close()
 
 print(f"{n - len(fails)} of {n} checks passed")
