@@ -1036,8 +1036,10 @@
           const ar = room.w / room.h, W = box.clientWidth, top = (document.querySelector("header") || {}).offsetHeight || 58;
           const drawer = document.body.classList.contains("picking-room") ? R.pickerHeight() + 10 : 0; // the picker is open under the room
           // on a short phone the room leaves space under it for the selected thing's bar (its name, Står på and the buttons) above the buy bar
-          const below = drawer ? 0 : innerHeight - (box.getBoundingClientRect().top + scrollY) - 184;
-          const room4 = Math.max(200, innerHeight - top - (drawer || 150)), h62 = Math.min(Math.round(innerHeight * 0.62), room4, below > 260 ? below : 1e4);
+          // the height you really see (Android's toolbar takes some of innerHeight; device review X5)
+          const VH = Math.min(innerHeight, (window.visualViewport && visualViewport.height) || innerHeight);
+          const below = drawer ? 0 : VH - (box.getBoundingClientRect().top + scrollY) - 184;
+          const room4 = Math.max(200, VH - top - (drawer || 150)), h62 = Math.min(Math.round(VH * 0.62), room4, below > 260 ? below : 1e4);
           view.can = h62 * ar >= W * 1.2;                       // a wide photo: there is more to see when it is shown tall
           const near = view.can && !view.whole;
           view.sh = Math.round(view.fit && view.can ? clamp(view.fit, Math.min(W / ar, room4), h62) : near ? h62 : Math.min(W / ar, room4)); view.sw = W;
@@ -1132,9 +1134,11 @@
         ["#rmOn", "#rmOn2"].forEach((q) => $(q, root).addEventListener("change", (e) => { if (sel) setOn(sel, e.target.value); }));
         const select = (h) => { if (swap && swap.h && swap.h !== h) { swap.h = null; paintSwap(); } sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); if (h) requestAnimationFrame(actInView); };
         // a short screen: the chosen thing's tools come up above the room's bar at the bottom, as far as the thing itself stays in sight (D7)
-        const actInView = () => { const a = $("#rmAct", root); if (!a || a.hidden || !a.getClientRects().length) return; const r = a.getBoundingClientRect(), bar = document.querySelector(".rm-bar"), bTop = bar && bar.getClientRects().length && getComputedStyle(bar).visibility !== "hidden" ? bar.getBoundingClientRect().top : innerHeight;
+        const actInView = () => { const a = $("#rmAct", root); if (!a || a.hidden || !a.getClientRects().length) return; const r = a.getBoundingClientRect(), bar = document.querySelector(".rm-bar"), vv = window.visualViewport, vBottom = vv ? vv.offsetTop + vv.height : innerHeight, bTop = Math.min(vBottom, bar && bar.getClientRects().length && getComputedStyle(bar).visibility !== "hidden" ? bar.getBoundingClientRect().top : innerHeight);
           const need = r.bottom - bTop + 8; if (need <= 0) return; const el = $(".rm-item.sel", wrap), nav = $("#nav"), up = el ? el.getBoundingClientRect().top - (nav ? nav.getBoundingClientRect().bottom : 0) - 8 : need;
           const by = Math.min(need, Math.max(0, up)); if (by > 0) window.scrollBy({ top: by, behavior: calm() ? "auto" : "smooth" }); };
+        // Android's toolbar comes and goes: the row with Mindre ... Klar is kept above the bar when the visible height changes (device review X5)
+        const onVV = () => { if (sel) actInView(); }; if (window.visualViewport) visualViewport.addEventListener("resize", onVV);
         /* the selected thing at true scale: its measurements beside it, and for a rug the floor it covers, dashed */
         const paintFoot = (cur) => { const it = cur || (sel && R.scene().find((x) => x.h === sel)), poly = $("#rmArea polygon", root), lab = $("#rmAreaLab", root);
           if (!it || !it.real || !scaleAt(it)) { poly.setAttribute("points", ""); lab.hidden = true; return; }
@@ -1484,7 +1488,7 @@
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
         R._swapLive = (h, colour) => { if (!root.isConnected || !R.inScene(h)) return; const it = R.scene().find((x) => x.h === h); if (it) lookAt([it]); openSwap(h, colour ? "[data-swv][aria-pressed=true]" : ".rm-alt"); };
         { const sw0 = RQ.ss && RQ.ss.get("rumiq-room-swap"); if (sw0) { RQ.ss.set("rumiq-room-swap", ""); const [sw, c] = sw0.split("|"); if (R.inScene(sw)) setTimeout(() => R._swapLive(sw, c === "c"), 300); } }
-        return () => { tObs.disconnect(); R._swapLive = null; document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
+        return () => { if (window.visualViewport) visualViewport.removeEventListener("resize", onVV); tObs.disconnect(); R._swapLive = null; document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
       },
     };
   };
