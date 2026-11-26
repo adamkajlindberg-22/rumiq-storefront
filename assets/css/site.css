@@ -1826,6 +1826,7 @@ html.sheet-lock{overflow:hidden}
 .svep-result ~ .sv-meta{display:none}
 .sv-meta[hidden]{display:none}
 .svep:has(.svep-result) .sv-head .lead:not(.keep){display:none}
+@media (max-width:900px) and (max-height:700px){.svep-result{gap:.5rem}.svep-result > .h2{font-size:1.7rem}.svep-result > .lead{font-size:.98rem}} /* a short phone: the profile is compact, so the room proposal starts on the first screen (D4) */
 .sv-alldone{color:var(--ink2);font-size:.95rem}
 .sv-alldone a{margin-left:.3rem}
 /* Svep v7: pictures per card, upward = cart, undo, progress, style profile */
