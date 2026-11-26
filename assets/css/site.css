@@ -1990,7 +1990,7 @@ html.sheet-lock{overflow:hidden}
 @media (min-width:900px){
   .ai-sheet.wide .sheet-in{width:min(75rem,96vw)}
   .ai-sheet.wide .ai-grid{grid-template-columns:minmax(0,2fr) minmax(19rem,1fr)}
-  .ai-sheet.wide .ai-result{align-items:start}.ai-sheet.wide .ai-result .ai-stage{position:sticky;top:0} /* the picture stays put while a list opens beside it */
+  .ai-sheet.wide .ai-result{align-items:start}.ai-sheet.wide .ai-result .ai-stage{position:sticky;top:0;align-self:center} /* the picture sits in the middle beside the list (D12), and stays in view while a list opens beside it and the sheet scrolls */
   .ai-sheet.wide .ai-buybar.pl{display:flex;flex-wrap:wrap}.ai-sheet.wide .ai-buybar.pl .ai-buysum{display:none}
   .ai-sheet.wide .ai-stage .ai-ba{--bah:calc(90vh - 3.2rem)}
   .ai-sheet.wide .ai-stage:has(.ai-vers) .ai-ba{--bah:calc(90vh - 10rem)}
