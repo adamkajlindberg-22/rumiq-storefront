@@ -46,7 +46,7 @@
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
       surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], edge: [[71.3, 84.7, 68.5]], // the side table's top runs from 71.8 to 84.4; a mug stands at 75.6-79.3
-      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [56.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
+      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5], [80, 72, 15]], throw: [[65.5, 70.2, 17], [56.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
       rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture

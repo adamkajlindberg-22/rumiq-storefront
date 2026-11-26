@@ -69,7 +69,7 @@ with sync_playwright() as p:
         ok(s["btns"] == 2 and s["h1"] > 0 and s["btnBottom"] < s["vh"], f"{t} headline and both buttons are on the first screen: {s}")
         ok(s["hero"] <= 2.05, f"{t} the film scrolls one screen, not five: {s['hero']}")
         ok(s["card"] < 3, f"{t} first product within three screens: {s['card']:.2f}")
-        ok(s["h1Lines"] == 2, f"{t} the headline is two lines")
+        ok(s["h1Lines"] == 3, f"{t} the headline is three short lines (Ditt hem. Din vision. Din stil.)")
         ok(not s["stat"], f"{t} a desktop gets the scroll film")
         ok("hero-m-start.webp" not in reqs and not any(x.startswith("rum-") for x in reqs), f"{t} only the first frame and the film are fetched: {reqs}")
         if W == 1440:

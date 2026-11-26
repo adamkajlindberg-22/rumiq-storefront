@@ -422,8 +422,8 @@ with sync_playwright() as p:
         go = pg.evaluate("[document.getElementById('aiGo').getBoundingClientRect().bottom, document.querySelector('.ai-more').getBoundingClientRect().top, document.querySelectorAll('.ai-body [disabled]').length]")
         ok(go[0] < Hh and go[0] <= go[1] and go[2] == 0, f"{tag} 'Skapa bild' is on the first screen, above the Studio Plus line: {go}")
         pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
-        # on the real site a server that does not answer is an error, not a preview
-        pg.evaluate("RQ_CONFIG.auth.preview = false; RQ.openAI()"); pg.wait_for_timeout(1200)
+        # on the real site, once the founder switches the AI on (RQ_CONFIG.studio.aiLive), a server that does not answer is an error, not a preview
+        pg.evaluate("RQ_CONFIG.studio.aiLive = true; RQ_CONFIG.auth.preview = false; RQ.openAI()"); pg.wait_for_timeout(1200)
         body = pg.evaluate("document.querySelector('.ai-body').innerText")
         ok("Ingen kontakt med servern" in body and "Förhandsvisning" not in body and pg.evaluate("!!document.getElementById('aiRetry')"), f"{tag} an unreachable server is called that, with a retry")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
