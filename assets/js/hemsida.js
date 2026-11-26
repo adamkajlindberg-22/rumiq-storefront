@@ -164,7 +164,7 @@
   function openRoom(id, focus) {
     const r = H.room(id); if (!r) return; sid = id; H.setActive(id);
     sbody.innerHTML = `<div class="hem-room">
-      <div class="hem-room-h"><span class="eyebrow">${esc(typeName(r.type))}</span><h2 id="hemTitle" class="ai-h">${esc(H.name(r))}</h2><p class="hem-prog" id="hemProg">${progHtml(r, 0)}</p>
+      <div class="hem-room-h">${H.name(r).toLowerCase().startsWith(typeName(r.type).toLowerCase()) ? "" : `<span class="eyebrow">${esc(typeName(r.type))}</span>`}<h2 id="hemTitle" class="ai-h">${esc(H.name(r))}</h2><p class="hem-prog" id="hemProg">${progHtml(r, 0)}</p>
         <div class="ai-row"><button class="btn" type="button" id="hemSee">${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" id="hemAsk">Vad tycker du?</button></div></div>
       <section class="hem-sec"><h3 class="h3">Bilder</h3><div class="ai-lib-list" id="hemPics" aria-busy="true"></div></section>
       <section class="hem-sec" id="hemListSec"><h3 class="h3">Inköpslista</h3><div id="hemList">${listRows(r)}</div></section>
