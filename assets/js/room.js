@@ -46,7 +46,7 @@
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
       surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], edge: [[71.3, 84.7, 68.5]], // the side table's top runs from 71.8 to 84.4; a mug stands at 75.6-79.3
-      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [80, 72, 17]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it
+      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [56.5, 73, 15]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it; the second over the left arm (the seat's right end is behind the side table)
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
       rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
@@ -160,7 +160,10 @@
         if (kd === "window" && !M && room) { const w = clamp(80 / (meta(p)[2] * room.w / room.h), 8, 40); return { x: +Math.min(sp[0], 99 - w / 2).toFixed(1), y: sp[1], w: +w.toFixed(1), sy: sp[3] }; }
         return { x: sp[0], y: sp[1], w: sp[2], sy: sp[3] }; }
       const width = (sp) => clamp(cm * (sp[2] || floorScale(sp[1], M)) / 100 * k, 2.5, 70);
-      const free = spots.find((sp) => !taken(sp[0], sp[1], width(sp), kd)); if (free) return { x: free[0], y: free[1], w: +width(free).toFixed(1) };
+      // a small thing for a table (a candle, a vase) takes a side spot first, so a lamp keeps the table's main spot and does not end
+      // up at its far end against the sofa (device review X6)
+      const order = M && SORT[kd] === "s" && cm < 15 && spots.length > 1 ? [...spots.slice(1), spots[0]] : spots;
+      const free = order.find((sp) => !taken(sp[0], sp[1], width(sp), kd)); if (free) return { x: free[0], y: free[1], w: +width(free).toFixed(1) };
       // every mapped spot is taken: the free place on the same surface nearest to one of them (a second lamp goes to the
       // other end of the side table, not to the floor), as long as that is still on the surface
       for (const sp of spots) { const w = width(sp), row = spots.filter((o) => Math.abs(o[1] - sp[1]) < 4).map((o) => o[0]), lo = Math.max(M ? 3 : 2 + w / 2, Math.min(...row) - (M ? 1.5 - w * 0.22 : 30)), hi = Math.min(M ? 97 : 98 - w / 2, Math.max(...row) + (M ? 1.5 - w * 0.22 : 30)); // its foot stays on the surface (and in your own photo, all of it inside the picture)
