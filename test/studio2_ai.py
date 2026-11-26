@@ -358,7 +358,10 @@ with sync_playwright() as p:
         pg.wait_for_timeout(500)
         ok(prom.startswith("5 AI-bilder gratis i månaden med konto") and pg.evaluate("[...document.querySelectorAll('[data-ai-balance]')].every((c) => c.textContent === RQ.ai.promise())"), f"{tag} Mitt rum's AI card says the one promise: {prom}")
         pg.evaluate("RQ.openAI()"); pg.wait_for_timeout(900)
-        ok(pg.evaluate("(document.querySelector('#aiSheet .ai-lead, .ai-sheet.open .ai-lead') || {}).textContent") == pg.evaluate("RQ.ai.promise(true)"), f"{tag} the sign-in sheet says the same promise: {pg.evaluate('(document.querySelector(\'.ai-sheet.open .ai-lead\') || {}).textContent')}")
+        gtxt = pg.evaluate("(document.querySelector('.ai-sheet.open') || {}).innerText || ''")
+        ok("Förhandsvisning utan konto" in gtxt and "kräver ett gratis konto" in gtxt and pg.evaluate("!!document.getElementById('aiGo') && !document.getElementById('aiOk')"), f"{tag} a guest sees the preview demo, honestly labelled, no consent needed (nothing is sent): {gtxt[:120]}")
+        pg.evaluate("document.getElementById('aiGo').click()"); pg.wait_for_timeout(3000)
+        ok(pg.evaluate("!!document.querySelector('.ai-result')"), f"{tag} the guest's demo result shows")
         pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         # the consent for a sample room speaks of the sample room, not of "your room"
         pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email'); localStorage.removeItem('rumiq-ai-consent')"); pg.wait_for_timeout(300)

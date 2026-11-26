@@ -270,7 +270,7 @@ with sync_playwright() as p:
         tag = f"[AI {W}]"
         c, pg = room_page(b, W, Hh, mob, room="sovrum", items=("lysa-keramiklampa", "plad-ullblandning-havre"))
         pg.evaluate("RQ.openAI()"); pg.wait_for_timeout(1500)
-        pg.evaluate("document.querySelector('.ai-body a.btn[data-after]:not(.ghost)').click()"); pg.wait_for_timeout(1000)
+        pg.evaluate("document.querySelector('.ai-body a[data-after]:not(.ghost)').click()")  # (device2 A1: a guest sees the preview demo, with Logga in beside it); pg.wait_for_timeout(1000)
         pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email'); location.hash = '#mitt-rum'"); pg.wait_for_timeout(1800)
         ok(pg.evaluate("document.getElementById('aiSheet').classList.contains('open')"), f"{tag} back in Mitt rum after signing in, the AI sheet opens again")
         pg.evaluate("localStorage.setItem('rumiq-ai-consent', JSON.stringify('x')); RQ.openAI()"); pg.wait_for_timeout(1600)
