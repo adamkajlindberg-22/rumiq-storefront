@@ -368,7 +368,11 @@
     /* Byt: what can take this thing's place (the same kind of thing, for the same surface), best colour match first */
     alternatives(h) { const p = RQ.byHandle(h); if (!p) return []; const have = new Set(R.scene().map((it) => it.h));
       // a lamp for a lamp, a candle for a candle, a textile for a textile, a print for a print, a rug for a rug, a thing on the table or the floor for the same
-      const grp = (q) => { const k = kindOf(q); return q.cat === "belysning-atmosfar" && (k === "surface" || k === "floor") ? (/lampa/.test(q.handle) ? "lampa" : "ljus") : ["cushion", "throw", "bedding"].includes(k) ? "textil" : k; };
+      // the same sort of thing only (studio3 review minor 2, also the partner page): a lamp for a lamp, a scented candle for a
+      // candle, candlesticks for candlesticks, a cushion for a cushion, a throw for a throw, a print for a print, a basket or box
+      // for a basket or box, a plant pot for a plant pot; otherwise none ("Inget annat … passar")
+      const SORTS = [[/lampa/, "lampa"], [/doftljus/, "doftljus"], [/ljusstake/, "ljusstake"], [/kuddfodral/, "kudde"], [/plad/, "plad"], [/paslakan/, "sang"], [/affisch|tavla|poster/, "bild"], [/korg|lada|forvaring(?!sburk)/, "forvaring"], [/kruka/, "kruka"], [/matta/, "matta"], [/gardin/, "gardin"], [/handduk/, "handduk"], [/burk/, "burk"], [/vas\b|vas-|keramikvas/, "vas"]];
+      const grp = (q) => { const f = SORTS.find(([re]) => re.test(q.handle)); return f ? f[1] : "x-" + q.handle; }; // a sort of its own: nothing else stands in for it
       return RQ.PRODUCTS.filter((q) => q.handle !== h && !have.has(q.handle) && grp(q) === grp(p))
         .map((q) => ({ q, m: (match(q) || 60) + (room && room.type && q.rooms.includes(room.type) ? 20 : 0) })).sort((a, b) => b.m - a.m).map((x) => x.q).slice(0, 8); },
     /* the thing at h, as "to" (another product, or the same one in colour v), in its place: the same spot, the same
@@ -401,6 +405,7 @@
       const sim = base.map((it) => ({ ...it })), fit = [], noRoom = [];
       cand.forEach((q) => { const sp = spotFor(q, sim, false, null, null, true), k = kindOf(q);
         if ((sp.moved === "floor" && k !== "floor" && k !== "rug") || (k === "surface" && !tableKnown())) { noRoom.push(q.handle); return; }
+        if (/lampa/.test(q.handle) && fit.some((f) => /lampa/.test(f.handle))) return; // one lamp in a set, not two on one small table (studio3 review minor 8)
         if (!mapOf() && k !== "floor" && fit.some((f) => kindOf(f) === k)) return; // your own photo: one print, one rug, one curtain (not two posters leaning side by side)
         sim.push({ h: q.handle, x: sp.x, y: sp.y, w: sp.w, ...(sp.moved ? { on: sp.moved } : {}) }); fit.push(q); });
       // a room of table things (a kitchen) in your own photo: one of them comes in on the floor in front, to be dragged to the
@@ -851,7 +856,7 @@
                   <button type="button" role="menuitemcheckbox" id="rmNight" aria-checked="false">${ICO.moon}<span>Kvällsljus<small>Se lamporna lysa i rummet</small></span></button>
                   <button type="button" role="menuitemcheckbox" id="rmBefore" aria-checked="false">${ICO.eye}<span>Visa före<small>Rummet utan sakerna</small></span></button>
                   ${mapOf() ? "" : `<button type="button" role="menuitem" data-measure>${ICO.ruler}<span>Känd längd i bilden<small>Rätt skala för produkter med mått</small></span></button>`}
-                  <button type="button" role="menuitem" id="rmLib">${ICO.save}<span>Mina rumsbilder<small>AI-bilder och sparade rum, under Sparat</small></span></button>
+                  <button type="button" role="menuitem" id="rmLib">${ICO.save}<span>Alla bilder<small>AI-bilder och sparade rum, under Sparat</small></span></button>
                   <button type="button" role="menuitem" data-room-setup>${ICO.swap}<span>Byt rum<small>Ny bild eller ett exempelrum</small></span></button>
                 </div></div>
             </div>
@@ -976,7 +981,7 @@
           stage.style.touchAction = view.z > 1.01 ? "none" : "pan-y";
           const pos = $("#rmPos", root); pos.hidden = w <= view.sw + 1;
           if (!pos.hidden) { const i = pos.firstElementChild; i.style.width = (view.sw / w * 100).toFixed(1) + "%"; i.style.left = (-view.tx / w * 100).toFixed(1) + "%"; }
-          const zb = $("#rmZoom", root); zb.hidden = !view.can; zb.lastElementChild.textContent = view.whole && view.z <= 1.01 ? "Närmare" : "Hela rummet";
+          const zb = $("#rmZoom", root); zb.hidden = !view.can; zb.lastElementChild.textContent = view.whole && view.z <= 1.01 ? "Närmare" : "Visa hela"; // "Hela rummet" is the bar's total (studio3 review minor 7)
           zb.setAttribute("aria-pressed", view.whole);
         };
         const layout = (keep) => {
@@ -1255,6 +1260,7 @@
           if (!n) sg.note = !set.count ? (sg.style ? "Inget mer i stilen passar i rummet just nu. Välj en annan stil." : "Inget mer passar i rummet just nu.") : `Budgeten räcker inte till något${sg.style ? " i stilen" : ""}. Det billigaste kostar ${kr(set.min)}.`;
           paintSugg();
           if (!n) { said(sg.note); return; }
+          if (innerWidth <= 900 && document.activeElement && $("#rmSugg", root).contains(document.activeElement)) { const r = stage.getBoundingClientRect(); if (r.bottom < innerHeight * 0.3) scrollBy({ top: r.bottom - innerHeight * 0.45, behavior: calm() ? "auto" : "smooth" }); } // the change is seen, the controls stay at hand (studio3 review minor 1)
           if (first || !mapOf()) return; // the room itself says it ("Så här kan det se ut hemma hos dig", "Dra sakerna dit du vill ha dem"): one message at a time
           said(`${n} förslag i rummet${old.length ? " i stället för det förra" : ""}.`);
         };
@@ -1315,7 +1321,7 @@
             scrollTo({ top: pb - sy <= innerHeight - top ? sy : Math.max(sy, pb - innerHeight + 12), behavior: calm() ? "auto" : "smooth" }); }
           else { const top = ((document.querySelector("header") || {}).offsetHeight || 58) + 8, r = stage.getBoundingClientRect(); // a computer: the whole picture beside the panel when it fits
             if (r.height <= innerHeight - top) { if (r.top < top || r.bottom > innerHeight) scrollBy({ top: r.top < top ? r.top - top : r.bottom - innerHeight + 8, behavior: calm() ? "auto" : "smooth" }); } else showSel(); } const f = $(focus || "[data-swv][aria-pressed=true], .rm-alt", swapBox); if (f) setTimeout(() => f.focus({ preventScroll: true }), 30); };
-        const closeSwap = () => { swap.h = null; paintSwap(); };
+        const closeSwap = () => { const back = swapBox.contains(document.activeElement); swap.h = null; paintSwap(); if (back) { const b = [...$$("[data-swap-open]", root)].find((x) => x.offsetParent); if (b) b.focus({ preventScroll: true }); } }; // focus back on Byt (studio3 review minor 9)
         root.addEventListener("click", (e) => { if (e.target.closest("[data-swap-open]") && sel) openSwap(sel); });
         swapBox.addEventListener("click", (e) => {
           if (e.target.closest("#rmSwapX")) { closeSwap(); return; }
@@ -1372,7 +1378,7 @@
           }
           return cv; };
         /* "Visa någon": before and after side by side (or one above the other for an upright photo), to share or keep */
-        $("#rmLib", root).addEventListener("click", () => { RQ.ss.set("rumiq-ai-jump", "1"); location.hash = "#mitt-hem"; }); // Sparat opens at Mina rumsbilder (the same jump as the AI sheet's link)
+        $("#rmLib", root).addEventListener("click", () => { RQ.ss.set("rumiq-ai-jump", "1"); location.hash = "#mitt-hem"; }); // Sparat opens at Alla bilder (the same jump as the AI sheet's link)
         $("#rmShow", root).addEventListener("click", async () => {
           if (!R.scene().length) { RQ.toast("Ställ in något i rummet först, så finns det något att visa."); return; }
           try {
