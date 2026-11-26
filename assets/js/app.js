@@ -1332,7 +1332,10 @@
     const r = document.documentElement, t = mode === "auto" ? sunNow() : mode;
     r.setAttribute("data-light", t); r.setAttribute("data-light-mode", mode);
     if (save) { try { localStorage.setItem("rumiq-ljus", mode); } catch (e) {} }
-    const tc = $("meta[name=theme-color]"); if (tc) tc.content = t === "kvall" ? "#191A18" : "#EDEDEA";
+    /* the strip behind Safari's bars follows at once (D2): a fresh theme-color tag (Safari does not always read a changed one), and again
+       once the page has finished fading to the new colour, so it reads the final colour too */
+    const tint = () => { const old = $("meta[name=theme-color]"), m = document.createElement("meta"); m.name = "theme-color"; m.content = t === "kvall" ? "#191A18" : "#EDEDEA"; if (old) old.replaceWith(m); else document.head.appendChild(m); };
+    tint(); clearTimeout(applyLight._t); applyLight._t = setTimeout(tint, 900);
     $$("[data-light-set]").forEach((b) => b.setAttribute("aria-checked", b.dataset.lightSet === mode));
     $$("[data-light-label]").forEach((el) => (el.textContent = LIGHT_LABEL[mode]));
   };
