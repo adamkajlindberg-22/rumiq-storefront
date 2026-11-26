@@ -10,6 +10,7 @@ Phone (390 and 360, touch) and desktop (1440 and 1280)."""
 import base64, http.server, io, json, re, socketserver, sys, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+import sys as _s, os as _o; _s.path.insert(0, _o.path.dirname(_o.path.abspath(__file__))); import _edit_way  # noqa: E402,F401  the editor tests start in Justera själv
 
 ROOT = Path(__file__).resolve().parent.parent
 fails, n = [], 0
@@ -354,6 +355,20 @@ with sync_playwright() as p:
     sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || ''])")
     ok(pg.evaluate("RQ.room.get().map") == "vardagsrum" and any(h == "lysa-keramiklampa" and on != "floor" for h, on in sc), f"[R5] the lamp goes into your active room (the living room), on the table: {sc}")
     ok(len([h for h, _ in sc if "lampa" in h]) == 1 and "står där" in pg.evaluate(TOAST_ALL if 'TOAST_ALL' in dir() else "[...document.querySelectorAll('.toast')].map((t) => t.textContent).join(' ')"), f"[R5] and takes the place of the lamp that stood there, and says so")
+    c.close()
+
+    # device review X3 + X4: proposal, Prova i Mitt rum from a product page, a swap, Inred åt mig: still one room, and the panel adds up
+    c = ctx_for(b, 412, 800, True); pg = new_page(c); pg.goto(BASE + "svep/"); pg.wait_for_timeout(600); quiet(pg)
+    pid = pg.evaluate("(() => { const r = RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }); return r.id || r; })()"); its = pg.evaluate("RQ.hem.propose({ type: 'vardagsrum' }).items")
+    pg.evaluate("([id, its]) => { RQ.hem.patch(id, { items: its }); return RQ.hem.openInRoom ? RQ.hem.openInRoom({ room: 'vardagsrum', items: its, project: id }) : RQ.room.openWith({ room: 'vardagsrum', items: its, project: id }); }", [pid, its]); pg.wait_for_timeout(1800)
+    pg.goto(BASE + "produkt-lysa-keramiklampa/"); pg.wait_for_timeout(900); quiet(pg); pg.evaluate("document.querySelector('.roomcta').click()"); pg.wait_for_timeout(2500)
+    lamp = pg.evaluate("RQ.room.scene().find((i) => /lampa/.test(i.h) && RQ.room.alternatives(i.h).length).h"); to = pg.evaluate("(h) => RQ.room.alternatives(h)[0].handle", lamp)
+    pg.evaluate("([a, b]) => RQ.room.swapWith(a, b)", [lamp, to]); pg.wait_for_timeout(600)
+    pg.evaluate("document.getElementById('rmSuggest').click()"); pg.wait_for_timeout(1500)
+    ok(len(pg.evaluate("RQ.hem.rooms()")) == 1, f"[X3] still one room after proposal, product page, swap and Inred åt mig: {pg.evaluate('RQ.hem.rooms().map((r) => r.label || r.name)')}")
+    sums = pg.evaluate("(() => { const t = document.querySelector('#rmSugg .rm-sugg-h span').textContent.replace(/\\s/g, ''); const n = (re) => +((t.match(re) || [0, '0'])[1].replace(/\\D/g, '')); return [n(/·([\\d\\s]+)kr/), n(/\\(([\\d\\s]+)kr\\)/), RQ.room.total()]; })()")
+    ok(sums[0] + sums[1] == sums[2], f"[X4] the proposal and what you chose yourself add up to the room's total: {sums}")
+    ok("får inte plats" not in pg.evaluate("document.getElementById('rmSugg').innerText") or "lampa" not in pg.evaluate("document.getElementById('rmSugg').innerText").split("får inte plats")[1][:80], "[X4] no lamp is said not to fit while a lamp stands there")
     c.close()
 
     b.close()

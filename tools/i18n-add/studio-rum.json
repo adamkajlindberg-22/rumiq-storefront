@@ -147,5 +147,6 @@
  "Budgeten räcker till {0} av {1}. Kvar att lägga till: {2}.": "The budget covers {0} of {1}. Left to add: {2}.",
  "Från din moodboard": "From your moodboard",
  "Finns i en färg.": "Comes in one colour.",
- "{0} står där {1} stod. Ångra finns på rummet.": "{0} stands where {1} stood. Undo is on the room."
+ "{0} står där {1} stod. Ångra finns på rummet.": "{0} stands where {1} stood. Undo is on the room.",
+ "plus {0} du valt själv ({1})": "plus {0} you chose yourself ({1})"
 }
