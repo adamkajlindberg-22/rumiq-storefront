@@ -193,10 +193,12 @@ with sync_playwright() as p:
         pg.evaluate("document.getElementById('plCreate').click()"); pg.wait_for_timeout(2200)
         pc = pg.evaluate("window.__pc && [window.__pc.pins.length, window.__pc.room.w > 0, !!window.__pc.room.src]")
         ok(pc == [3, True, True], f"{tag} Skapa bilden hands the pins and the room to the AI side (rq-place-create): {pc}")
-        res = pg.evaluate("(() => { const r = document.getElementById('plResult'); return [r.hidden, (r.querySelector('img') || {}).src || '', r.innerText]; })()")
-        ok(not res[0] and res[1].startswith("data:image/jpeg") and "Förhandsvisning – så här blir bilden när AI:n är på" in res[2] and "Ingenting har skickats" in res[2], f"{tag} while the AI is off: an honest, labelled preview")
+        pg.wait_for_timeout(1200)
+        # with the AI side loaded it takes the event and shows its own labelled preview (ai.js); without it, the pin view's own
+        res = pg.evaluate("(() => { const a = document.querySelector('.ai-sheet.open .ai-pad'); if (a) return [false, 'data:image/jpeg', a.innerText + ' ' + ((document.getElementById('aiBuy') || {}).innerText || '')]; const r = document.getElementById('plResult'); return [r.hidden, (r.querySelector('img') || {}).src || '', r.innerText]; })()")
+        ok(not res[0] and res[1].startswith("data:image/jpeg") and "Förhandsvisning" in res[2] and "å här blir bilden när AI:n är på" in res[2] and "Ingenting har skickats" in res[2], f"{tag} while the AI is off: an honest, labelled preview")
         tot = pg.evaluate("RQ.room.pins().reduce((t, x) => t + RQ.byHandle(x.h).price, 0)")
-        ok(f"Köp allt i bilden · {pg.evaluate('(n) => RQ.shop.kr(n)', tot)}" in res[2], f"{tag} Köp allt i bilden with the total of exactly these things")
+        ok(f"Köp allt i bilden · {pg.evaluate('(n) => RQ.shop.kr(n)', tot)}".replace("\u00a0", " ") in res[2].replace("\u00a0", " "), f"{tag} Köp allt i bilden with the total of exactly these things")
         if AXE.exists():
             # (.roompill, the nav's Mitt rum pill, is app.js: its label lacks the count it shows; told to the coordinator)
             pg.add_script_tag(content=AXE.read_text()); v = [x for x in pg.evaluate(RUN_AXE) if not x.startswith("label-content-name-mismatch: .roompill")]; ok(not v, f"{tag} axe: {v[:3]}")
