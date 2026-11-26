@@ -52,6 +52,12 @@
   let toastBy = null, toastByAt = 0;
   const by = (e) => { toastBy = e.target; toastByAt = Date.now(); };
   document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
+  /* a button the page focuses itself right after a tap (the menu's close button) shows no keyboard ring: Safari 15 shows one
+     there, square (D9); newer browsers already leave it out. A key pressed shows it again. */
+  let tapAt = 0; const QUIET = "quiet-focus";
+  document.addEventListener("pointerdown", () => { tapAt = Date.now(); }, true);
+  document.addEventListener("keydown", () => { tapAt = 0; const a = document.activeElement; if (a && a.classList) a.classList.remove(QUIET); }, true);
+  document.addEventListener("focusin", (e) => { const t = e.target; if (!t.classList || Date.now() - tapAt > 1500 || t.matches("input,textarea,select,[contenteditable]")) return; t.classList.add(QUIET); t.addEventListener("blur", () => t.classList.remove(QUIET), { once: true }); }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";
   const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
   const KEEP = ".lk, .lp-buy, .pinfo .priceline"; // read right after adding (the product page's Leveranskoll and its price with Prova i Mitt rum, a look's buy block with Visa varukorgen): never under the toast
@@ -428,7 +434,7 @@
       mount(root) {
         let variant = vs[0].id;
         /* each part starts on its own: one that fails leaves the rest of the page working (RQ.part) */
-        let io2 = null, offCart = null, lookOff = null;
+        let io2 = null, offCart = null, lookOff = null, offScroll = null;
         part("gallery", () => {
         const grid = $("#pgGrid", root);
         const items = () => $$(".pg-item:not(.pg-film)", grid);
@@ -528,11 +534,14 @@
         part("buybar", () => {
         // sticky buy bar once the buy button scrolls away (desktop); always on phones
         const bar = $("#buybar", root), buy = $(".buy", root);
-        io2 = new IntersectionObserver(([e]) => bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || matchMedia("(max-width:900px)").matches)), { threshold: [0, 0.9] });
+        /* on a phone it comes once the customer has started to scroll: on a short screen, at first load it would lie over the name and the price (D9) */
+        let lastE = null; const showBar = () => { const e = lastE; if (e) bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || (matchMedia("(max-width:900px)").matches && scrollY > 40))); };
+        io2 = new IntersectionObserver(([e]) => { lastE = e; showBar(); }, { threshold: [0, 0.9] });
+        const onSc = () => { if (scrollY > 40) { removeEventListener("scroll", onSc); showBar(); } }; addEventListener("scroll", onSc, { passive: true }); offScroll = () => removeEventListener("scroll", onSc);
         io2.observe($("#add", root));
         paintBar(); offCart = S.onChange((w) => { if (w === "cart") setTimeout(paintBar); }); // after the tap that added it has run its course
         });
-        return () => { if (io2) io2.disconnect(); if (offCart) offCart(); clearTimeout(bar2._pb); if (lookOff) lookOff(); };
+        return () => { if (io2) io2.disconnect(); if (offCart) offCart(); if (offScroll) offScroll(); clearTimeout(bar2._pb); if (lookOff) lookOff(); };
       },
     };
   };
