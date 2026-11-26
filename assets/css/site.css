@@ -44,7 +44,8 @@
 
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--nav-h) + 1rem);scroll-padding-bottom:calc(var(--dock-h) + 1.5rem)}
+html{background:var(--bg);-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--nav-h) + 1rem);scroll-padding-bottom:calc(var(--dock-h) + 1.5rem)}
+/* the root itself carries the page colour (p4): Safari tints the strip behind its floating bars from it, so Kväll reaches there too */
 html:has(.buybar.show),html:has(body.on-room .rm-bar){scroll-padding-bottom:calc(5.5rem + env(safe-area-inset-bottom))}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:1.0625rem;line-height:1.6;font-weight:400;letter-spacing:-.003em;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;overflow-x:clip;font-feature-settings:"ss01","cv11";
