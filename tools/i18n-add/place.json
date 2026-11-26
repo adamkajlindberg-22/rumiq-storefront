@@ -47,5 +47,19 @@
  "Lägg till en sak först.": "Add a thing first.",
  "{0} är vald. Tryck i bilden där den ska stå.": "{0} is chosen. Tap the picture where it should go.",
  "Förstora bilden": "Enlarge the picture",
- "Visa hela bilden": "Show the whole picture"
+ "Visa hela bilden": "Show the whole picture",
+ "Så här blir bilden när AI:n är på.": "This is how the picture will look when the AI is on.",
+ "När AI:n är på blir det ett riktigt foto av rummet, med ljus och skuggor.": "When the AI is on it becomes a real photo of the room, with light and shadows.",
+ "Ditt rum, med sakerna där du pekade.": "Your room, with the things where you pointed.",
+ "Ett förslag skapat med AI, i rätt storlek. Färg och storlek kan skilja sig något från verkligheten.": "A suggestion made with AI, at the right size. Colour and size may differ slightly from reality.",
+ "Ett förslag skapat med AI, i ungefärlig storlek. Färg och storlek kan skilja sig något från verkligheten.": "A suggestion made with AI, at an approximate size. Colour and size may differ slightly from reality.",
+ "Köp allt i bilden · {0} kr": "Buy everything in the picture · {0} kr",
+ "Välj en färg. Det blir en ny förhandsvisning. De andra sakerna står kvar.": "Choose a colour. It makes a new preview. The other things stay.",
+ "Välj något annat av samma slag. Det blir en ny förhandsvisning. De andra sakerna står kvar.": "Choose something else of the same kind. It makes a new preview. The other things stay.",
+ "Välj en färg. Det blir en ny version, {0} bild. De andra sakerna står kvar.": "Choose a colour. It makes a new version, {0} image. The other things stay.",
+ "Välj något annat av samma slag. Det blir en ny version, {0} bild. De andra sakerna står kvar.": "Choose something else of the same kind. It makes a new version, {0} image. The other things stay.",
+ "Inget annat av samma slag passar här.": "Nothing else of the same kind fits here.",
+ "Det gick inte att byta här. Prova i Justera själv.": "It could not be swapped here. Try in Adjust yourself.",
+ "Färger för {PA}": "Colours for {PA}",
+ "I stället för {PA}": "Instead of {PA}"
 }
