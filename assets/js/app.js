@@ -54,7 +54,7 @@
   document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";
   const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
-  const KEEP = ".lk, .lp-buy"; // read right after adding (the product page's Leveranskoll, a look's buy block with Visa varukorgen): never under the toast
+  const KEEP = ".lk, .lp-buy, .pinfo .priceline"; // read right after adding (the product page's Leveranskoll and its price with Prova i Mitt rum, a look's buy block with Visa varukorgen): never under the toast
   const toastPlace = (t) => {
     ["top", "bottom", "left", "right"].forEach((k) => t.style.removeProperty(k));
     if (document.getElementById("rmStage")) return;
