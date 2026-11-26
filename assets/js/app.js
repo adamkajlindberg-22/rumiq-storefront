@@ -56,7 +56,11 @@
      cart's button again when the cart closes): Safari on iOS draws one there, round or square (D9, X10). A key that moves the focus
      (Tab, the arrows, Escape, Enter or Space outside a text field) brings the rings back at once. */
   const INPUT = document.documentElement;
-  document.addEventListener("pointerdown", () => { INPUT.dataset.input = "pointer"; }, true);
+  const ptr = () => { INPUT.dataset.input = "pointer"; };
+  // a tap or click in any form (also taps a test service fakes): pointer, mouse and touch events, and a click that came from a pointer
+  ["pointerdown", "mousedown", "touchstart"].forEach((t) => document.addEventListener(t, ptr, { capture: true, passive: true }));
+  document.addEventListener("click", (e) => { if (e.detail > 0 || e.pointerType) ptr(); }, true);
+  if (matchMedia("(pointer:coarse)").matches) ptr(); // a touch screen starts without rings; a key that moves the focus brings them
   document.addEventListener("keydown", (e) => { const typing = e.target.matches && e.target.matches("input,textarea,select,[contenteditable]");
     if (/^(Tab|Arrow|Escape|Home|End|Page)/.test(e.key) || ((e.key === "Enter" || e.key === " ") && !typing)) delete INPUT.dataset.input; }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";
@@ -788,6 +792,8 @@
      can still put the buttons under the dock. Measured here, and the card made that much smaller (--sv-fit). */
   const fitDeck = () => { const sv = $("#view .svep"), dock = $("#dock"); if (!sv || !dock || !dock.offsetHeight || getComputedStyle(dock).display === "none" || scrollY > 4) return;
     const ctrl = $(".sv-ctrl", sv); if (!ctrl || !ctrl.offsetHeight) return;
+    // whatever above the card changes height (the pill "Din stil växer fram" appearing, D1) measures again
+    if (!sv._fitRO && window.ResizeObserver) { sv._fitRO = new ResizeObserver(() => requestAnimationFrame(fitDeck)); [".sv-head", ".sv-meta", ".sv-wrap"].forEach((q) => { const e = $(q, sv); if (e) sv._fitRO.observe(e); }); }
     const cur = parseFloat(sv.style.getPropertyValue("--sv-fit")) || 0, over = ctrl.getBoundingClientRect().bottom - (dock.getBoundingClientRect().top - 6);
     const next = over > 1 ? cur + over : over < -40 && cur > 0 ? Math.max(0, cur + over + 20) : cur;
     if (Math.abs(next - cur) > 0.5) { sv.style.setProperty("--sv-fit", Math.round(next) + "px"); requestAnimationFrame(fitDeck); } };
@@ -1330,7 +1336,10 @@
     const r = document.documentElement, t = mode === "auto" ? sunNow() : mode;
     r.setAttribute("data-light", t); r.setAttribute("data-light-mode", mode);
     if (save) { try { localStorage.setItem("rumiq-ljus", mode); } catch (e) {} }
-    const tc = $("meta[name=theme-color]"); if (tc) tc.content = t === "kvall" ? "#191A18" : "#EDEDEA";
+    /* the strip behind Safari's bars follows at once (D2): a fresh theme-color tag (Safari does not always read a changed one), and again
+       once the page has finished fading to the new colour, so it reads the final colour too */
+    const tint = () => { const old = $("meta[name=theme-color]"), m = document.createElement("meta"); m.name = "theme-color"; m.content = t === "kvall" ? "#191A18" : "#EDEDEA"; if (old) old.replaceWith(m); else document.head.appendChild(m); };
+    tint(); clearTimeout(applyLight._t); applyLight._t = setTimeout(tint, 900);
     $$("[data-light-set]").forEach((b) => b.setAttribute("aria-checked", b.dataset.lightSet === mode));
     $$("[data-light-label]").forEach((el) => (el.textContent = LIGHT_LABEL[mode]));
   };
