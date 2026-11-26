@@ -828,8 +828,9 @@
      Resolves a data URL, or null when the room's photo is not in this browser. */
   const snapCache = new Map();
   const imgOf = (src) => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
-  const drawScene = async (bg, list, W, lf) => { const H = Math.round(W * (bg.naturalHeight || bg.height) / (bg.naturalWidth || bg.width)), cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
-    for (const it of orderOf(list)) { const p = RQ.byHandle(it.h); let im; try { im = await imgOf(cutIn(p)); } catch (e) { continue; }
+  const drawScene = async (bg, list, W, lf, calm) => { const H = Math.round(W * (bg.naturalHeight || bg.height) / (bg.naturalWidth || bg.width)), cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
+    for (const it of orderOf(list)) { const p = RQ.byHandle(it.h); let im; try { im = await imgOf(cutIn(p)); if (im.decode) await im.decode().catch(() => {}); } catch (e) { continue; }
+      if (calm) await new Promise((r) => setTimeout(r, 0)); /* one thing per task: the page can answer a tap between them */
       const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h; let src = im; const tone = R.tint(it);
       if (tone) { const t = document.createElement("canvas"); t.width = Math.max(1, Math.round(w)); t.height = Math.max(1, Math.round(h)); const tx = t.getContext("2d"); tx.drawImage(im, 0, 0, t.width, t.height); tx.globalCompositeOperation = "color"; tx.fillStyle = tone; tx.fillRect(0, 0, t.width, t.height); tx.globalCompositeOperation = "destination-in"; tx.drawImage(im, 0, 0, t.width, t.height); src = t; }
       const k = kindOf(p), sf = surfOf(it); if (k !== "rug" && sf !== "vagg") { /* a soft contact shadow where it stands, so it rests on the surface instead of floating (review M5) */
@@ -933,7 +934,10 @@
   /* the order of the pins: one step earlier or later (the number on the pin follows) */
   R.pinOrder = (h, d) => { const list = R.scene(), i = list.findIndex((it) => it.h === h), j = i + d; if (i < 0 || j < 0 || j >= list.length) return false; [list[i], list[j]] = [list[j], list[i]]; return R.saveScene(list); };
   /* the preview while the AI is not switched on: the photo with the pinned things drawn where they stand, at their width */
-  R.preview = async (W = 1200) => { if (!room) return null; const cv = await drawScene(await imgOf(R.url()), R.scene().slice(0, PLACE_MAX), W, lightFilter); return cv.toDataURL("image/jpeg", 0.86); };
+  R.preview = async (W = 1200) => { if (!room) return null; const cv = await drawScene(await imgOf(R.url()), R.scene().slice(0, PLACE_MAX), W, lightFilter, true);
+    /* the JPEG is made off the main thread where the browser can (toBlob), so a slow phone does not freeze while it is encoded (review M12) */
+    return new Promise((ok) => { const sync = () => ok(cv.toDataURL("image/jpeg", 0.86)); if (!cv.toBlob || !window.FileReader) return sync();
+      cv.toBlob((bl) => { if (!bl) return sync(); const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = sync; fr.readAsDataURL(bl); }, "image/jpeg", 0.86); }); };
   /* every way in (Mitt hem, the proposal card, Sparat, Svep's "Gör ett rum av det"): Placera och skapa with these things pinned
      by the editor's rules; the same arguments as openWith. Resolves true when it is open */
   R.place = (o = {}) => { R.setWay("place"); return R.openWith(o); };
