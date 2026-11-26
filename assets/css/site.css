@@ -1088,7 +1088,7 @@ details.pw[open] summary::after{content:" −"}
   .pcr .crumbs{flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
   .pcr .crumbs li:last-child{display:none}
   .pdp{padding-top:.7rem}
-  .pg-item,.pg-item:first-child,.pg-item.wide,.pg-item:nth-child(even):last-child{grid-column:auto;aspect-ratio:1/1;max-height:50svh} /* in the swipe row no slide spans: a spanning last slide would be placed first */
+  .pg-item,.pg-item:first-child,.pg-item.wide,.pg-item:nth-child(even):last-child{grid-column:auto;aspect-ratio:auto;height:min(100vw,50vh);height:min(100vw,50svh)} /* in the swipe row no slide spans: a spanning last slide would be placed first. A square, at most half the screen tall: a set height, since Safari 15 turns max-height with aspect-ratio into a narrower slide (D2) */
   .pg-dots{margin-top:.6rem}
   .pinfo .eyebrow{font-size:.84rem}
   .pinfo h1{font-size:1.75rem;margin:.3rem 0 .5rem}
