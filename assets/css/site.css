@@ -1264,7 +1264,10 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-swap-lead{margin:.8rem 0 .45rem;color:var(--muted)}
 .rm-swap-row{display:grid;grid-auto-flow:column;grid-auto-columns:7.4rem;gap:.5rem;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:.3rem;scrollbar-width:thin}
 .rm-alt{display:grid;gap:.2rem;padding:.4rem;border:1px solid var(--line2);border-radius:var(--r-s);background:var(--bg);text-align:left;font-size:.8rem;line-height:1.25;scroll-snap-align:start;cursor:pointer;transition:border-color .2s,transform .2s var(--spring)}
-.rm-alt:hover{border-color:var(--ink)}
+@media (hover:hover){.rm-alt:hover{border-color:var(--ink)}} /* a touch leaves no dark border that looks chosen (minor 13) */
+/* computer: Byt beside the picture, inside the thing's card */
+.rm-sel .rm-swap{margin:.7rem 0 .3rem;padding:.75rem .8rem;background:var(--bg)}
+.rm-sel .rm-swap-row{grid-auto-columns:6.6rem}
 .rm-alt:active{transform:scale(.97)}
 .rm-alt[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
 .rm-alt-im{display:block;aspect-ratio:1;border-radius:5px;background:radial-gradient(circle at 50% 60%,var(--paper),var(--sunk))}
@@ -1291,7 +1294,8 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-projs .chip{flex:none;min-height:2.6rem;display:inline-flex;align-items:center;gap:.35rem}
 .rm-projs .chip[aria-pressed=true]{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
 .rm-projs .chip svg{width:1rem;height:1rem;fill:none;stroke:currentColor;stroke-width:1.7}
-.rmcmp .sheet-card.wide{width:min(76rem,calc(100% - 2rem))}
+/* wide on a computer; a phone's sheet keeps its full width (studio2 review M6) */
+@media (min-width:901px){.rmcmp .sheet-card.wide{width:min(76rem,calc(100% - 2rem))}}
 .rm-cmp{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:1rem;margin-top:1.1rem}
 .rm-cmp figure{margin:0;display:grid;gap:.6rem;align-content:start}
 .rm-cmp-pic{position:relative;overflow:hidden;border-radius:10px;background:var(--img-bg)}

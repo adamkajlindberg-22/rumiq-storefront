@@ -357,8 +357,8 @@
     total: () => R.scene().reduce((s, it) => s + RQ.byHandle(it.h).price, 0),
     /* Byt: what can take this thing's place (the same kind of thing, for the same surface), best colour match first */
     alternatives(h) { const p = RQ.byHandle(h); if (!p) return []; const have = new Set(R.scene().map((it) => it.h));
-      // a lamp for a lamp or a candle, a textile for a textile, a print for a print, a rug for a rug, a thing on the table or the floor for the same
-      const grp = (q) => { const k = kindOf(q); return q.cat === "belysning-atmosfar" && (k === "surface" || k === "floor") ? "ljus" : ["cushion", "throw", "bedding"].includes(k) ? "textil" : k; };
+      // a lamp for a lamp, a candle for a candle, a textile for a textile, a print for a print, a rug for a rug, a thing on the table or the floor for the same
+      const grp = (q) => { const k = kindOf(q); return q.cat === "belysning-atmosfar" && (k === "surface" || k === "floor") ? (/lampa/.test(q.handle) ? "lampa" : "ljus") : ["cushion", "throw", "bedding"].includes(k) ? "textil" : k; };
       return RQ.PRODUCTS.filter((q) => q.handle !== h && !have.has(q.handle) && grp(q) === grp(p))
         .map((q) => ({ q, m: (match(q) || 60) + (room && room.type && q.rooms.includes(room.type) ? 20 : 0) })).sort((a, b) => b.m - a.m).map((x) => x.q).slice(0, 8); },
     /* the thing at h, as "to" (another product, or the same one in colour v), in its place: the same spot, the same
@@ -1242,20 +1242,29 @@
         const swapBox = $("#rmSwap", root);
         const paintSwap = () => { const it = swap.h && R.scene().find((x) => x.h === swap.h); swapBox.hidden = !it; box.classList.toggle("swapping", !!it); if (!it) return;
           const p = RQ.byHandle(it.h), alts = R.alternatives(it.h), vs = p.variants || [];
-          swapBox.innerHTML = `<div class="rm-swap-h"><b>Byt ${esc(p.name)}</b><div><button type="button" class="chip" id="rmCmpT" aria-pressed="${swap.cmp}">Jämför</button><button type="button" class="iconbtn" id="rmSwapX" aria-label="Stäng Byt"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
+          // the key of what had focus, so a repaint (a colour chosen, a thing swapped) keeps it there (studio2 review minor 8)
+          const ae = document.activeElement, fk = ae && swapBox.contains(ae) ? (ae.dataset.swv != null ? `[data-swv="${ae.dataset.swv}"]` : ae.dataset.alt ? `[data-alt="${ae.dataset.alt}"]` : ae.id ? "#" + ae.id : null) : null;
+          if (!alts.length) swap.cmp = false; // nothing to compare with: no Jämför (minor 9)
+          swapBox.innerHTML = `<div class="rm-swap-h"><b>Byt ${esc(p.name)}</b><div>${alts.length ? `<button type="button" class="chip" id="rmCmpT" aria-pressed="${swap.cmp}">Jämför</button>` : ""}<button type="button" class="iconbtn" id="rmSwapX" aria-label="Stäng Byt"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
             ${vs.length > 1 ? `<div class="rm-swap-col"><span class="small">Färg</span><div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${vs.map((v, i) => `<button type="button" class="chip" data-swv="${i}" aria-pressed="${(it.v || 0) === i}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div>${it.v > 0 ? `<span class="small rm-swap-note">Färgen i bilden är ungefärlig.</span>` : ""}</div>` : ""}
             ${alts.length ? `<p class="small rm-swap-lead">${swap.cmp ? "Välj upp till två att jämföra med." : "Andra som passar här"}</p><div class="rm-swap-row">${alts.map((q) => `<button type="button" class="rm-alt" data-alt="${q.handle}"${swap.cmp ? ` aria-pressed="${swap.pick.includes(q.handle)}"` : ""}><span class="rm-alt-im"><img src="${RQ.cut(q)}" alt="" loading="lazy"></span><b>${esc(q.name)}</b><span>${kr(q.price)}</span></button>`).join("")}</div>` : `<p class="small rm-swap-lead">Inget annat i sortimentet passar på samma plats än.</p>`}
-            ${swap.cmp ? `<button class="btn sm" type="button" id="rmCmpGo"${swap.pick.length ? "" : " disabled"}>Jämför ${swap.pick.length + 1} i rummet</button>` : ""}`; };
-        const openSwap = (h, focus) => { if (!h) return; if (sel !== h) select(h); swap.h = h; swap.cmp = false; swap.pick = []; paintSwap(); if (innerWidth <= 900) swapBox.scrollIntoView({ block: "nearest", behavior: calm() ? "auto" : "smooth" }); const f = $(focus || "[data-swv][aria-pressed=true], .rm-alt", swapBox); if (f) setTimeout(() => f.focus({ preventScroll: true }), 30); };
+            ${swap.cmp ? `<button class="btn sm" type="button" id="rmCmpGo"${swap.pick.length ? "" : " disabled"}>Jämför ${swap.pick.length + 1} i rummet</button>` : ""}`;
+          if (fk) { const f = $(fk, swapBox) || $("[data-swv][aria-pressed=true], .rm-alt, #rmSwapX", swapBox); if (f) f.focus({ preventScroll: true }); } };
+        /* on a computer the panel stands beside the picture, under the thing's own card, so the room stays in sight while you
+           choose (studio2 review M4); a phone has it under the picture's buttons. After a change the thing is kept in view */
+        const placeSwap = () => { const desk = innerWidth > 900 && $(".rm-bytdesk", root); if (desk) { if (swapBox.previousElementSibling !== desk) desk.after(swapBox); } else if (swapBox.previousElementSibling !== $("#rmAct", root)) $("#rmAct", root).after(swapBox); };
+        const showSel = () => setTimeout(() => { const el = sel && $(`.rm-item[data-h="${sel}"]`, wrap); if (!el || view.on) return; const r = el.getBoundingClientRect(), top = ((document.querySelector("header") || {}).offsetHeight || 58) + 8;
+          if (r.top < top) scrollBy({ top: r.top - top, behavior: calm() ? "auto" : "smooth" }); else if (r.bottom > innerHeight - 8 && r.height < innerHeight - top) scrollBy({ top: r.bottom - innerHeight + 16, behavior: calm() ? "auto" : "smooth" }); }, 80);
+        const openSwap = (h, focus) => { if (!h) return; if (sel !== h) select(h); swap.h = h; swap.cmp = false; swap.pick = []; placeSwap(); paintSwap(); showSel(); if (innerWidth <= 900) swapBox.scrollIntoView({ block: "nearest", behavior: calm() ? "auto" : "smooth" }); const f = $(focus || "[data-swv][aria-pressed=true], .rm-alt", swapBox); if (f) setTimeout(() => f.focus({ preventScroll: true }), 30); };
         const closeSwap = () => { swap.h = null; paintSwap(); };
         root.addEventListener("click", (e) => { if (e.target.closest("[data-swap-open]") && sel) openSwap(sel); });
         swapBox.addEventListener("click", (e) => {
           if (e.target.closest("#rmSwapX")) { closeSwap(); return; }
           if (e.target.closest("#rmCmpT")) { swap.cmp = !swap.cmp; swap.pick = []; paintSwap(); $("#rmCmpT", swapBox).focus(); return; }
-          const v = e.target.closest("[data-swv]"); if (v) { const nv = +v.dataset.swv; R.swapWith(swap.h, swap.h, nv); said(`${RQ.byHandle(swap.h).variants[nv]}.`); return; }
+          const v = e.target.closest("[data-swv]"); if (v) { const nv = +v.dataset.swv; v.focus({ preventScroll: true }); R.swapWith(swap.h, swap.h, nv); said(`${RQ.byHandle(swap.h).variants[nv]}.`); showSel(); return; }
           const a = e.target.closest("[data-alt]");
           if (a && swap.cmp) { const h = a.dataset.alt; swap.pick = swap.pick.includes(h) ? swap.pick.filter((x) => x !== h) : [...swap.pick, h].slice(-2); paintSwap(); const f = $(`[data-alt="${h}"]`, swapBox); if (f) f.focus({ preventScroll: true }); return; }
-          if (a) { const from = swap.h, to = a.dataset.alt; if (R.swapWith(from, to)) { sel = to; swap.h = to; said(`Bytt till ${RQ.byHandle(to).name}.`); RQ.toast(`Bytt till ${esc(RQ.byHandle(to).name)}. Ångra finns på rummet.`); } return; }
+          if (a) { const from = swap.h, to = a.dataset.alt; a.focus({ preventScroll: true }); if (R.swapWith(from, to)) { sel = to; swap.h = to; said(`Bytt till ${RQ.byHandle(to).name}.`); RQ.toast(`Bytt till ${esc(RQ.byHandle(to).name)}. Ångra finns på rummet.`); const f = $(`[data-alt="${from}"]`, swapBox) || $(".rm-alt, #rmSwapX", swapBox); if (f) f.focus({ preventScroll: true }); showSel(); } return; }
           if (e.target.closest("#rmCmpGo")) compare([swap.h, ...swap.pick]);
         });
         /* Jämför: the same room picture with each one in place, side by side (a swipe on a phone), one tap keeps one */
@@ -1266,13 +1275,13 @@
           const opts = hs.map((h) => { if (h === cur.h) return { h, list: base }; const q = RQ.byHandle(h), r = meta(RQ.byHandle(cur.h))[1] > 0 ? meta(q)[1] / meta(RQ.byHandle(cur.h))[1] : 1, n = { ...cur, h, w: +clamp(cur.w * r, 1, 96).toFixed(1) }; delete n.v; delete n.real; const tw = trueW(n); if (tw) n.w = tw; return { h, list: base.map((x) => (x.h === cur.h ? n : x)) }; });
           const hgt = cur.w * meta(RQ.byHandle(cur.h))[2] * (cur.sy || 1) * room.w / room.h, z = clamp(30 / Math.max(cur.w, 4), 1, 2.4), ox = clamp(cur.x, 0, 100), oy = clamp(cur.y - hgt / 2, 0, 100);
           cmpEl.innerHTML = `<div class="sheet-scrim" data-cmp-close></div><div class="sheet-card wide"><span class="sheet-grip" aria-hidden="true"></span><button class="iconbtn sheet-x" type="button" data-cmp-close aria-label="Stäng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-            <h2 id="cmpT">Jämför i ditt rum</h2><p class="lead">Samma rum, samma plats. Behåll den du gillar.</p>
+            <h2 id="cmpT">Jämför i ${room.sample ? "rummet" : "ditt rum"}</h2><p class="lead">Samma rum, samma plats. Behåll den du gillar.</p>
             <div class="rm-cmp" style="--n:${opts.length}">${opts.map((o) => { const q = RQ.byHandle(o.h); return `<figure><div class="rm-cmp-pic" style="aspect-ratio:${room.w} / ${room.h}"><div class="rm-cmp-in" style="transform-origin:${ox}% ${oy}%;transform:scale(${z.toFixed(2)})"><img class="rm-bg" src="${R.url()}" alt=""><div class="rm-items">${orderOf(o.list).map(itemHtml).join("")}</div></div></div>
               <figcaption><b>${esc(q.name)}</b><span>${kr(q.price)}${o.h === cur.h ? " · nu i rummet" : ""}</span><button class="btn sm${o.h === cur.h ? " ghost" : ""}" type="button" data-keep="${o.h}">${o.h === cur.h ? "Behåll den här" : "Välj den här"}</button></figcaption></figure>`; }).join("")}</div></div>`;
           cmpEl.classList.add("open"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".sheet-x", cmpEl).focus(), 60); };
         const closeCmp = () => { cmpEl.classList.remove("open"); document.documentElement.style.overflow = ""; if (cmpBack && document.contains(cmpBack)) cmpBack.focus({ preventScroll: true }); };
         cmpEl.addEventListener("click", (e) => { if (e.target.closest("[data-cmp-close]")) { closeCmp(); return; }
-          const k = e.target.closest("[data-keep]"); if (!k) return; const to = k.dataset.keep; closeCmp(); if (to !== swap.h && R.swapWith(swap.h, to)) { sel = to; swap.h = to; RQ.toast(`${esc(RQ.byHandle(to).name)} står nu i rummet. Ångra finns på rummet.`); } swap.cmp = false; swap.pick = []; paintSwap(); });
+          const k = e.target.closest("[data-keep]"); if (!k) return; const to = k.dataset.keep; closeCmp(); if (to !== swap.h && R.swapWith(swap.h, to)) { sel = to; swap.h = to; RQ.toast(`${esc(RQ.byHandle(to).name)} står nu i rummet. Ångra finns på rummet.`); } swap.cmp = false; swap.pick = []; paintSwap(); showSel(); });
         const escCmp = (e) => { if (e.key === "Escape" && cmpEl.classList.contains("open")) { e.stopImmediatePropagation(); closeCmp(); } else if (e.key === "Escape" && swap.h && !meas) closeSwap(); };
         document.addEventListener("keydown", escCmp, true);
 
