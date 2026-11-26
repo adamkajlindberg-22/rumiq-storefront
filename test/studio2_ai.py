@@ -154,6 +154,14 @@ with sync_playwright() as p:
         pg.wait_for_timeout(600)
         progs = pg.evaluate("Object.fromEntries([...document.querySelectorAll('.hem-card')].map((c) => [c.querySelector('.hem-card-name').innerText, c.querySelector('[data-room-prog]').innerText]))")
         ok("1 bild" not in progs.get("Vardagsrummet", "") and "1 bild" in progs.get("Sovrummet", ""), f"{tag} the cards follow the move at once: {progs}")
+        # device4 D5: one room, one truth. A picture of the living room whose things have changed since says so; Köp allt is the room's now
+        lr = pg.evaluate("RQ.hem.rooms().find((r) => r.label === 'Vardagsrummet').id")
+        pg.evaluate("(id) => { const s = document.querySelector('#mh-bilder [data-lib-move]'); s.value = id; s.dispatchEvent(new Event('change')); }", lr); pg.wait_for_timeout(700)
+        pg.evaluate("(id) => { const r = RQ.hem.room(id); window.__items5 = r.items; RQ.shop.clearCart(); RQ.hem.patch(id, { items: r.items.slice(1) }); RQ.router(); }", lr); pg.wait_for_timeout(1500)
+        st5 = pg.evaluate("(id) => { const c = document.querySelector('#mh-bilder .ai-lcard'); const items = RQ.hem.items(RQ.hem.room(id)); return [!!c.querySelector('.ai-stale [data-lib-new]'), c.querySelector('[data-lib-buy]').innerText.replace(/\\D/g, ''), String(items.reduce((s, it) => s + RQ.hem.price(it), 0)), (document.querySelector(`[data-room-card='${id}'] .hem-card-old`) || {}).textContent || '']; }", lr)
+        ok(st5[0] and st5[1] == st5[2] and st5[3] == "Bild från tidigare", f"{tag} an older picture says so (Bild från tidigare, Skapa ny bild), and Köp allt is the room's total now (device4 D5): {st5}")
+        pg.evaluate("(id) => { RQ.hem.patch(id, { items: window.__items5 }); RQ.router(); }", lr); pg.wait_for_timeout(1200)
+        pg.evaluate("(id) => { const s = document.querySelector('#mh-bilder [data-lib-move]'); s.value = id; s.dispatchEvent(new Event('change')); }", pg.evaluate("RQ.hem.rooms().find((r) => r.label === 'Sovrummet').id")); pg.wait_for_timeout(700)
         ok(pg.evaluate("document.querySelector('#mh-bilder h2').innerText") == "Alla bilder" and pg.evaluate("document.querySelector('[data-ai-count]').innerText").startswith("Alla bilder"), f"{tag} one name: Alla bilder")
         # Prova igen i Studio: the editor with the same room and products, the room active again
         pg.evaluate("document.querySelector('#mh-bilder [data-lib-cont]').click()"); pg.wait_for_timeout(1800)
@@ -407,6 +415,8 @@ with sync_playwright() as p:
         pg.evaluate("document.querySelector('.ai-result [data-ai-swap]').click()"); pg.wait_for_timeout(1200)
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and not pg.evaluate("document.querySelector('.ai-sheet.open')"), f"{tag} Byt produkt opens the editor at that thing")
         # your own photo from Skapa ditt första rum: the room type and style go with it, the editor never asks again
+        ok(pg.evaluate("RQ.hem.rooms().length") == 1, f"{tag} the picture made in a sample room made a room of yours (review M8)")
+        pg.evaluate("RQ.hem.rooms().forEach((r) => RQ.hem.remove(r.id))")  # a new customer again
         go(pg, "mitt-hem", 1200)
         pg.fill("#hemFirstF [name=label]", "Hallen"); pg.select_option("#hemFirstF select[name=type]", "hall")
         pg.evaluate("document.querySelector('#hemFirstF [data-first-style=minimalistisk]').click()")

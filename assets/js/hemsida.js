@@ -72,7 +72,9 @@
         // the newest after-picture on each room card, and its progress with the picture count
         // (again when a picture moves to another room: the card it left shows its own state again)
         const cards = () => RQ.aiLib && RQ.aiLib.pics().then((pics) => { if (!root.isConnected) return; H.rooms().forEach((r) => { const mine = pics.filter((p) => p.roomId === r.id), im = $(`[data-room-pic="${r.id}"]`, root), pr = $(`[data-room-prog="${r.id}"]`, root), nx = $(`[data-hem-next="${r.id}"]`, root);
-          if (mine[0] && im) { im.src = mine[0].url; im.closest(".hem-card").classList.add("has-pic"); const c = im.parentNode.querySelector(".hem-card-col"); if (c) c.remove(); } else if (im) { const card = im.closest(".hem-card"); if (card.classList.contains("has-pic")) { card.classList.remove("has-pic"); im.src = H.picture(r) || sampleImg(r.type); } snap(r, im); } if (pr) pr.innerHTML = progHtml(r, mine.length); if (nx) nx.textContent = H.progress(r, mine.length).next.label; }); });
+          if (mine[0] && im) { im.src = mine[0].url; im.closest(".hem-card").classList.add("has-pic");
+            { const K = RQ.aiLib.setKey, card = im.closest(".hem-card"), old = K && H.items(r).length && K(mine[0].items) !== K(H.items(r)); let tag = $(".hem-card-old", card); // device4 D5: an older picture says so
+              if (old && !tag) { tag = document.createElement("span"); tag.className = "hem-card-old"; tag.textContent = "Bild från tidigare"; im.parentNode.appendChild(tag); } else if (!old && tag) tag.remove(); } const c = im.parentNode.querySelector(".hem-card-col"); if (c) c.remove(); } else if (im) { const card = im.closest(".hem-card"); if (card.classList.contains("has-pic")) { card.classList.remove("has-pic"); im.src = H.picture(r) || sampleImg(r.type); } snap(r, im); } if (pr) pr.innerHTML = progHtml(r, mine.length); if (nx) nx.textContent = H.progress(r, mine.length).next.label; }); });
         cards();
         firstForm(root);
         const nw = $("#hemNew", root); if (nw) nw.addEventListener("click", () => { const b = $("#hemNewBox", root); b.hidden = !b.hidden; if (!b.hidden) $("input", b).focus(); });
