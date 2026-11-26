@@ -2341,6 +2341,8 @@ body.on-checkout .tools{grid-column:3}
 .sv-linkout-row[hidden]{display:none}
 .sv-linkout{flex:1 1 12rem;min-width:0;border:1px solid var(--field);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);min-height:var(--field-h-s);padding:0 var(--field-px);font:inherit;font-size:.86rem}
 .sv-linkmsg:empty{display:none}
+.sv-linkf .btn,.sv-linkf input,.sv-linkout-row .btn{min-height:44px}
+.svep-result.group .sp-links .tlink{min-height:44px;display:inline-flex;align-items:center}
 /* the saved tiles with "Mer som det här" under each, and the panel it opens */
 .sv-liked .sv-tile{display:grid;gap:.15rem;width:6.9rem;align-content:start}
 .sv-liked .sv-tile > button[data-sheet]{width:100%}

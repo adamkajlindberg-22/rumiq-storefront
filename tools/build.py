@@ -428,6 +428,9 @@ def build_meta(route, got, data, seo):
         bc = ld_breadcrumbs(got.get("crumbs") or [], route)
         if bc:
             m["ld"].append(bc)
+    if entry.get("image"):  # a page with its own share picture in seo.json (Svep and Svep tillsammans: links sent in messages)
+        m["image"] = entry["image"]
+        m["extra"] = m["extra"] + [("og:image:width", "1200"), ("og:image:height", "630"), ("og:image:alt", entry.get("image_alt") or "RumIQ")]
     if not m["description"]:
         m["description"] = clip(got.get("lead") or "") if len(got.get("lead") or "") > 60 else DEFAULT_DESC
     if not (ROOT / m["image"]).exists():

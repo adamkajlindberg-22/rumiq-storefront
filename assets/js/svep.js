@@ -503,7 +503,7 @@
   RQ.shy = (s) => (window.RQ_LANG === "en" ? String(s) : String(s).replace(/(skrivbords|förvarings|terrakotta|uppladdnings|förråds|våffel|keramik|ull|jute|linne|bords)(?=[a-zåäö]{4,})/giu, "$1\u00AD"));
   // with more = true each thing also has "Mer som det här" (more of the same kind, with the reason; RQ.moreLike)
   const tile = (p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(RQ.shy(p.name))}</span><small>${kr(p.price)}</small></button>`;
-  const savedTiles = (list, more) => `<div class="sv-liked">${list.map((p) => (more ? `<div class="sv-tile">${tile(p)}<button type="button" class="sv-more" data-more="${p.handle}" aria-expanded="false" aria-label="Mer som ${esc(p.name)}">Mer som det här</button></div>` : tile(p))).join("")}</div>`;
+  const savedTiles = (list, more) => `<div class="sv-liked">${list.map((p) => (more ? `<div class="sv-tile">${tile(p)}<button type="button" class="sv-more" data-more="${p.handle}" aria-expanded="false" aria-label="Mer som det här: ${esc(p.name)}">Mer som det här</button></div>` : tile(p))).join("")}</div>`;
   // "Skandinavisk och klassisk", "Skandinavisk, mjuk och ombonad": one "och", a capital only first
   const styleTitle = (top) => {
     const ns = top.map((s) => s.name), i = ns.findIndex((n) => / och /.test(n));

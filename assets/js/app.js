@@ -123,7 +123,7 @@
       <button class="qv" type="button" data-sheet="${p.handle}" tabindex="-1" aria-label="Snabbtitt på ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg><span>Snabbtitt</span></button>
       <button class="qadd" type="button" data-add="${p.handle}::0" aria-label="Lägg till ${esc(p.name)} i varukorgen">${plus}<span>Lägg till</span></button>
       <div class="ct"><h3><a href="#produkt-${p.handle}">${esc(p.name)}</a></h3>${RQ.priceHtml(p, "card")}</div>
-      <p class="sub">${swatches(p)}</p>${why ? `<p class="card-why">${esc(why)}</p>` : ""}${more ? `<button class="tlink card-more" type="button" data-more="${p.handle}" aria-expanded="false" aria-label="Mer som ${esc(p.name)}">Mer som det här</button>` : ""}
+      <p class="sub">${swatches(p)}</p>${why ? `<p class="card-why">${esc(why)}</p>` : ""}${more ? `<button class="tlink card-more" type="button" data-more="${p.handle}" aria-expanded="false" aria-label="Mer som det här: ${esc(p.name)}">Mer som det här</button>` : ""}
     </article>`;
   };
   RQ.grid = (list, cls = "", top = false, why = null, more = false) => (list.length ? `<div class="grid ${cls}">${list.map((p, i) => RQ.card(p, top && i < 2 ? "high" : top && i < 4 ? "eager" : "", why ? why(p) : "", more)).join("")}</div>` : `<div class="empty"><h3>Inga produkter här än</h3><p>Sortimentet växer. Titta in igen snart, eller se allt vi har just nu.</p><a class="btn ghost" href="#butik">Alla produkter</a></div>`);
