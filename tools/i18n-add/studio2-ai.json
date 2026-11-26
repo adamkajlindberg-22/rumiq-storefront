@@ -272,5 +272,12 @@
  "Kopiera länken och skicka den.": "Copy the link and send it.",
  "{0} sak får inte plats i rummet och är inte med: {PA}.": "{0} thing does not fit the room and is left out: {PA}.",
  "{0} saker får inte plats i rummet och är inte med: {PA}, {PB}.": "{0} things do not fit the room and are left out: {PA}, {PB}.",
- "{0} saker får inte plats i rummet och är inte med: {PA}, {PB}, {PC}.": "{0} things do not fit the room and are left out: {PA}, {PB}, {PC}."
+ "{0} saker får inte plats i rummet och är inte med: {PA}, {PB}, {PC}.": "{0} things do not fit the room and are left out: {PA}, {PB}, {PC}.",
+ "{0} AI-bilder gratis i månaden med konto, när AI-bilderna är igång": "{0} free AI images a month with an account, once the AI images are switched on",
+ "{0} AI-bilder gratis i månaden med konto, när AI-bilderna är igång. Bilderna sparas privat på den här enheten.": "{0} free AI images a month with an account, once the AI images are switched on. The images are kept privately on this device.",
+ "Här ser du hur det fungerar.": "Here you can see how it works.",
+ "Här ser du hur det fungerar, utan konto.": "Here you can see how it works, without an account.",
+ "Den riktiga AI-bilden kommer snart och kräver ett gratis konto. Inget skickas härifrån.": "The real AI image is coming soon and needs a free account. Nothing is sent from here.",
+ "Här ser du hur det fungerar, utan konto. Den riktiga AI-bilden kommer snart och kräver ett gratis konto. Inget skickas härifrån.": "Here you can see how it works, without an account. The real AI image is coming soon and needs a free account. Nothing is sent from here.",
+ "Här ser du hur det fungerar. Den riktiga AI-bilden kommer snart och kräver ett gratis konto. Inget skickas härifrån.": "Here you can see how it works. The real AI image is coming soon and needs a free account. Nothing is sent from here."
 }

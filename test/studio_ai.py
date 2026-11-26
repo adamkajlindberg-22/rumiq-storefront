@@ -221,9 +221,9 @@ with sync_playwright() as p:
         ok(len(pg.evaluate(PICS)) == 1 and pg.evaluate(ROOMS) == 1, f"{tag} Ångra brings both back")
         go(pg, "mitt-rum", 1300)
         ok(pg.evaluate("(document.querySelector('.ai-card-lib') || {}).textContent") == "Alla bilder (1)", f"{tag} Mitt rum's AI card leads to Mina rumsbilder: {pg.evaluate('(document.querySelector(\".ai-card-lib\") || {}).textContent')}")
-        pg.evaluate("localStorage.removeItem('rumiq-ai-consent'); RQ.openAI()"); pg.wait_for_timeout(2000)
+        pg.evaluate("RQ_CONFIG.studio.aiLive = true; localStorage.removeItem('rumiq-ai-consent'); RQ.openAI()"); pg.wait_for_timeout(2000)  # the consent comes once the AI is switched on (device3 X1)
         ok("under Sparat på den här enheten" in pg.evaluate("document.querySelector('.ai-list').innerText"), f"{tag} the consent says the same as the library: on this device")
-        pg.evaluate("localStorage.setItem('rumiq-ai-consent', JSON.stringify('x'))"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+        pg.evaluate("RQ_CONFIG.studio.aiLive = false; localStorage.setItem('rumiq-ai-consent', JSON.stringify('x'))"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
         go(pg, "mitt-hem", 1500)
         # Fortsätt i Mitt rum: another room in between, then back to this one, under the same project
         key0 = pg.evaluate("RQ.aiLib.store.list().then((r) => r.pics[0].project)")

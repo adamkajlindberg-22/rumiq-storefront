@@ -14,7 +14,7 @@
   const SYNC = ["rumiq-home", "rumiq-wish", "rumiq-looks", "rumiq-boards", "rumiq-chat-saved", "rumiq-style", "rumiq-room-active"];
   const vault = (RQ.vault = {
     keys: SYNC,
-    account: () => !!conf().serverSync && !!(RQ.ai && RQ.ai.live && RQ.ai.live()) && !!S.customer(),
+    account: () => !!conf().serverSync && !!(RQ.ai && (RQ.ai.account || RQ.ai.live)()) && !!S.customer(),
     where: () => (vault.account() ? "account" : "local"),
     get: (k, d) => S.store.get(k, d),
     set(k, v) { const ok = S.store.set(k, v); if (ok) vault.queue(k); return ok; },

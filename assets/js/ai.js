@@ -39,7 +39,12 @@
   const errText = (code) => ERR[code] || "Något gick fel. Försök igen om en stund.";
 
   /* ------------------------------------------------------------------ server calls */
-  const live = () => !!(RQ.auth && RQ.auth.mode === "supabase" && RQ.auth.client && RQ.auth.client());
+  // the account server (sign-in, saved data) and the AI server are two things: the AI picture is live only when the founder
+  // has switched it on (RQ_CONFIG.studio.aiLive, once the generate function has its keys). Until then everyone gets the
+  // honest preview demo and nothing is sent (device3 X1).
+  const backend = () => !!(RQ.auth && RQ.auth.mode === "supabase" && RQ.auth.client && RQ.auth.client());
+  const aiOn = () => !!((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).aiLive;
+  const live = () => backend() && aiOn();
   /* Preview = the copy inside claude.ai or on your own machine, where other sites are blocked on purpose.
      On the real site a server that does not answer is said to be exactly that. */
   const preview = () => { const c = (window.RQ_CONFIG && window.RQ_CONFIG.auth) || {}; if (c.preview != null) return !!c.preview; return c.provider !== "supabase" || location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$|claude\.ai$|claudeusercontent\.com$/.test(location.hostname); };
@@ -74,10 +79,10 @@
   const demoStatus = () => ({ signed_in: !!S.customer(), consent: !!ls.get("rumiq-ai-consent", null), plan: "free", plan_name: "Gratis", free_play: false, balance: FREE_IMAGES, daily_used: 0, daily_cap: LIM.dailyFree, quality_left: 3, demo: true });
   let cache = null, gen = null;
   const AI = (RQ.ai = {
-    live, EDITS, MAXP,
+    live, account: backend, EDITS, MAXP,
     async status(force) {
       if (RQ.auth && RQ.auth.start) { try { await RQ.auth.start(); } catch (e) {} }
-      if (!live()) { if (!preview()) { if (RQ.auth) RQ.auth._started = null; return (cache = { signed_in: !!S.customer(), error: "network" }); } return (cache = demoStatus()); }
+      if (!live()) { if (!preview() && aiOn()) { if (RQ.auth) RQ.auth._started = null; return (cache = { signed_in: !!S.customer(), error: "network" }); } return (cache = demoStatus()); }
       if (!S.customer()) return (cache = { signed_in: false });
       if (cache && !force && cache._t > Date.now() - 15000) return cache;
       // A failed status call is an error, never demo mode: live generation would still charge.
@@ -91,7 +96,7 @@
       if (!scene.length) throw new Error("empty_scene");
       if (scene.length > MAXP) throw new Error("too_many_products");
       const guide = await AI.composite(1280, only);
-      if (!live()) { if (!preview()) throw new Error("network"); const mine = (gen = { stopped: false, abort() { this.stopped = true; } }); await new Promise((ok) => setTimeout(ok, 1200)); if (gen === mine) gen = null; if (mine.stopped) throw new Error("cancelled"); return { demo: true, url: guide }; }
+      if (!live()) { if (!preview() && aiOn()) throw new Error("network"); const mine = (gen = { stopped: false, abort() { this.stopped = true; } }); await new Promise((ok) => setTimeout(ok, 1200)); if (gen === mine) gen = null; if (mine.stopped) throw new Error("cancelled"); return { demo: true, url: guide }; }
       const room = await AI.roomImage(1280);
       // v: the colour the picture shows (the cut-out is the first colour); the server answers at the room photo's size and shape
       const rm = RQ.room.get(), res = await fn("generate", { idem, mode, edit, scene: scene.map((it) => ({ h: it.h, v: 0, x: it.x, y: it.y, w: it.w, flip: !!it.flip })), room, guide, size: { w: rm.w, h: rm.h }, ...(parent ? { parent } : {}) }, onStage); // parent: the room's first picture, so the account keeps the versions together
@@ -191,7 +196,7 @@
   const remoteLib = () => !!((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary && live() && !!S.customer();
   /* the one promise before sign-in, the same words everywhere (the sign-in sheet, Mitt rum's card, Skapa ditt första rum):
      how many free pictures, honest about the preview, and where the pictures are kept */
-  AI.promise = (long) => { const s = `${FREE_IMAGES} AI-bilder gratis i månaden med konto${live() ? "" : ", när sajten är live"}`;
+  AI.promise = (long) => { const s = `${FREE_IMAGES} AI-bilder gratis i månaden med konto${live() ? "" : ", när AI-bilderna är igång"}`;
     return long ? `${s}. Bilderna sparas privat ${((window.RQ_CONFIG && window.RQ_CONFIG.studio) || {}).serverLibrary && live() ? "i ditt konto" : "på den här enheten"}.` : s; };
 
   /* the room project: one per room photo. Versions (every picture made in the same room) belong to it, and so does a
@@ -340,20 +345,20 @@
 
   async function viewCompose() {
     const st = await AI.status(true), scene = RQ.room.scene();
-    const guest = !st.signed_in && st.demo; // the preview: a guest sees the demo too (nothing is sent, nothing is charged); the real AI picture needs an account
+    const pre = !!st.demo, guest = !st.signed_in && pre; // the preview: everyone sees the demo, signed in or not (nothing is sent, nothing is charged)
     if (!st.signed_in && !guest) return viewSignin();
     if (st.error) {
       show(`<div class="ai-pad"><h2 id="aiTitle" class="ai-h">Det gick inte att nå bildskaparen.</h2><p class="ai-lead">${esc(errText(st.error))}</p><div class="ai-row"><button class="btn" type="button" id="aiRetry">Försök igen</button></div></div>`);
       $("#aiRetry", body).addEventListener("click", viewCompose); return;
     }
-    if (!st.consent && !guest) return viewConsent();
+    if (!st.consent && !(pre && !aiOn())) return viewConsent(); // with the AI switched off nothing is ever sent, so there is nothing to agree to
     if (!st.demo && st.balance <= 0) return viewOut(st);
     const tooMany = scene.length > MAXP;
     if (!tooMany) chosen = null; else if (!chosen || chosen.some((h) => !scene.some((it) => it.h === h))) chosen = scene.slice(0, MAXP).map((it) => it.h);
     const shot = await AI.composite(900, chosen).catch(() => RQ.room.url());
     show(`<div class="ai-grid"><figure class="ai-fig"><img src="${shot}" alt="Din uppställning" id="aiShot"><figcaption>Din uppställning. AI:n behåller platserna och gör ljus och skuggor verkliga.</figcaption></figure>
-      <div class="ai-pad"><span class="eyebrow">${guest ? "Förhandsvisning utan konto" : esc(balanceLine(st))}</span><h2 id="aiTitle" class="ai-h">Gör bilden verklig.</h2>
-        ${guest ? `<p class="small ai-guest">Här ser du hur det fungerar, utan konto. Den riktiga AI-bilden kräver ett gratis konto. <a href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a></p>` : ""}
+      <div class="ai-pad"><span class="eyebrow">${guest ? "Förhandsvisning utan konto" : pre ? "Förhandsvisning" : esc(balanceLine(st))}</span><h2 id="aiTitle" class="ai-h">Gör bilden verklig.</h2>
+        ${pre ? `<p class="small ai-guest">${guest ? "Här ser du hur det fungerar, utan konto. " : "Här ser du hur det fungerar. "}${aiOn() ? "Den riktiga AI-bilden kräver ett gratis konto." : "Den riktiga AI-bilden kommer snart och kräver ett gratis konto. Inget skickas härifrån."}${guest ? ` <a href="#konto" data-after="mitt-rum" data-ai-after data-ai-close>Logga in</a>` : ""}</p>` : ""}
         ${!scene.length ? `<p class="ai-warn">${errText("empty_scene")}</p>` : tooMany ? chooseHtml(scene) : `<p class="ai-lead">${scene.length} ${scene.length === 1 ? "produkt" : "produkter"} i rummet.</p>`}
         ${st.free_play ? chipsHtml(st) : ""}
         <div class="ai-row"><button class="btn" type="button" id="aiGo" ${!scene.length ? "disabled" : ""}>Skapa bild</button>${st.demo ? `<span class="small">Förhandsvisning: ingen bild dras.</span>` : `<span class="small">Använder 1 bild</span>`}</div>
