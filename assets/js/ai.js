@@ -91,15 +91,16 @@
     },
     peek: () => cache,
     async consent() { if (live()) await rpc("ai_give_consent"); else ls.set("rumiq-ai-consent", new Date().toISOString()); cache = null; },
-    async generate({ mode = "place", edit = null, idem, only = null, onStage = null, parent = null }) {
+    async generate({ mode = "place", edit = null, idem, only = null, onStage = null, parent = null, pins = null }) {
       const R = RQ.room, scene = R.scene().filter((it) => !only || only.includes(it.h));
       if (!scene.length) throw new Error("empty_scene");
       if (scene.length > MAXP) throw new Error("too_many_products");
       const guide = await AI.composite(1280, only);
+      if (!live() && pins && R.preview) { const u = await R.preview(1280).catch(() => null); if (u) { const mine = (gen = { stopped: false, abort() { this.stopped = true; } }); await new Promise((ok) => setTimeout(ok, 900)); if (gen === mine) gen = null; if (mine.stopped) throw new Error("cancelled"); return { demo: true, url: u }; } } // Placera och skapa while the AI is off: the pins drawn at true scale, nothing sent
       if (!live()) { if (!preview() && aiOn()) throw new Error("network"); const mine = (gen = { stopped: false, abort() { this.stopped = true; } }); await new Promise((ok) => setTimeout(ok, 1200)); if (gen === mine) gen = null; if (mine.stopped) throw new Error("cancelled"); return { demo: true, url: guide }; }
       const room = await AI.roomImage(1280);
       // v: the colour the picture shows (the cut-out is the first colour); the server answers at the room photo's size and shape
-      const rm = RQ.room.get(), res = await fn("generate", { idem, mode, edit, scene: scene.map((it) => ({ h: it.h, v: 0, x: it.x, y: it.y, w: it.w, flip: !!it.flip })), room, guide, size: { w: rm.w, h: rm.h }, ...(parent ? { parent } : {}) }, onStage); // parent: the room's first picture, so the account keeps the versions together
+      const rm = RQ.room.get(), res = await fn("generate", { idem, mode, edit, scene: scene.map((it) => ({ h: it.h, v: 0, x: it.x, y: it.y, w: it.w, flip: !!it.flip })), room, guide, size: { w: rm.w, h: rm.h }, ...(parent ? { parent } : {}), ...(pins ? { pins, room_info: { type: rm.type || null, sample: !!rm.sample, map: rm.map || null, known: rm.known || null } } : {}) }, onStage); // parent: the room's first picture, so the account keeps the versions together
       cache = null; return res;
     },
     async checkout() { const r = await fn("stripe-checkout", { consent: true }); location.href = r.url; },
@@ -336,7 +337,7 @@
       <label class="check ai-check"><input type="checkbox" id="aiOk"> Jag godkänner att bilden skickas för att skapa AI-bilder.</label>
       <div class="ai-row"><button class="btn" type="button" id="aiConsentGo" disabled>Fortsätt</button><a class="tlink" href="#juridik-integritet" data-ai-close>Läs integritetspolicyn</a></div></div>`);
     $("#aiOk", body).addEventListener("change", (e) => ($("#aiConsentGo", body).disabled = !e.target.checked));
-    $("#aiConsentGo", body).addEventListener("click", async (e) => { e.currentTarget.disabled = true; try { await AI.consent(); viewCompose(); } catch (x) { RQ.toast(esc(errText(x.message))); e.currentTarget.disabled = false; } });
+    $("#aiConsentGo", body).addEventListener("click", async (e) => { e.currentTarget.disabled = true; try { await AI.consent(); if (placing) placeCreate(); else viewCompose(); } catch (x) { RQ.toast(esc(errText(x.message))); e.currentTarget.disabled = false; } });
   };
 
   const chipsHtml = (st) => st.free_play ? `<div class="ai-edits">
@@ -387,7 +388,7 @@
     pending = { sig, key: idem };
     const before = await AI.composite(1100, only).catch(() => RQ.room.url());
     // what the picture shows, remembered with it: each product and the colour drawn (the cut-out is the first colour)
-    const items = scene.map((it) => ({ ...it, v: 0 }));
+    const items = scene.map((it) => ({ ...it, v: placing ? it.v || 0 : 0 })), pins = placing && RQ.room.pins ? RQ.room.pins().filter((x) => !only || only.includes(x.h)) : null;
     const key = AI.projectKey(), rm = RQ.room.get();
     busy = true;
     show(`<div class="ai-pad ai-wait"><div class="ai-spin" aria-hidden="true"></div><h2 id="aiTitle" class="ai-h">${st.demo ? "Gör i ordning förhandsvisningen…" : "Skapar din bild…"}</h2><p class="ai-lead" role="status">${st.demo ? "Här visar vi din uppställning som den är. På den riktiga sajten tar AI-bilden 15–40 sekunder." : "Det brukar ta 15–40 sekunder. Ha sidan öppen så länge."}</p><figure class="ai-fig shimmer"><img src="${before}" alt=""></figure><button class="btn ghost sm" type="button" id="aiStop">Avbryt</button></div>`, false, true);
@@ -397,12 +398,12 @@
     let res, ver;
     try {
       const first = (await versionsOf(key)).find((v) => v.gid);
-      res = await AI.generate({ mode, edit: mode === "edit" ? edit : null, idem, only, onStage, parent: first ? first.gid : null });
+      res = await AI.generate({ mode, edit: mode === "edit" ? edit : null, idem, only, onStage, parent: first ? first.gid : null, pins });
       // the picture at the room photo's shape, and the before picture (the photo itself) beside it
       const [after, photo] = await Promise.all([fitTo(res.url, rm.w, rm.h), photoBlob(key, rm)]);
       const list = await versionsOf(key);
       ver = { id: res.id ? "g" + res.id : "l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), gid: res.id || null, project: key, at: new Date().toISOString(),
-        n: Math.max(0, ...list.map((v) => v.n || 0)) + 1, items, demo: !!res.demo, retried: !!res.retried, mode, edit: mode === "edit" ? edit : null, w: after.w, h: after.h, after: after.blob };
+        n: Math.max(0, ...list.map((v) => v.n || 0)) + 1, items, ...(pins ? { pins, place: true } : {}), demo: !!res.demo, retried: !!res.retried, mode, edit: mode === "edit" ? edit : null, w: after.w, h: after.h, after: after.blob };
       const same = list.find((v) => v.id === ver.id); if (same) ver.n = same.n; // the same picture again (a retried key): the same version
       ver.url = blobUrl(after.blob); ver.before = blobUrl(photo);
       ver.saved = autosave() ? await keep(ver, rm, key, photo) : "off";
@@ -420,7 +421,7 @@
     busy = false; pending = null; box.classList.remove("ai-retrying");
     if (!res.demo) await AI.status(true).catch(() => {});
     const sess = (session[key] = (session[key] || []).filter((v) => v.id !== ver.id)); sess.push(ver);
-    view = { key, list: await versionsOf(key), cur: 0, cmp: -1, fresh: true };
+    view = { key, list: await versionsOf(key), cur: 0, cmp: -1, fresh: true, place: placing };
     view.cur = Math.max(0, view.list.findIndex((v) => v.id === ver.id));
     viewResult();
     // the device is full: said at once too, since the line under the buttons can be below the fold on a phone
@@ -453,12 +454,15 @@
   function viewResult() {
     const st = AI.peek() || {}, list = view.list, v = list[view.cur], other = view.cmp >= 0 ? list[view.cmp] : null, many = list.length > 1;
     const items = liveItems(v.items), fresh = view.fresh; view.fresh = false;
+    const pl = !!(view.place || v.place), sure = pl && (v.pins || []).length && v.pins.every((x) => x.scale && x.scale.sure), buyT = pl ? `Köp allt i bilden · ${kr(itemsTotal(items))}` : "Köp allt";
+    const head = pl ? (v.demo ? ["Förhandsvisning", "Så här blir bilden när AI:n är på.", `<p class="ai-lead">Sakerna står där du pekade, i ${sure ? "rätt" : "ungefärlig"} storlek. Ingenting har skickats.</p><p class="small">När AI:n är på blir det ett riktigt foto av rummet, med ljus och skuggor.</p>`]
+      : [many ? `Version ${v.n} av ${list.length}` : "Klar", "Ditt rum, med sakerna där du pekade.", `<p class="small">Ett förslag skapat med AI, i ${sure ? "rätt" : "ungefärlig"} storlek. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`]) : null;
     show(`<div class="ai-grid ai-result">
       <div class="ai-stage">${baHtml(v, other, fresh ? 100 : 30, many).replace("<figure ", '<figure id="aiBa" ')}${versHtml(list, view.cur, view.cmp)}</div>
-      <div class="ai-pad"><span class="eyebrow">${v.demo ? "Förhandsvisning" : many ? `Version ${v.n} av ${list.length}` : "Klar"}</span><h2 id="aiTitle" class="ai-h">${v.demo ? "Så här fungerar det." : "Ditt rum, med sakerna på plats."}</h2>
-        ${v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p><p class="small">När AI:n är igång kan du skapa nya versioner av samma rum och jämföra dem.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
-        <div class="ai-row ai-buybar"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">Köp allt</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Vad tycker du?</span></button></div>
-        <div class="ai-row small-row">${v.demo ? "" : `<button class="tlink" type="button" id="aiAgain">Skapa igen<span class="ai-cost"> · 1 bild</span></button>`}<button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
+      <div class="ai-pad"><span class="eyebrow">${head ? head[0] : v.demo ? "Förhandsvisning" : many ? `Version ${v.n} av ${list.length}` : "Klar"}</span><h2 id="aiTitle" class="ai-h">${head ? head[1] : v.demo ? "Så här fungerar det." : "Ditt rum, med sakerna på plats."}</h2>
+        ${head ? head[2] : v.demo ? `<p class="ai-lead">På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.</p><p class="small">När AI:n är igång kan du skapa nya versioner av samma rum och jämföra dem.</p>` : `<p class="small">Ett förslag skapat med AI. Färg och storlek kan skilja sig något från verkligheten.${v.retried ? " Vi gjorde ett nytt försök, utan att det kostade en extra bild." : ""}</p>`}
+        <div class="ai-row ai-buybar${pl ? " pl" : ""}"><span class="ai-buysum"><small>${items.length} ${items.length === 1 ? "produkt" : "produkter"}</small><b>${kr(itemsTotal(items))}</b></span><button class="btn" type="button" id="aiBuy">${buyT}</button><button class="btn ghost" type="button" id="aiShare">${ICON_SHARE}<span class="ai-share-t">Vad tycker du?</span></button></div>
+        <div class="ai-row small-row">${v.demo ? "" : `<button class="tlink" type="button" id="aiAgain">Skapa igen<span class="ai-cost"> · 1 bild</span></button>`}<button class="tlink" type="button" id="aiDown">Ladda ner</button>${!v.demo && v.gid && st.quality_left > 0 && !v.refunded ? `<button class="tlink" type="button" id="aiBad">Produkten blev fel</button>` : ""}${pl ? `<button class="tlink" type="button" id="aiPins" data-ai-close>Ändra nålarna</button>` : v.demo ? `<a class="tlink" href="#studio-plus" data-ai-close>Om Studio Plus</a>` : ""}</div>
         ${productsList(items, swapOk())}
         ${savedLine(v)}</div></div>`, false, true);
     const fig = $("[data-ba]", body), ctl = baWire(fig, other);
@@ -468,7 +472,7 @@
     /* Köp allt adds what the picture shows that is not in the cart yet, in the colour the picture shows (the list says which);
        once all of it lies there the button shows the cart */
     const buy = $("#aiBuy", body), have = () => items.filter((it) => S.cartLines().some((l) => l.product.handle === it.h)).length;
-    const paintBuy = () => { if (!buy.isConnected || buy.classList.contains("done")) return; const n = have(), all = n === items.length; buy.toggleAttribute("data-open-cart", all); buy.classList.toggle("ghost", all); buy.textContent = all ? "Visa varukorgen" : n ? "Lägg till resten" : "Köp allt"; };
+    const paintBuy = () => { if (!buy.isConnected || buy.classList.contains("done")) return; const n = have(), all = n === items.length; buy.toggleAttribute("data-open-cart", all); buy.classList.toggle("ghost", all); buy.textContent = all ? "Visa varukorgen" : n ? "Lägg till resten" : buyT; };
     paintBuy();
     buy.addEventListener("click", () => { if (buy.hasAttribute("data-open-cart")) return; if (RQ.addMany(items.map((it) => it.h + "::" + (it.v || 0)), buy, "Ditt rum")) { setTimeout(paintBuy, 1650); toastOverBar(); } });
     $("#aiShare", body).addEventListener("click", (e) => share(v, e.currentTarget));
@@ -486,7 +490,24 @@
   document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-down-now]") && view) { $("#toast").classList.remove("show"); const v = view.list[view.cur]; if (v) download(v); } });
   // on a phone the toast after Köp allt sits just above the buy bar, clear of the picture and the sheet's close button
   const toastOverBar = () => { const bar = $(".ai-buybar", body), t = $("#toast"); if (!bar || !t || innerWidth >= 900 || getComputedStyle(bar).position !== "sticky") return; const r = bar.getBoundingClientRect(); t.style.top = Math.max(8, Math.round(r.top - t.offsetHeight - 10)) + "px"; t.style.bottom = "auto"; t.style.left = Math.round((innerWidth - t.offsetWidth) / 2) + "px"; t.style.right = "auto"; };
-  document.addEventListener("click", (e) => { const b = e.target.closest("[data-ai-swap]"); if (!b || !swapOk()) return; const h = b.dataset.aiSwap, colour = !!b.dataset.colour; close(); if (RQ.currentRoute && RQ.currentRoute() !== "mitt-rum") RQ.go("mitt-rum"); setTimeout(() => RQ.room.openSwap(h, { colour }), 120); });
+  /* Placera och skapa: Byt produkt / Prova en annan färg right in the result; the other pins stay, a new version is made */
+  const placeSwap = (b) => {
+    const li = b.closest("li"), h = b.dataset.aiSwap, colour = !!b.dataset.colour, p = RQ.byHandle(h), v = view.list[view.cur], it = (v.items || []).find((x) => x.h === h) || { v: 0 };
+    const old = $(".ai-pick", li); if (old) { const same = old.dataset.kind === (colour ? "c" : "p"); old.remove(); if (same) { b.setAttribute("aria-expanded", "false"); return; } }
+    $$("[data-ai-swap]", li).forEach((x) => x.setAttribute("aria-expanded", x === b));
+    const opts = colour ? (p.variants || []).map((n, i) => ({ h, v: i, n, tone: p.tone[i] || p.tone[0] })).filter((o) => o.v !== (it.v || 0))
+      : (RQ.room.alternatives ? RQ.room.alternatives(h) : []).slice(0, 6).map((q) => ({ h: q.handle, v: 0, n: q.name, img: RQ.cut(q), price: q.price }));
+    const box = document.createElement("div"); box.className = "ai-pick"; box.dataset.kind = colour ? "c" : "p";
+    box.innerHTML = opts.length ? `<p class="small">${colour ? "Välj en färg." : "Välj något annat av samma slag."} ${live() ? "Det blir en ny version, 1 bild." : "Det blir en ny förhandsvisning."} De andra sakerna står kvar.</p>
+      <div class="ai-pick-l" role="group" aria-label="${colour ? `Färger för ${esc(p.name)}` : `I stället för ${esc(p.name)}`}">${opts.map((o) => colour ? `<button type="button" class="chip" data-place-to="${h}|${o.h}|${o.v}"><i style="background:${esc(o.tone)}"></i>${esc(o.n)}</button>`
+        : `<button type="button" class="ai-pick-p" data-place-to="${h}|${o.h}|0"><img src="${o.img}" alt=""><span>${esc(o.n)}</span><b>${kr(o.price)}</b></button>`).join("")}</div>`
+      : `<p class="small">Inget annat av samma slag passar här.</p>`;
+    b.closest("div").appendChild(box); const f = $("[data-place-to]", box); if (f) f.focus({ preventScroll: true });
+  };
+  document.addEventListener("click", (e) => { const t = e.target.closest("[data-place-to]"); if (!t || !view || !isOpen) return;
+    const [h, to, v] = t.dataset.placeTo.split("|"), R = RQ.room; if (!R.inScene(h) || !R.swapWith(h, to, +v || 0)) { RQ.toast("Det gick inte att byta här. Prova i Justera själv."); return; }
+    placing = true; chosen = R.pins().map((x) => x.h); const s0 = AI.peek() || {}; if (!s0.demo && s0.balance != null && s0.balance <= 0) return viewOut(s0); run(s0); });
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-ai-swap]"); if (b && view && view.place && isOpen && RQ.room.alternatives) { placeSwap(b); return; } if (!b || !swapOk()) return; const h = b.dataset.aiSwap, colour = !!b.dataset.colour; close(); if (RQ.currentRoute && RQ.currentRoute() !== "mitt-rum") RQ.go("mitt-rum"); setTimeout(() => RQ.room.openSwap(h, { colour }), 120); });
   const focusBack = (sel) => { const b = $(sel, body); if (b) b.focus({ preventScroll: true }); };
 
   function viewOut(st) {
@@ -496,7 +517,27 @@
       <div class="ai-row">${st.plan === "plus" ? `<button class="btn" type="button" data-ai-close>Stäng</button>` : `<a class="btn" href="#studio-plus" data-ai-close>Se Studio Plus · ${PRICE} kr/mån</a>`}</div></div>`);
   }
 
-  RQ.openAI = () => { if (!RQ.room.has()) { RQ.room.openSetup(() => (location.hash = "#mitt-rum")); return; } pick = {}; chosen = null; viewCompose(); };
+  RQ.openAI = () => { if (!RQ.room.has()) { RQ.room.openSetup(() => (location.hash = "#mitt-rum")); return; } pick = {}; chosen = null; placing = false; viewCompose(); };
+
+  /* ------------------------------------------------------------------ Placera och skapa (PLACE-BRIEF): "Skapa bilden"
+     Mitt rum's pin view says rq-place-create; the AI side makes the picture: the pins (RQ.room.pins(): where, on what, real
+     measurements, the room's scale) go to the server with the room photo, and the result is the same sheet as always
+     (before/after, versions, Köp allt i bilden, Byt produkt / Prova en annan färg as a new version, saved in the room,
+     Vad tycker du?). While RQ_CONFIG.studio.aiLive is false: the honest preview of the pins, nothing is sent. */
+  let placing = false;
+  document.addEventListener("rq-place-create", (e) => { if (!RQ.room || typeof RQ.room.pins !== "function") return; e.preventDefault(); placeCreate(); });
+  async function placeCreate() {
+    placing = true; pick = {}; const pins = RQ.room.pins(); if (!pins.length) return;
+    chosen = pins.map((x) => x.h);
+    const st = await AI.status(true);
+    if (aiOn()) {
+      if (!st.signed_in) return viewSignin();
+      if (st.error) { show(`<div class="ai-pad"><h2 id="aiTitle" class="ai-h">Det gick inte att nå bildskaparen.</h2><p class="ai-lead">${esc(errText(st.error))}</p><div class="ai-row"><button class="btn" type="button" id="aiRetry">Försök igen</button></div></div>`); $("#aiRetry", body).addEventListener("click", placeCreate); return; }
+      if (!st.consent) return viewConsent();
+      if (!st.demo && st.balance <= 0) return viewOut(st);
+    }
+    return run(st);
+  }
   document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-create]")) { e.preventDefault(); RQ.openAI(); } });
   // signing in from the AI sheet: back in Mitt rum the sheet opens again where you were (room.js reads this)
   document.addEventListener("click", (e) => { if (e.target.closest("[data-ai-after]") && RQ.ss) RQ.ss.set("rumiq-ai-after", String(Date.now())); });
