@@ -126,7 +126,7 @@ with sync_playwright() as p:
         ok(all(abs(d[h][0] - sc[h]["x"]) < 0.3 and abs(d[h][1] - sc[h]["y"]) < 0.3 and abs(d[h][2] - sc[h]["w"]) < 0.3 for h in sc), f"{tag} things are drawn at their stored places in the tall view: {d}")
         lb = pg.evaluate(BOX, "lysa-keramiklampa")
         ok(lb[2] > 60, f"{tag} the lamp is at least 60 pt wide (was 33): {round(lb[2])}")
-        ok(pg.evaluate("!document.getElementById('rmPos').hidden && document.getElementById('rmZoom').innerText.trim() === 'Hela rummet'"), f"{tag} position bar and 'Hela rummet' are shown")
+        ok(pg.evaluate("!document.getElementById('rmPos').hidden && document.getElementById('rmZoom').innerText.trim() === 'Visa hela'"), f"{tag} position bar and 'Visa hela' are shown (not 'Hela rummet', the bar's total; studio3 review minor 7)")
         # pan sideways with one finger on the background; up and down scrolls the page
         swipe(pg, cdp, 40, v["sy"] + 60, 40 + 200, v["sy"] + 66); v2 = pg.evaluate(VIEW)
         ok(v2["cx"] > v["cx"] + 120, f"{tag} one finger on the room pans it sideways: {round(v['cx'])} -> {round(v2['cx'])}")

@@ -1418,7 +1418,9 @@
         document.addEventListener("rq-room", onRoom);
         const onCookie = () => { if (view.on) layout(true); toastAt(); }; document.addEventListener("rq-cookie", onCookie); // the cookie strip moved the room
         // the room first; the cards under it (Passar rummet) a moment later, so opening a room is one short task (studio2 review minor 10)
-        layout(); draw(); toastAt(); if (R._whole && Date.now() - R._whole < 6000 && !mapOf() && view.on) { R._whole = 0; wholeRoom(); } // (the set went in just before this mount) const fitsLater = () => { if (document.contains(root)) fits(); }; if (window.requestIdleCallback) requestIdleCallback(fitsLater, { timeout: 600 }); else setTimeout(fitsLater, 120);
+        // (a set that went in just before this mount: the whole room first)
+        layout(); draw(); toastAt(); if (R._whole && Date.now() - R._whole < 6000 && !mapOf() && view.on) { R._whole = 0; wholeRoom(); }
+        $("#rmCols", root).innerHTML = colsHtml(); const fitsLater = () => { if (document.contains(root)) fits(); }; if (window.requestIdleCallback) requestIdleCallback(fitsLater, { timeout: 600 }); else setTimeout(fitsLater, 120);
         // back from signing in that started at Skapa AI-bild: the AI sheet opens again (within half an hour)
         { const t = +((RQ.ss && RQ.ss.get("rumiq-ai-after")) || 0); if (t && S.customer()) { RQ.ss.set("rumiq-ai-after", ""); if (Date.now() - t < 18e5 && RQ.openAI) setTimeout(() => { if (root.isConnected) RQ.openAI(); }, 500); } }
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }

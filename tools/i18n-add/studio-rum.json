@@ -129,5 +129,21 @@
  "{0} produkter från rummet ligger i varukorgen. Visa": "{0} products from the room are in the cart. View",
  "1 produkt från rummet ligger i varukorgen. Visa": "1 product from the room is in the cart. View",
  "Borttagen ur rummet.": "Removed from the room.",
- "Borttagen ur rummet. Ångra": "Removed from the room. Undo"
+ "Borttagen ur rummet. Ångra": "Removed from the room. Undo",
+ "Visa hela": "Show all",
+ "Köp förslaget": "Buy the proposal",
+ "I varukorgen ✓": "In the basket ✓",
+ "Lägg in resten": "Add the rest",
+ "Ställ dem på bordet": "Put them on the table",
+ "Jämför i rummet": "Compare in the room",
+ "Bordssaker ställs in när rummet vet var bordet är. Dra en sak till bordet i bilden, så följer nästa efter. Inte inlagda:": "Things for a table go in once the room knows where the table is. Drag one thing to the table in the picture and the next follows. Not added yet:",
+ "Får inte plats på ett bord i rummet:": "No room on a table in this room:",
+ "Vi börjar lugnt. Resten:": "We start calmly. The rest:",
+ "Dra först en sak till bordet i bilden, så vet rummet var bordet är.": "First drag one thing to the table in the picture, so the room knows where the table is.",
+ "Inget mer i stilen passar i rummet just nu. Välj en annan stil.": "Nothing more in this style fits the room right now. Choose another style.",
+ "Inget mer passar i rummet just nu.": "Nothing more fits the room right now.",
+ "Budgeten räcker inte till något i stilen. Det billigaste kostar {0}.": "The budget does not cover anything in this style. The cheapest costs {0}.",
+ "Budgeten räcker inte till något. Det billigaste kostar {0}.": "The budget does not cover anything. The cheapest costs {0}.",
+ "Budgeten räcker till {0} av {1}. Kvar att lägga till: {2}.": "The budget covers {0} of {1}. Left to add: {2}.",
+ "Från din moodboard": "From your moodboard"
 }
