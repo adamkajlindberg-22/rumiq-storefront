@@ -155,7 +155,8 @@ with sync_playwright() as p:
         pg.click("#log [data-inroom]"); pg.wait_for_timeout(200)
         ok(pg.evaluate("RQ.room.scene().length") >= before, f"{tag} stylist: suggestions go into the room")
 
-        # 8. small fixes
+        # 8. small fixes (studio2: the measurement form shows once there is a room; an empty Sparat starts with "Skapa ditt första rum")
+        pg.evaluate("RQ.hem && !RQ.hem.rooms().length && RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' })")
         pg.goto(BASE + "mitt-hem/"); pg.wait_for_timeout(600)
         lab = pg.evaluate("(() => { const l = [...document.querySelectorAll('#hrForm .hr-grid label')]; if (!l.length) return null; const i = l.map((x) => x.querySelector('input,select').getBoundingClientRect().top - x.getBoundingClientRect().top); return [Math.max(...i.slice(0, 2)) - Math.min(...i.slice(0, 2)), l[1].textContent.includes('valfritt')]; })()")
         ok(lab is not None and lab[0] < 6 and lab[1], f"{tag} room form: fields line up beside each other: {lab}")
@@ -172,6 +173,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={"width": 820, "height": 1180})
     ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.abort())
     pg = ctx.new_page(); pg.goto(BASE + "mitt-hem/"); pg.wait_for_timeout(700)
+    pg.evaluate("RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }); RQ.router()"); pg.wait_for_timeout(500)  # the form shows once there is a room
     tops = pg.evaluate("[...document.querySelectorAll('#hrForm .hr-grid label')].slice(0, 2).map((x) => Math.round(x.querySelector('input,select').getBoundingClientRect().top))")
     ok(len(tops) == 2 and abs(tops[0] - tops[1]) < 6, f"[820] room form: Rum and Eget namn fields on one line: {tops}")
     ctx.close()
