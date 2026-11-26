@@ -172,7 +172,7 @@
     RQ.room.setType(w.type); if (!RQ.room._want || !RQ.room._want.style) RQ.room._want = { style: RQ.STYLES[w.style] ? w.style : null, budget: w.budget > 0 ? +w.budget : null };
   });
   /* Into Mitt rum through the editor's own entry, RQ.room.openWith({ room, own, items, style, budget, project }) (room.js). */
-  H.openInRoom = async ({ room = null, own = false, items = [], style = null, budget = null, project = null, swap = null } = {}) => {
+  H.openInRoom = async ({ room = null, own = false, items = [], style = null, budget = null, project = null, swap = null, title = null, add = false } = {}) => {
     const R = RQ.room; if (!R) return;
     document.dispatchEvent(new CustomEvent("rq-hem-go")); // the room sheet or the moodboard steps aside
     if (project) H.setActive(project);
@@ -181,7 +181,7 @@
     // Kept for the next own photo only (it survives the sign-in step), and dropped when a sample room comes instead.
     const t = room || (project && H.room(project) ? H.room(project).type : null);
     RQ.ss.set(OWN, own && t ? JSON.stringify({ type: t, style, budget, at: Date.now() }) : "");
-    const out = await R.openWith({ room, own, items: items.map((it) => (typeof it === "string" ? { h: it, v: 0 } : it)), style, budget, project, swap });
+    const out = await R.openWith({ room, own, items: items.map((it) => (typeof it === "string" ? { h: it, v: 0 } : it)), style, budget, project, swap, ...(title ? { title } : {}), ...(add ? { add: true } : {}) });
     if (out && own) { RQ.ss.set(OWN, ""); const g = R.get(); if (t && g && !g.sample && !g.type) R.setType(t); } // the photo you already had
     if (out && project && RQ.ai) H.patch(project, { pkey: RQ.ai.projectKey() }); // only once the room is really open (not while it waits for sign-in)
     return out;

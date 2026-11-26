@@ -741,10 +741,10 @@
 
   /* When a page cannot be drawn (a value kept in the browser that no longer fits, or a fault of ours), the
      customer gets a way forward instead of a page whose buttons do nothing. */
-  V.crashed = () => ({
+  V.crashed = (err) => ({
     title: "Sidan kunde inte visas · RumIQ", crashed: true,
     html: `${head(`<span class="eyebrow">Något gick snett</span>`, "Sidan kunde inte visas", "Prova att ladda om sidan. Hjälper inte det kan du rensa det som är sparat i den här webbläsaren. Då töms varukorgen och det du har sparat.")}
-      <section class="wrap" style="padding-bottom:6rem"><div class="ctrl-row"><button class="btn" type="button" id="crashReload">Ladda om sidan</button><button class="btn ghost" type="button" id="crashClear">Rensa sparat och ladda om</button><a class="btn ghost" href="./">Till startsidan</a></div></section>`,
+      <section class="wrap" style="padding-bottom:6rem" data-err="${esc(String((err && (err.message || err)) || "").slice(0, 300))}"><div class="ctrl-row"><button class="btn" type="button" id="crashReload">Ladda om sidan</button><button class="btn ghost" type="button" id="crashClear">Rensa sparat och ladda om</button><a class="btn ghost" href="./">Till startsidan</a></div></section>`,
     mount(root) {
       $("#crashReload", root).addEventListener("click", () => location.reload());
       $("#crashClear", root).addEventListener("click", () => { try { S.clearAll(); } catch (e) {} location.reload(); });
@@ -759,7 +759,7 @@
   };
   function render(raw) {
     let view = null, found = true;
-    try { view = lookup(raw); } catch (e) { console.error(e); view = V.crashed(); }
+    try { view = lookup(raw); } catch (e) { console.error(e); view = V.crashed(e); }
     if (!view) { view = V.notfound(raw); found = false; }
     if (view.lazy) { // a tool that has not loaded yet: keep what is on screen (the prerendered page), load, then draw
       document.documentElement.classList.add("loading-tools");
@@ -797,7 +797,7 @@
     try { un = view.mount ? view.mount(root) : null; }
     catch (e) { // the page was written out but could not be started: show the way forward instead of dead buttons
       console.error(e);
-      if (!view.crashed) { const c = V.crashed(); root.innerHTML = c.html; toPathLinks(root); document.title = c.title; try { c.mount(root); } catch (x) {} }
+      if (!view.crashed) { const c = V.crashed(e); root.innerHTML = c.html; toPathLinks(root); document.title = c.title; try { c.mount(root); } catch (x) {} }
     } finally { delete root.addEventListener; }
     if (RQ.mountBav && root.querySelector(".bav")) { const b = RQ.mountBav(root); offs.push(() => b && b()); }
     cleanup = () => { offs.forEach((f) => { try { f(); } catch (e) {} }); if (typeof un === "function") un(); };

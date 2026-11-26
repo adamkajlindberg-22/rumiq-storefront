@@ -66,7 +66,7 @@
       // "Svep · Kök", "1 st · Havre" and page titles ("Populärt · RumIQ"): each part on its own, the brand stays
       if (!out && s.includes(" · ")) { const p = s.split(" · ").map((x) => (/^RumIQ( Studio)?$/.test(x) || !/[A-Za-zÅÄÖåäö]/.test(x) ? x : x === "RumIQ Magasin" ? "RumIQ Magazine" : translate(x))); if (p.every(Boolean)) out = p.join(" · "); }
       if (!out) { // runs of known sentences, e.g. advice paragraphs put together
-        const sent = s.split(/(?<=[.!?])\s+/); const parts = []; let i = 0;
+        const sent = (s.match(/(?:[^.!?]|[.!?](?![.!?]*(?:\s|$)))+[.!?]*\s*|[.!?]+\s*/g) || []).map((x) => x.trim()).filter(Boolean); const parts = []; let i = 0;
         while (i < sent.length) { let j = sent.length, hit = null; for (; j > i; j--) { const k = sent.slice(i, j).join(" "); if ((hit = one(k))) break; } if (!hit) { parts.length = 0; break; } parts.push(hit); i = j; }
         if (parts.length) out = parts.join(" ");
       }

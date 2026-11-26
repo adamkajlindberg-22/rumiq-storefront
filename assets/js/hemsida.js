@@ -246,7 +246,7 @@
   // into the room you chose; a sample room of a kind becomes a room of yours (named after the board), so it has its own tab.
   const tryIn = async (r, type) => { const its = B.items.map((x) => ({ h: x.h, v: x.v || 0 })); tryOpen = false; mclose(); if (sheet.classList.contains("open")) sclose();
     if (!r) { r = H.create({ label: (B.name || "").trim() || typeName(type), type, items: its }); B.room = r.id; persist(); }
-    const out = await H.openInRoom({ room: r.type, items: [...H.items(r), ...its.filter((it) => !H.items(r).some((x) => x.h === it.h))], style: r.style, budget: r.budget, project: r.id });
+    const out = await H.openInRoom({ room: r.type, items: [...H.items(r), ...its.filter((it) => !H.items(r).some((x) => x.h === it.h))], style: r.style, budget: r.budget, project: r.id, title: "Från din moodboard" });
     const R = RQ.room; if (!out || !R || !R.group) return;
     // a saved room keeps its scene; the board's things go in beside it by the editor's surface rules (what has no place is left out, like the editor does)
     const left = new Set(R._leftOut || []), add = its.filter((it) => !R.inScene(it.h) && !left.has(it.h)); if (!add.length) return;

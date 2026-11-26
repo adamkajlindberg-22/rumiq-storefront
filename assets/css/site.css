@@ -264,7 +264,7 @@ main{min-height:60vh}
   .card:hover .ph img:first-child{transform:scale(1.025)}
   .card:hover .ph .hov.ok{opacity:1}
 }
-.card .fav{position:absolute;right:.45rem;top:.45rem;z-index:2;color:#22252A;width:2.5rem;height:2.5rem}
+.card .fav{position:absolute;right:.3rem;top:.3rem;z-index:2;color:#22252A;width:2.5rem;height:2.5rem;min-width:44px;min-height:44px}
 .card .fav:hover{background:rgba(247,247,244,.7)}
 .card .fav svg{width:1.2rem;height:1.2rem}
 .card .fav[aria-pressed=true] svg{fill:#22252A}
@@ -1044,7 +1044,7 @@ details.pw[open] summary::after{content:" −"}
   .card h3{font-size:.94rem}
   .card .ct{flex-direction:column;gap:.1rem;margin-top:.7rem}
   .card .price{font-size:.92rem}
-  .card .qadd{opacity:1;transform:none;width:2.4rem;padding:0;justify-content:center}
+  .card .qadd{opacity:1;transform:none;width:2.4rem;padding:0;justify-content:center;min-width:44px;min-height:44px;right:.45rem;bottom:.45rem}
   .card .qadd span{display:none}
   .signup .field{flex-direction:column}
   .look-items{grid-template-columns:1fr 1fr}
@@ -1113,7 +1113,7 @@ body.on-room:not(.room-empty) .dock{transform:translateY(calc(100% + 1.5rem));vi
 
 /* cards in room mode: the product stands in the customer's room */
 /* heart and room button stay readable on any photo */
-.card .fav::before{content:"";position:absolute;inset:.2rem;border-radius:50%;background:rgba(247,247,244,.64);z-index:-1}
+.card .fav::before{content:"";position:absolute;inset:max(.2rem, 4px);border-radius:50%;background:rgba(247,247,244,.64);z-index:-1}
 
 /* shop toolbar toggle */
 .tb-r{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
