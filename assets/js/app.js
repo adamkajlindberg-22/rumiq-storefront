@@ -783,6 +783,14 @@
     if (!view && /^faq-\d+$/.test(raw)) view = V.faq();
     return view;
   };
+  /* Svep: the card is sized from the screen's height in CSS; a phone browser whose own bars change that height (Chrome on Android, X7)
+     can still put the buttons under the dock. Measured here, and the card made that much smaller (--sv-fit). */
+  const fitDeck = () => { const sv = $("#view .svep"), dock = $("#dock"); if (!sv || !dock || !dock.offsetHeight || getComputedStyle(dock).display === "none" || scrollY > 4) return;
+    const ctrl = $(".sv-ctrl", sv); if (!ctrl || !ctrl.offsetHeight) return;
+    const cur = parseFloat(sv.style.getPropertyValue("--sv-fit")) || 0, over = ctrl.getBoundingClientRect().bottom - (dock.getBoundingClientRect().top - 6);
+    const next = over > 1 ? cur + over : over < -40 && cur > 0 ? Math.max(0, cur + over + 20) : cur;
+    if (Math.abs(next - cur) > 0.5) { sv.style.setProperty("--sv-fit", Math.round(next) + "px"); requestAnimationFrame(fitDeck); } };
+  addEventListener("resize", () => requestAnimationFrame(fitDeck)); if (window.visualViewport) visualViewport.addEventListener("resize", () => requestAnimationFrame(fitDeck));
   function render(raw) {
     let view = null, found = true;
     try { view = lookup(raw); } catch (e) { console.error(e); view = V.crashed(e); }
@@ -838,6 +846,7 @@
     if (anchor) anchor.scrollIntoView();
     if (backTo) scrollBack(backTo); // after the page has started, so its own parts are in place
     RQ.navCheck && RQ.navCheck();
+    requestAnimationFrame(fitDeck);
     if (moved && !first) { // a new page: the keyboard and the screen reader start at its top (unless the page chose a field itself)
       if (!root.contains(document.activeElement)) { try { root.focus({ preventScroll: true }); } catch (e) {} }
       // the name the customer sees on the page (its heading), not the longer title written for search engines
