@@ -455,7 +455,7 @@
   }
 
   const hemRoom = (v) => { const r = v && v.roomId && RQ.hem && RQ.hem.room(v.roomId); return r ? RQ.hem.name(r) : ""; };
-  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Bilden finns nu ${hemRoom(v) ? `i ${esc(hemRoom(v))} ` : ""}under <a href="#mitt-hem" data-ai-lib data-ai-close>Sparat</a>, på den här enheten.</span></p>`
+  const savedLine = (v) => v.saved === "ok" ? `<p class="small ai-saved" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>${hemRoom(v) ? `<span>Bilden finns nu i</span> <b>${esc(hemRoom(v))}</b> <span>under</span>` : "Bilden finns nu under"} <a href="#mitt-hem" data-ai-lib data-ai-close>Sparat</a>, på den här enheten.</span></p>`
     : v.saved === "full" ? `<p class="ai-warn small" role="alert">Det finns inte plats på enheten, så bilden sparades inte. Ladda ner den, eller ta bort några gamla bilder under <a href="#mitt-hem" data-ai-lib data-ai-close>Sparat</a>.</p>`
     : v.saved === "fail" ? `<p class="small ai-saved" role="status"><span>Bilden kunde inte sparas här.</span> <button class="tlink" type="button" id="aiSave">Försök igen</button></p>`
     : `<p class="small ai-saved" role="status"><button class="tlink" type="button" id="aiSave">Spara bilden</button></p>`;

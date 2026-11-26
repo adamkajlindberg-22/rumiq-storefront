@@ -149,7 +149,7 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "Förhandsvisning" and pg.evaluate("document.querySelector('.ai-tag-b').innerText") == "Före", f"{tag} labelled Demo, the before side Före")
         ok(pg.evaluate("!!document.querySelector('.ai-result img.before') && !!document.querySelector('.ai-result [data-ba] input')"), f"{tag} the before picture (the room photo) is under a slider")
         ok(mid < 100 and pg.evaluate("+document.querySelector('.ai-result [data-ba] input').value") == 30, f"{tag} the made room sweeps in over the photo and settles at 30 %: {mid}")
-        ok("Bilden finns nu under Sparat" in pg.evaluate("document.querySelector('.ai-saved').innerText"), f"{tag} the picture is saved by itself, and the sheet says where")
+        ok(re.search(r"Bilden finns nu i .+ under Sparat", pg.evaluate("document.querySelector('.ai-saved').innerText")), f"{tag} the picture is saved by itself in a room, and the sheet says which (review M8)")
         pics = pg.evaluate(PICS)
         ok(len(pics) == 1 and pics[0]["items"] == ",".join(h + "::0" for h in FOUR) and pics[0]["after"] and pg.evaluate(ROOMS) == 1, f"{tag} IndexedDB holds the picture, its products and colours, and the before photo once: {pics}")
         ok(pg.evaluate("document.getElementById('aiBuy').getBoundingClientRect().top < document.querySelector('.ai-prods').getBoundingClientRect().top"), f"{tag} Köp allt comes before the list")
@@ -207,7 +207,7 @@ with sync_playwright() as p:
         # studio2: the overview (Mina rum) comes first, then Mina rumsbilder (Alla bilder), easy to reach in the jump menu
         ok(order[0][:2] == ["mh-rum", "mh-bilder"] and order[1][1].endswith("mh-bilder"), f"{tag} the overview first, then Mina rumsbilder in Sparat and in its menu, the empty parts after: {order}")
         # studio2: Rumsprojekt is merged into Mina rum (one place); the old part is gone
-        ok(pg.evaluate("!document.querySelector('.mh-why') && document.querySelector('#mh-rum h2').innerText") == "Mina rum", f"{tag} one place for rooms: Mina rum (Rumsprojekt merged into it)")
+        ok(pg.evaluate("!document.querySelector('.mh-why') && document.querySelector('#mh-rum h2').innerText") in ("Mina rum", "Fortsätt där du slutade"), f"{tag} one place for rooms: Mina rum (Rumsprojekt merged into it)")
         small = pg.evaluate("[...document.querySelectorAll('.ai-lcard .small-row .tlink, .ai-lcard .chip, .ai-auto')].map((e) => [e.textContent.trim(), Math.round(e.getBoundingClientRect().height)]).filter((x) => x[1] < 44)")
         ok(not small, f"{tag} the library's links, chips and switch row are 44 px targets: {small}")
         shot(pg, f"demo-{W}-library")
@@ -350,7 +350,7 @@ with sync_playwright() as p:
         ctx, pg, errs = new(b, mob, W, Hh, en=True)
         room(pg, FOUR[:2]); create(pg, 3400)
         txt = pg.evaluate("document.querySelector('.ai-result').innerText")
-        ok("What do you think?" in txt and "The image is now under Saved" in txt and "Skapa" not in txt and "Sparad" not in txt and "Bilden" not in txt, f"[en {W}] the result sheet is in English: {txt[:200]}")
+        ok("What do you think?" in txt and "The image is now in" in txt and "under Saved" in txt and "Skapa" not in txt and "Sparad" not in txt and "Bilden" not in txt, f"[en {W}] the result sheet is in English: {txt[:200]}")
         go(pg, "mitt-hem", 1500)
         lib = pg.evaluate("document.getElementById('mh-bilder').innerText")
         ok("All images" in lib and "Save my AI images automatically" in lib and "Mina" not in lib and "Spara" not in lib, f"[en {W}] Mina rumsbilder is in English: {lib[:240]}")

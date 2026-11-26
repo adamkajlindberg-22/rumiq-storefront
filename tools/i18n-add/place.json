@@ -76,5 +76,7 @@
  "Skicka länken ovan. Vill du ha bilden med före och efter också?": "Send the link above. Would you like the before and after picture too?",
  "Skicka länken. Vill du ha bilden med före och efter också?": "Send the link. Would you like the before and after picture too?",
  "Bilderna du har skapat i Mitt rum, med bilden före. Förhandsvisningar är märkta som det. De sparas på den här enheten, och ingen annan kan se dem.": "The pictures you have made in My room, with the before picture. Previews are marked as such. They are kept on this device, and nobody else can see them.",
- "Version {0} · Förhandsvisning": "Version {0} · Preview"
+ "Version {0} · Förhandsvisning": "Version {0} · Preview",
+ "Bilden finns nu i": "The image is now in",
+ "under": "under"
 }
