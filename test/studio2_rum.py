@@ -238,7 +238,7 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.room.snapshot('finns-inte', 600)") is None, f"{tag} and answers null for a room that does not exist")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
-    # own photo through openWith: the sign-in gate, and afterwards the things stand in the floor row
+    # own photo through openWith: the sign-in gate; afterwards nothing floats: one table thing in front, to be dragged to the table, the other named
     c = ctx_for(b, 390, 844, True); pg = new_page(c)
     pg.goto(BASE + "svep/"); pg.wait_for_timeout(800)
     r = pg.evaluate("RQ.room.openWith({ own: true, items: [{ h: 'glob-bordslampa-opalglas', v: 0 }, { h: 'sand-keramikvas', v: 0 }] })"); pg.wait_for_timeout(500)
@@ -248,7 +248,7 @@ with sync_playwright() as p:
     pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')"); pg.evaluate("document.querySelector('.roomsheet [data-sheet-close]').click()"); pg.evaluate("RQ.room.openWith({ own: true, items: [{ h: 'glob-bordslampa-opalglas', v: 0 }, { h: 'sand-keramikvas', v: 0 }] })"); pg.wait_for_timeout(400)
     put(pg, "rum.jpg", picture(1400, 900)); pg.wait_for_timeout(2500)
     sc = pg.evaluate(SC)
-    ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and {s[0] for s in sc} == {"glob-bordslampa-opalglas", "sand-keramikvas"} and all(s[2] >= 72 for s in sc) and abs(sc[0][1] - sc[1][1]) >= 10, f"[own] signed in, the photo goes in and the things stand in the floor row: {sc}")
+    ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and len(sc) == 1 and sc[0][0] in {"glob-bordslampa-opalglas", "sand-keramikvas"} and sc[0][2] >= 72 and "Inte inlagda" in pg.evaluate("document.getElementById('rmSugg').innerText"), f"[own] signed in, the photo goes in: one table thing on the floor in front to drag to the table, the other named (studio3 N1, nothing floats) and the things stand in the floor row: {sc}")
     c.close()
 
     # ------------------------------------------------------------ studio2 review (5bebf95): the room's points
