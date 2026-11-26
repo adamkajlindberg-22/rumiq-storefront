@@ -3043,6 +3043,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-groups li small{color:var(--muted)}
 .hem-groups .link{margin-left:auto;min-height:44px;display:inline-flex;align-items:center}
 .hem-ot{margin-top:1.6rem;display:grid;gap:.6rem;max-width:40rem}
+.hem-ot-note{margin:1rem 0 .4rem;color:var(--muted)}
 .hem-ot-list{list-style:none;padding:0;margin:.2rem 0 0;display:grid;gap:.5rem}
 .hem-ot-list li{display:grid;grid-template-columns:4.2rem minmax(0,1fr) 9rem;gap:.8rem;align-items:center}
 .hem-ot-list b{font-weight:560;font-size:.9rem}

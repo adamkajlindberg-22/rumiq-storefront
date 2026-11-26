@@ -130,12 +130,13 @@
       if (gp && gp.n > 1) { const i = gp.hs.indexOf(p.handle), k = i < 0 ? 0 : gp.likes[i]; if (k === gp.n) return gp.n === 2 ? "Ni gillade båda den" : "Alla gillade den"; if (k > 0 && k >= gp.n / 2) return `${k} av ${gp.n} gillade den`; }
       if (r && r.style && p.rooms.includes(r.type) && p.styles.includes(r.style)) return `Passar ${roomWord(r.type, ours)}`;
       if (ctx.mine !== false) { if (t.seen[p.handle] > 0) return "Du gillade den i Svep"; if (S.isWished(p.handle)) return "Du har sparat den"; }
-      const q = likedOf(t).find((x) => near(p, x)); if (q) return `Eftersom du gillade ${q.name}`;
+      // in a list each liked thing is named once (ctx.used), so the reasons say something new from card to card
+      const q = likedOf(t).find((x) => near(p, x) && !(ctx.used && ctx.used.has(x.handle))); if (q) { if (ctx.used) ctx.used.add(q.handle); return `Eftersom du gillade ${q.name}`; }
       const top = RQ.taste.top(t)[0]; if (top && p.styles.includes(top)) return `Passar din stil: ${RQ.STYLES[top].name}`;
       return "";
     },
-    // for shop lists sorted for you: the reason, or nothing when you have no taste yet
-    shop: (p) => (RQ.taste.get().n ? RQ.why.of(p) : ""),
+    // for shop lists sorted for you: a fresh reason-giver per list (the hearts already say what you saved), nothing without a taste yet
+    shop: () => { const used = new Set(), t = RQ.taste.get(); return (p) => (t.n ? RQ.why.of(p, { t, mine: false, used }) : ""); },
   };
   // more of the same kind: shared style, the same kind of thing, the same colour family; each with what they share
   RQ.moreLike = (h, n = 4) => {
@@ -684,8 +685,9 @@
     const H = RQ.hem, room = () => H && g.room && H.room(g.room), c = G.calc(g), keep = c.all.length ? c.all : c.most;
     bindLinkForm($("#grSend", root), (nm) => { const me = g.ppl.find((p) => p.id === g.me); if (me) me.n = nm; G.save(g); try { history.replaceState(history.state, "", G.url(g)); } catch (e) {} return G.url(g); },
       tr("Svep tillsammans på RumIQ"), g.ppl.length > 1 ? tr("Svep tio kort, så ser vi vad vi alla gillar. Se ditt hem innan du köper.") : tr("Svep tio kort, så ser vi vad vi båda gillar. Se ditt hem innan du köper."));
+    const res = $(".svep-result.group", root); // this result only: a page drawn again never answers with an older group
     root.addEventListener("click", (e) => {
-      const b = e.target.closest("button"); if (!b || !b.closest(".svep-result.group")) return;
+      const b = e.target.closest("button"); if (!b || !res || b.closest(".svep-result.group") !== res) return;
       if (b.matches("[data-gr-room]")) { const r = G.makeRoom(g, c); if (!r) return; const box = b.closest(".gr-acts"); box.innerHTML = roomPanel(g); $("h3", box).focus({ preventScroll: true }); box.scrollIntoView({ block: "nearest", behavior: reduced() ? "auto" : "smooth" }); return; }
       if (b.matches("[data-gr-cart]")) { RQ.addMany(keep, b, "Det ni gillar"); return; }
       const r = room();
@@ -733,7 +735,7 @@
         <div class="sv-head">${crumbsTwo()}<span class="eyebrow">Svep tillsammans</span><h1 class="h1">${h1}</h1>
           ${n ? `<div class="gr-who">${pplRow(g, true)}</div>` : ""}
           <p class="lead keep">${line}</p>
-          ${legend}<p class="small sv-after keep"><span>Du ser vad de andra har svarat när du är klar.</span> <span class="hem-promise">Se ditt hem innan du köper.</span></p></div>
+          ${legend}<p class="small sv-after keep">${n ? `<span>Du ser vad de andra har svarat när du är klar.</span> ` : ""}<span class="hem-promise">Se ditt hem innan du köper.</span></p></div>
         ${deckHtml("sv", false)}
         ${n ? `<p class="small gr-peek"><button class="tlink" type="button" id="grPeek">Har du redan svept? Se svaren</button></p>` : ""}</section>`,
       mount(root) {

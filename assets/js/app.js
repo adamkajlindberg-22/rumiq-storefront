@@ -206,7 +206,7 @@
       return `${more.length ? `<div class="list-more"><h2 class="h3">Mer som passar</h2>${RQ.grid(more, "three")}</div>` : ""}
         <div class="list-end"><p>${list.length === all.length ? `Du har sett alla ${nProd(list.length)}.` : `Du har sett ${list.length} av ${nProd(all.length)}.`}</p><span class="chips"><a class="chip" href="#looks">Looks</a><a class="chip" href="#hitta-ratt">Hitta rätt</a></span></div>`;
     };
-    const results = (list) => (list.length ? RQ.grid(list, "three", true, st.sort === "dig" && RQ.why ? RQ.why.shop : null) : "") + tail(list);
+    const results = (list) => (list.length ? RQ.grid(list, "three", true, st.sort === "dig" && RQ.why ? RQ.why.shop() : null) : "") + tail(list);
     const first = listFor(st.sort);
     return {
       html: `${head(crumbs(trail), esc(title), lead, banner ? `<div class="banner-img reveal"><img src="${banner}" srcset="${RQ.srcset(banner)}" sizes="(min-width: 1400px) 1320px, 94vw" alt="" loading="eager" decoding="async" width="1600" height="893"></div>` : "").replace('class="page-head wrap"', 'class="page-head wrap shop-head"')}
@@ -356,7 +356,7 @@
     const isLamp = LAMPS.includes(p.handle);
     const ld = { "@context": "https://schema.org", "@type": "Product", name: p.name, description: p.short, image: new URL(RQ.img(p, 900), document.baseURI).href, category: c.name, brand: { "@type": "Brand", name: "RumIQ" },
       offers: { "@type": "Offer", priceCurrency: "SEK", price: p.price, availability: "https://schema.org/PreOrder" } };
-    const look = [p, ...pairs.slice(0, 3)];
+    const look = [p, ...pairs.slice(0, 3)], pairUsed = new Set();
     const shown = gal.filter((g) => g.k !== "off");
     /* the way into Studio, on the first screen next to the price: Mitt rum opens with the product in it (in your room, or
        on the page that lets you pick a sample room or your own photo when you have none yet) */
@@ -416,9 +416,9 @@
         </section>
 
         ${pairs.length ? `<section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ihop</h2><p>Bocka ur det du inte vill ha. Du kan ändra antal i varukorgen.</p></div><a class="link" href="#mitt-rum-${p.handle}">Bygg en look i ditt rum</a></div>
-          <div class="look"><div class="look-items">${look.map((x, i) => `<label class="look-item"><input type="checkbox" data-look="${x.handle}" checked><img${RQ.isPrint(x) ? ' class="cutph"' : ""} src="${RQ.thumb(x)}" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">${i === 0 ? "Den här: " : ""}${esc(x.name)}</span><span class="pr">${kr(x.price)}</span>${i && RQ.why ? `<span class="why">${esc(RQ.why.of(x, { mine: false }) || `Samma stil: ${RQ.STYLES[x.styles.find((st) => p.styles.includes(st))].name}`)}</span>` : ""}</label>`).join("")}</div>
+          <div class="look"><div class="look-items">${look.map((x, i) => `<label class="look-item"><input type="checkbox" data-look="${x.handle}" checked><img${RQ.isPrint(x) ? ' class="cutph"' : ""} src="${RQ.thumb(x)}" alt="" loading="lazy" decoding="async" width="600" height="750"><span class="nm">${i === 0 ? "Den här: " : ""}${esc(x.name)}</span><span class="pr">${kr(x.price)}</span>${i && RQ.why ? `<span class="why">${esc(RQ.why.of(x, { mine: false, used: pairUsed }) || `Samma stil: ${RQ.STYLES[x.styles.find((st) => p.styles.includes(st))].name}`)}</span>` : ""}</label>`).join("")}</div>
           <div class="look-sum"><div class="sum total"><span>Totalt</span><span id="lookTotal">${kr(look.reduce((s, x) => s + x.price, 0))}</span></div><button class="btn block" type="button" id="lookAdd">Lägg ${look.length} produkter i varukorgen</button></div></div></div></section>` : ""}
-        ${related.length ? `<section class="sec tight"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Liknande produkter</h2></div><a class="link" href="#kategori-${c.id}">Visa alla</a></div>${RQ.grid(related.slice(0, 4), "", false, RQ.why ? RQ.why.shop : null)}</div></section>` : ""}
+        ${related.length ? `<section class="sec tight"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Liknande produkter</h2></div><a class="link" href="#kategori-${c.id}">Visa alla</a></div>${RQ.grid(related.slice(0, 4), "", false, RQ.why ? RQ.why.shop() : null)}</div></section>` : ""}
         ${seen.length ? `<section class="sec tight" style="padding-top:0"><div class="wrap"><div class="sec-head"><h2 class="h3">Du har tittat på</h2></div>${RQ.grid(seen)}</div></section>` : ""}
         <div class="buybar" id="buybar"><div class="bb-p"><img${PRINT(p) ? ' class="cutph"' : ""} src="${RQ.thumb(p)}" alt="" width="600" height="750" decoding="async"><div class="bb-t"><b>${esc(p.name)}</b><span>${kr(p.price)}<span id="bbVar"></span></span></div></div><button class="btn sm" type="button" id="add2">Lägg i varukorgen</button></div>
         <script type="application/ld+json">${JSON.stringify(ld)}</script>`,
