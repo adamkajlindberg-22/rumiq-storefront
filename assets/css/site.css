@@ -2152,6 +2152,8 @@ body.on-studio:has(.cookie.show) .view{padding-top:calc(var(--nav-h) + var(--ck-
 .rm-empty .rh-fig{margin:0}
 @media (max-width:1100px){.rm-empty{grid-template-columns:1fr}.rm-empty .rh-fig{order:-1}}
 @media (max-width:640px){.rm-empty .rh-fig{order:0}.rm-empty-acts{flex-direction:column;align-items:stretch}} /* a phone: the way in first, high and above the dock; the picture after it */
+@media (max-width:640px) and (max-height:600px){.rm-top > nav:has(.crumbs){display:none}}
+@media (max-width:640px) and (max-height:760px){.rm-empty{padding:1.3rem 1.2rem}.rm-empty .h2{font-size:1.65rem}.rm-empty .lead{font-size:.98rem}.rm-empty-acts{margin-top:1rem!important}} /* a shorter phone: both ways in above the dock on the first screen (D5) */
 @media (max-width:1100px){.rm-empty .rh-card{left:1rem;right:1rem}}
 @media (min-width:901px) and (max-width:1100px) and (orientation:landscape){.rm-empty{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2rem}.rm-empty .rh-fig{order:0}.rm-empty .bav .rh-card{position:static;margin-top:.7rem;box-shadow:none;border:1px solid var(--line);justify-content:space-between}} /* a landscape tablet: the button beside the picture, on the first screen */
 footer.site .bottom > span:last-child{align-items:center}
