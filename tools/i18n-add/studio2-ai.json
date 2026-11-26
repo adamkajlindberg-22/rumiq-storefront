@@ -260,5 +260,17 @@
  "AI-bilderna sparas under Sparat på den här enheten tills du tar bort dem. Ett eget rumsfoto raderas efter 30 dagar.": "The AI images are kept under Saved on this device until you delete them. A room photo of your own is deleted after 30 days.",
  "AI-bilderna sparas privat i ditt konto tills du tar bort dem. Ett eget rumsfoto raderas efter 30 dagar.": "The AI images are kept privately in your account until you delete them. A room photo of your own is deleted after 30 days.",
  "Bilden finns nu under": "The image is now under",
- "Köp allt · {0} kr": "Buy all · {0} kr"
+ "Köp allt · {0} kr": "Buy all · {0} kr",
+ "Förhandsvisning utan konto": "Preview without an account",
+ "Här ser du hur det fungerar, utan konto. Den riktiga AI-bilden kräver ett gratis konto.": "Here you can see how it works, without an account. The real AI image needs a free account.",
+ "Länken är kopierad.": "The link is copied.",
+ "Här är länken.": "Here is the link.",
+ "Skicka den till vem du vill. Inget konto behövs för att öppna den.": "Send it to anyone you like. No account is needed to open it.",
+ "Länken": "The link",
+ "Kopiera": "Copy",
+ "Kopierad": "Copied",
+ "Kopiera länken och skicka den.": "Copy the link and send it.",
+ "{0} sak får inte plats i rummet och är inte med: {PA}.": "{0} thing does not fit the room and is left out: {PA}.",
+ "{0} saker får inte plats i rummet och är inte med: {PA}, {PB}.": "{0} things do not fit the room and are left out: {PA}, {PB}.",
+ "{0} saker får inte plats i rummet och är inte med: {PA}, {PB}, {PC}.": "{0} things do not fit the room and are left out: {PA}, {PB}, {PC}."
 }
