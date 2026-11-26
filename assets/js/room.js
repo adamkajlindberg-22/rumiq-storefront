@@ -1146,8 +1146,12 @@
         addEventListener("resize", onResize);
         // messages come in over the top edge of the room picture (site.css), so they cover neither the title nor the controls
         const rootS = document.documentElement.style; let tRaf = 0;
-        const toastAt = () => { tRaf = 0; const r = stage.getBoundingClientRect(); rootS.setProperty("--rm-toast-top", Math.round(Math.min(innerHeight * 0.5, r.top + 12)) + "px"); const hb = $("#rmHold", root).getBoundingClientRect(); rootS.setProperty("--rm-toast-l", Math.round(Math.max(0, (hb.width ? hb.right : r.left) + 8)) + "px"); /* beside Håll för före, not over it */ rootS.setProperty("--rm-toast-r", Math.round(Math.max(0, innerWidth - r.right + 8)) + "px"); };
+        const toastAt = () => { tRaf = 0; const r = stage.getBoundingClientRect(); let tp = Math.min(innerHeight * 0.5, r.top + 12);
+          // the word goes where the thing you just chose or swapped is not: over the top of the picture, or lower when the thing stands there (studio2 review minor 7)
+          const se = $(".rm-item.sel", wrap), tH = Math.max(($("#toast") || {}).offsetHeight || 0, 64) + 8; if (se) { const q = se.getBoundingClientRect(); if (q.top < tp + tH && q.bottom > tp) { const low = Math.min(innerHeight, r.bottom) - (innerWidth <= 900 ? 66 : 12) - tH; if (low > q.bottom + 4) tp = low; else if (q.top - tH - 4 > Math.max(r.top, 0) + 4) tp = q.top - tH - 4; } }
+          rootS.setProperty("--rm-toast-top", Math.round(tp) + "px"); const hb = $("#rmHold", root).getBoundingClientRect(); rootS.setProperty("--rm-toast-l", Math.round(Math.max(0, (hb.width ? hb.right : r.left) + 8)) + "px"); /* beside Håll för före, not over it */ rootS.setProperty("--rm-toast-r", Math.round(Math.max(0, innerWidth - r.right + 8)) + "px"); };
         const onScroll = () => { if (!tRaf) tRaf = requestAnimationFrame(toastAt); };
+        const tObs = new MutationObserver(() => { if ($("#toast").classList.contains("show")) setTimeout(toastAt, 360); toastAt(); }); if ($("#toast")) tObs.observe($("#toast"), { attributes: true, attributeFilter: ["class"] }); // placed again once the camera has glided to the thing
         addEventListener("scroll", onScroll, { passive: true });
         // see the room as it is: hold the button on the photo, or switch it on in the menu
         const before = $("#rmBefore", root);
@@ -1261,7 +1265,8 @@
         /* on a computer the panel stands beside the picture, under the thing's own card, so the room stays in sight while you
            choose (studio2 review M4); a phone has it under the picture's buttons. After a change the thing is kept in view */
         const placeSwap = () => { const desk = innerWidth > 900 && $(".rm-bytdesk", root); if (desk) { if (swapBox.previousElementSibling !== desk) desk.after(swapBox); } else if (swapBox.previousElementSibling !== $("#rmAct", root)) $("#rmAct", root).after(swapBox); };
-        const showSel = () => setTimeout(() => { const el = sel && $(`.rm-item[data-h="${sel}"]`, wrap); if (!el || view.on) return; const r = el.getBoundingClientRect(), top = ((document.querySelector("header") || {}).offsetHeight || 58) + 8;
+        const showSel = () => setTimeout(() => { const el = sel && $(`.rm-item[data-h="${sel}"]`, wrap); if (!el) return; const r = el.getBoundingClientRect(), top = ((document.querySelector("header") || {}).offsetHeight || 58) + 8;
+          if (view.on) { if (r.bottom < top + 24 || r.top > innerHeight - 24) scrollBy({ top: stage.getBoundingClientRect().top - top + 8, behavior: calm() ? "auto" : "smooth" }); return; } // a phone: back to the picture when the thing is out of sight
           if (r.top < top) scrollBy({ top: r.top - top, behavior: calm() ? "auto" : "smooth" }); else if (r.bottom > innerHeight - 8 && r.height < innerHeight - top) scrollBy({ top: r.bottom - innerHeight + 16, behavior: calm() ? "auto" : "smooth" }); }, 80);
         const openSwap = (h, focus) => { if (!h) return; if (sel !== h) select(h); swap.h = h; swap.cmp = false; swap.pick = []; placeSwap(); paintSwap(); if (innerWidth <= 900) { // a phone: the picture at the top and the panel under its buttons, both in sight (studio2 review M4)
             const top = ((document.querySelector("header") || {}).offsetHeight || 58), sy = stage.getBoundingClientRect().top + scrollY - top, pb = swapBox.getBoundingClientRect().bottom + scrollY;
@@ -1370,7 +1375,7 @@
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
         R._swapLive = (h, colour) => { if (!root.isConnected || !R.inScene(h)) return; const it = R.scene().find((x) => x.h === h); if (it) lookAt([it]); openSwap(h, colour ? "[data-swv][aria-pressed=true]" : ".rm-alt"); };
         { const sw0 = RQ.ss && RQ.ss.get("rumiq-room-swap"); if (sw0) { RQ.ss.set("rumiq-room-swap", ""); const [sw, c] = sw0.split("|"); if (R.inScene(sw)) setTimeout(() => R._swapLive(sw, c === "c"), 300); } }
-        return () => { R._swapLive = null; document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
+        return () => { tObs.disconnect(); R._swapLive = null; document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
       },
     };
   };
