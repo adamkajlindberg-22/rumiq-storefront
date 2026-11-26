@@ -100,7 +100,7 @@
       if (!live()) { if (!preview() && aiOn()) throw new Error("network"); const mine = (gen = { stopped: false, abort() { this.stopped = true; } }); await new Promise((ok) => setTimeout(ok, 1200)); if (gen === mine) gen = null; if (mine.stopped) throw new Error("cancelled"); return { demo: true, url: guide }; }
       const room = await AI.roomImage(1280);
       // v: the colour the picture shows (the cut-out is the first colour); the server answers at the room photo's size and shape
-      const rm = RQ.room.get(), res = await fn("generate", { idem, mode, edit, scene: scene.map((it) => ({ h: it.h, v: 0, x: it.x, y: it.y, w: it.w, flip: !!it.flip })), room, guide, size: { w: rm.w, h: rm.h }, ...(parent ? { parent } : {}), ...(pins ? { pins, room_info: { type: rm.type || null, sample: !!rm.sample, map: rm.map || null, known: rm.known || null } } : {}) }, onStage); // parent: the room's first picture, so the account keeps the versions together
+      const rm = RQ.room.get(), res = await fn("generate", { idem, mode, edit, scene: scene.map((it) => ({ h: it.h, v: 0, x: it.x, y: it.y, w: it.w, flip: !!it.flip })), room, guide, size: { w: rm.w, h: rm.h }, ...(parent ? { parent } : {}), ...(pins ? { pins: pins.map((x) => { const q = RQ.byHandle(x.h); return { ...x, name: q.en || q.name, tone: (q.tone || [])[x.v || 0] || (q.tone || [])[0] || null, colour: ((q.variants || [])[x.v || 0]) || null }; }), room_info: { type: rm.type || null, sample: !!rm.sample, map: rm.map || null, known: rm.known || null } } : {}) }, onStage); // parent: the room's first picture, so the account keeps the versions together
       cache = null; return res;
     },
     async checkout() { const r = await fn("stripe-checkout", { consent: true }); location.href = r.url; },
@@ -280,8 +280,9 @@
   // "Vad tycker du?" (was "Visa någon"): the before and after in one picture, through the phone's own share sheet when there is one
   const share = async (v, btn) => {
     // "Vad tycker du?": the room's link on the page too (the partner can answer on it), beside the picture (device3 X2)
-    const H = RQ.hem, rid = (v && v.roomId) || (H && H.activeId && H.activeId()), hr = rid && H && H.room(rid);
-    if (hr && H.items(hr).length && H.linkNote) H.linkNote(H.askUrl(hr), btn);
+    const H = RQ.hem, rid = (v && v.roomId) || (H && H.activeId && H.activeId()), hr = rid && H && H.room(rid), rm = (RQ.room && RQ.room.get()) || {};
+    const its = liveItems(v && v.items).map((it) => ({ h: it.h, v: it.v || 0 })); // the link holds exactly what the picture shows
+    if (H && H.linkNote && its.length) H.linkNote(H.askUrl({ ...(hr || {}), id: hr ? hr.id : "rum", type: (hr && hr.type) || rm.type || rm.map || "vardagsrum", style: hr ? hr.style : null, items: its }), btn);
     if (btn) btn.disabled = true;
     try {
       const blob = await pairBlob(v), file = new File([blob], "rumiq-fore-efter.jpg", { type: "image/jpeg" });
