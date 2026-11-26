@@ -119,7 +119,7 @@
       // business days: orders placed after the cut-off hour or at weekends start counting on the next weekday
       const add = (n) => { const x = from ? new Date(from) : new Date(); if (x.getHours() >= (c.cutoffHour || 14)) x.setDate(x.getDate() + 1); while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() + 1);
         let left = n; while (left > 0) { x.setDate(x.getDate() + 1); if (x.getDay() !== 0 && x.getDay() !== 6) left--; } return x; };
-      const f = (d) => add(d).toLocaleDateString(RQ_LANG === "en" ? "en-GB" : "sv-SE", { weekday: "short", day: "numeric", month: "short" });
+      const f = (d) => add(d).toLocaleDateString(window.RQ_LANG === "en" ? "en-GB" : "sv-SE", { weekday: "short", day: "numeric", month: "short" });
       return `${f(c.minDays)} – ${f(c.maxDays)}`;
     },
     html(p) {

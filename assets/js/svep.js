@@ -431,6 +431,7 @@
           onFinish: (st, deckEl) => {
             const r = resultHtml(st, scope); deckEl.outerHTML = r.html;
             const res = $(".svep-result", root); res.focus({ preventScroll: true });
+            { const see = $("[data-hem-see]", res); if (see && see.getBoundingClientRect().bottom > innerHeight - 90) see.scrollIntoView({ block: "nearest" }); } // a short phone: the room proposal's first button above the dock (D4)
             const tl = $(".sv-two-link", root); if (tl) tl.hidden = true; // the result asks "Inreder ni tillsammans?" itself, once
             const fresh = !(keep && keep.done.length === st.done.length);
             if (st.done.length) ss.set(KEEP, { scope: scope || "", done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged, soonDone: st.soonDone });

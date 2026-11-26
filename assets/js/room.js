@@ -45,8 +45,8 @@
      horizon h and the slope k. Rugs and curtains are [x, y, width, squash]. sun = the side the light comes from. */
   const MAPS = {
     vardagsrum: { h: 58, k: 0.91, sun: 1,
-      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], // the side table ends at about 84.4; a mug stands at 75.6-79.3
-      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[62.4, 72.6, 17], [80, 72, 17]], bedding: [],
+      surface: [[82, 68.6, 25], [73.6, 68.4, 25], [80.6, 68.2, 25]], busy: [[75.6, 79.3, 67.5]], edge: [[71.3, 84.7, 68.5]], // the side table's top runs from 71.8 to 84.4; a mug stands at 75.6-79.3
+      cushion: [[79.5, 64.5, 16.5], [66, 64.5, 16.5]], throw: [[65.5, 70.2, 17], [80, 72, 17]], bedding: [], // a throw over the backrest beside the room's own white one, not on top of it
       wall: [[36, 50, 17], [23, 50, 17], [48, 52, 17]],
       floor: [[49.5, 82.5], [40, 84.5], [28, 88], [15, 86]],
       rug: [[45, 96, 50, 0.42]], window: [[93, 76.5, 15, 1.13]] }, // the curtain reaches the floor where the window wall meets it, its top above the picture
@@ -136,7 +136,9 @@
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
     const busy = (x, y, w) => ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
-    const taken = (x, y, w, k) => busy(x, y, w) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
+    const foot = /lampa|vas|ljus|kruka/.test(p.handle) ? 0.25 : 0.4; // a lamp's shade may reach past the edge, its foot may not; a tray or a box stands on all of its width
+    const overEdge = (x, y, w, k) => (k || kind) === "surface" && ((M && M.edge) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && (x - w * foot < a || x + w * foot > b)); // it would hang over the table's edge
+    const taken = (x, y, w, k) => busy(x, y, w) || overEdge(x, y, w, k) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
       const w = clamp(kind === "rug" || kind === "window" ? learned.w : cm * learned.s / 100, 2.5, 96); let x = learned.x, n = 0;
@@ -1128,7 +1130,11 @@
             else { const sp = spotFor(p, R.scene().filter((x) => x.h !== h), true, null, now); if (sp) Object.assign(patch, { x: sp.x, y: sp.y, w: sp.w }, sp.sy ? { sy: sp.sy } : {}); } }
           R.update(h, patch); const nw = R.scene().find((x) => x.h === h); if (nw) { lookAt([nw]); learn(h, nw); } said(`${ON_WORD(it, to)} ${SURF[to]}.`); };
         ["#rmOn", "#rmOn2"].forEach((q) => $(q, root).addEventListener("change", (e) => { if (sel) setOn(sel, e.target.value); }));
-        const select = (h) => { if (swap && swap.h && swap.h !== h) { swap.h = null; paintSwap(); } sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); };
+        const select = (h) => { if (swap && swap.h && swap.h !== h) { swap.h = null; paintSwap(); } sel = h; $$(".rm-item", wrap).forEach((el) => el.classList.toggle("sel", el.dataset.h === h)); $$("#rmList li", root).forEach((li) => li.classList.toggle("on", !!$(`[data-pick="${h}"]`, li))); paintSel(); paintFoot(); if (h) requestAnimationFrame(actInView); };
+        // a short screen: the chosen thing's tools come up above the room's bar at the bottom, as far as the thing itself stays in sight (D7)
+        const actInView = () => { const a = $("#rmAct", root); if (!a || a.hidden || !a.getClientRects().length) return; const r = a.getBoundingClientRect(), bar = document.querySelector(".rm-bar"), bTop = bar && bar.getClientRects().length && getComputedStyle(bar).visibility !== "hidden" ? bar.getBoundingClientRect().top : innerHeight;
+          const need = r.bottom - bTop + 8; if (need <= 0) return; const el = $(".rm-item.sel", wrap), nav = $("#nav"), up = el ? el.getBoundingClientRect().top - (nav ? nav.getBoundingClientRect().bottom : 0) - 8 : need;
+          const by = Math.min(need, Math.max(0, up)); if (by > 0) window.scrollBy({ top: by, behavior: calm() ? "auto" : "smooth" }); };
         /* the selected thing at true scale: its measurements beside it, and for a rug the floor it covers, dashed */
         const paintFoot = (cur) => { const it = cur || (sel && R.scene().find((x) => x.h === sel)), poly = $("#rmArea polygon", root), lab = $("#rmAreaLab", root);
           if (!it || !it.real || !scaleAt(it)) { poly.setAttribute("points", ""); lab.hidden = true; return; }
@@ -1228,9 +1234,14 @@
         addEventListener("resize", onResize);
         // messages come in over the top edge of the room picture (site.css), so they cover neither the title nor the controls
         const rootS = document.documentElement.style; let tRaf = 0;
-        const toastAt = () => { tRaf = 0; const r = stage.getBoundingClientRect(); let tp = Math.min(innerHeight * 0.5, r.top + 12);
+        const toastAt = () => { tRaf = 0; const r = stage.getBoundingClientRect();
+          const cs = getComputedStyle(document.documentElement), rem = parseFloat(cs.fontSize) || 16, minTop = (parseFloat(cs.getPropertyValue("--nav-h")) + 0.75) * rem; // where site.css lets it start
+          let tp = Math.max(minTop, Math.min(innerHeight * 0.5, r.top + 12)); // where it really lands (the picture's top may be scrolled away), so the checks below see the truth (D8)
           // the word goes where the thing you just chose or swapped is not: over the top of the picture, or lower when the thing stands there (studio2 review minor 7)
-          const se = $(".rm-item.sel", wrap), tH = Math.max(($("#toast") || {}).offsetHeight || 0, 64) + 8; if (se) { const q = se.getBoundingClientRect(); if (q.top < tp + tH && q.bottom > tp) { const low = Math.min(innerHeight, r.bottom) - (innerWidth <= 900 ? 66 : 12) - tH; if (low > q.bottom + 4) tp = low; else if (q.top - tH - 4 > Math.max(r.top, 0) + 4) tp = q.top - tH - 4; } }
+          const se = $(".rm-item.sel", wrap), tH = Math.max(($("#toast") || {}).offsetHeight || 0, 64) + 8; if (se) { const q = se.getBoundingClientRect(); if (q.top < tp + tH && q.bottom > tp) { const low = Math.min(innerHeight, r.bottom) - (innerWidth <= 900 ? 66 : 12) - tH; if (low > q.bottom + 4) tp = low; else if (q.top - tH - 4 >= minTop) tp = q.top - tH - 4; } }
+          // nor over Ångra and Visa hela on the picture's lower edge (a short phone scrolled half past the picture): above them, or at the bottom
+          const pills = [$("#rmUndo", root), $("#rmZoom", root)].filter((b) => b && !b.hidden).map((b) => b.getBoundingClientRect()).filter((q) => q.height);
+          if (pills.some((q) => tp < q.bottom + 4 && tp + tH > q.top - 4)) { const pt = Math.min(...pills.map((q) => q.top)); const bar = document.querySelector(".rm-bar"), bTop = bar && bar.getClientRects().length ? Math.min(innerHeight, bar.getBoundingClientRect().top) : innerHeight; tp = pt - tH - 4 >= minTop ? pt - tH - 4 : bTop - tH - 4; } // else down by the room's bar, not over the toolbar
           rootS.setProperty("--rm-toast-top", Math.round(tp) + "px"); const hb = $("#rmHold", root).getBoundingClientRect(); rootS.setProperty("--rm-toast-l", Math.round(Math.max(0, (hb.width ? hb.right : r.left) + 8)) + "px"); /* beside Håll för före, not over it */ rootS.setProperty("--rm-toast-r", Math.round(Math.max(0, innerWidth - r.right + 8)) + "px"); };
         const onScroll = () => { if (!tRaf) tRaf = requestAnimationFrame(toastAt); };
         const tObs = new MutationObserver(() => { if ($("#toast").classList.contains("show")) setTimeout(toastAt, 360); toastAt(); }); if ($("#toast")) tObs.observe($("#toast"), { attributes: true, attributeFilter: ["class"] }); // placed again once the camera has glided to the thing
@@ -1247,7 +1258,11 @@
         before.addEventListener("click", () => show(before.getAttribute("aria-checked") !== "true"));
         // "Mer": everything that is not Lägg till, Inred åt mig or Spara
         const more = $("#rmMore", root), menu = $("#rmMenu", root);
-        const openMenu = (on, focus) => { menu.hidden = !on; more.setAttribute("aria-expanded", on); more.classList.toggle("on", on); if (on && focus) $("button", menu).focus(); };
+        // the menu opens upward; where that would put its top under the sticky header (scrolled down), it opens downward, or the page moves (D6)
+        const placeMenu = () => { menu.classList.remove("down"); const r = menu.getBoundingClientRect(), navB = (($("#nav") || {}).getBoundingClientRect ? $("#nav").getBoundingClientRect().bottom : 0) + 8;
+          if (r.top >= navB) return; const bar = document.querySelector(".rm-bar"), below = (bar && bar.getClientRects().length ? bar.getBoundingClientRect().top : innerHeight) - more.getBoundingClientRect().bottom - 8;
+          if (below >= r.height + 8) menu.classList.add("down"); else window.scrollBy(0, r.top - navB); };
+        const openMenu = (on, focus) => { menu.hidden = !on; more.setAttribute("aria-expanded", on); more.classList.toggle("on", on); if (on) placeMenu(); if (on && focus) $("button", menu).focus({ preventScroll: true }); };
         more.addEventListener("click", () => openMenu(menu.hidden, true));
         menu.addEventListener("click", (e) => { if (e.target.closest("button")) openMenu(false); });
         menu.addEventListener("keydown", (e) => {
@@ -1528,7 +1543,7 @@
   const closeVar = () => { vsheet.classList.remove("open"); document.documentElement.style.overflow = ""; if (varBack && varBack.focus && document.contains(varBack)) varBack.focus({ preventScroll: true }); };
   R.openVariants = (handles, then, lead) => { varThen = then; varBack = document.activeElement; $(".lead", vsheet).textContent = lead || "Välj den färg du vill köpa."; // lead: when the things come from elsewhere than the room picture
     { const t = document.getElementById("toast"); if (t) t.classList.remove("show"); } // nothing left lying on top of the dimmed page
-    $("#varList", vsheet).innerHTML = handles.map((h) => { const p = RQ.byHandle(h); return `<div class="var-row" data-h="${h}"><img src="${RQ.cut(p)}" alt=""><div><b>${esc(p.name)}</b>${lead ? "" : `<small class="var-shown">Bilden visar ${esc(p.variants[0])}</small>`}<div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${p.variants.map((v, i) => `<button type="button" class="chip" data-v="${i}" aria-pressed="${i === 0}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div></div></div>`; }).join("");
+    $("#varList", vsheet).innerHTML = handles.map((h) => { const p = RQ.byHandle(h); return `<div class="var-row" data-h="${h}"><img src="${RQ.cut(p)}" alt="" onload="if(this.naturalHeight>this.naturalWidth*1.8)this.classList.add('tall')"><div><b>${esc(p.name)}</b>${lead ? "" : `<small class="var-shown">Bilden visar ${esc(p.variants[0])}</small>`}<div class="chips" role="group" aria-label="Färg på ${esc(p.name)}">${p.variants.map((v, i) => `<button type="button" class="chip" data-v="${i}" aria-pressed="${i === 0}"><i style="background:${esc(p.tone[i] || p.tone[0])}"></i>${esc(v)}</button>`).join("")}</div></div></div>`; }).join("");
     vsheet.classList.add("open"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".sheet-x", vsheet).focus(), 60); };
   vsheet.addEventListener("click", (e) => { if (e.target.closest("[data-var-close]")) return closeVar();
     const c = e.target.closest("[data-v]"); if (c) { $$("[data-v]", c.parentElement).forEach((b) => b.setAttribute("aria-pressed", b === c)); return; }
