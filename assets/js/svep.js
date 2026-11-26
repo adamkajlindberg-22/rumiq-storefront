@@ -47,6 +47,7 @@
 
   /* ---------------------------------------------------------------- the cards */
   const inScope = (p, scope) => !scope || p.rooms.includes(scope);
+  const EXPLORED = new Set();
   // the next cards: a varied opener, then the best match with every fourth card from somewhere else
   const upcoming = (t, skip, n, step, scope) => {
     const left = RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen) && !skip.has(p.handle));
@@ -56,7 +57,7 @@
       if (t.likes < 2 || k % 4 === 3) { // explore: a category not seen lately, in a stable order
         const recent = new Set(out.map((p) => p.cat));
         const pool = left.filter((p) => !recent.has(p.cat)); const from = pool.length ? pool : left;
-        pick = from.sort((a, b) => hash(a.handle + k) - hash(b.handle + k))[0];
+        pick = from.sort((a, b) => hash(a.handle + k) - hash(b.handle + k))[0]; EXPLORED.add(pick.handle); // picked for variety, so no "why" chip
       } else pick = left.sort((a, b) => RQ.taste.score(b, t) - RQ.taste.score(a, t))[0];
       out.push(pick); left.splice(left.indexOf(pick), 1);
     }
@@ -95,6 +96,73 @@
     const look = RQ.LOOKS.map((l) => ({ l, s: l.items.reduce((a, h) => a + RQ.taste.score(RQ.byHandle(h), t), 0) / l.items.length })).sort((a, b) => b.s - a.s)[0];
     return { mix, tones: tones.slice(0, 6), look: sum ? look.l : null, liked: likedH };
   };
+  // "Din stil över tid": the style mix after each finished round, the newest first (rumiq-style-log, synced with the account)
+  RQ.styleLog = {
+    get: () => (ls.get("rumiq-style-log", []) || []).filter((x) => x && x.at && Array.isArray(x.mix)),
+    add(prof, scope) { const e = { at: new Date().toISOString(), mix: prof.mix.filter((m) => m.pct > 0).map((m) => [m.id, m.pct]), likes: prof.liked.length, scope: scope || "" };
+      (RQ.vault ? RQ.vault.set : ls.set).call(RQ.vault || ls, "rumiq-style-log", [e, ...RQ.styleLog.get()].slice(0, 12)); },
+  };
+
+  /* ---------------------------------------------------------------- true reasons, and "Mer som det här"
+     RQ.why.of(p, ctx) gives one short reason that holds for p, or "" (never a made-up one). In this order:
+       ctx.room (a room project): "Saknas i ditt rum: belysning" when the room has nothing of that kind and the kind belongs
+         in that kind of room; ctx.group (G.calc of a group): "Ni gillade båda den", "Alla gillade den", "3 av 4 gillade den";
+         ctx.room again: "Passar ditt vardagsrum" when the thing is made for that kind of room and has the room's style;
+       you: "Du gillade den i Svep", "Du har sparat den"; "Eftersom du gillade Glob bordslampa" when it shares a style with
+         something you liked and is the same kind of thing or the same colour family; "Passar din stil: Skandinavisk" when it
+         has the style you lean to most. ctx.mine = false leaves out the first two (lists where your own things are marked anyway). */
+  const KIND = { "belysning-atmosfar": "belysning", "tavlor-vaggar": "något på väggen", "forvaring-organisering": "förvaring", "sovrum-komfort": "textil", "hem-inredning": "detaljer", "kok-matplats": "något för köket", "badrum-valmaende": "något för badet", uteliv: "något för uteplatsen" };
+  const ROOMWORD = { hall: ["din hall", "er hall"], uteliv: ["din uteplats", "er uteplats"] };
+  const roomWord = (t, ours) => (ROOMWORD[t] || [`ditt ${(RQ.roomById(t) || { name: "rum" }).name.toLowerCase()}`, `ert ${(RQ.roomById(t) || { name: "rum" }).name.toLowerCase()}`])[ours ? 1 : 0];
+  const sameTone = (p, q) => nearestTone(p.tone[0]).id === nearestTone(q.tone[0]).id;
+  const near = (p, q) => p.handle !== q.handle && p.styles.some((s) => q.styles.includes(s)) && (p.cat === q.cat || sameTone(p, q));
+  const likedOf = (t) => [...new Set([...Object.keys(t.seen).filter((h) => t.seen[h] > 0), ...(S.wishlist ? S.wishlist().map((p) => p.handle) : [])])].map(RQ.byHandle).filter(Boolean);
+  RQ.why = {
+    kind: (cat) => KIND[cat] || "",
+    roomWord,
+    missing(r, p) { if (!r || !p || !p.rooms.includes(r.type) || !KIND[p.cat]) return false; const cats = (RQ.roomById(r.type) || {}).cats || [], its = (r.items || []).map((it) => RQ.byHandle(it.h)).filter(Boolean); return cats.includes(p.cat) && !its.some((q) => q.cat === p.cat); },
+    // what a room lacks: the kinds that belong in that kind of room that it has nothing of, each with the best thing for it
+    gaps(r) { if (!r) return []; const cats = (RQ.roomById(r.type) || {}).cats || [], its = (r.items || []).map((it) => RQ.byHandle(it.h)).filter(Boolean);
+      return cats.filter((c) => KIND[c] && !its.some((q) => q.cat === c)).map((c) => RQ.PRODUCTS.filter((p) => p.cat === c && p.rooms.includes(r.type)).sort((a, b) => (r.style ? (b.styles.includes(r.style) ? 1 : 0) - (a.styles.includes(r.style) ? 1 : 0) : 0) || RQ.taste.score(b) - RQ.taste.score(a))[0]).filter(Boolean); },
+    of(p, ctx = {}) {
+      if (!p) return ""; const t = ctx.t || RQ.taste.get(), r = ctx.room, ours = !!(r && r.group), gp = ctx.group;
+      if (r && RQ.why.missing(r, p)) return `Saknas i ${ours ? "ert" : "ditt"} rum: ${KIND[p.cat]}`;
+      if (gp && gp.n > 1) { const i = gp.hs.indexOf(p.handle), k = i < 0 ? 0 : gp.likes[i]; if (k === gp.n) return gp.n === 2 ? "Ni gillade båda den" : "Alla gillade den"; if (k > 0 && k >= gp.n / 2) return `${k} av ${gp.n} gillade den`; }
+      if (r && r.style && p.rooms.includes(r.type) && p.styles.includes(r.style)) return `Passar ${roomWord(r.type, ours)}`;
+      if (ctx.mine !== false) { if (t.seen[p.handle] > 0) return "Du gillade den i Svep"; if (S.isWished(p.handle)) return "Du har sparat den"; }
+      const q = likedOf(t).find((x) => near(p, x)); if (q) return `Eftersom du gillade ${q.name}`;
+      const top = RQ.taste.top(t)[0]; if (top && p.styles.includes(top)) return `Passar din stil: ${RQ.STYLES[top].name}`;
+      return "";
+    },
+    // for shop lists sorted for you: the reason, or nothing when you have no taste yet
+    shop: (p) => (RQ.taste.get().n ? RQ.why.of(p) : ""),
+  };
+  // more of the same kind: shared style, the same kind of thing, the same colour family; each with what they share
+  RQ.moreLike = (h, n = 4) => {
+    const p = RQ.byHandle(h); if (!p) return [];
+    return RQ.PRODUCTS.filter((q) => q.handle !== h).map((q) => { const st = q.styles.filter((s) => p.styles.includes(s)), cat = q.cat === p.cat, tone = sameTone(p, q);
+      const why = cat && st.length ? "Samma sort och stil" : st.length && tone ? "Samma stil och färgton" : st.length ? `Samma stil: ${RQ.STYLES[st[0]].name}` : cat ? `Också ${KIND[q.cat] || "samma sort"}` : "";
+      return { p: q, why, s: st.length * 2 + (cat ? 4 : 0) + (tone ? 2 : 0) + (q.rooms.some((r) => p.rooms.includes(r)) ? 1 : 0) }; })
+      .filter((x) => x.why && x.s >= 3).sort((a, b) => b.s - a.s).slice(0, n);
+  };
+  // the panel under the tiles or the cards: a few things like it, with the reason on each, and a round of Svep from there
+  document.addEventListener("click", (e) => {
+    const sd = e.target.closest("[data-svep-seed]"); if (sd) { ss.set("rumiq-svep-seed", sd.dataset.svepSeed); ss.del(KEEP); if (RQ.currentRoute() === "svep") { e.preventDefault(); RQ.router(); scrollTo(0, 0); } return; }
+    const x = e.target.closest("[data-ml-close]"); if (x) { const pn = x.closest(".ml"), b = pn && pn.previousElementSibling && $(`[data-more][aria-expanded="true"]`, pn.previousElementSibling); if (pn) pn.remove(); if (b) { b.setAttribute("aria-expanded", "false"); b.focus({ preventScroll: true }); } return; }
+    const b = e.target.closest("[data-more]"); if (!b) return; e.preventDefault();
+    const h = b.dataset.more, p = RQ.byHandle(h), host = b.closest(".sv-liked, .grid"); if (!p || !host) return;
+    const old = host.nextElementSibling && host.nextElementSibling.matches(".ml") ? host.nextElementSibling : null, same = old && old.dataset.ml === h;
+    $$("[data-more]", host).forEach((y) => y.setAttribute("aria-expanded", "false")); if (old) old.remove(); if (same) return;
+    const list = RQ.moreLike(h), why = Object.fromEntries(list.map((x) => [x.p.handle, x.why]));
+    const pn = document.createElement("section"); pn.className = "ml"; pn.dataset.ml = h; pn.setAttribute("aria-labelledby", "ml-" + h);
+    pn.innerHTML = `<div class="ml-head"><h3 class="h3" id="ml-${h}" tabindex="-1">Mer som ${esc(p.name)}</h3><button class="iconbtn ml-x" type="button" data-ml-close aria-label="Stäng">${ICO.x}</button></div>
+      ${list.length ? RQ.grid(list.map((x) => x.p), "ml-grid", false, (q) => why[q.handle]) : `<p class="small">Inget mer av samma slag just nu. Sortimentet växer.</p>`}
+      <p class="ml-foot"><a class="tlink" href="#svep" data-svep-seed="${h}">Svep fler som den</a></p>`;
+    host.after(pn); b.setAttribute("aria-expanded", "true");
+    if (RQ.markImages) RQ.markImages(pn); if (RQ.watch) RQ.watch(pn);
+    $("h3", pn).focus({ preventScroll: true }); pn.scrollIntoView({ block: "nearest", behavior: reduced() ? "auto" : "smooth" });
+    RQ.track && RQ.track("more_like", { item_id: h });
+  });
 
   /* ---------------------------------------------------------------- deck markup and engine */
   const deckHtml = (px, compact) => `<div class="sv-wrap${compact ? " compact" : ""}">
@@ -117,7 +185,7 @@
     const el = (n) => $(`#${cfg.px}${n}`, root);
     const deckEl = el("Deck");
     const st0 = cfg.start || {};
-    const st = { done: [...(st0.done || [])], answers: { ...(st0.answers || {}) }, saved: [...(st0.saved || [])], bagged: [...(st0.bagged || [])], forced: [], history: [], over: false, soonDone: !!st0.soonDone };
+    const st = { done: [...(st0.done || [])], answers: { ...(st0.answers || {}) }, saved: [...(st0.saved || [])], bagged: [...(st0.bagged || [])], forced: [...(st0.forced || [])], history: [], over: false, soonDone: !!st0.soonDone };
     let stack = [], busy = false, queue = [];
     const cards = () => $$(".sv-card", deckEl);
     const topCard = () => cards().pop();
@@ -182,7 +250,7 @@
     const undo = () => {
       queue = [];
       if (busy || st.over || !st.history.length) return;
-      const r = st.history.pop(); ls.set("rumiq-taste", JSON.parse(r.before));
+      const r = st.history.pop(); vset("rumiq-taste", JSON.parse(r.before));
       if (r.soon) { const [s, v] = JSON.parse(r.soon); ls.set("rumiq-soon", s); ls.set("rumiq-votes", v); st.soonDone = false; }
       if (r.wish && S.isWished(r.h)) S.toggleWish(r.h);
       if (r.bag) { const line = S.cartLines().find((l) => l.id === r.h + "::0"); if (line) S.setQty(line.id, line.quantity - 1); }
@@ -251,13 +319,13 @@
 
   /* ---------------------------------------------------------------- the style picture */
   const loadImg = (src) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
-  RQ.styleImage = async (prof, liked) => {
+  RQ.styleImage = async (prof, liked, label = "Min stil") => {
     const W = 1080, H = 1920, cv = document.createElement("canvas"); cv.width = W; cv.height = H; const x = cv.getContext("2d");
     try { await document.fonts.ready; } catch (e) {}
     const F = (w, s) => `${w} ${s}px "Familjen Grotesk", system-ui, sans-serif`;
     x.fillStyle = "#EDEDEA"; x.fillRect(0, 0, W, H);
     x.fillStyle = "#22252A"; x.font = F(500, 52); x.textBaseline = "alphabetic"; x.fillText("RumIQ", 90, 160);
-    x.fillStyle = "#696B68"; x.font = F(600, 34); x.fillText(tr("Min stil").toUpperCase(), 90, 330);
+    x.fillStyle = "#696B68"; x.font = F(600, 34); x.fillText(tr(label).toUpperCase(), 90, 330);
     const st = prof.mix.filter((m) => m.pct >= 25).slice(0, 2);
     x.fillStyle = "#22252A"; x.font = F(600, 112);
     const lines = st.length === 2 ? [st[0].name, `${tr("och")} ${st[1].name}`] : st.length ? [st[0].name] : [tr("Vi lär oss fortfarande")];
@@ -285,51 +353,129 @@
         const im = ims[i]; if (im) { const k = Math.min((sz - 50) / im.width, (sz - 50) / im.height), w = im.width * k, h = im.height * k; x.drawImage(im, px + (sz - w) / 2, y + (sz - h) / 2, w, h); }
       });
     }
-    x.fillStyle = "#22252A"; x.font = F(500, 40); x.fillText(tr("Svep fram din egen stil på RumIQ"), 90, H - 120);
+    x.fillStyle = "#22252A"; x.font = F(500, 40); x.fillText(tr("Svep fram din egen stil på RumIQ"), 90, H - 130);
+    x.fillStyle = "#696B68"; x.font = F(500, 32); x.fillText(tr("Se ditt hem innan du köper."), 90, H - 78);
     return new Promise((res) => cv.toBlob((b) => res(b), "image/png"));
   };
-  const shareStyle = async (st, liked) => {
-    const prof = RQ.styleProfile(), url = new URL("svep/", document.baseURI).href;
-    const txt = `${tr("Min stil på RumIQ")}: ${st.map((s) => `${tr(s.name)} ${s.pct} %`).join(", ")}.`;
-    let blob = null; try { blob = await RQ.styleImage(prof, liked); } catch (e) {}
+  // opts: prof (another profile, e.g. a group's), label ("Vår stil"), url (the link that goes with the picture)
+  const shareStyle = async (st, liked, opts = {}) => {
+    const prof = opts.prof || RQ.styleProfile(), url = opts.url || new URL("svep/", document.baseURI).href, label = opts.label || "Min stil";
+    const txt = `${tr(label + " på RumIQ")}: ${st.map((s) => `${tr(s.name)} ${s.pct} %`).join(", ")}. ${tr("Se ditt hem innan du köper.")}`;
+    let blob = null; try { blob = await RQ.styleImage(prof, liked, label); } catch (e) {}
     const file = blob && typeof File === "function" ? new File([blob], "min-stil-rumiq.png", { type: "image/png" }) : null;
     try {
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: tr("Min stil på RumIQ"), text: `${txt} ${url}` }); return; }
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: tr(label + " på RumIQ"), text: `${txt} ${url}` }); RQ.track && RQ.track("style_share", { method: "file", label }); return; }
       if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "min-stil-rumiq.png"; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
       let copied = false; try { await navigator.clipboard.writeText(`${txt} ${url}`); copied = true; } catch (e) {}
       RQ.toast(blob ? (copied ? "Bilden är sparad och länken kopierad." : "Bilden är sparad.") : copied ? "Länken är kopierad." : "Det gick inte att dela härifrån. Kopiera adressen i webbläsaren i stället.");
+      RQ.track && RQ.track("style_share", { method: blob ? "download" : copied ? "copy" : "none", label });
     } catch (e) {}
   };
 
-  /* ---------------------------------------------------------------- Svep tillsammans: link format
-     #svep-ihop-<answers>[_<answers>].<handle>.<handle>…[~<name>[_<name>]]   answers: 1 = likes, 0 = not */
+  /* ---------------------------------------------------------------- Svep tillsammans, 2 to 6 people: the link
+     #svep-ihop-g<group>.<cards>.<person>_<person>…
+       group: 4 characters, random. cards: each card's own 4-character number (made from its handle, as in shared lists),
+       back to back. person: the answers as hex (one bit per card, 1 = likes), a 2-character id, then the name (optional).
+     Each answer link carries everyone who has answered so far; the next person adds themselves and sends it on.
+     Older two-person links (#svep-ihop-<0101>[_<0101>].<handle>.<handle>…[~<name>[_<name>]]) still open, as a group of
+     one or two. Groups you are in are kept in this browser (rumiq-groups, synced with the account when it is live). */
   const cleanName = (s) => String(s || "").replace(/[^\p{L}\p{M} '-]/gu, "").replace(/\s+/g, " ").trim().slice(0, 24);
-  const twoLink = (hs, a, b, na, nb) => {
-    const names = [cleanName(na), cleanName(nb)];
-    const tail = names[0] || names[1] ? "~" + names[0] + (b ? "_" + names[1] : "") : "";
-    return new URL("svep-ihop/", document.baseURI).href + "#svep-ihop-" + encodeURIComponent(`${a}${b ? "_" + b : ""}.${hs.join(".")}${tail}`).replace(/%7E/gi, "~");
+  const MAXP = 6, GKEY = "rumiq-groups", NKEY = "rumiq-svep-name";
+  const pid4 = (h) => { let x = 7; for (const c of h) x = (x * 31 + c.charCodeAt(0)) >>> 0; return (x % 1679616).toString(36).padStart(4, "0"); };
+  const rid = (n) => { let s = ""; for (let i = 0; i < n; i++) s += "0123456789abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 36)]; return s; };
+  const toHex = (b) => { let s = ""; for (let i = 0; i < b.length; i += 4) s += parseInt(b.slice(i, i + 4).padEnd(4, "0"), 2).toString(16); return s; };
+  const fromHex = (x, n) => [...x].map((c) => parseInt(c, 16).toString(2).padStart(4, "0")).join("").slice(0, n);
+  const undec = (s) => { try { return /%[0-9a-f]{2}/i.test(s) ? decodeURIComponent(s) : s; } catch (e) { return s; } };
+  const vset = (k, v) => (RQ.vault ? RQ.vault.set(k, v) : ls.set(k, v));
+  const G = (RQ.svepGroup = {
+    all: () => (ls.get(GKEY, []) || []).filter((g) => g && /^[0-9a-z]{4}$/.test(g.id) && Array.isArray(g.hs) && Array.isArray(g.ppl)),
+    get: (id) => G.all().find((g) => g.id === id) || null,
+    save(g) { const l = G.all().filter((x) => x.id !== g.id); g.at = new Date().toISOString(); vset(GKEY, [g, ...l].slice(0, 12)); return g; },
+    payload: (g) => "g" + g.id + "." + g.hs.map(pid4).join("") + (g.ppl.length ? "." + g.ppl.map((p) => toHex(p.b) + p.id + encodeURIComponent(cleanName(p.n))).join("_") : ""),
+    url: (g) => new URL("svep-ihop/", document.baseURI).href + "#svep-ihop-" + G.payload(g),
+    parse(raw) {
+      raw = String(raw || ""); if (!raw) return null;
+      if (raw[0] === "g") { // today's link
+        const [head, cards = "", people = ""] = raw.split("."), id = head.slice(1);
+        if (!/^[0-9a-z]{4}$/.test(id) || !cards || cards.length % 4 || cards.length > 120) return null;
+        const ids = Object.fromEntries(RQ.PRODUCTS.map((p) => [pid4(p.handle), p.handle]));
+        const hs = cards.match(/.{4}/g).map((x) => ids[x]); if (hs.some((h) => !h)) return null;
+        const L = Math.ceil(hs.length / 4), ppl = [];
+        for (const s of people ? people.split("_") : []) {
+          const hx = s.slice(0, L), pid = s.slice(L, L + 2);
+          if (!/^[0-9a-f]+$/.test(hx) || hx.length !== L || !/^[0-9a-z]{2}$/.test(pid)) return null;
+          if (!ppl.some((p) => p.id === pid) && ppl.length < MAXP) ppl.push({ id: pid, b: fromHex(hx, hs.length), n: cleanName(undec(s.slice(L + 2))) });
+        }
+        return { id, hs, ppl };
+      }
+      // an older two-person link: the cards by handle, one or two answer strings, the names after ~
+      const [core, names = ""] = raw.split("~"), parts = core.split("."), ans = (parts[0] || "").split("_"), hs = parts.slice(1);
+      if (!hs.length || hs.length > 30 || ans.length > 2 || ans.some((a) => !/^[01]+$/.test(a) || a.length !== hs.length) || hs.some((h) => !RQ.byHandle(h))) return null;
+      const nm = names.split("_").map((x) => cleanName(undec(x)));
+      return { id: "l" + (hash(hs.join(".") + ans[0]) % 46656).toString(36).padStart(3, "0"), hs, ppl: ans.map((b, i) => ({ id: i ? "b0" : "a0", b, n: nm[i] || "" })), old: true };
+    },
+    // what this browser knows of the group joins what the link says (two links sent on from the same group meet here)
+    open(link) {
+      const st = G.get(link.id); if (!st || st.hs.join() !== link.hs.join()) return { ...link, me: null, room: null };
+      const ppl = st.ppl.map((p) => ({ ...p }));
+      link.ppl.forEach((p) => { const q = ppl.find((x) => x.id === p.id); if (!q) ppl.push(p); else if (!q.n && p.n) q.n = p.n; });
+      return { ...st, ppl: ppl.slice(0, MAXP) };
+    },
+    // fresh cards for a new group: varied, a different set each time, for the whole home or one room
+    fresh(scope) {
+      const gid = rid(4), pool = RQ.PRODUCTS.filter((p) => inScope(p, scope)).sort((a, b) => hash(a.handle + gid) - hash(b.handle + gid)), out = [];
+      while (out.length < Math.min(ROUND, pool.length)) { const recent = new Set(out.slice(-2).map((p) => p.cat)); const p = pool.find((x) => !out.includes(x) && !recent.has(x.cat)) || pool.find((x) => !out.includes(x)); out.push(p); }
+      return { id: gid, hs: out.map((p) => p.handle), ppl: [], me: null, room: null, scope: scope || null };
+    },
+  });
+  // what the group likes: all of them, most of them (at least half, three or more people), each one; how alike they are; their style
+  G.calc = (g) => {
+    const n = g.ppl.length, hs = g.hs, likes = hs.map((h, i) => g.ppl.filter((p) => p.b[i] === "1").length);
+    const all = n ? hs.filter((h, i) => likes[i] === n) : [], most = n >= 3 ? hs.filter((h, i) => likes[i] < n && likes[i] >= n / 2) : [];
+    const per = g.ppl.map((p) => hs.filter((h, i) => p.b[i] === "1"));
+    let s = 0, k = 0; // the mean over every pair: liked by both out of liked by either
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const a = new Set(per[i]), u = new Set([...per[i], ...per[j]]), both = per[j].filter((h) => a.has(h)).length; s += u.size ? both / u.size : 0; k++; }
+    const t = { styles: {}, cats: {}, tone: null, likes: 0, n: 0, seen: {} };
+    per.flat().forEach((h) => { const p = RQ.byHandle(h); p.styles.forEach((x) => (t.styles[x] = (t.styles[x] || 0) + 1)); t.cats[p.cat] = (t.cats[p.cat] || 0) + 1; t.likes++; t.seen[h] = 1; });
+    const sum = STYLE_KEYS.reduce((a, x) => a + (t.styles[x] || 0), 0);
+    const mix = sum ? STYLE_KEYS.map((x) => ({ id: x, name: RQ.STYLES[x].name, pct: Math.round(((t.styles[x] || 0) / sum) * 100) })).sort((a, b) => b.pct - a.pct) : [];
+    const tones = []; (all.length + most.length ? [...all, ...most] : per.flat()).forEach((h) => { const x = nearestTone(RQ.byHandle(h).tone[0]); if (!tones.some((y) => y.id === x.id)) tones.push(x); });
+    const look = sum ? RQ.LOOKS.map((l) => ({ l, s: l.items.reduce((a, h) => a + RQ.taste.score(RQ.byHandle(h), t), 0) / l.items.length })).sort((a, b) => b.s - a.s)[0].l : null;
+    return { n, likes, all, most, per, pct: k ? Math.round((s / k) * 100) : 0, mix, top: mix.filter((m) => m.pct >= 25).slice(0, 2), tones: tones.slice(0, 5), look };
   };
-  const parseTwo = (raw) => {
-    if (!raw) return null;
-    const [core, names = ""] = raw.split("~"), parts = core.split("."), ans = (parts[0] || "").split("_"), hs = parts.slice(1);
-    if (!hs.length || hs.length > 30 || ans.length > 2 || ans.some((a) => !/^[01]+$/.test(a) || a.length !== hs.length) || hs.some((h) => !RQ.byHandle(h))) return null;
-    const nm = names.split("_").map(cleanName);
-    return { hs, a: ans[0], b: ans[1] || null, na: nm[0] || "", nb: nm[1] || "" };
-  };
+  // "skandinavisk och klassisk", "skandinavisk, mjuk och ombonad": the group style in running text
+  const styleWords = (top) => { const ns = top.map((s) => s.name.charAt(0).toLocaleLowerCase("sv") + s.name.slice(1)); if (ns.length > 1 && / och /.test(ns[0])) ns.reverse(); return ns.length < 2 ? ns[0] || "" : / och /.test(ns[1]) ? `${ns[0]}, ${ns[1]}` : `${ns[0]} och ${ns[1]}`; };
+  G.styleWords = styleWords;
+  // the share sheet where there is one (phones), else the link is copied; the link also stays in a field to copy by hand
   const shareLink = async (url, title, text) => {
     try { if (navigator.share) { await navigator.share({ title, text, url }); return "shared"; } } catch (e) { if (e && e.name === "AbortError") return "aborted"; }
-    try { await navigator.clipboard.writeText(url); RQ.toast("Länken är kopierad."); return "copied"; } catch (e) { return "shown"; }
+    try { await navigator.clipboard.writeText(url); RQ.toast("Länken är kopierad. Klistra in den i ett meddelande."); return "copied"; } catch (e) { return "shown"; }
   };
+  RQ.shareLink = shareLink;
   // a small form: optional name, then share the link (or show it to copy by hand)
-  const linkForm = (id, label, btn) => `<form class="sv-linkf" id="${id}" novalidate><label for="${id}N">${label}</label>
-      <div class="field"><input id="${id}N" name="n" maxlength="24" autocomplete="given-name" placeholder="Till exempel Anna"><button class="btn sm" type="submit">${SV.link}<span>${btn}</span></button></div>
-      <input class="sv-linkout" type="text" readonly hidden aria-label="Länken"></form>`;
-  const bindLinkForm = (f, make, title, text) => f && f.addEventListener("submit", async (e) => {
-    e.preventDefault(); const url = make(f.n.value), out = $(".sv-linkout", f);
-    out.value = url; out.hidden = false; out.select && out.select();
-    await shareLink(url, title, text);
-    RQ.track && RQ.track("svep_together_link", {});
-  });
+  const linkForm = (id, label, btn, name = "") => `<form class="sv-linkf" id="${id}" novalidate><label for="${id}N">${label}</label>
+      <div class="field"><input id="${id}N" name="n" maxlength="24" autocomplete="given-name" placeholder="Till exempel Anna" value="${esc(name)}"><button class="btn sm" type="submit">${SV.link}<span>${btn}</span></button></div>
+      <div class="sv-linkout-row" hidden><input class="sv-linkout" type="text" readonly aria-label="Länken"><button class="btn ghost sm" type="button" data-copy>Kopiera</button></div>
+      <p class="small sv-linkmsg" role="status"></p></form>`;
+  const bindLinkForm = (f, make, title, text, ev = "svep_group_share") => {
+    if (!f) return;
+    const row = $(".sv-linkout-row", f), out = $(".sv-linkout", f), msg = $(".sv-linkmsg", f);
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault(); const nm = cleanName(f.n.value); if (nm) ls.set(NKEY, nm);
+      const url = make(nm); out.value = url;
+      const how = await shareLink(url, title, text);
+      // the link stays in view to copy by hand when nothing could share it (and after a share, for a second message)
+      row.hidden = false; if (how === "shown") { out.focus(); out.select && out.select(); }
+      msg.textContent = how === "shared" ? "Skickat. Du kan skicka samma länk till fler." : how === "copied" ? "Länken är kopierad. Klistra in den i ett meddelande." : how === "aborted" ? "" : "Kopiera länken och skicka den i ett meddelande.";
+      RQ.track && RQ.track(ev, { method: how });
+    });
+    f.addEventListener("click", async (e) => {
+      if (!e.target.closest("[data-copy]")) return; let done = false;
+      try { await navigator.clipboard.writeText(out.value); done = true; } catch (er) {}
+      if (!done) { out.focus(); out.select && out.select(); try { done = document.execCommand("copy"); } catch (er) {} }
+      msg.textContent = done ? "Länken är kopierad." : "Markera länken och kopiera den.";
+    });
+  };
 
   // put things in Mitt rum and go there; without a room the set-up sheet comes first, so nobody lands on an empty page
   // only what belongs in this kind of room goes in, four at a time, so the room does not fill with soap pumps and desk trays;
@@ -355,7 +501,9 @@
   const roundAnswers = (st) => { const hs = st.done.filter((h) => !h.startsWith("soon:") && RQ.byHandle(h)); return { hs, a: hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join("") }; };
   // long Swedish compounds in narrow tiles break where the words meet ("Skrivbords-organisatör"), never mid-syllable
   RQ.shy = (s) => (window.RQ_LANG === "en" ? String(s) : String(s).replace(/(skrivbords|förvarings|terrakotta|uppladdnings|förråds|våffel|keramik|ull|jute|linne|bords)(?=[a-zåäö]{4,})/giu, "$1\u00AD"));
-  const savedTiles = (list) => `<div class="sv-liked">${list.map((p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(RQ.shy(p.name))}</span><small>${kr(p.price)}</small></button>`).join("")}</div>`;
+  // with more = true each thing also has "Mer som det här" (more of the same kind, with the reason; RQ.moreLike)
+  const tile = (p) => `<button type="button" data-sheet="${p.handle}"><img src="${RQ.cut(p)}" alt=""><span>${esc(RQ.shy(p.name))}</span><small>${kr(p.price)}</small></button>`;
+  const savedTiles = (list, more) => `<div class="sv-liked">${list.map((p) => (more ? `<div class="sv-tile">${tile(p)}<button type="button" class="sv-more" data-more="${p.handle}" aria-expanded="false" aria-label="Mer som ${esc(p.name)}">Mer som det här</button></div>` : tile(p))).join("")}</div>`;
   // "Skandinavisk och klassisk", "Skandinavisk, mjuk och ombonad": one "och", a capital only first
   const styleTitle = (top) => {
     const ns = top.map((s) => s.name), i = ns.findIndex((n) => / och /.test(n));
@@ -378,14 +526,14 @@
       ${top.length && RQ.hem ? RQ.hem.slot({ type: scope || "vardagsrum", style: top[0].id, from: "svep", compact: true, prefer: saved.map((p) => p.handle) }) : ""}
       ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
         ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
-      ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved)}
+      ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved, true)}
         <div class="ctrl-row sp-acts"><button class="btn" type="button" id="svAll">Lägg alla i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="svRoomAll">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div>
 </div>` : ""}
       ${st.bagged.length ? `<p class="small">${st.bagged.length} ${st.bagged.length === 1 ? "vara ligger" : "varor ligger"} redan i varukorgen. <a href="#kassa">Till kassan</a></p>` : ""}
       ${prof.look || ra.hs.length >= 3 ? `<div class="sp-next">` : ""}${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
       ${ra.hs.length >= 3 ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Inreder ni tillsammans?</b><p>Skicka samma kort till någon. När ni båda har svept ser ni vad ni gillar gemensamt.</p>
         <button class="btn ghost sm" type="button" id="svTwoOpen" aria-expanded="false" aria-controls="svTwo">${SV.link}<span>Skicka korten</span></button>
-        ${linkForm("svTwo", "Ditt namn, om du vill", "Skicka korten").replace("<form ", "<form hidden ")}</div></div>` : ""}${prof.look || ra.hs.length >= 3 ? "</div>" : ""}
+        ${linkForm("svTwo", "Ditt namn, om du vill", "Skicka korten", ls.get(NKEY, "")).replace("<form ", "<form hidden ")}</div></div>` : ""}${prof.look || ra.hs.length >= 3 ? "</div>" : ""}
       <div class="ctrl-row" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep tio till</button>` : ""}<a class="btn ghost" href="#for-dig">Butiken för dig</a></div>
       <p class="sp-links">${top.length ? `<button class="tlink" type="button" id="svShare">Dela min stil</button>` : ""}<button class="tlink" type="button" id="svAgain">Börja om från början</button></p><p class="small" id="svAgainNote" role="status"></p></div>` }; // few actions: two buttons, two quiet links
   };
@@ -414,7 +562,10 @@
         ${deckHtml("sv", false)}</section>`,
       mount(root) {
         const kept = ss.get(KEEP, null), keep = kept && kept.scope === (scope || "") && Array.isArray(kept.done) && kept.done.length ? kept : null;
-        const carry = !keep && !scope && ss.get("rumiq-svep-carry", null); // dropped once this page takes the round further
+        // "Svep fler som den" (Mer som det här): the round opens with things like it that you have not swiped yet
+        const seedH = !keep && !scope && ss.get("rumiq-svep-seed", ""), t0 = RQ.taste.get(); ss.del("rumiq-svep-seed");
+        const seed = seedH && RQ.byHandle(seedH) ? RQ.moreLike(seedH, 6).filter((x) => !(x.p.handle in t0.seen)).slice(0, 4) : [], seedWhy = Object.fromEntries(seed.map((x) => [x.p.handle, `Mer som ${RQ.byHandle(seedH).name}`]));
+        const carry = !keep && !scope && (seed.length ? { forced: seed.map((x) => x.p.handle) } : ss.get("rumiq-svep-carry", null)); // dropped once this page takes the round further
         const unseen = (t, st) => RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length;
         // "Kommer snart" comes as card six, so it only counts in a round that gets that far
         const soonOpen = (st, t) => !scope && !st.soonDone && st.done.length <= 5 && st.done.length + unseen(t, st) >= 5 && !!nextSoon();
@@ -427,13 +578,15 @@
             if (n === 3 && st.done.length === 5 && soonOpen(st, t)) { out.unshift(nextSoon()); out.length = Math.min(out.length, 3); }
             return out;
           },
-          why: (p, t) => { const s = RQ.taste.top(t)[0]; return t.likes >= 2 && s && p.styles.includes(s) ? `Passar din stil: ${RQ.STYLES[s].name}` : ""; },
+          // a true reason on the top card: what it is like that you liked, or your style; none on the cards picked for variety
+          why: (p, t) => seedWhy[p.handle] || (t.likes >= 2 && !EXPLORED.has(p.handle) ? RQ.why.of(p, { t, mine: false }) : ""),
           onFinish: (st, deckEl) => {
             const r = resultHtml(st, scope); deckEl.outerHTML = r.html;
             const res = $(".svep-result", root); res.focus({ preventScroll: true });
             const tl = $(".sv-two-link", root); if (tl) tl.hidden = true; // the result asks "Inreder ni tillsammans?" itself, once
             const fresh = !(keep && keep.done.length === st.done.length);
             if (st.done.length) ss.set(KEEP, { scope: scope || "", done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged, soonDone: st.soonDone });
+            if (fresh && r.top.length) RQ.styleLog.add(RQ.styleProfile(), scope);
             if (fresh) RQ.track && RQ.track("swipe_round", { saved: r.saved.length, bagged: st.bagged.length, style: r.top.length ? r.top[0].id : "", scope: scope || "" });
             // a new round is drawn in place: no detour through another page, so Back still leads where you came from
             const again = () => { ss.del(KEEP); RQ.router(); scrollTo(0, 0); };
@@ -449,79 +602,166 @@
             const ans = roundAnswers(st);
             // the form for a name opens only for those who want to send the cards, so the result page stays short
             const to = $("#svTwoOpen", root); to && to.addEventListener("click", () => { const f = $("#svTwo", root); f.hidden = false; to.hidden = true; to.setAttribute("aria-expanded", "true"); $("#svTwoN", root).focus(); });
-            bindLinkForm($("#svTwo", root), (n) => twoLink(ans.hs, ans.a, null, n, ""), tr("Svep tillsammans på RumIQ"), tr("Svep samma kort som jag, så ser vi vad vi båda gillar."));
+            // the round's cards and your answers start a group: you are its first person, the link carries you
+            let mine = null;
+            bindLinkForm($("#svTwo", root), (n) => {
+              if (!mine) { const me = { id: rid(2), b: ans.a, n }; mine = { id: rid(4), hs: ans.hs, ppl: [me], me: me.id, room: null, scope: scope || null }; RQ.track && RQ.track("svep_group_created", { cards: ans.hs.length, from: "svep" }); }
+              else mine.ppl[0].n = n;
+              G.save(mine); return G.url(mine);
+            }, tr("Svep tillsammans på RumIQ"), tr("Svep tio kort, så ser vi vad vi båda gillar. Se ditt hem innan du köper."));
           },
         });
       },
     };
   };
 
-  /* ---------------------------------------------------------------- Svep tillsammans */
-  const compare = (two, viewerIsB) => {
-    const both = [], onlyA = [], onlyB = [];
-    two.hs.forEach((h, i) => { const a = two.a[i] === "1", b = two.b[i] === "1"; if (a && b) both.push(h); else if (a) onlyA.push(h); else if (b) onlyB.push(h); });
-    const union = both.length + onlyA.length + onlyB.length, pct = union ? Math.round((both.length / union) * 100) : 0;
-    const nA = two.na || (viewerIsB ? "Din vän" : "Person 1"), nB = viewerIsB ? "Du" : two.nb || "Person 2";
-    const P = (l) => l.map(RQ.byHandle).filter(Boolean), bothP = P(both);
-    const group = (label, name, list) => (list.length ? `<div class="sp-saved"><span class="eyebrow">${label}${name ? ` <b class="sv-name">${esc(name)}</b>` : ""} · ${list.length}</span>${savedTiles(P(list))}</div>` : "");
-    return { both: bothP, html: `<div class="svep-result two" tabindex="-1">
-      <span class="eyebrow">Svep tillsammans</span>
-      <h2 class="h2">${both.length ? `Ni gillar båda ${both.length} ${both.length === 1 ? "sak" : "saker"}` : "Ni gillade olika saker den här gången"}</h2>
-      <div class="two-meter" role="group" aria-label="Hur lika ni tycker"><span class="two-names"><b class="sv-name">${esc(nA)}</b><b class="sv-name">${esc(nB)}</b></span><span class="sp-bar"><i style="width:${pct}%"></i></span><span class="two-pct">${pct} % gemensamt</span></div>
-      ${both.length ? `<div class="sp-saved"><span class="eyebrow">Ni gillar båda</span>${savedTiles(bothP)}
-        <div class="ctrl-row sp-acts"><button class="btn" type="button" id="twoAll">Lägg det ni båda gillar i varukorgen · ${kr(bothP.reduce((s, p) => s + p.price, 0))}</button><button class="btn ghost" type="button" id="twoRoom">${RQ.roomIco}<span>Se dem i ditt rum</span></button></div></div>` : `<p class="lead">Det är också bra att veta. Prova en runda för ett rum ni ska inreda, så blir det lättare att mötas.</p>`}
-      ${group("Bara", nA, onlyA)}${group("Bara", nB === "Du" ? "" : nB, onlyB).replace("Bara · ", "Bara du · ")}
-      ${viewerIsB ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Skicka ditt svar tillbaka</b><p>Då ser <b class="sv-name">${esc(nA)}</b> samma jämförelse.</p>${linkForm("twoBack", "Ditt namn, om du vill", "Skicka svaret")}</div></div>` : ""}
-      <div class="ctrl-row" style="margin-top:.6rem;justify-content:center"><a class="btn ghost" href="#svep">Svep en egen runda</a><a class="btn ghost" href="#svep-ihop">Börja om tillsammans</a></div></div>` };
+  /* ---------------------------------------------------------------- Svep tillsammans (2 to 6 people) */
+  const isMe = (g, i) => !!g.me && g.ppl[i].id === g.me;
+  const who = (g, i) => (isMe(g, i) ? "Du" : g.ppl[i].n || `Person ${i + 1}`);
+  const initial = (g, i) => (isMe(g, i) ? "Du" : (g.ppl[i].n || "").charAt(0).toLocaleUpperCase("sv") || String(i + 1));
+  // who has swiped: a calm round mark and the name for each, in the order they answered (and an open place for you)
+  const pplRow = (g, you) => `<ul class="gr-ppl" aria-label="De som har svept">${g.ppl.map((p, i) => `<li><span class="gr-av" data-c="${i % 6}" aria-hidden="true">${esc(initial(g, i))}</span><b class="sv-name">${esc(who(g, i))}</b></li>`).join("")}${you ? `<li class="you"><span class="gr-av" aria-hidden="true">+</span><span>Du</span></li>` : ""}</ul>`;
+  const nSaker = (k) => `${k} ${k === 1 ? "sak" : "saker"}`;
+  const OUR = { hall: "Vår hall", uteliv: "Vår uteplats" };
+  const ourName = (t) => OUR[t] || `Vårt ${(RQ.roomById(t) || { name: "rum" }).name.toLowerCase()}`;
+  // the room a group result becomes: the kind of room most of what you all liked is made for, those things, the group style
+  G.makeRoom = (g, c = G.calc(g)) => {
+    const H = RQ.hem; if (!H) return null;
+    const want = [...c.all, ...c.most], pool = want.length ? want : [...new Set(c.per.flat())];
+    const types = ["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor", "uteliv"];
+    const fit = (t) => pool.reduce((s, h) => s + (RQ.byHandle(h).rooms.includes(t) ? (c.all.includes(h) ? 2 : 1) : 0), 0);
+    const type = types.reduce((b, t) => (fit(t) > fit(b) ? t : b), "vardagsrum"), style = c.top[0] ? c.top[0].id : null;
+    let items = pool.filter((h) => RQ.byHandle(h).rooms.includes(type)).slice(0, 8).map((h) => ({ h, v: 0 }));
+    if (!items.length) items = H.propose({ type, style }).items;
+    const r = H.create({ label: ourName(type), type, style, items });
+    H.patch(r.id, { group: { id: g.id, link: G.payload(g), names: g.ppl.map((p, i) => (isMe(g, i) ? "" : p.n || "")).filter(Boolean), people: g.ppl.length, words: styleWords(c.top), liked: c.all, most: c.most } });
+    g.room = r.id; G.save(g);
+    RQ.track && RQ.track("svep_group_room", { people: g.ppl.length, items: items.length, type });
+    return H.room(r.id);
   };
+  const roomPanel = (g) => {
+    const H = RQ.hem, r = H && g.room && H.room(g.room); if (!r) return "";
+    const its = H.items(r), gr = r.group || {}, w = gr.words || "";
+    return `<div class="gr-room" data-gr-r="${esc(r.id)}"><span class="eyebrow">Sparat i Mina rum</span><h3 class="h3" tabindex="-1">${esc(H.name(r))}</h3>
+        ${w ? `<p class="small">${esc(w.charAt(0).toLocaleUpperCase("sv") + w.slice(1))}, er gemensamma stil.</p>` : ""}
+        <span class="gr-room-ims" aria-hidden="true">${its.slice(0, 5).map((it) => `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">`).join("")}</span>
+        <div class="ai-row"><button class="btn" type="button" data-gr-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-gr-buy>Köp allt · ${kr(H.money(r).total)}</button></div>
+        <div class="ai-row small-row"><button class="tlink" type="button" data-gr-ask>Vad tycker du?</button><a class="tlink" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna i Sparat</a></div></div>`;
+  };
+  const groupResult = (g) => {
+    const c = G.calc(g), n = c.n, P = (l) => l.map(RQ.byHandle).filter(Boolean), sum = (l) => P(l).reduce((s, p) => s + p.price, 0);
+    const meI = g.ppl.findIndex((p) => p.id === g.me), alone = n === 1 && meI === 0, full = n >= MAXP;
+    const keep = c.all.length ? c.all : c.most;
+    const block = (label, list, cls = "") => (list.length ? `<div class="sp-saved ${cls}"><span class="eyebrow">${label} · ${list.length}</span>${savedTiles(P(list), true)}</div>` : "");
+    const acts = !alone && c.mix.length ? `<div class="gr-acts">${g.room && RQ.hem && RQ.hem.room(g.room) ? roomPanel(g) : `<div class="ctrl-row sp-acts"><button class="btn" type="button" data-gr-room>${RQ.roomIco}<span>Gör ett rum av det</span></button>${keep.length ? `<button class="btn ghost" type="button" data-gr-cart>Lägg i varukorgen · ${kr(sum(keep))}</button>` : ""}</div><p class="small gr-note">Rummet hamnar under Sparat, med er stil och det ni gillar.</p>`}</div>` : "";
+    const title = alone ? "Dina svar är klara." : c.all.length ? (n === 2 ? `Ni gillar båda ${nSaker(c.all.length)}` : `Ni gillar alla ${nSaker(c.all.length)}`) : c.most.length ? `De flesta av er gillar ${nSaker(c.most.length)}` : "Ni gillade olika saker den här gången";
+    const send = full ? `<p class="small gr-full">Gruppen är full. Sex personer har svept samma kort.</p>`
+      : `<div class="sp-two gr-send"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>${alone ? "Skicka korten" : "Skicka vidare"}</b>
+        <p>${alone ? "Länken har dina svar. Den du skickar till sveper samma kort, och sen ser ni vad ni båda gillar." : "Fler kan svepa samma kort, upp till sex. Länken har allas svar hittills."}</p>
+        ${meI >= 0 ? linkForm("grSend", "Ditt namn, om du vill", alone ? "Skicka korten" : "Skicka vidare", g.ppl[meI].n || ls.get(NKEY, "")) : `<button class="btn sm" type="button" data-gr-join>${SV.two}<span>Svep korten du också</span></button>`}</div></div>`;
+    const style = !alone && c.mix.length ? `<div class="gr-style"><span class="eyebrow">Er gemensamma stil</span><p class="gr-style-t">${c.top.length ? styleTitle(c.top) : esc(c.mix[0].name)}</p>
+        <div class="sp-grid"><div class="sp-mix" role="group" aria-label="Er stil i procent">${c.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
+        ${c.tones.length ? `<div class="sp-tones"><span class="eyebrow">Era färger</span><div>${c.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>
+        ${c.look ? `<a class="sp-look" href="#look-${c.look.id}"><span class="sp-look-ims">${c.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för er</span><b>${esc(c.look.name)}</b><small>${esc(c.look.lead)}</small></span></a>` : ""}</div>` : "";
+    const liked = alone ? block("Det du gillade", c.per[0])
+      : n === 2 ? `${block("Det ni båda gillar", c.all)}${c.all.length ? acts : ""}${[0, 1].map((i) => { const only = c.per[i].filter((h) => !c.all.includes(h)); return only.length ? `<div class="sp-saved"><span class="eyebrow">${isMe(g, i) ? "Bara du" : `Bara <b class="sv-name">${esc(who(g, i))}</b>`} · ${only.length}</span>${savedTiles(P(only), true)}</div>` : ""; }).join("")}${c.all.length ? "" : acts}`
+      : `${block("Det ni alla gillar", c.all)}${c.all.length ? acts : ""}${block("Det de flesta gillar", c.most)}${c.all.length ? "" : acts}
+        <details class="gr-each"><summary>Vad var och en gillade</summary>${g.ppl.map((p, i) => `<div class="sp-saved"><span class="eyebrow"><b class="sv-name">${esc(who(g, i))}</b> · ${c.per[i].length}</span>${c.per[i].length ? savedTiles(P(c.per[i]), false) : `<p class="small">Inget den här gången.</p>`}</div>`).join("")}</details>`;
+    return { c, html: `<div class="svep-result two group" tabindex="-1">
+      ${alone ? "" : `<span class="eyebrow">Svep tillsammans · ${n} personer</span>`}
+      <h2 class="h2">${title}</h2>
+      ${alone ? `<p class="lead">Skicka korten till dem du inreder med. När de har svept ser ni vad ni gillar gemensamt.</p>${send}` : `${pplRow(g, false)}
+      <div class="two-meter" role="group" aria-label="Hur lika ni tycker"><span class="sp-bar"><i style="width:${c.pct}%"></i></span><span class="two-pct">${c.pct} % gemensamt</span></div>`}
+      ${!alone && !c.all.length && !c.most.length && n === 2 && !c.per.flat().length ? `<p class="lead">Det är också bra att veta. Prova en runda för ett rum ni ska inreda, så blir det lättare att mötas.</p>` : ""}
+      ${liked}
+      ${style}
+      ${alone ? "" : send}
+      <div class="ctrl-row" style="margin-top:.6rem;justify-content:center"><a class="btn ghost" href="#svep">Svep en egen runda</a><a class="btn ghost" href="#svep-ihop">Starta en ny grupp</a></div>
+      ${!alone && c.mix.length ? `<p class="sp-links"><button class="tlink" type="button" data-gr-style>Dela er stil</button></p>` : ""}</div>` };
+  };
+  // everything a group result does, on its own root (the result page, or the deck page once you are done)
+  const bindGroup = (root, g) => {
+    const H = RQ.hem, room = () => H && g.room && H.room(g.room), c = G.calc(g), keep = c.all.length ? c.all : c.most;
+    bindLinkForm($("#grSend", root), (nm) => { const me = g.ppl.find((p) => p.id === g.me); if (me) me.n = nm; G.save(g); try { history.replaceState(history.state, "", G.url(g)); } catch (e) {} return G.url(g); },
+      tr("Svep tillsammans på RumIQ"), g.ppl.length > 1 ? tr("Svep tio kort, så ser vi vad vi alla gillar. Se ditt hem innan du köper.") : tr("Svep tio kort, så ser vi vad vi båda gillar. Se ditt hem innan du köper."));
+    root.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b || !b.closest(".svep-result.group")) return;
+      if (b.matches("[data-gr-room]")) { const r = G.makeRoom(g, c); if (!r) return; const box = b.closest(".gr-acts"); box.innerHTML = roomPanel(g); $("h3", box).focus({ preventScroll: true }); box.scrollIntoView({ block: "nearest", behavior: reduced() ? "auto" : "smooth" }); return; }
+      if (b.matches("[data-gr-cart]")) { RQ.addMany(keep, b, "Det ni gillar"); return; }
+      const r = room();
+      if (b.matches("[data-gr-see]") && r) { H.openInRoom({ room: r.type, items: H.items(r), style: r.style, budget: r.budget, project: r.id }); return; }
+      if (b.matches("[data-gr-buy]") && r) { RQ.addMany(H.items(r).map((it) => it.h + "::" + (it.v || 0)), b, H.name(r)); return; }
+      if (b.matches("[data-gr-ask]") && r) { H.askLink(r, b); return; }
+      if (b.matches("[data-gr-join]")) { ss.set("rumiq-svep-join", g.id); RQ.router(); scrollTo(0, 0); return; }
+      if (b.matches("[data-gr-style]")) { shareStyle(c.top, [...c.all, ...c.most, ...c.per.flat()].filter((h, i, a) => a.indexOf(h) === i).map(RQ.byHandle), { prof: { mix: c.mix, tones: c.tones }, label: "Vår stil", url: G.url(g) }); }
+    });
+  };
+  const crumbsTwo = () => RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], ["Tillsammans"]]);
+  const introView = (bad) => ({
+    title: "Svep tillsammans · RumIQ",
+    html: `<section class="wrap svep two-intro"><div class="sv-head">${crumbsTwo()}<h1 class="h1">Svep tillsammans.</h1><p class="lead">Inreder ni ihop? Svep samma kort var för sig, två till sex personer, och se vad ni alla gillar. Utan att behöva bråka om gardinerna.</p>
+        ${bad ? `<p class="note">Länken verkar vara ofullständig. Be om en ny länk, eller starta en egen grupp.</p>` : ""}
+        <ol class="two-steps"><li><b>Svep tio kort</b><span>Höger på det du gillar, vänster på resten.</span></li><li><b>Skicka länken</b><span>Till en eller flera, i ett vanligt meddelande. Inget konto behövs.</span></li><li><b>Se vad ni alla gillar</b><span>Er gemensamma stil och det ni är överens om. Gör ett rum av det med ett tryck.</span></li></ol>
+        <fieldset class="gr-scope"><legend>Vad ska ni inreda?</legend><div class="chips">${[["", "Hela hemmet"], ...RQ.ROOMS.map((r) => [r.id, r.name])].map(([id, nm], i) => `<button type="button" class="chip" data-gr-scope="${id}" aria-pressed="${!i}">${esc(nm)}</button>`).join("")}</div></fieldset>
+        <div class="ctrl-row" style="margin-top:1.4rem"><button class="btn" type="button" id="grStart">${SV.two}<span>Starta en grupp</span></button><a class="btn ghost" href="#svep">Svep själv först</a></div>
+        <p class="small" style="margin-top:1rem">Svaren finns bara i länken ni skickar till varandra och i era egna webbläsare. Vi sparar dem inte.</p>
+        <p class="small hem-promise">Se ditt hem innan du köper.</p></div></section>`,
+    mount(root) {
+      let scope = "";
+      root.addEventListener("click", (e) => {
+        const c = e.target.closest("[data-gr-scope]"); if (c) { scope = c.dataset.grScope; $$("[data-gr-scope]", root).forEach((x) => x.setAttribute("aria-pressed", x === c)); return; }
+        if (e.target.closest("#grStart")) { const g = G.fresh(scope); RQ.track && RQ.track("svep_group_start", { scope }); location.hash = "#svep-ihop-" + G.payload(g); }
+      });
+    },
+  });
   V.svepIhop = (payload) => {
-    const two = parseTwo(payload);
-    const crumbs = RQ.crumbs([["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], ["Tillsammans"]]);
-    if (!two) return {
-      title: "Svep tillsammans · RumIQ",
-      html: `<section class="wrap svep two-intro"><div class="sv-head">${crumbs}<h1 class="h1">Svep tillsammans.</h1><p class="lead">Inreder ni ihop? Svep samma kort var för sig och se vad ni båda gillar, utan att behöva bråka om gardinerna.</p>
-        ${payload ? `<p class="note">Länken verkar vara ofullständig. Be om en ny länk, eller börja en egen runda.</p>` : ""}
-        <ol class="two-steps"><li><b>Svep tio kort</b><span>Höger på det du gillar, vänster på resten.</span></li><li><b>Skicka korten</b><span>Du får en länk att skicka i ett meddelande.</span></li><li><b>Se vad ni båda gillar</b><span>När den andra har svept syns det ni har gemensamt, redo att lägga i varukorgen.</span></li></ol>
-        <div class="ctrl-row" style="margin-top:1.6rem"><a class="btn" href="#svep">Börja svepa</a></div>
-        <p class="small" style="margin-top:1rem">Svaren finns bara i länken ni skickar till varandra. Vi sparar dem inte.</p></div></section>`,
-    };
-    if (two.b) {
-      const c = compare(two, false);
-      return { title: "Svep tillsammans · RumIQ", html: `<section class="wrap svep two-done"><div class="sv-head">${crumbs}<h1 class="h1">Så här svarade ni.</h1></div>${c.html}</section>`,
-        mount(root) { bindTwoActions(root, c.both); } };
+    const link = G.parse(payload);
+    if (!link) return introView(!!payload);
+    const g = G.open(link), meIn = !!g.me && g.ppl.some((p) => p.id === g.me), n = g.ppl.length;
+    const join = ss.get("rumiq-svep-join", "") === g.id;
+    // you are in it, or it is full, or an older reply that already holds both answers: the result. Otherwise: your turn.
+    if (meIn || n >= MAXP || (link.old && n === 2 && !join)) {
+      const r = groupResult(g);
+      return { title: "Svep tillsammans · RumIQ", html: `<section class="wrap svep two-done"><div class="sv-head">${crumbsTwo()}<h1 class="h1">${meIn && n === 1 ? "Svep tillsammans." : "Så här svarade ni."}</h1></div>${r.html}</section>`,
+        mount(root) { if (meIn) G.save(g); bindGroup(root, g); } };
     }
+        const h1 = n ? "Din tur att svepa." : "Svep tio kort.";
+    const line = n === 0 ? "Sen skickar du dem vidare, så ser ni vad ni gillar gemensamt." : `Svep ${g.hs.length} kort, så ser ni vad ni ${n === 1 ? "båda" : "alla"} gillar.`;
     return {
       title: "Svep tillsammans · RumIQ",
-      html: `<section class="wrap svep" aria-label="Svep tillsammans">
-        <div class="sv-head">${crumbs}<span class="eyebrow">Svep tillsammans</span><h1 class="h1">Vad gillar ni båda?</h1>
-          <p class="lead keep">${two.na ? `<b class="sv-name">${esc(two.na)}</b> ` : ""}<span>${two.na ? "har svept de här korten." : "Någon har svept de här korten."}</span> <span>Svep dem du också, så ser ni vad ni har gemensamt.</span></p>
-          ${legend}<p class="small sv-after keep">Du ser inte vad den andra har svarat förrän du är klar.</p></div>
-        ${deckHtml("sv", false)}</section>`,
+      html: `<section class="wrap svep group-join" aria-label="Svep tillsammans">
+        <div class="sv-head">${crumbsTwo()}<span class="eyebrow">Svep tillsammans</span><h1 class="h1">${h1}</h1>
+          ${n ? `<div class="gr-who">${pplRow(g, true)}</div>` : ""}
+          <p class="lead keep">${line}</p>
+          ${legend}<p class="small sv-after keep"><span>Du ser vad de andra har svarat när du är klar.</span> <span class="hem-promise">Se ditt hem innan du köper.</span></p></div>
+        ${deckHtml("sv", false)}
+        ${n ? `<p class="small gr-peek"><button class="tlink" type="button" id="grPeek">Har du redan svept? Se svaren</button></p>` : ""}</section>`,
       mount(root) {
-        // your answers to these cards are kept for this tab, so a reload shows the comparison instead of the cards again
-        const K2 = "rumiq-svep-two", kept = ss.get(K2, null), keep = kept && kept.raw === payload && kept.answers ? kept : null;
+        if (n && !join) RQ.track && RQ.track("svep_group_opened", { people: n });
+        ss.del("rumiq-svep-join");
+        const pk = $("#grPeek", root); if (pk) pk.addEventListener("click", () => { const r = groupResult({ ...g, me: null }); const sec = $(".svep", root); sec.classList.remove("group-join"); sec.classList.add("two-done"); sec.innerHTML = `<div class="sv-head">${crumbsTwo()}<h1 class="h1">Så här svarade ni.</h1></div>${r.html}`; bindGroup(root, { ...g, me: null }); $(".svep-result", root).focus({ preventScroll: true }); });
         return runDeck(root, {
-          px: "sv", ctx: "ihop", keys: true, hint: true, start: keep ? { done: two.hs, answers: keep.answers } : null, finished: !!keep,
-          total: () => two.hs.length,
-          next: (st, t, skip, n) => two.hs.filter((h) => !skip.has(h)).slice(0, n).map(RQ.byHandle),
+          px: "sv", ctx: "ihop", keys: true, hint: true,
+          total: () => g.hs.length,
+          next: (st, t, skip, k) => g.hs.filter((h) => !skip.has(h)).slice(0, k).map(RQ.byHandle),
           onFinish: (st, deckEl) => {
-            ss.set(K2, { raw: payload, answers: st.answers });
-            const b = two.hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join(""), res = { ...two, b };
-            const c = compare(res, true); deckEl.outerHTML = c.html;
+            const me = { id: rid(2), b: g.hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join(""), n: ls.get(NKEY, "") || "" };
+            while (g.ppl.some((p) => p.id === me.id)) me.id = rid(2);
+            g.ppl.push(me); g.me = me.id; G.save(g);
+            try { history.replaceState(history.state, "", G.url(g)); } catch (e) {}
+            RQ.track && RQ.track(g.ppl.length === 1 ? "svep_group_created" : "svep_group_completed", { people: g.ppl.length, cards: g.hs.length });
+            const r = groupResult(g); deckEl.outerHTML = r.html;
+            // the head now says what the page shows: the answers, not your turn
+            $$(".gr-peek, .gr-who, .sv-head .lead, .sv-head .eyebrow, .sv-legend, .sv-after", root).forEach((x) => x.remove());
+            const h = $(".sv-head h1", root); if (h) h.textContent = g.ppl.length === 1 ? "Svep tillsammans." : "Så här svarade ni.";
+            const sec = $(".svep", root); if (sec) { sec.classList.remove("group-join"); sec.classList.add("two-done"); }
             $(".svep-result", root).focus({ preventScroll: true });
-            RQ.track && RQ.track("svep_together_done", { both: c.both.length });
-            bindTwoActions(root, c.both);
-            bindLinkForm($("#twoBack", root), (n) => twoLink(two.hs, two.a, b, two.na, n), tr("Svep tillsammans på RumIQ"), tr("Här är vad vi båda gillar."));
+            bindGroup(root, g);
           },
         });
       },
     };
   };
-  const bindTwoActions = (root, both) => {
-    const all = $("#twoAll", root); all && all.addEventListener("click", () => RQ.addMany(both.map((p) => p.handle), all, "Det ni båda gillar")); RQ.addAllBtn(all, () => both.map((p) => p.handle), () => `Lägg det ni båda gillar i varukorgen · ${kr(both.reduce((s, p) => s + p.price, 0))}`);
-    const rm = $("#twoRoom", root); rm && rm.addEventListener("click", () => toRoom(both.map((p) => p.handle)));
-  };
-
   /* ---------------------------------------------------------------- the taster on the home page */
   RQ.svepHome = {
     html() {

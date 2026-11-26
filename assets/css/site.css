@@ -278,6 +278,8 @@ main{min-height:60vh}
 .card h3 a::after{content:"";position:absolute;inset:0;z-index:1}
 .card .price{font-size:.98rem;font-weight:500;white-space:nowrap}
 .card .sub{display:flex;align-items:center;gap:.6rem;margin-top:.25rem;color:var(--muted);font-size:.85rem}
+.card-why{margin-top:.3rem;color:var(--accent);font-size:.8rem;font-weight:560;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} /* svep2: a true reason, on lists made for you */
+.card .card-more{margin-top:.2rem;min-height:44px;font-size:.85rem;text-align:left}
 .card .swatches{display:flex;gap:.25rem}
 .card .swatches i{width:.65rem;height:.65rem;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
 .card .tag,.card .quick{display:none}
@@ -428,6 +430,7 @@ html:has(.cookie.show) .buybar.show:not(.rm-bar){transform:translateY(110%);visi
 .look-item input:not(:checked) ~ img{opacity:.4;filter:saturate(.3)}
 .look-item .nm{font-weight:560;line-height:1.25;margin-top:.4rem}
 .look-item .pr{color:var(--muted);font-size:.9rem}
+.look-item .why{color:var(--accent);font-size:.78rem;font-weight:560;line-height:1.3}
 .look-item.in{cursor:default}
 .look-item .pr .lp-have{display:inline-flex;align-items:center;gap:.3rem;font-weight:560;color:var(--accent)} /* already in the cart, as the look rows say it */
 .look-sum{position:sticky;top:calc(var(--nav-h) + 1rem);background:var(--paper);border:1px solid var(--line2);border-radius:var(--r);padding:1.3rem;display:grid;gap:1rem}
@@ -2307,6 +2310,50 @@ body.on-checkout .tools{grid-column:3}
 .two-intro .sv-head,.two-done .sv-head{max-width:44rem}
 .svep.two-intro,.svep.two-done{display:block}
 .two-done .svep-result{margin:2rem auto 0}
+/* svep2: Svep tillsammans for 2 to 6 people */
+.gr-ppl{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem .9rem;margin:.2rem 0 0;padding:0}
+.gr-ppl li{display:flex;align-items:center;gap:.45rem;font-size:.95rem}
+.gr-av{--c:#8C8A80;display:grid;place-items:center;width:2.25rem;height:2.25rem;border-radius:50%;background:color-mix(in srgb,var(--c) 34%,var(--paper));color:var(--ink);font-weight:620;font-size:.86rem;flex:none}
+.gr-av[data-c="0"]{--c:#8E9A7E}.gr-av[data-c="1"]{--c:#C4A57A}.gr-av[data-c="2"]{--c:#B9876D}.gr-av[data-c="3"]{--c:#7F95A8}.gr-av[data-c="4"]{--c:#9A88A3}.gr-av[data-c="5"]{--c:#8C8A80}
+.gr-ppl .you .gr-av{background:none;border:1.5px dashed var(--field);color:var(--muted)}
+.gr-ppl .you span:last-child{color:var(--muted)}
+.gr-who{display:grid;gap:.4rem;justify-items:start;margin:.9rem 0 .2rem}
+.gr-who .gr-ppl{justify-content:flex-start}
+.group-join .hem-promise{display:inline}
+.gr-peek{margin-top:.8rem;text-align:center;grid-column:1/-1}
+.gr-peek .tlink{min-height:44px}
+.gr-style{display:grid;gap:.7rem;justify-items:center;width:100%;margin-top:.8rem;padding-top:1.4rem;border-top:1px solid var(--line2)}
+.gr-style-t{font-size:clamp(1.35rem,2.4vw,1.75rem);font-weight:560;letter-spacing:-.01em;line-height:1.2;text-wrap:balance}
+.gr-acts{width:100%;display:grid;justify-items:center;gap:.4rem}
+.gr-note,.gr-full{color:var(--muted)}
+.gr-room{display:grid;gap:.6rem;justify-items:center;width:100%;max-width:34rem;padding:1.3rem 1.2rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);animation:rqRise .5s var(--ease) both}
+.gr-room h3:focus{outline:none}
+.gr-room-ims{display:flex;gap:.4rem;justify-content:center}
+.gr-room-ims img{width:3.4rem;height:3.4rem;object-fit:contain;background:var(--sunk);border-radius:10px;padding:.3rem}
+.gr-room .ai-row{justify-content:center}
+.gr-each{width:100%;max-width:40rem;text-align:center}
+.gr-each summary{cursor:pointer;min-height:44px;display:inline-flex;align-items:center;font-weight:560;text-decoration:underline;text-underline-offset:3px}
+.gr-each .sp-saved{margin-top:1rem}
+.gr-scope{border:0;padding:0;margin:1.6rem 0 0;max-width:34rem}
+.gr-scope legend{font-weight:560;margin-bottom:.6rem}
+.gr-scope .chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.sv-linkout-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.sv-linkout-row[hidden]{display:none}
+.sv-linkout{flex:1 1 12rem;min-width:0;border:1px solid var(--field);border-radius:var(--r-btn);background:var(--bg);color:var(--ink);min-height:var(--field-h-s);padding:0 var(--field-px);font:inherit;font-size:.86rem}
+.sv-linkmsg:empty{display:none}
+/* the saved tiles with "Mer som det här" under each, and the panel it opens */
+.sv-liked .sv-tile{display:grid;gap:.15rem;width:6.9rem;align-content:start}
+.sv-liked .sv-tile > button[data-sheet]{width:100%}
+.sv-liked .sv-more{border:0;background:none;padding:.2rem .1rem;width:100%;min-height:44px;font-size:.76rem;line-height:1.2;color:var(--ink2);text-decoration:underline;text-underline-offset:3px;border-radius:var(--r-s)}
+@media (max-width:640px){.sv-liked .sv-tile{width:calc((100% - 1.2rem) / 3)}}
+.ml{width:100%;text-align:left;margin-top:1rem;padding:1.2rem;border:1px solid var(--line);border-radius:16px;background:var(--paper);animation:rqRise .4s var(--ease) both}
+.ml-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
+.ml-head h3:focus{outline:none}
+.ml-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.ml-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ml-foot{margin-top:.6rem}
+.ml-foot .tlink{min-height:44px;display:inline-flex;align-items:center}
+@media (prefers-reduced-motion:reduce){.gr-room,.ml{animation:none}}
 /* the taster on the home page */
 .svh{background:var(--paper);border-block:1px solid var(--line2)}
 .svh-in{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(2rem,6vw,6rem);align-items:center}
@@ -2921,6 +2968,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-cols i{width:1.6rem;height:1.6rem;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
 .hem-prop-items{list-style:none;padding:0;margin:0;display:grid;gap:.35rem}
 .hem-prop-items li{display:grid;grid-template-columns:2.75rem minmax(0,1fr) auto;gap:.7rem;align-items:center;font-size:.94rem}
+.hem-prop-items .why{display:block;color:var(--accent);font-size:.78rem;font-weight:560;line-height:1.3;margin-top:.1rem}
 .hem-prop-items button,.hem-list img{width:2.75rem;height:2.75rem;border:0;border-radius:8px;background:var(--img-bg);padding:.2rem;display:grid;place-items:center;cursor:pointer}
 .hem-prop-items button,.hem-prop-im{overflow:hidden}
 .hem-prop-items img{width:100%;height:100%;min-height:0;object-fit:contain}
@@ -2984,6 +3032,25 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-card-im:hover img{transform:scale(1.02)}
 .hem-cards.small .hem-card-im{aspect-ratio:16 / 8}
 .hem-card-tx{display:grid;gap:.5rem;padding:1rem 1.1rem 1.2rem;justify-items:start}
+/* svep2: rooms made together, the groups, "Saknas i rummet", "Din stil över tid" */
+.hem-card-grp,.hem-grp{color:var(--muted)}
+.hem-grp{margin-top:.4rem;font-size:.95rem}
+.hem-groups{margin-top:2rem}
+.hem-groups ul{list-style:none;padding:0;margin:.8rem 0 0;display:grid;gap:.2rem}
+.hem-groups li{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem 1rem;padding:.6rem 0;border-bottom:1px solid var(--line2)}
+.hem-groups li small{color:var(--muted)}
+.hem-groups .link{margin-left:auto;min-height:44px;display:inline-flex;align-items:center}
+.hem-ot{margin-top:1.6rem;display:grid;gap:.6rem;max-width:40rem}
+.hem-ot-list{list-style:none;padding:0;margin:.2rem 0 0;display:grid;gap:.5rem}
+.hem-ot-list li{display:grid;grid-template-columns:4.2rem minmax(0,1fr) 9rem;gap:.8rem;align-items:center}
+.hem-ot-list b{font-weight:560;font-size:.9rem}
+.hem-ot-bar{display:flex;height:.7rem;border-radius:999px;overflow:hidden;background:var(--sunk)}
+.hem-ot-bar i,.hem-ot-key i{display:block;height:100%;background:var(--st)}
+.hem-ot-key{display:flex;flex-wrap:wrap;gap:.3rem 1rem}
+.hem-ot-key span{display:inline-flex;align-items:center;gap:.35rem}
+.hem-ot-key i{width:.7rem;height:.7rem;border-radius:50%}
+[data-st=skandinavisk]{--st:var(--accent)}[data-st=minimalistisk]{--st:#9A9C96}[data-st=klassisk]{--st:#B9876D}[data-st=mjuk]{--st:#C4A57A}
+@media (max-width:640px){.hem-ot-list li{grid-template-columns:3.6rem minmax(0,1fr)}.hem-ot-list b{grid-column:2;margin-top:-.3rem;font-size:.82rem;color:var(--muted)}}
 .hem-card-tx .btn,.mh .sec-row .btn,.hem-sheet .sec-row .btn{min-height:2.75rem}
 @media (min-width:900px){ /* one room: the picture and its text side by side, the full width */
   .hem-cards > .hem-card.big:only-child{max-width:none;grid-template-columns:minmax(0,1.6fr) minmax(17rem,1fr);align-items:center}
