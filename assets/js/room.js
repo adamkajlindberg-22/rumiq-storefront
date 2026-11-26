@@ -725,7 +725,8 @@
   const roomFor = (its) => { const n = {}; its.forEach((it) => { const q = RQ.byHandle(it.h); (q ? q.rooms : []).forEach((r, i) => { n[r] = (n[r] || 0) + (i ? 1 : 2); }); });
     return RQ.SAMPLE_ROOMS.filter((x) => n[x.id]).sort((a, b) => n[b.id] - n[a.id])[0] || null; };
   const goRoom = (swap) => { if (swap) RQ.ss.set("rumiq-room-swap", swap); const here = (RQ.currentRoute && RQ.currentRoute()) || ""; if (here === "mitt-rum") { RQ.router(); scrollTo(0, 0); } else if (RQ.go) RQ.go("mitt-rum"); else location.hash = "#mitt-rum"; };
-  R.openWith = async ({ room: type = null, own = false, items = [], style = null, budget = null, project = null, swap = null, add = false, title = null } = {}) => {
+  R.openWith = async (o = {}) => { R._going = true; try { return await openWith0(o); } finally { setTimeout(() => { R._going = false; }, 0); } };
+  const openWith0 = async ({ room: type = null, own = false, items = [], style = null, budget = null, project = null, swap = null, add = false, title = null } = {}) => {
     R._from = title ? String(title).slice(0, 60) : null; // the editor names where the set came from ("Från din moodboard")
     const its = (items || []).map((it) => (typeof it === "string" ? { h: it, v: 0 } : { h: it.h, v: +it.v || 0 })).filter((it) => RQ.byHandle(it.h)).slice(0, 16);
     const pr = projOf(project); if (RQ.hem && RQ.hem.setActive && (project || RQ.hem.activeId())) RQ.hem.setActive(project || null); // the room Mitt rum shows is the active one (none when it is not one of yours)
@@ -1503,7 +1504,8 @@
   document.addEventListener("rq-room", (e) => {
     paint();
     // room photo or mode changed: redraw views that show products
-    if (e.detail === "room") { const h = (RQ.currentRoute && RQ.currentRoute()) || ""; if (!/^(mitt-rum|studio-rum|kassa|konto)/.test(h)) RQ.router(); }
+    // (not while openWith is on its way to Mitt rum: that page is drawn once, there; studio3 review minor 11)
+    if (e.detail === "room" && !R._going) { const h = (RQ.currentRoute && RQ.currentRoute()) || ""; if (!/^(mitt-rum|studio-rum|kassa|konto)/.test(h)) RQ.router(); }
   });
   document.addEventListener("DOMContentLoaded", paint);
 
