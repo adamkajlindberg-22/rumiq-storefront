@@ -54,6 +54,9 @@ img,svg,video,canvas{display:block;max-width:100%}
 a{color:inherit;text-underline-offset:.22em;text-decoration-thickness:1px}
 i{font-style:normal} /* <i> only holds icons and small marks here; without this the browser fetches the italic font for them */
 button,input,select,textarea{font:inherit;font-feature-settings:inherit;font-variant-numeric:inherit;color:inherit;letter-spacing:inherit} /* the same digits in a field as in the text (Safari's own field style must not win, p3) */
+/* digit fields (postcode, phone): the page's own proportional figures, said outright, so Safari cannot draw them in another font or as
+   fixed-width figures (X9, iOS 27) */
+input[autocomplete=postal-code],input[autocomplete=tel],input[type=tel],input[name=zip],input[name=phone]{font-family:var(--sans)!important;font-variant-numeric:proportional-nums;-webkit-font-feature-settings:"ss01","cv11","tnum" 0,"pnum" 1;font-feature-settings:"ss01","cv11","tnum" 0,"pnum" 1;-webkit-appearance:none;appearance:none}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 /* the ring is two-tone: a band of the page colour under the accent line, so it shows on photos and dark surfaces too */
