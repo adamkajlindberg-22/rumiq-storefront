@@ -237,6 +237,8 @@
   /* the floor a rug covers: front edge where it lies, back edge its depth further away (a camera of usual focal length) */
   const rugBack = (it) => { const p = RQ.byHandle(it.h), z = sizeOf(p), k = scaleAt(it), hz = horizon(); if (!z || !k) return null; const D = 78.5 / k, k2 = k * D / (D + Math.min(z.w, z.d || z.w));
     return { y: hz + (it.y - hz) * k2 / k, w: it.w * k2 / k }; };
+  /* a rug's squash (sy) so its picture lies as deep as the rug really is at its place, the same in the editor and the preview (review M5) */
+  const rugSy = (it) => { const p = RQ.byHandle(it.h); if (!room || !p || kindOf(p) !== "rug") return null; const rb = rugBack(it); if (!rb || rb.y >= it.y - 0.5) return null; return +clamp((it.y - rb.y) / (it.w * meta(p)[2] * room.w / room.h), 0.15, 1.5).toFixed(3); };
 
   /* ---------------------------------------------------------------- colour */
   const hex2rgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -359,6 +361,7 @@
       const sp = spotFor(p, list, false, null, null, true);
       { const tw = trueW({ h, x: sp.x, y: sp.y, sy: sp.sy, on: sp.moved }); if (tw) { sp.w = tw; sp.real = true; // a known scale: true size from the start
           if (kindOf(p) === "window" && room) sp.y = +Math.min(sp.y, tw * meta(p)[2] * (sp.sy || 1) * room.w / room.h - 2).toFixed(1); } } // a curtain hangs from above the picture, a little above the floor if it is shorter than the room
+      if (kindOf(p) === "rug") { const sy = rugSy({ h, x: sp.x, y: sp.y, w: sp.w }); if (sy) sp.sy = sy; }
       list.push({ h, x: sp.x, y: sp.y, w: sp.w, w0: sp.w, ...(v > 0 && (p.variants || [])[v] ? { v } : {}), ...(sp.real ? { real: true } : {}), ...(sp.row ? { row: true, on: sp.table ? "bord" : "golv" } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
       if (sp.row) spreadRows(list);
       if (!R.saveScene(list)) { RQ.toast(FULL); return false; }
@@ -934,6 +937,7 @@
       if (sp) { it.x = sp.x; it.y = sp.y; if (sp.moved === "floor") { full = true; sOn = "golv"; } } }
     if ((CAN[k] || []).includes(sOn)) it.on = sOn; delete it.row; delete it.sg; it.pc = true;
     const wa = widthAt(it); it.w = wa.w; if (wa.sure) it.real = true; else delete it.real;
+    if (kd === "rug") { const sy = rugSy(it); if (sy) it.sy = sy; }
     /* why it is not where it was put: said by the page (R.pinNote) */
     const far = Math.hypot(it.x - x, (it.y - y) * 1.6) > 6, nm = p.name, vb = verbOf(it), can = (CAN[k] || ["golv"]).map((c) => SURF[c]);
     R.pinNote = full ? `${SURF_DEF[s2].replace(/^./, (c) => c.toUpperCase())} är fullt, så den ${vb} ${SURF_DEF[sOn]} nu.` : low ? `${nm} ${vb} ${SURF_DEF.golv}, så den kan inte flyttas högre upp.` : far && !sf ? `${nm} kan ${INF[vb] || "stå på"} ${can.length > 1 ? can.slice(0, -1).join(", ") + " eller " + can[can.length - 1] : can[0]}, så den ${vb} ${SURF_DEF[sOn]} nu.` : far ? `Där var det fullt, så den ${vb} på närmaste lediga plats.` : "";
@@ -1107,8 +1111,8 @@
     const more = `<nav class="rm-more" aria-label="Fler sätt att välja">${room ? `<button type="button" class="chip rm-toplace" id="rmToPlace">${ICO.spark}<span>Placera och skapa</span></button>` : ""}<a class="chip" href="#svep">Svep fram din stil</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#studio-stylist">Fråga stylisten</a></nav>`;
     return {
       title: pre && RQ.byHandle(pre) ? `${RQ.byHandle(pre).name} i ditt rum · RumIQ` : "Mitt rum · RumIQ",
-      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title">${room ? "" : `<p class="eyebrow">Mitt rum</p>`}<h1 class="h1" id="rmH1">${room && R.scene().length ? "Mitt rum" : "Se ditt hem innan du köper."}</h1>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
-        ${room ? "" : more}</section>
+      html: `<section class="wrap rm-top${room ? " has-room" : ""}">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title">${room ? "" : `<p class="eyebrow">Mitt rum</p>`}<div class="rm-h1row"><h1 class="h1" id="rmH1">${room && R.scene().length ? "Mitt rum" : "Se ditt hem innan du köper."}</h1>${room ? `<button type="button" class="tlink rm-backplace" id="rmBackPlace" aria-label="Tillbaka till Placera och skapa">${ICO.spark}<span>Placera och skapa</span></button>` : ""}</div>${room ? projChips() : ""}${room ? `<p class="lead">Sakerna hamnar där de hör hemma: lampor på bord, plädar i soffan och tavlor på väggen. Flytta dem som du vill.</p>` : ""}</div>
+        </section>
         ${room ? `<section class="rm wrap">
           <div class="rm-stagewrap" id="rmWrap" style="--ar:${(room.w / room.h).toFixed(4)}">
             <div class="rm-stage" id="rmStage" data-sun="${(mapOf() || GENERIC).sun}" style="--ar:${(room.w / room.h).toFixed(4)};aspect-ratio:${room.w} / ${room.h}">
@@ -1184,7 +1188,7 @@
         </section>
         <div class="buybar rm-bar" id="rmBar"><div class="bb-t"><b>Hela rummet</b><span id="rmBarSum">0 kr</span></div><button class="btn sm" type="button" id="rmCart2">Lägg allt i varukorgen</button></div>
         <section class="sec tight kalk"><div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Passar ${room.sample ? "rummet" : "ditt rum"}</h2><p>Sorterat efter hur väl färgerna går ihop med ${room.sample ? "rummet" : "ditt foto"}. Ställ in en av dem med Lägg till vid rummet.</p></div><a class="link" href="#butik">Hela butiken</a></div><div id="rmCols"></div><div id="rmFits"></div></div></section>`
-        : `<section class="wrap" style="padding-bottom:5rem">${setupBlock(want)}</section>`}`,
+        : `<section class="wrap" style="padding-bottom:5rem">${setupBlock(want)}${more}</section>`}`, /* the other ways in after the main one, so it is on the first screen of a small phone */
       mount(root) {
         document.body.classList.add("on-room");
         document.body.classList.toggle("room-empty", !room);
@@ -1652,7 +1656,7 @@
         /* ---- your rooms (Mitt hem): one tap opens another one, with its things */
         root.addEventListener("click", (e) => { const b = e.target.closest("[data-proj]"); if (!b || !RQ.hem) return; const r = RQ.hem.room(b.dataset.proj); if (!r || b.getAttribute("aria-pressed") === "true") return;
           $$("[data-proj]", root).forEach((x) => x.setAttribute("aria-pressed", x === b)); R.openWith({ room: r.type, items: RQ.hem.items(r), style: r.style, budget: r.budget, project: r.id }); });
-        $("#rmToPlace", root).addEventListener("click", () => { R.setWay("place"); RQ.router(); scrollTo(0, 0); });
+        ["#rmToPlace", "#rmBackPlace"].forEach((q) => { const b = $(q, root); if (b) b.addEventListener("click", () => { R.setWay("place"); RQ.router(); scrollTo(0, 0); }); }); /* also at the top: the chip below can sit under the Hela rummet bar on a phone (review M11) */
         if (RQ.ss && RQ.ss.get("rumiq-room-measure") === "1") { RQ.ss.set("rumiq-room-measure", ""); if (!mapOf()) setTimeout(() => measure(true), 300); } // from Placera och skapa: "Ange en känd längd"
         $("#rmSuggest", root).addEventListener("click", () => suggest()); $("#rmSuggest0", root).addEventListener("click", () => suggest());
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });
