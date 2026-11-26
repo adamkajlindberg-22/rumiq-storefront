@@ -511,8 +511,10 @@
     <p class="lead" id="roomSheetLead">${LEAD}</p>
     <div class="sheet-main">
       <div class="sheet-acts">
-        <label class="btn cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Ta en bild<input type="file" accept="image/*" capture="environment" class="sr" data-room-file></label>
-        <label class="btn ghost"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>Välj en bild<input type="file" accept="image/*,.heic,.heif" class="sr" data-room-file></label>
+        <label class="btn cam" data-pick-in><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Ta en bild<input type="file" accept="image/*" capture="environment" class="sr" data-room-file></label>
+        <label class="btn ghost" data-pick-in><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>Välj en bild<input type="file" accept="image/*,.heic,.heif" class="sr" data-room-file></label>
+        <button type="button" class="btn cam" data-pick-out hidden><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Ta en bild</button>
+        <button type="button" class="btn ghost" data-pick-out hidden><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>Välj en bild</button>
       </div>
       <p class="small sheet-tip" data-tip-touch>Ställ dig i dörröppningen och ta bilden i dagsljus, gärna på bredden så att hela rummet kommer med.</p>
       <p class="small sheet-tip" data-tip-desk hidden>Du kan också dra hit en bild eller klistra in den. Bäst blir en bild i dagsljus där hela rummet syns.</p>
@@ -545,14 +547,21 @@
     $(".sheet-card", sheet).scrollTop = 0; };
   /* then: what happens once the room is in (a closure). plan: the same thing written down ({ add: [handles], go: "#route" }),
      so it can wait while you sign in, when a closure would be lost with the page */
+  /* signed out, "Ta en bild" and "Välj en bild" are plain buttons that open the sign-in gate: no picker opens before it
+     (a label around a file input opens the phone's picker before any script can stop it; device review R1). Signed in,
+     they are the labels that open the picker */
+  const syncPick = () => { const inn = !!S.customer(), touch = matchMedia("(pointer:coarse)").matches;
+    $$("[data-pick-in]", sheet).forEach((l) => { l.hidden = !inn || (l.classList.contains("cam") && !touch); $("input", l).disabled = !inn; });
+    $$("[data-pick-out]", sheet).forEach((b) => { b.hidden = inn || (b.classList.contains("cam") && !touch); });
+    $("[data-tip-touch]", sheet).hidden = !touch; $("[data-tip-desk]", sheet).hidden = touch;
+    $$(".sheet-acts .btn:not(.cam)", sheet).forEach((b) => b.classList.toggle("ghost", touch)); }; // on a computer "Välj en bild" is the one main button
+  S.onChange((w) => { if (w === "customer") syncPick(); });
   R.openSetup = (then, pl) => {
     after = then || null; plan = pl || null; back = document.activeElement; held = null;
     chosenType = room && !room.sample ? room.type : null; // a sample room's type does not follow to your own photo
     $$("[data-room-type] [data-v]", sheet).forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === chosenType));
     const own = !!(room && !room.sample); $("[data-room-type-h]", sheet).hidden = !own; $("[data-room-type]", sheet).hidden = !own; // the room type is asked about a photo you have, not before (a new photo is asked in the editor)
-    const touch = matchMedia("(pointer:coarse)").matches;
-    $(".cam", sheet).hidden = !touch; $("[data-tip-touch]", sheet).hidden = !touch; $("[data-tip-desk]", sheet).hidden = touch;
-    $(".sheet-acts .btn:not(.cam)", sheet).classList.toggle("ghost", touch); // on a computer "Välj en bild" is the one main button
+    syncPick();
     fail(""); hello(""); busy(false); mode("main"); sheet.classList.add("open"); document.documentElement.style.overflow = "hidden";
     setTimeout(() => $(".sheet-x", sheet).focus(), 60);
   };
@@ -663,7 +672,7 @@
   sheet.addEventListener("click", (e) => {
     if (e.target.closest("[data-sheet-close]")) return close();
     // your own photo: signed in first (a click on Ta en bild / Välj en bild opens the gate instead of the camera)
-    const pickBtn = e.target.closest(".sheet-acts label, .sheet-acts input"); if (pickBtn && !S.customer()) { e.preventDefault(); gate(null); return; }
+    const pickBtn = e.target.closest(".sheet-acts label, .sheet-acts input, [data-pick-out]"); if (pickBtn && !S.customer()) { e.preventDefault(); gate(null); return; }
     if (e.target.closest("[data-room-gate]")) { keepGate(); setTimeout(close, 0); return; } // the link goes to the account page; the sheet closes behind it
     const sso = e.target.closest("[data-sso]"); if (sso) { keepGate(); sso.disabled = true; RQ.auth.social(sso.dataset.sso).catch((er) => { sso.disabled = false; fail((er && er.message) || "Inloggningen gick inte att starta. Försök igen."); }); return; }
     if (e.target.closest("[data-check-use]")) { if (held) use(held); return; }

@@ -243,7 +243,7 @@ with sync_playwright() as p:
     pg.goto(BASE + "svep/"); pg.wait_for_timeout(800)
     r = pg.evaluate("RQ.room.openWith({ own: true, items: [{ h: 'glob-bordslampa-opalglas', v: 0 }, { h: 'sand-keramikvas', v: 0 }] })"); pg.wait_for_timeout(500)
     ok(r is False and pg.evaluate("document.querySelector('.roomsheet').classList.contains('open')"), "[own] openWith own: the room sheet opens")
-    pg.evaluate("document.querySelector('.roomsheet .sheet-acts label.cam').click()"); pg.wait_for_timeout(300)
+    pg.evaluate("document.querySelector('.roomsheet .sheet-acts :is(label, [data-pick-out]).cam:not([hidden])').click()"); pg.wait_for_timeout(300)
     ok(pg.evaluate(MODE) == "gate", "[own] and asks you to sign in for your own photo")
     pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email')"); pg.evaluate("document.querySelector('.roomsheet [data-sheet-close]').click()"); pg.evaluate("RQ.room.openWith({ own: true, items: [{ h: 'glob-bordslampa-opalglas', v: 0 }, { h: 'sand-keramikvas', v: 0 }] })"); pg.wait_for_timeout(400)
     put(pg, "rum.jpg", picture(1400, 900)); pg.wait_for_timeout(2500)
