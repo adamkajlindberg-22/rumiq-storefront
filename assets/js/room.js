@@ -766,7 +766,9 @@
       const ok = await new Promise((res) => { im.onload = () => res(true); im.onerror = () => res(false); im.src = sm.img; });
       if (!ok || !(await R.saveImage(im, { sample: true, map: sm.id, type: sm.id, name: sm.name, src: sm.img }))) { RQ.toast("Rummet gick inte att öppna. Försök igen."); return false; }
     }
-    putIn(its, pr, add); if (pr && room && room.sample && RQ.hem.patch) RQ.hem.patch(pr.id, { sceneMap: room.map }); goRoom(swap); return true;
+    // the project gets the key of the photo now open as well (a sample room loaded again has a new key): otherwise Mitt hem does
+    // not recognise its own room at the next change and makes a second one, "Vardagsrum 2" (device review X3)
+    putIn(its, pr, add); if (pr && room && RQ.hem.patch) RQ.hem.patch(pr.id, room.sample ? { sceneMap: room.map, pkey: keyNow() } : { pkey: keyNow() }); goRoom(swap); return true;
   };
   /* from the AI picture ("Prova en annan färg", "Byt produkt"): Mitt rum with Byt open on that thing; colour: true opens it at
      the colours. Answers false when the thing is not in the room. */
@@ -1334,12 +1336,15 @@
         const step50 = (v, up) => (up ? Math.ceil(v / 50) * 50 : Math.floor(v / 50) * 50);
         const names = (hs) => hs.map((h) => `<b>${esc(RQ.byHandle(h).name)}</b>`).join(" · ");
         const paintSugg = () => { const bx = $("#rmSugg", root), its = R.scene().filter((it) => it.sg); bx.hidden = !sg.shown;
+          // what is left out stays true to the room as it is now: not what stands there, nor what something of its sort already stands in for (device review X4)
+          const scene = R.scene(); sg.noRoom = sg.noRoom.filter((h) => !scene.some((x) => x.h === h || sortOf(x.h) === sortOf(h))); sg.later = sg.later.filter((h) => !scene.some((x) => x.h === h));
+          const mine = scene.filter((it) => !it.sg), mineTot = mine.reduce((t, it) => t + RQ.byHandle(it.h).price, 0);
           if (bx.hidden) return; const tot = its.reduce((t, it) => t + RQ.byHandle(it.h).price, 0), lo = step50(Math.max(100, sg.min || 100), true), hi = Math.max(lo + 50, step50(sg.full || tot, true)), b = sg.budget ? clamp(sg.budget, lo, hi) : hi;
           const all = Math.max(sg.count || 0, its.length), hs = its.map((it) => it.h + "::" + (it.v || 0)).sort().join(","), inCart = !!(its.length && RQ.allInCart && RQ.allInCart(its.map((it) => it.h)));
           const focus = document.activeElement && bx.contains(document.activeElement) ? document.activeElement.dataset.sgk || document.activeElement.id : null;
           const handed = !!sg.from || (!sg.left.length && !sg.count && (sg.later.length || sg.noRoom.length)), own = !mapOf();
           const tableNote = own ? "Bordssaker ställs in när rummet vet var bordet är. Dra en sak till bordet i bilden, så följer nästa efter. Inte inlagda:" : "Får inte plats på ett bord i rummet:";
-          bx.innerHTML = `<div class="rm-sugg-h"><div><b>${sg.from ? esc(sg.from) : `Förslag${sg.style ? ` i ${esc(styleWord())} stil` : ""}`}</b><span>${its.length} ${its.length === 1 ? "sak" : "saker"} · ${kr(tot)}</span></div>${inCart || sg.bought === hs ? `<button class="btn sm ghost" type="button" id="rmSgBuy" data-open-cart>I varukorgen ✓</button>` : `<button class="btn sm" type="button" id="rmSgBuy"${its.length ? "" : " disabled"}>Köp förslaget</button>`}</div>
+          bx.innerHTML = `<div class="rm-sugg-h"><div><b>${sg.from ? esc(sg.from) : `Förslag${sg.style ? ` i ${esc(styleWord())} stil` : ""}`}</b><span>${its.length} ${its.length === 1 ? "sak" : "saker"} · ${kr(tot)}${mine.length ? ` · plus ${mine.length} du valt själv (${kr(mineTot)})` : ""}</span></div>${inCart || sg.bought === hs ? `<button class="btn sm ghost" type="button" id="rmSgBuy" data-open-cart>I varukorgen ✓</button>` : `<button class="btn sm" type="button" id="rmSgBuy"${its.length ? "" : " disabled"}>Köp förslaget</button>`}</div>
             ${handed ? "" : `<div class="chips rm-sugg-sty" role="group" aria-label="Stil">${STY.map(([k, n]) => `<button type="button" class="chip" data-sgk="sty-${k}" data-sty="${k}" aria-pressed="${(sg.style || "") === k}">${esc(n)}</button>`).join("")}</div>
             <label class="rm-sugg-b"><span>Budget <b id="rmSgBv">${sg.budget && sg.budget < hi ? kr(b) : "Hela rummet"}</b></span><input type="range" id="rmSgB" min="${lo}" max="${hi}" step="50" value="${b}" aria-valuetext="${sg.budget && sg.budget < hi ? kr(b) : "Hela rummet"}"></label>`}
             ${sg.note ? `<p class="small rm-sugg-left">${esc(sg.note)}</p>` : ""}
