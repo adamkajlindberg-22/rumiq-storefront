@@ -299,11 +299,11 @@ with sync_playwright() as p:
     # its number readable; M3 / D4: on a phone the chosen pin's controls are right under the photo, above the dock (iPhone SE too)
     FIVE = SET + [{"h": "glod-doftljus-keramik"}, {"h": "lin-kuddfodral"}]
     for W, Hh in ((360, 740), (375, 548), (390, 844)):
-        c = ctx_for(b, W, Hh, True); pg = new_page(c); place(pg, FIVE); pg.evaluate("document.querySelector('.cookie') && document.querySelector('.cookie').remove()")
+        c = ctx_for(b, W, Hh, True); pg = new_page(c); place(pg, FIVE); pg.evaluate("document.querySelector('.cookie') && (document.querySelector('.cookie').style.display = 'none')")
         cs = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width]; })")
         near = [(i, j) for i in range(len(cs)) for j in range(i + 1, len(cs)) if ((cs[i][0] - cs[j][0]) ** 2 + (cs[i][1] - cs[j][1]) ** 2) ** 0.5 < 44]
         ok(len(cs) == 5 and not near and all(x[2] >= 44 for x in cs), f"[pins {W}] five pins, none covering another (centres 44 px apart): {near}")
-        saved = pg.evaluate("RQ.room.scene().slice(0, 5).map((i) => [i.x, i.y])"); hit = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => { const r = b.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!(e && e.closest('[data-pin]') === b); })")
+        saved = pg.evaluate("RQ.room.scene().slice(0, 5).map((i) => [i.x, i.y])"); hit = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => { b.scrollIntoView({ block: 'center' }); const r = b.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!(e && e.closest('[data-pin]') === b); })")
         ok(all(hit), f"[pins {W}] each pin is on top where it is drawn: {hit}")
         lab = pg.evaluate("[...document.querySelectorAll('.pl-foot span')].map((s) => s.textContent)")
         ok(not any("ungefärungefär" in "".join(lab[i:i + 2]).replace(" ", "") for i in range(len(lab))) and float(pg.evaluate("parseFloat(getComputedStyle(document.querySelector('.pl-foot span')).fontSize)")) >= 12, f"[pins {W}] footprint labels short and readable: {lab}")
@@ -315,6 +315,15 @@ with sync_playwright() as p:
         ok(pg.evaluate("RQ.room.scene().slice(0, 5).map((i) => [i.x, i.y])") == saved, f"[pins {W}] spreading them is only the drawing: the saved places are the same")
         ok(not pg.errs, f"[pins {W}] no script errors: {pg.errs[:2]}")
         c.close()
+
+    # M11: Justera själv on an iPhone SE: the way back to Placera och skapa is at the top, not under the Hela rummet bar
+    c = ctx_for(b, 375, 548, True); pg = new_page(c); place(pg); pg.evaluate("document.querySelector('.cookie') && (document.querySelector('.cookie').style.display = 'none')")
+    pg.evaluate("document.getElementById('plSelf').click()"); pg.wait_for_timeout(2500); quiet(pg)
+    # (D4 in Justera själv, the toolbar under the Hela rummet bar on an iPhone SE: still open, see the hand-over)
+    ok(pg.evaluate("(() => { const r = document.getElementById('rmBackPlace').getBoundingClientRect(); return r.height >= 44 && r.bottom < document.getElementById('rmStage').getBoundingClientRect().top + 1; })()"), "[M11] Tillbaka till Placera och skapa is above the photo, a full tap")
+    pg.evaluate("document.getElementById('rmBackPlace').click()"); pg.wait_for_timeout(900)
+    ok(pg.evaluate("!!document.getElementById('plStage')") and not pg.errs, f"[M11] and it goes back: {pg.errs[:2]}")
+    c.close()
 
     # your own photo: the surface is asked once
     c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); quiet(pg)
