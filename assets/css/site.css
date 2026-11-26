@@ -2959,6 +2959,8 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .hem-prop .ai-row,.hem-room .ai-row{margin-top:0}
 .hem-prop .small-row .tlink,.hem-room-foot .tlink{min-height:2.75rem;display:inline-flex;align-items:center}
 .hem-prop .ai-row.small-row{row-gap:0}
+@media (max-width:699px){.hem-prop-acts .btn{flex:1 1 100%}} /* the two main buttons full width, one under the other */
+.hem-prop [data-hem-msg]:empty{display:none}
 .hem-prop .btn svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.6}
 .hem-first{display:grid;gap:.8rem;padding:clamp(1.3rem,3vw,2.2rem);border-radius:var(--r);background:color-mix(in srgb,var(--accent) 7%,var(--paper));border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);max-width:46rem}
 .hem-first .h2{margin:0}
