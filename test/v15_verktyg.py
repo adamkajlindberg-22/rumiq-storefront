@@ -244,11 +244,14 @@ with sync_playwright() as p:
 
         # Mitt hem, Sparat, shared list, clear all
         go(pg, "mitt-hem", 800)
-        ok(pg.evaluate("document.querySelectorAll('#view .empty').length") == 0 and pg.evaluate("document.getElementById('hrForm').hidden"), f"{tag} Mitt hem: an empty page has no big empty boxes and the room form waits behind a button")
+        # studio2 (review minor 2): an empty Sparat has one way to start, "Skapa ditt första rum"; the measurement form comes with the first room
+        ok(pg.evaluate("document.querySelectorAll('#view .empty').length") == 0 and not pg.evaluate("!!document.getElementById('hrForm')") and pg.evaluate("!!document.getElementById('hemFirst')"), f"{tag} Mitt hem: an empty page has no big empty boxes and one way to start")
+        pg.evaluate("RQ.hem.create({ label: 'Vardagsrum', type: 'vardagsrum' }); RQ.router()"); pg.wait_for_timeout(500); n0 = pg.evaluate("RQ.homeRooms.list().length")
+        ok(pg.evaluate("document.getElementById('hrForm').hidden"), f"{tag} Mitt hem: the room form waits behind a button")
         pg.click("#hrOpen"); pg.fill("#hrForm [name=floorW]", "tre meter"); pg.evaluate("document.getElementById('hrForm').requestSubmit()"); pg.wait_for_timeout(300)
-        ok(pg.evaluate("RQ.homeRooms.list().length") == 0 and "siffror" in pg.evaluate("document.getElementById('hrStatus').textContent"), f"{tag} Mitt hem: a measure that cannot be read is said, not dropped")
+        ok(pg.evaluate("RQ.homeRooms.list().length") == n0 and "siffror" in pg.evaluate("document.getElementById('hrStatus').textContent"), f"{tag} Mitt hem: a measure that cannot be read is said, not dropped")
         pg.evaluate("window.__x = 0"); pg.fill("#hrForm [name=floorW]", "350"); pg.fill("#hrForm [name=label]", "<img src=x onerror=__x=1>"); pg.evaluate("document.getElementById('hrForm').requestSubmit()"); pg.wait_for_timeout(600)
-        ok(pg.evaluate("__x") == 0 and pg.evaluate("RQ.homeRooms.list().length") == 1, f"{tag} Mitt hem: a room name is text in the toast")
+        ok(pg.evaluate("__x") == 0 and pg.evaluate("RQ.homeRooms.list().length") == n0 + 1, f"{tag} Mitt hem: a room name is text in the toast")
         pg.evaluate("RQ.PRODUCTS.slice(0, 5).forEach(p => RQ.shop.toggleWish(p.handle)); localStorage.setItem('rumiq-style', JSON.stringify({ style: 'finns-inte' }))")
         go(pg, "mitt-hem", 800)
         ok(pg.evaluate("!!document.querySelector('#mh-fav .grid')") and pg.evaluate("[...document.querySelectorAll('.mh > div')].slice(0, 2).map((d) => d.id).join()") == "mh-rum,mh-fav", f"{tag} Mitt hem: draws with an unknown stored style, the rooms (studio2: the overview) and then the saved things come first")
