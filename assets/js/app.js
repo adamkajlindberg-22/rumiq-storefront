@@ -52,12 +52,13 @@
   let toastBy = null, toastByAt = 0;
   const by = (e) => { toastBy = e.target; toastByAt = Date.now(); };
   document.addEventListener("pointerdown", by, true); document.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") by(e); }, true);
-  /* a button the page focuses itself right after a tap (the menu's close button) shows no keyboard ring: Safari 15 shows one
-     there, square (D9); newer browsers already leave it out. A key pressed shows it again. */
-  let tapAt = 0; const QUIET = "quiet-focus";
-  document.addEventListener("pointerdown", () => { tapAt = Date.now(); }, true);
-  document.addEventListener("keydown", () => { tapAt = 0; const a = document.activeElement; if (a && a.classList) a.classList.remove(QUIET); }, true);
-  document.addEventListener("focusin", (e) => { const t = e.target; if (!t.classList || Date.now() - tapAt > 1500 || t.matches("input,textarea,select,[contenteditable]")) return; t.classList.add(QUIET); t.addEventListener("blur", () => t.classList.remove(QUIET), { once: true }); }, true);
+  /* After a tap or a click no keyboard ring is drawn, also not on a button the page focuses itself (the menu's close button, the
+     cart's button again when the cart closes): Safari on iOS draws one there, round or square (D9, X10). A key that moves the focus
+     (Tab, the arrows, Escape, Enter or Space outside a text field) brings the rings back at once. */
+  const INPUT = document.documentElement;
+  document.addEventListener("pointerdown", () => { INPUT.dataset.input = "pointer"; }, true);
+  document.addEventListener("keydown", (e) => { const typing = e.target.matches && e.target.matches("input,textarea,select,[contenteditable]");
+    if (/^(Tab|Arrow|Escape|Home|End|Page)/.test(e.key) || ((e.key === "Enter" || e.key === " ") && !typing)) delete INPUT.dataset.input; }, true);
   const FIELD = "input:not([type=hidden]),select,textarea,form button";
   const NEED = "a,button,input,select,textarea,label,summary,[role=button],[role=radio],h1,h2,h3,h4,figcaption,.ct,.price,.sh-price";
   const KEEP = ".lk, .lp-buy, .pinfo .priceline"; // read right after adding (the product page's Leveranskoll and its price with Prova i Mitt rum, a look's buy block with Visa varukorgen): never under the toast

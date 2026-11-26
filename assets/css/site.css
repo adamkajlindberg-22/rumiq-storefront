@@ -64,7 +64,7 @@ button{cursor:pointer}
 /* Safari before 16.4 draws an outline as a square box round a round button: there the ring is a shadow that follows the
    corners, the same two tones (lh came in the same Safari; browsers with rounded outlines but no lh get the same look) */
 @supports not (width:1lh){:focus-visible:not([tabindex="-1"]){outline-color:transparent;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent)}}
-.quiet-focus:focus-visible{outline-color:transparent!important;box-shadow:none!important} /* focused by the page right after a tap (app.js): no ring, as newer browsers do */
+:root[data-input=pointer] :focus-visible:not(input,textarea,select,[contenteditable]){outline-color:transparent!important;box-shadow:none!important} /* after a tap or click no keyboard ring, also where the page sets the focus itself (app.js, X10) */
 ::selection{background:var(--glow);color:#22252A}
 .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .noscript{position:fixed;z-index:60;top:calc(var(--nav-h) + .6rem);left:50%;transform:translateX(-50%);width:max-content;max-width:min(92vw,36rem);margin:0;padding:.7rem 1.1rem;border-radius:12px;background:#2B2C2A;color:#F7F7F4;font-size:.92rem;line-height:1.4;box-shadow:0 8px 30px rgba(0,0,0,.18)}
