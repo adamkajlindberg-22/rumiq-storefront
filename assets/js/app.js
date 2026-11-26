@@ -1245,9 +1245,11 @@
     box.classList.add("show"); ckSize();
     $("#ckStats").checked = !!(c && c.stats); $("#ckMkt").checked = !!(c && c.mkt);
   };
-  $("#ckAll").addEventListener("click", () => { S.setConsent({ stats: true, mkt: true }); $("#cookie").classList.remove("show"); ckSize(); });
-  $("#ckNeed").addEventListener("click", () => { S.setConsent({ stats: false, mkt: false }); $("#cookie").classList.remove("show"); ckSize(); });
-  $("#ckSave").addEventListener("click", () => { S.setConsent({ stats: $("#ckStats").checked, mkt: $("#ckMkt").checked }); $("#cookie").classList.remove("show"); ckSize(); });
+  // the choice made, the banner goes and the focus moves on to the page (not left on a hidden button), so the keys work there (Svep's arrows)
+  const ckDone = () => { const had = $("#cookie").contains(document.activeElement); $("#cookie").classList.remove("show"); ckSize(); if (had) { const v = $("#view"); if (v) v.focus({ preventScroll: true }); } };
+  $("#ckAll").addEventListener("click", () => { S.setConsent({ stats: true, mkt: true }); ckDone(); });
+  $("#ckNeed").addEventListener("click", () => { S.setConsent({ stats: false, mkt: false }); ckDone(); });
+  $("#ckSave").addEventListener("click", () => { S.setConsent({ stats: $("#ckStats").checked, mkt: $("#ckMkt").checked }); ckDone(); });
   $("#ckMore").addEventListener("click", (e) => { const o = $("#cookie .opts"); o.hidden = !o.hidden; e.currentTarget.setAttribute("aria-expanded", !o.hidden); });
 
 
