@@ -415,6 +415,8 @@ with sync_playwright() as p:
         pg.evaluate("document.querySelector('.ai-result [data-ai-swap]').click()"); pg.wait_for_timeout(1200)
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and not pg.evaluate("document.querySelector('.ai-sheet.open')"), f"{tag} Byt produkt opens the editor at that thing")
         # your own photo from Skapa ditt första rum: the room type and style go with it, the editor never asks again
+        ok(pg.evaluate("RQ.hem.rooms().length") == 1, f"{tag} the picture made in a sample room made a room of yours (review M8)")
+        pg.evaluate("RQ.hem.rooms().forEach((r) => RQ.hem.remove(r.id))")  # a new customer again
         go(pg, "mitt-hem", 1200)
         pg.fill("#hemFirstF [name=label]", "Hallen"); pg.select_option("#hemFirstF select[name=type]", "hall")
         pg.evaluate("document.querySelector('#hemFirstF [data-first-style=minimalistisk]').click()")
