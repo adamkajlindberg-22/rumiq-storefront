@@ -6,6 +6,7 @@ Part 2: Mitt rum puts things where they belong, the toolbar, the shop cards, Hit
 import http.server, re, socketserver, sys, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+import sys as _s, os as _o; _s.path.insert(0, _o.path.dirname(_o.path.abspath(__file__))); import _edit_way  # noqa: E402,F401  the editor tests start in Justera själv
 
 ROOT = Path(__file__).resolve().parent.parent
 fails, n = [], 0
