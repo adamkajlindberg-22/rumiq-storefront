@@ -163,27 +163,15 @@
   });
 
   /* ------------------------------------------------------------------ into Mitt rum ("Se det i ditt rum") */
-  /* The editor's own entry (room.js) when it is there: RQ.room.openWith({ room, own, items, style, budget, project }).
-     Until then: the sample room of that type is put in, and the things are added with the editor's own placement rules
-     (R.add, never floating); an own photo goes through the editor's setup (with its sign-in gate). */
+  /* Into Mitt rum through the editor's own entry, RQ.room.openWith({ room, own, items, style, budget, project }) (room.js). */
   H.openInRoom = async ({ room = null, own = false, items = [], style = null, budget = null, project = null } = {}) => {
     const R = RQ.room; if (!R) return;
     document.dispatchEvent(new CustomEvent("rq-hem-go")); // the room sheet or the moodboard steps aside
-    const hs = items.map((it) => (typeof it === "string" ? it : it.h)).filter((h) => RQ.byHandle(h));
     if (project) H.setActive(project);
-    const pin = () => { if (project && RQ.ai) H.patch(project, { pkey: RQ.ai.projectKey() }); };
-    if (typeof R.openWith === "function") { const out = await R.openWith({ room, own, items: items.map((it) => (typeof it === "string" ? { h: it, v: 0 } : it)), style, budget, project }); pin(); return out; }
-    if (own) { R.openSetup(() => { pin(); }, { add: hs, go: "#mitt-rum" }); return; }
-    const pr = project && H.room(project), sameRoom = pr && pr.pkey && RQ.ai && R.has() && RQ.ai.projectKey() === pr.pkey;
-    const cur = R.get(), sample = RQ.SAMPLE_ROOMS.find((x) => x.id === room) || RQ.SAMPLE_ROOMS[0];
-    if (!sameRoom && !(cur && cur.sample && cur.map === sample.id && !pr)) {
-      const im = new Image(); im.crossOrigin = "anonymous";
-      const ok = await new Promise((res) => { im.onload = () => res(true); im.onerror = () => res(false); im.src = sample.img; });
-      if (!ok || !(await R.saveImage(im, { sample: true, map: sample.id, type: sample.id, name: sample.name }))) { RQ.toast("Rummet gick inte att öppna. Försök igen."); return; }
-    }
-    R.group(() => { R.saveScene([]); hs.forEach((h) => R.add(h, true)); });
-    pin();
-    if (RQ.currentRoute && RQ.currentRoute() === "mitt-rum") RQ.router(); else RQ.go("mitt-rum");
+    // the editor's own entry (room.js): sample room or own photo (with its sign-in gate), placed by its rules, tied to the project
+    const out = await R.openWith({ room, own, items: items.map((it) => (typeof it === "string" ? { h: it, v: 0 } : it)), style, budget, project });
+    if (out && project && RQ.ai) H.patch(project, { pkey: RQ.ai.projectKey() }); // only once the room is really open (not while it waits for sign-in)
+    return out;
   };
 
   // a look opened in the room: its products, in a sample room of the look's kind (or the room you have), placed by the editor

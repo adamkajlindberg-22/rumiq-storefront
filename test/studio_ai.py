@@ -271,7 +271,8 @@ with sync_playwright() as p:
         ok(pg.evaluate("document.querySelector('.ai-tag-a').innerText") == "RumIQ · AI-bild", f"{tag} the picture is labelled RumIQ · AI-bild")
         ok("nytt försök" in pg.evaluate("document.querySelector('.ai-result .ai-pad').innerText"), f"{tag} the result says a second try was made at no extra cost")
         ok(pg.evaluate("!!document.getElementById('aiBad')") and "1 bild" in pg.evaluate("document.getElementById('aiAgain').innerText"), f"{tag} Produkten blev fel is offered, Skapa igen says it uses one picture")
-        ok(not pg.evaluate("!!document.querySelector('[data-ai-swap]')"), f"{tag} without the editor's Byt (R.openSwap) no Byt or colour buttons are shown")
+        # the editor's Byt is there now (room.js R.openSwap): the result offers it (Studio 2, part 6)
+        ok(pg.evaluate("typeof RQ.room.openSwap === 'function' && !!document.querySelector('[data-ai-swap]')"), f"{tag} with the editor's Byt (R.openSwap) the result offers Byt produkt")
         shot(pg, f"live-{W}-result")
         # the room changes after the picture: Köp allt still adds exactly what the picture shows
         pg.evaluate("RQ.room.remove('sand-keramikvas'); RQ.room.remove('lin-kuddfodral'); RQ.room.add('glod-doftljus-keramik', true)")

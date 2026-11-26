@@ -661,7 +661,7 @@
     document.dispatchEvent(new CustomEvent("rq-hem-go"));
     if (own) {
       if (room && !room.sample) { putIn(its, pr); goRoom(swap); return true; }
-      R.openSetup(() => { putIn(its, pr); goRoom(swap); }, { add: its.map((it) => it.h), go: "#mitt-rum" }); return false; // the sheet, with its sign-in gate; the plan survives signing in
+      R.openSetup(() => { putIn(its, pr); if (pr && RQ.hem.patch) RQ.hem.patch(pr.id, { pkey: keyNow() }); goRoom(swap); }, { add: its.map((it) => it.h), go: "#mitt-rum" }); return false; // the sheet, with its sign-in gate; the plan survives signing in
     }
     const same = pr && pr.pkey && room && pr.pkey === keyNow();
     const want = RQ.SAMPLE_ROOMS.find((x) => x.id === (type || (pr && pr.type))) || null;
@@ -672,8 +672,34 @@
     }
     putIn(its, pr); if (pr && room && room.sample && RQ.hem.patch) RQ.hem.patch(pr.id, { sceneMap: room.map }); goRoom(swap); return true;
   };
-  /* from the AI picture: open the editor with Byt on that thing */
-  R.openSwap = (h) => { if (!room || !R.inScene(h)) return false; goRoom(h); return true; };
+  /* from the AI picture ("Prova en annan färg", "Byt produkt"): Mitt rum with Byt open on that thing; colour: true opens it at
+     the colours. Answers false when the thing is not in the room. */
+  R.openSwap = (h, opt = {}) => { if (!room || !R.inScene(h)) return false; const c = !!(opt && opt.colour);
+    if (R._swapLive && ((RQ.currentRoute && RQ.currentRoute()) || "") === "mitt-rum") { R._swapLive(h, c); return true; }
+    goRoom(h + (c ? "|c" : "")); return true; };
+  /* a small picture of one of your rooms with its things (Mitt hem's room cards): the room's own photo when it is the one in
+     this browser, else its sample room; things where they stand (the saved scene) or placed by the editor's rules.
+     Resolves a data URL, or null when the room's photo is not in this browser. */
+  const snapCache = new Map();
+  const imgOf = (src) => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
+  const drawScene = async (bg, list, W, lf) => { const H = Math.round(W * (bg.naturalHeight || bg.height) / (bg.naturalWidth || bg.width)), cv = document.createElement("canvas"); cv.width = W; cv.height = H; const cx = cv.getContext("2d"); cx.drawImage(bg, 0, 0, W, H);
+    for (const it of orderOf(list)) { const p = RQ.byHandle(it.h); let im; try { im = await imgOf(cutIn(p)); } catch (e) { continue; }
+      const w = W * it.w / 100, h = w * im.naturalHeight / im.naturalWidth * (it.sy || 1), x = W * it.x / 100 - w / 2, y = H * it.y / 100 - h; let src = im; const tone = R.tint(it);
+      if (tone) { const t = document.createElement("canvas"); t.width = Math.max(1, Math.round(w)); t.height = Math.max(1, Math.round(h)); const tx = t.getContext("2d"); tx.drawImage(im, 0, 0, t.width, t.height); tx.globalCompositeOperation = "color"; tx.fillStyle = tone; tx.fillRect(0, 0, t.width, t.height); tx.globalCompositeOperation = "destination-in"; tx.drawImage(im, 0, 0, t.width, t.height); src = t; }
+      cx.save(); cx.filter = lf(it.light || 100); if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(src, 0, 0, w, h); } else cx.drawImage(src, x, y, w, h); cx.restore(); }
+    return cv; };
+  R.picture = async (W) => { if (!room) return null; return drawScene(await imgOf(R.url()), R.scene(), W, lightFilter); }; // the room as it stands, as a canvas
+  R.snapshot = async (id, W = 900) => {
+    const pr = projOf(id); if (!pr) return null; const key = `${id}|${W}|${pr.updated || pr.at || ""}`; if (snapCache.has(key)) return snapCache.get(key);
+    const its = (RQ.hem.items(pr) || []).map((it) => ({ h: it.h, v: it.v || 0 })), here = room && pr.pkey && pr.pkey === keyNow();
+    const job = (async () => {
+      if (here) { const list = R.scene(); return list.length ? (await drawScene(await imgOf(R.url()), list, W, lightFilter)).toDataURL("image/jpeg", 0.82) : null; }
+      const map = pr.sceneMap || pr.type, sm = RQ.SAMPLE_ROOMS.find((x) => x.id === map); if (!sm || !MAPS[sm.id]) return null;
+      const saved = pr.sceneMap === sm.id && Array.isArray(pr.scene) ? pr.scene.filter((it) => it && RQ.byHandle(it.h) && it.w > 0) : null;
+      const list = saved && saved.length ? saved : (() => { const l = []; its.forEach((it) => { const p = RQ.byHandle(it.h); if (!p) return; const sp = spotFor(p, l, true, MAPS[sm.id]); l.push({ h: it.h, v: it.v, x: sp.x, y: sp.y, w: sp.w, ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}) }); }); return l; })();
+      if (!list.length) return null;
+      return (await drawScene(await imgOf(sm.img), list, W, () => "none")).toDataURL("image/jpeg", 0.82); })();
+    snapCache.set(key, job); job.catch(() => snapCache.delete(key)); return job; };
 
   /* ---------------------------------------------------------------- the room editor (#mitt-rum) */
   const V = RQ.views;
@@ -1248,7 +1274,7 @@
             const handles = R.scene().map((it) => it.h);
             const ok = S.saveProject({ title: "Mitt rum med " + handles.map((h) => RQ.byHandle(h).name.split(" ")[0]).join(", "), img: cv.toDataURL("image/jpeg", 0.74), before: before.toDataURL("image/jpeg", 0.6), handles });
             if (!ok) { RQ.toast("Webbläsarens lagring är full. Ta bort ett gammalt projekt under Sparat."); return; }
-            lastSave = key;
+            lastSave = key; document.dispatchEvent(new CustomEvent("rq-room-saved", { detail: { project: (S.projects()[0] || {}).id || null, active: RQ.hem && RQ.hem.activeId ? RQ.hem.activeId() : null, handles, img: cv.toDataURL("image/jpeg", 0.74) } })); // Spara happened
             if (navigator.canShare && window.isSecureContext) {
               const blob = await new Promise((r) => cv.toBlob(r, "image/jpeg", 0.86)); const file = new File([blob], "mitt-rum.jpg", { type: "image/jpeg" });
               if (navigator.canShare({ files: [file] })) { RQ.toast('Rummet är sparat under Sparat. <a href="#" data-share-room>Dela bilden</a>'); R._share = file; return; }
@@ -1265,8 +1291,9 @@
         // back from signing in that started at Skapa AI-bild: the AI sheet opens again (within half an hour)
         { const t = +((RQ.ss && RQ.ss.get("rumiq-ai-after")) || 0); if (t && S.customer()) { RQ.ss.set("rumiq-ai-after", ""); if (Date.now() - t < 18e5 && RQ.openAI) setTimeout(() => { if (root.isConnected) RQ.openAI(); }, 500); } }
         if (sel) { const it = R.scene().find((x) => x.h === sel); if (it) lookAt([it]); }
-        { const sw = RQ.ss && RQ.ss.get("rumiq-room-swap"); if (sw) { RQ.ss.set("rumiq-room-swap", ""); if (R.inScene(sw)) setTimeout(() => { if (root.isConnected) { const it = R.scene().find((x) => x.h === sw); if (it) lookAt([it]); openSwap(sw); } }, 300); } }
-        return () => { document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
+        R._swapLive = (h, colour) => { if (!root.isConnected || !R.inScene(h)) return; const it = R.scene().find((x) => x.h === h); if (it) lookAt([it]); openSwap(h, colour ? "[data-swv][aria-pressed=true]" : ".rm-alt"); };
+        { const sw0 = RQ.ss && RQ.ss.get("rumiq-room-swap"); if (sw0) { RQ.ss.set("rumiq-room-swap", ""); const [sw, c] = sw0.split("|"); if (R.inScene(sw)) setTimeout(() => R._swapLive(sw, c === "c"), 300); } }
+        return () => { R._swapLive = null; document.removeEventListener("keydown", escCmp, true); cmpEl.remove(); document.removeEventListener("rq-cookie", onCookie); document.removeEventListener("keydown", escMeasure); document.removeEventListener("rq-room", onRoom); document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", undoKey); removeEventListener("resize", onResize); removeEventListener("scroll", onScroll); ["--rm-toast-top", "--rm-toast-l", "--rm-toast-r"].forEach((k) => rootS.removeProperty(k)); R.closePicker(); document.body.classList.remove("on-room", "room-empty"); };
       },
     };
   };
