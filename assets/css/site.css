@@ -698,6 +698,18 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
   .drawer footer{gap:.55rem;padding-top:.9rem}
   .drawer footer .cart-room{border:0;background:none;padding:0;min-height:2.75rem;height:auto;font-weight:500;text-decoration:underline;text-underline-offset:.25em;text-decoration-color:color-mix(in srgb,currentColor 35%,transparent);margin-bottom:-.5rem}
 }
+/* a short screen (iPhone SE: 548 px): the sums scroll with the things in the cart, only Till kassan stays in reach at the bottom */
+@media (max-height:700px){
+  #cart.drawer{overflow-y:auto;overscroll-behavior:contain}
+  #cart.drawer > *{flex-shrink:0}
+  #cart header{position:sticky;top:0;z-index:2;background:var(--paper)}
+  #cart .body{flex:none;overflow:visible}
+  #cart footer{display:contents}
+  #cart footer > *{margin:0 1.4rem .55rem;width:auto}
+  #cart footer > :first-child{border-top:1px solid var(--line2);margin-top:0;padding-top:.9rem}
+  #cart footer > .btn:not(.ghost){position:sticky;bottom:calc(.6rem + env(safe-area-inset-bottom));z-index:1;box-shadow:0 0 0 .8rem var(--paper)}
+  #cart footer > :last-child{margin-bottom:calc(1rem + env(safe-area-inset-bottom))}
+}
 .sum{display:flex;justify-content:space-between;font-size:.95rem}
 .sum.small{font-size:.88rem}
 .sum.total{font-size:1.1rem;font-weight:600;padding-top:.5rem;border-top:1px solid var(--line)}
