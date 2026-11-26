@@ -825,7 +825,7 @@ details.pw[open] summary::after{content:" −"}
 .acct-nav a.on{color:var(--ink);font-weight:600}
 /* the jump menu on Sparat: the same pills as Mitt konto on phones, the part you are reading dark */
 .jump-nav{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1.6rem}
-.jump-nav a{flex:none;border:1px solid var(--line);border-radius:999px;padding:.45rem .95rem;white-space:nowrap;text-decoration:none;color:var(--ink2);font-size:.95rem;transition:background .25s,color .25s,border-color .25s}
+.jump-nav a{flex:none;display:inline-flex;align-items:center;min-height:2.75rem;border:1px solid var(--line);border-radius:999px;padding:.45rem .95rem;white-space:nowrap;text-decoration:none;color:var(--ink2);font-size:.95rem;transition:background .25s,color .25s,border-color .25s}
 .jump-nav a:hover{border-color:var(--ink)}
 .jump-nav a.on{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
 @media (max-width:900px){.jump-nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:calc(-1*var(--gutter));margin-right:calc(-1*var(--gutter));padding:0 var(--gutter)}.jump-nav::-webkit-scrollbar{display:none}}
