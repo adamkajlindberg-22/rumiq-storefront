@@ -149,7 +149,7 @@ with sync_playwright() as p:
         sizes = pg.evaluate("[...document.querySelectorAll('[data-pin], #plPin button, #pl .pl-li, #plAdd, #plCreate, #plSelf, .pl-steps .tlink')].filter((e) => e.offsetParent).map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
         ok(all(w >= 44 and h >= 44 for w, h in sizes), f"{tag} every tap target is at least 44 px: {[s for s in sizes if min(s) < 44][:3]}")
         fw = pg.evaluate("(() => { const st = document.getElementById('plIn').getBoundingClientRect(); return [...document.querySelectorAll('.pl-foot')].map((f) => +(f.getBoundingClientRect().width / st.width * 100).toFixed(1)); })()")
-        ok(all(abs(a - x["w"]) < 1.2 for a, x in zip(fw, pins)) and "ungefär" in pg.evaluate("document.querySelectorAll('.pl-foot')[0].textContent"), f"{tag} the dashed footprints are drawn at the things' widths, the estimated one says ungefär: {fw}")
+        ok(all(abs(a - x["w"]) < 1.2 for a, x in zip(fw, pins)) and ("ungefär" in pg.evaluate("document.querySelectorAll('.pl-foot')[0].textContent") or pg.evaluate("!document.getElementById('plLegend').hidden && /ungefär/.test(document.getElementById('plLegend').textContent)")), f"{tag} the dashed footprints are drawn at the things' widths, the estimated one says ungefär (a narrow one by the legend under the photo): {fw}")
         st = pg.evaluate(STAGE); ok(st[1] + st[3] <= Hh + 2 or mob and st[3] > 120, f"{tag} the picture is on the first screen: {st}")
         # choose a pin, change its surface, move it with a tap
         x0, y0, bw, bh = pg.evaluate(BTN, "glob-bordslampa-opalglas")
@@ -294,6 +294,27 @@ with sync_playwright() as p:
     ok("kan stå på bord eller golv" in pg.evaluate("document.getElementById('plHint').textContent") or "fullt" in pg.evaluate("document.getElementById('plHint').textContent"), f"[M1] and the page says why: {pg.evaluate('document.getElementById(\"plHint\").textContent')}")
     ok(not pg.errs, f"[B2/M1] no script errors: {pg.errs[:2]}")
     c.close()
+
+    # M2 / 2a: pins close together are drawn apart (the saved place does not change): every pin can be tapped at 360 and 375,
+    # its number readable; M3 / D4: on a phone the chosen pin's controls are right under the photo, above the dock (iPhone SE too)
+    FIVE = SET + [{"h": "glod-doftljus-keramik"}, {"h": "lin-kuddfodral"}]
+    for W, Hh in ((360, 740), (375, 548), (390, 844)):
+        c = ctx_for(b, W, Hh, True); pg = new_page(c); place(pg, FIVE); pg.evaluate("document.querySelector('.cookie') && document.querySelector('.cookie').remove()")
+        cs = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width]; })")
+        near = [(i, j) for i in range(len(cs)) for j in range(i + 1, len(cs)) if ((cs[i][0] - cs[j][0]) ** 2 + (cs[i][1] - cs[j][1]) ** 2) ** 0.5 < 44]
+        ok(len(cs) == 5 and not near and all(x[2] >= 44 for x in cs), f"[pins {W}] five pins, none covering another (centres 44 px apart): {near}")
+        saved = pg.evaluate("RQ.room.scene().slice(0, 5).map((i) => [i.x, i.y])"); hit = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => { const r = b.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!(e && e.closest('[data-pin]') === b); })")
+        ok(all(hit), f"[pins {W}] each pin is on top where it is drawn: {hit}")
+        lab = pg.evaluate("[...document.querySelectorAll('.pl-foot span')].map((s) => s.textContent)")
+        ok(not any("ungefärungefär" in "".join(lab[i:i + 2]).replace(" ", "") for i in range(len(lab))) and float(pg.evaluate("parseFloat(getComputedStyle(document.querySelector('.pl-foot span')).fontSize)")) >= 12, f"[pins {W}] footprint labels short and readable: {lab}")
+        for h in ("plad-ullblandning-havre", "glod-doftljus-keramik"):
+            pg.tap(f"[data-pin='{h}']"); pg.wait_for_timeout(900)
+            dock = pg.evaluate("(() => { const d = [...document.querySelectorAll('.dock, nav.dock')].find((x) => x.offsetParent); return d ? d.getBoundingClientRect().top : innerHeight; })()")
+            box = pg.evaluate("(() => { const p = document.getElementById('plPin').getBoundingClientRect(), s = document.getElementById('plStage').getBoundingClientRect(), hd = (document.querySelector('header') || document.body).getBoundingClientRect(); return [p.top, p.bottom, s.top, s.bottom, hd.bottom, !!document.getElementById('plPin').closest('#plPinSlot')]; })()")
+            ok(box[5] and box[1] <= dock + 1 and box[2] >= box[4] - 1 and box[0] >= box[3] - 1, f"[pins {W}] the chosen pin's block sits under the photo and above the dock: {[round(v) for v in box[:5]]} dock {round(dock)}")
+        ok(pg.evaluate("RQ.room.scene().slice(0, 5).map((i) => [i.x, i.y])") == saved, f"[pins {W}] spreading them is only the drawing: the saved places are the same")
+        ok(not pg.errs, f"[pins {W}] no script errors: {pg.errs[:2]}")
+        c.close()
 
     # your own photo: the surface is asked once
     c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(500); quiet(pg)

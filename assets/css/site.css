@@ -3191,7 +3191,9 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .pl-marks{position:absolute;inset:0}
 .pl-foot{position:absolute;border:2px dashed rgba(255,255,255,.95);box-shadow:0 0 0 1px rgba(20,20,20,.35),inset 0 0 0 1px rgba(20,20,20,.25);border-radius:4px;pointer-events:none;background:rgba(255,255,255,.08)}
 .pl-foot.on{border-color:var(--accent,#2C4A3E);background:rgba(44,74,62,.12)}
-.pl-foot span{position:absolute;left:.25rem;top:.2rem;font-size:.7rem;font-weight:600;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);white-space:nowrap}
+.pl-foot span{position:absolute;left:.2rem;top:.2rem;max-width:calc(100% - .4rem);overflow:hidden;text-overflow:ellipsis;font-size:.75rem;line-height:1.2;font-weight:600;color:#fff;background:#22252A;background:rgba(20,22,26,.78);padding:.05rem .3rem;border-radius:3px;white-space:nowrap} /* readable on a light wall (review minor) */
+.pl-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}.pl-lines line{stroke:#fff;stroke-width:2;stroke-linecap:round;filter:drop-shadow(0 0 1px rgba(0,0,0,.6))}
+.pl-dot{position:absolute;width:.6rem;height:.6rem;margin:-.3rem 0 0 -.3rem;border-radius:50%;background:#22252A;border:2px solid #fff;pointer-events:none}
 .pl-pinb{position:absolute;transform:translate(-50%,-50%);width:2.75rem;height:2.75rem;border-radius:50%;border:2px solid #fff;background:#22252A;color:#F7F7F4;font-weight:700;font-size:1rem;box-shadow:0 2px 8px rgba(0,0,0,.35);touch-action:none;cursor:grab;display:grid;place-items:center;padding:0}
 .pl-pinb.on{background:var(--accent,#2C4A3E);transform:translate(-50%,-50%) scale(1.08)}
 .pl-pinb:focus-visible{outline:3px solid #fff;outline-offset:2px;box-shadow:0 0 0 6px #22252A}
@@ -3209,6 +3211,19 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .pl-pin .chip[aria-pressed=true]{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
 .pl-pin-tip{color:var(--muted);margin:.5rem 0}
 .pl-pin-a{display:flex;flex-wrap:wrap;gap:.4rem}
+.pl-pin-a .btn{display:inline-flex;align-items:center;gap:.35rem;min-width:2.75rem;justify-content:center}.pl-pin-a svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.7;flex:none}
+.pl-pin-m{margin:.35rem 0 .2rem;color:var(--muted)}
+.pl-pin-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem .6rem;margin-top:.35rem}
+.pl-pin-row .pl-ask{margin:0}
+.pl-legend{margin:.2rem 0 0;color:var(--muted)}
+.pl-steps li[aria-current=step]{color:var(--ink);font-weight:600}
+@media (max-width:900px){ /* a phone: the chosen pin's block right under the photo, compact, above the dock (review M3) */
+  #plPinSlot .pl-pin{margin-top:.6rem;padding:.6rem .75rem}
+  #plPinSlot .pl-pin-tip,#plPinSlot .pl-a-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  #plPinSlot .pl-pin-a .btn{padding:0;width:2.75rem}
+  #plPinSlot .pl-pin-a{margin-left:auto}
+  #plPinSlot .pl-pin-h .iconbtn{margin:-.4rem -.4rem -.4rem 0}
+}
 .pl-list-h{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem}
 .pl-list ol{list-style:none;margin:.6rem 0;padding:0;display:grid;gap:.35rem}
 .pl-li{display:flex;align-items:center;gap:.6rem;width:100%;min-height:2.75rem;padding:.35rem .4rem;border:1px solid transparent;border-radius:var(--r-s);background:none;text-align:left;color:inherit;font:inherit;cursor:pointer}

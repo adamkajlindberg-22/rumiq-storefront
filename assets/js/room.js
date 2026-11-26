@@ -861,6 +861,8 @@
     flip: '<svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l-4 5 4 5zM16 7l4 5-4 5z"/></svg>',
     front: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="1"/><path d="M5 15V5h10"/></svg>',
     trash: '<svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/></svg>',
+    up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
     share: '<svg viewBox="0 0 24 24"><path d="M12 4v11M8 8l4-4 4 4M5 13v7h14v-7"/></svg>',
     minus: '<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -961,13 +963,15 @@
       title: "Placera och skapa · RumIQ",
       html: `<section class="wrap rm-top has-room pl-top">${RQ.crumbs([["Hem", "hem"], ["Mitt rum"]])}<div class="rm-title"><h1 class="h1">Placera och skapa</h1>${projChips()}<p class="lead">Peka ut var sakerna ska stå. Vi gör en bild av ${room.sample ? "rummet" : "ditt rum"} med dem på plats, i rätt storlek.</p></div></section>
         <section class="wrap pl" id="pl">
-          <ol class="pl-steps" aria-label="Så går det till"><li><b>1</b> ${room.sample ? esc(room.name || "Exempelrummet") : "Ditt rum"} <button type="button" class="tlink" data-room-setup>Byt rum</button></li><li><b>2</b> Välj saker</li><li><b>3</b> Peka ut</li><li><b>4</b> Skapa bilden</li></ol>
+          <ol class="pl-steps" id="plSteps" aria-label="Så går det till"><li><b>1</b> ${room.sample ? esc(room.name || "Exempelrummet") : "Ditt rum"} <button type="button" class="tlink" data-room-setup>Byt rum</button></li><li><b>2</b> Välj saker</li><li><b>3</b> Peka ut</li><li><b>4</b> Skapa bilden</li></ol>
           <div class="pl-grid"><div class="pl-left">
             <div class="pl-stage" id="plStage"><div class="pl-in" id="plIn" style="aspect-ratio:${room.w} / ${room.h}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div></div>
-            <button type="button" class="tlink pl-zoom" id="plZoom" aria-pressed="false">Förstora bilden</button>
+            <div id="plPinSlot"></div>
             <p class="pl-hint" id="plHint" role="status"></p>
+            <p class="small pl-legend" id="plLegend" hidden>Streckad yta: ungefär så mycket plats saken tar.</p>
+            <button type="button" class="tlink pl-zoom" id="plZoom" aria-pressed="false">Förstora bilden</button>
           </div><div class="pl-right">
-            <div class="pl-pin" id="plPin" role="group" aria-labelledby="plPinT" hidden></div>
+            <div class="pl-pin" id="plPin" role="group" aria-labelledby="plPinT" hidden></div><div id="plPinHome" hidden></div>
             <div class="pl-list"><div class="pl-list-h"><h2 class="h3" id="plListT">Dina saker</h2><span class="small" id="plCount"></span></div><ol id="plList" aria-labelledby="plListT"></ol><button type="button" class="btn ghost sm" id="plAdd">${ICO.plus}<span>Lägg till en sak</span></button></div>
             <div class="pl-go"><button type="button" class="btn block pl-create" id="plCreate">${ICO.spark}<span>Skapa bilden</span></button><p class="small" id="plGoNote"></p>
               <p class="pl-self"><button type="button" class="tlink" id="plSelf">Justera själv</button><span class="small"> Flytta och ändra storlek för hand.</span></p></div>
@@ -983,29 +987,50 @@
         const paint = () => {
           const list = R.scene(), pins = list.slice(0, PLACE_MAX); if (sel && !pins.some((it) => it.h === sel)) sel = null;
           const focusH = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.pin : null;
-          marks.innerHTML = pins.map((it, i) => { const b = boxOf(it), sure = widthAt(it).sure;
-            return `<div class="pl-foot${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true"><span>${i + 1}${sure ? "" : " · ungefär"}</span></div>
-              <button type="button" class="pl-pinb${sel === it.h ? " on" : ""}" data-pin="${it.h}" style="left:clamp(1.45rem, ${it.x}%, calc(100% - 1.45rem));top:clamp(1.45rem, ${it.y}%, calc(100% - 1.45rem))" aria-label="${esc(pinLabel(it, i))}" aria-pressed="${sel === it.h}">${i + 1}</button>`; }).join("");
+          const sp = spread(pins), pw = inner.offsetWidth || 1;
+          marks.innerHTML = `<svg class="pl-lines" aria-hidden="true">${sp.map((q) => (q.off ? `<line x1="${q.ax}" y1="${q.ay}" x2="${q.x}" y2="${q.y}"/>` : "")).join("")}</svg>` + pins.map((it, i) => { const b = boxOf(it), sure = widthAt(it).sure, q = sp[i];
+            return `<div class="pl-foot${sel === it.h ? " on" : ""}" style="left:${b.l}%;top:${b.t}%;width:${b.w}%;height:${b.h}%" aria-hidden="true"><span>${i + 1}${sure || b.w * pw / 100 < 72 ? "" : " · ungefär"}</span></div>
+              ${q.off ? `<i class="pl-dot" style="left:${q.ax}px;top:${q.ay}px" aria-hidden="true"></i>` : ""}<button type="button" class="pl-pinb${sel === it.h ? " on" : ""}" data-pin="${it.h}" style="left:${q.x}px;top:${q.y}px" aria-label="${esc(pinLabel(it, i))}" aria-pressed="${sel === it.h}">${i + 1}</button>`; }).join("");
+          $("#plLegend", root).hidden = !pins.some((it) => !widthAt(it).sure); $("#plZoom", root).hidden = !pins.length;
+          $$("#plSteps li", root).forEach((li, j) => { if (j === (pins.length ? 2 : 1)) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current"); });
           if (focusH) { const f = $(`[data-pin="${focusH}"]`, marks); if (f) f.focus({ preventScroll: true }); }
           $("#plCount", root).textContent = `${Math.min(list.length, PLACE_MAX)} av ${PLACE_MAX}`;
           $("#plList", root).innerHTML = list.map((it, i) => { const p = RQ.byHandle(it.h), z = measures(p);
-            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i < PLACE_MAX ? `${verbOf(it)} ${SURF[surfKey(it)]} · ` : "Inte med i bilden · "}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty small">Inga saker än. Lägg till en, eller tryck på Inred åt mig i Justera själv.</li>`;
+            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i < PLACE_MAX ? `${verbOf(it)} ${SURF[surfKey(it)]} · ` : "Inte med i bilden · "}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty small">Inga saker än. Lägg till upp till fem, så pekar du ut var de ska stå.</li>`;
           const over = list.length - PLACE_MAX; $("#plGoNote", root).textContent = !pins.length ? "Lägg till minst en sak först." : over > 0 ? `Bilden tar fem saker åt gången, de fem första. ${over === 1 ? "En till" : over + " till"} väntar.` : live ? "Det tar en liten stund." : "AI-bilden slås på snart. Nu ser du en förhandsvisning.";
           $("#plCreate", root).disabled = !pins.length; $("#plAdd", root).disabled = false;
           paintPin(); };
         const paintPin = () => { const list = R.scene(), i = list.findIndex((it) => it.h === sel), it = list[i]; pin.hidden = !it || i >= PLACE_MAX; if (pin.hidden) return;
           const p = RQ.byHandle(it.h), k = kindOf(p), z = measures(p), sure = widthAt(it).sure, ask = !mapOf() && !it.pc;
+          /* one compact block (review M3): on a phone it sits right under the photo, above the dock; on a computer beside it */
           pin.innerHTML = `<div class="pl-pin-h"><span class="pl-n">${i + 1}</span><b id="plPinT">${esc(p.name)}</b><button type="button" class="iconbtn" id="plPinX" aria-label="Klar med ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-            <p class="small">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek i bilden"}` : "Mått kommer. Storleken i bilden är ungefärlig."}${!mapOf() && !(room.known && room.known.cm > 0) ? ` <button type="button" class="tlink" id="plMeasure">Ange en känd längd</button> ger rätt skala.` : ""}</p>
-            <p class="pl-ask${ask ? " now" : ""}">${ask ? "Var står den?" : verbOf(it).replace(/^./, (c) => c.toUpperCase())}</p>
-            <div class="chips" role="group" aria-label="Yta">${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
-            <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>
-            <div class="pl-pin-a"><button type="button" class="btn ghost sm" data-ord="-1"${i ? "" : " disabled"}>Tidigare</button><button type="button" class="btn ghost sm" data-ord="1"${i < Math.min(list.length, PLACE_MAX) - 1 ? "" : " disabled"}>Senare</button><button type="button" class="btn ghost sm" id="plDel">Ta bort</button></div>`; };
-        const select = (h, quiet) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); const it = R.scene().find((x) => x.h === h); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
+            <p class="small pl-pin-m">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek"}` : "Mått kommer, ungefärlig storlek"}.${!mapOf() && !(room.known && room.known.cm > 0) ? ` <button type="button" class="tlink" id="plMeasure">Ange en känd längd</button> <span class="pl-pin-tip">(i Justera själv) ger rätt skala.</span>` : ""}</p>
+            <div class="pl-pin-row"><span class="pl-ask${ask ? " now" : ""}" id="plAsk">${ask ? "Var står den?" : verbOf(it).replace(/^./, (c) => c.toUpperCase())}</span><div class="chips" role="group" aria-labelledby="plAsk">${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
+            <div class="pl-pin-a"><button type="button" class="btn ghost sm" data-ord="-1" aria-label="Tidigare: nummer ${i}"${i ? "" : " disabled"}>${ICO.up}<span class="pl-a-t">Tidigare</span></button><button type="button" class="btn ghost sm" data-ord="1" aria-label="Senare: nummer ${i + 2}"${i < Math.min(list.length, PLACE_MAX) - 1 ? "" : " disabled"}>${ICO.down}<span class="pl-a-t">Senare</span></button><button type="button" class="btn ghost sm" id="plDel" aria-label="Ta bort ${esc(p.name)}">${ICO.trash}<span class="pl-a-t">Ta bort</span></button></div></div>
+            <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>`; };
+        const select = (h, quiet) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); inView(); say(`${name(h)} är vald. Tryck i bilden där den ska stå.`); };
+        /* a phone: the photo and the chosen pin's block both in view, between the header and the dock (review M3, D4) */
+        const inView = () => { if (!phone.matches || pin.hidden) return; requestAnimationFrame(() => { const top = ((document.querySelector("header") || {}).offsetHeight || 56) + 8, dk = document.getElementById("dock"), a = stage.getBoundingClientRect(), z = pin.getBoundingClientRect();
+          const room2 = (dk && dk.offsetHeight && getComputedStyle(dk).display !== "none" ? dk.getBoundingClientRect().top : innerHeight) - 8; let dy = 0; if (z.bottom > room2) dy = z.bottom - room2; if (a.top - dy < top) dy = a.top - top; if (Math.abs(dy) > 2) scrollBy({ top: dy, behavior: calmNow() ? "auto" : "smooth" }); }); };
         const inner = $("#plIn", root);
+        /* the pins as drawn: each at its foot point unless that would cover another pin; then they are pushed apart (at least a
+           finger's width between their centres) with a thin line back to the true point. Only the drawing: where the thing is saved
+           does not change (review M2, 360 px) */
+        const spread = (pins) => { const W = inner.offsetWidth || 1, H = inner.offsetHeight || 1, r = 23, D = 47;
+          const q = pins.map((it) => { const ax = it.x / 100 * W, ay = it.y / 100 * H; return { ax, ay, x: clamp(ax, r, W - r), y: clamp(ay, r, H - r) }; });
+          for (let n = 0; n < 80; n++) { let moved = false;
+            for (let i = 0; i < q.length; i++) for (let j = i + 1; j < q.length; j++) { const a = q[i], b = q[j]; let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy); if (d >= D) continue; moved = true;
+              if (d < 0.5) { dx = j % 2 ? 1 : -1; dy = -0.6; d = Math.hypot(dx, dy); } const push = (D - d) / 2 + 0.5, ux = dx / d, uy = dy / d; a.x -= ux * push; a.y -= uy * push; b.x += ux * push; b.y += uy * push; }
+            q.forEach((a) => { a.x = clamp(a.x, r, W - r); a.y = clamp(a.y, r, H - r); }); if (!moved) break; }
+          return q.map((a) => ({ ...a, x: +a.x.toFixed(1), y: +a.y.toFixed(1), ax: +a.ax.toFixed(1), ay: +a.ay.toFixed(1), off: Math.hypot(a.x - a.ax, a.y - a.ay) > 4 })); };
+        const phone = matchMedia("(max-width: 900px)"), homeP = $("#plPinHome", root), slot = $("#plPinSlot", root);
+        const placePin = () => { if (phone.matches) { if (pin.parentNode !== slot) slot.appendChild(pin); } else if (pin.parentNode === slot) homeP.parentNode.insertBefore(pin, homeP); };
+        placePin(); if (phone.addEventListener) phone.addEventListener("change", placePin);
+        let rsT = 0; const ro = window.ResizeObserver ? new ResizeObserver(() => { clearTimeout(rsT); rsT = setTimeout(() => { if (!drag && document.contains(inner)) paint(); }, 60); }) : null; if (ro) ro.observe(inner);
         const at = (e) => { const r = inner.getBoundingClientRect(); return [clamp((e.clientX - r.left) / r.width * 100, 1, 99), clamp((e.clientY - r.top) / r.height * 100, 4, 100)]; };
         stage.addEventListener("pointerdown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; e.preventDefault(); b.setPointerCapture(e.pointerId); drag = { h: b.dataset.pin, b, x0: e.clientX, y0: e.clientY, moved: false }; });
-        stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.b.style.left = x + "%"; drag.b.style.top = y + "%"; drag.x = x; drag.y = y; });
+        stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.x = x; drag.y = y;
+          if (!drag.raf) drag.raf = requestAnimationFrame(() => { if (!drag) return; drag.raf = 0; drag.b.style.left = drag.x + "%"; drag.b.style.top = drag.y + "%"; }); }); /* one style change a frame (review M12) */
         let dragged = 0; // a drag is not also a click
         /* where it ended up, and why when that is not where it was put (a full table, a rug that stays on the floor) */
         const moved = (h) => { const it = R.scene().find((x) => x.h === h); if (it) say(R.pinNote || `${name(h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); };
@@ -1046,7 +1071,7 @@
         const nw = RQ.ss && RQ.ss.get("rumiq-room-new"); if (nw && R.inScene(nw)) { RQ.ss.set("rumiq-room-new", ""); sel = nw;
           const l = R.scene(), i = l.findIndex((x) => x.h === nw); if (i >= PLACE_MAX) { const [it] = l.splice(i, 1); l.splice(PLACE_MAX - 1, 0, it); R.saveScene(l, true); } } // the five are full: the one you came with takes the fifth place
         paint(); if (sel) say(`${name(sel)} är vald. Tryck i bilden där den ska stå.`);
-        return () => document.removeEventListener("rq-room", onRoom);
+        return () => { document.removeEventListener("rq-room", onRoom); if (ro) ro.disconnect(); if (phone.removeEventListener) phone.removeEventListener("change", placePin); };
       },
     };
   };

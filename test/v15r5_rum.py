@@ -189,12 +189,14 @@ with sync_playwright() as p:
     # ---------------------------------------------------------------- P5: a second table lamp stays on the table where it fits, otherwise says why it is on the floor
     c = ctx_for(b, 390, 844, True); pg = new_page(c); pg.goto(BASE + "mitt-rum/"); pg.wait_for_timeout(300)
     pg.evaluate(SAMPLE, "sovrum"); pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'glob-bordslampa-opalglas', 'glod-doftljus-keramik'].forEach((h) => RQ.room.add(h, true))")
-    sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || ''])")
-    ok(all(not on for _, on in sc), f"[P5 sovrum] two lamps and a candle all stand on the bedside table: {sc}")
+    sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.on || '', i.x, i.w])")
+    # rum-d7 (D7): the nightstand holds a lamp and the candle; a second lamp no longer stands on the mug, so it goes where there is room
+    ok(sc[0][1] == "" and sc[2][1] == "" and (sc[1][1] == "floor" or sc[1][2] + sc[1][3] / 2 <= 17.8 or sc[1][2] - sc[1][3] / 2 >= 21.2), f"[P5 sovrum] a lamp and a candle stand on the bedside table, a second lamp never on the mug: {sc}")
     pg.evaluate(SAMPLE, "vardagsrum"); pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'svamp-uppladdningsbar-lampa'].forEach((h) => RQ.room.add(h, true))")
-    sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.x, i.on || ''])")
-    ok(all(not s[2] for s in sc) and all(72 <= s[1] <= 83 for s in sc), f"[P5 vardagsrum] a second, smaller lamp goes to the other end of the side table: {sc}")
-    # the side table holds two lamps beside the mug (studio review N5 freed its other end): with both there, a third does not fit
+    sc = pg.evaluate("RQ.room.scene().map((i) => [i.h, i.x, i.on || '', i.w])")
+    # rum-d7 (D7): the side table's free end beside the mug (73.1-75.6 %) holds a candle, not a lamp; the second lamp is on the floor, said
+    ok(not sc[0][2] and 79 <= sc[0][1] <= 84 and (sc[1][2] == "floor" or sc[1][1] + sc[1][3] / 2 <= 75.6), f"[P5 vardagsrum] the first lamp stands on the side table, a second never on the mug: {sc}")
+    # with a lamp on the side table and one on the floor, a third lamp from its product page takes the table lamp's place
     pg.evaluate("RQ.room.saveScene([]); ['lysa-keramiklampa', 'svamp-uppladdningsbar-lampa'].forEach((h) => RQ.room.add(h, true))")
     pg.goto(BASE + "mitt-rum-glob-bordslampa-opalglas/"); pg.wait_for_timeout(1600)
     ts = pg.evaluate("[...document.querySelectorAll('.toast')].map((t) => t.textContent).join(' ')")
