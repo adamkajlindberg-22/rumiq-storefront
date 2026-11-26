@@ -92,5 +92,10 @@
  "Visa var sakerna ska stå, upp till fem på en gång.": "Show where things go, up to five at a time.",
  "Lägg till den": "Add it",
  "Lägg till dem": "Add them",
- "{0} saker föreslagna, {1} kr. Flytta nålarna dit du vill ha dem.": "{0} things suggested, {1} kr. Move the pins to where you want them."
+ "{0} saker föreslagna, {1} kr. Flytta nålarna dit du vill ha dem.": "{0} things suggested, {1} kr. Move the pins to where you want them.",
+ "Tryck på en nål och sedan där i bilden den ska stå.": "Tap a pin, then tap where it should go in the picture.",
+ "Klart, ångrat.": "Done, undone.",
+ "Det fanns ingen ledig plats, så den står på golvet. Peka ut var den ska stå.": "There was no free spot, so it is on the floor. Point to where it should go.",
+ "Väntar, tryck för att ta med · ": "Waiting, tap to include · ",
+ "Väntar, tryck för att ta med": "Waiting, tap to include"
 }

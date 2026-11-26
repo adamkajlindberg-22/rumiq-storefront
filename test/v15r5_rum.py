@@ -239,8 +239,11 @@ with sync_playwright() as p:
         c, pg = room_page(b, W, Hh, W == 1024, items=("lysa-keramiklampa", "plad-ullblandning-havre", "lin-kuddfodral", "flatad-forvaringskorg"))
         pg.evaluate("RQ.shop.signIn('test@example.com', 'Test', 'email'); localStorage.setItem('rumiq-ai-consent', JSON.stringify('x'))")
         pg.evaluate("RQ.openAI()"); pg.wait_for_timeout(2200); pg.evaluate("document.getElementById('aiGo').click()"); pg.wait_for_timeout(2600)
-        f = pg.evaluate("(() => { const f = document.getElementById('aiBa').getBoundingClientRect(), p = document.querySelector('.ai-result .ai-pad').getBoundingClientRect(); return [(f.top + f.bottom) / 2, (p.top + p.bottom) / 2]; })()")
-        ok(abs(f[0] - f[1]) < 30, f"{tag} the picture is centred beside the list, not at the top of a half-empty column: {[round(v) for v in f]}")
+        # v15.7 review P3: a centred picture left an empty band above it; it stands level with the heading and stays in view (sticky) while the list scrolls
+        f = pg.evaluate("(() => { const f = document.getElementById('aiBa').getBoundingClientRect(), p = document.querySelector('.ai-result .ai-pad').getBoundingClientRect(); return [f.top, p.top]; })()")
+        ok(abs(f[0] - f[1]) < 40, f"{tag} the picture stands level with the heading beside it: {[round(v) for v in f]}")
+        g = pg.evaluate("(() => { const box = document.querySelector('.ai-sheet.open .sheet-in'); box.scrollTop = box.scrollHeight; return new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(() => { const f = document.getElementById('aiBa').getBoundingClientRect(), b = box.getBoundingClientRect(); ok([f.top >= b.top - 2, f.bottom <= b.bottom + 2]); }))); })()")
+        ok(g == [True, True], f"{tag} scrolled to the end of the list, the picture is still in view: {g}")
         ok(not pg.errs, f"{tag} no script errors: {pg.errs[:2]}")
         c.close()
 #CHECKS

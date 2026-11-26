@@ -19,29 +19,41 @@ Bekräftat på riktiga enheter (BrowserStack, iPhone 18 Pro, iPhone SE iOS 15 oc
 - lampan från produktsidan hamnar på bordet
 - iPhone SE-sidorna fungerar
 
-## 2. v15.7 (gren `claude/serene-bohr-7fc3mj`, inte publicerad än)
+## 2. v15.7 (publiceras från `claude/serene-bohr-7fc3mj`)
 
-`place-merge`, `rum-d7`, `s2-ai` och `device-fix` är ihopslagna här, plus rättningarna nedan. `svep2` är inte med; den
-publiceras när dess granskning håller.
+Ihopslaget: `place-merge`, `rum-d7`, `s2-ai`, `device-fix` och `svep2`, plus två omgångar rättningar.
 
-Klart i v15.7:
-- **Rum-sidan:** B1, B2, M1, D7 (från `rum-d7`); M2 nålar som står för nära trycks isär, med en prick och ett streck till
-  den exakta platsen; M3 på telefon ligger den valda nålens kontroller direkt under bilden, ovanför docken; M4 en sak får
-  aldrig en yta den inte kan ha (påslakan på säng, inte golv); M5 mattan ligger framför soffan och sakerna har
-  kontaktskuggor i förhandsvisningen; M9 Mitt rum, förstasidan och Studio Plus berättar om Placera och skapa, och en tom
-  lista har "Föreslå saker"; M10 det som inte fick plats eller väntar sägs i listan ("Fick inte plats", "Väntar" med
-  "Lägg till dem"); M11 vägen tillbaka till Placera och skapa syns ovanför rumsraden.
-- **Minor:** riktig Ångra-knapp efter Ta bort, steget man är på markeras (aria-current), "Förstora bilden" bara när det
-  finns nålar, ingen toast över Skapa bilden, fotavtryckets etikett läsbar och bara för den valda saken.
-- **AI-sidan:** D5, M6, M7/D9, M8, Ändra nålarna, Vad tycker du? (från `s2-ai`); D12 bilden centreras bredvid listan på
-  dator; glappet under Köp allt i bilden borta (en CSS-krock med `.pl`); bocken vid "Bilden finns nu …" står på samma
-  rad som texten; "Bilden finns nu i {rum} under Sparat" finns på engelska.
-- **Enheter:** D1–D4, D8 (från `device-fix`). D6 finns i `svep2`.
+**Granskning 2 av Placera och skapa (26 nov, före rättningarna):** telefon 6,5/10, dator 7/10. Förra granskningen
+gav 5 och 6,5. Rättat efter den:
+- iPhone SE: bilden stannar i synfältet när en nål väljs.
+- En sak som läggs till när bilden redan har fem tar femte platsen, och sidan säger vilken som väntar.
+- En väntande sak i listan tas med med ett tryck.
+- Kudden och plädens rumsbilder: en kudde i Havre och en pläd utan stången (`assets/img/cut/*-rum.webp`).
+- Mattans fotavtryck ligger platt.
+- En första instruktion visas, och "Skapa bilden" är klistrig ovanför docken på telefon och står först i högerkolumnen på dator.
+- Kvällsläget har kontrast på den valda nålen.
+- Räknaren visar "5 i bilden · 6 i rummet".
+- Ctrl+Z ångrar, och Enter släpper inte en vald nål.
+- Textilier ligger, även på golvet. En yta som är den enda möjliga sägs i stället för att visas som knapp.
+- Väljaren heter "Lägg till en sak" och filterknapparna är 44 px.
+- AI-resultatet på dator: bilden står i höjd med rubriken och är klistrig, utan tomrum ovanför.
+
+**Svep:** de sparade sakerna är en rad att svepa i på telefon, så resultatet är en skärm kortare.
+
+**Fart:** längsta låsningen när bilden skapas är ungefär 200 ms vid 4× långsammare processor (förut 572 ms).
 
 Kvar:
-- M12 (ryck vid 4× långsammare processor) och "Mått kommer" i produktväljaren.
-- En ny oberoende granskning av Placera och skapa (målet minst 8,5/10 på mobil), BrowserStack och sedan publicering.
-- Svep 2.
+- Mattan i förhandsvisningen är jämnt belyst och dominerar förgrunden. Det löses av AI-bilden.
+- Riktiga mått från Shopify.
+- En tredje granskning, och kontroll på BrowserStack av den publicerade versionen.
+
+**Grundarens beslut 26 nov:**
+- Kundomdömen och "Så blev det hemma" väntar tills det finns riktiga kunder.
+- Publicera när det är klart.
+
+**Jämförelse med Lovable-studion:** allt i den listan finns redan, utom AI-stylisten med dagsgränser och stilanalys från
+foton. Båda kräver server och står som förslag i `studio-server.md`, avsnitt 13. Miljöbilder och korta före/efter-videor
+till marknadsföringen kostar krediter (Higgsfield) och görs först när grundaren godkänt priset.
 
 ## 3. Efter v15.7
 

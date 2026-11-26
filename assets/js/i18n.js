@@ -57,6 +57,9 @@
       [/^Väntar: (.+)\.$/, (m) => `Waiting: ${list(m[1])}.`],
       [/^(.+) är med nu\.$/, (m) => `${list(m[1])} ${m[1].includes(", ") ? "are" : "is"} in now.`],
       [/^(.+) är borttagen\.$/, (m) => `${list(m[1])} is removed.`],
+      [/^(.+) är med i bilden\. (.+) väntar, bilden tar fem saker åt gången\.$/, (m) => `${list(m[1])} is in the picture. ${list(m[2])} is waiting; the picture takes five things at a time.`],
+      [/^(.+) är med i bilden nu\. (.+) väntar\.$/, (m) => `${list(m[1])} is in the picture now. ${list(m[2])} is waiting.`],
+      [/^(Står|Ligger|Hänger) på (golv|bord|vägg|säng|soffa), alltid\.$/, (m) => `${{ "Står": "Stands", "Ligger": "Lies", "Hänger": "Hangs" }[m[1]]} on the ${{ golv: "floor", bord: "table", "vägg": "wall", "säng": "bed", soffa: "sofa" }[m[2]]}, always.`],
     ];
     const list = (x) => x.split(", ").map((n) => one(n) || n).join(", ");
     function one(s) {

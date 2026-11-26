@@ -475,10 +475,6 @@
         ${productsList(items, swapOk())}
         ${savedLine(v)}</div></div>`, false, true);
     const fig = $("[data-ba]", body), ctl = baWire(fig, other);
-    /* desktop: the picture sits in the middle beside a longer list, not at the top of a half-empty column (r5 D12); its foot never below the sheet's visible edge */
-    const stg = $(".ai-stage", body), pad = $(".ai-pad", body), centre = () => { if (!stg || !pad || !document.contains(stg)) return; stg.style.marginTop = ""; if (!matchMedia("(min-width: 900px)").matches || pad.getBoundingClientRect().left < stg.getBoundingClientRect().right - 1) return; /* side by side only */
-      const box = stg.closest(".sheet-in"), vis = box ? box.clientHeight : innerHeight, d = Math.min((pad.offsetHeight - stg.offsetHeight) / 2, vis - stg.offsetHeight - 16); if (d > 4) stg.style.marginTop = Math.round(d) + "px"; };
-    centre(); requestAnimationFrame(centre); setTimeout(centre, 400);
     if (fresh) reveal(fig, ctl, 30);
     $$("[data-ver]", body).forEach((b) => b.addEventListener("click", () => { view.cur = +b.dataset.ver; if (view.cmp === view.cur) view.cmp = -1; viewResult(); focusBack(`[data-ver="${view.cur}"]`); }));
     $$("[data-cmp]", body).forEach((b) => b.addEventListener("click", () => { view.cmp = +b.dataset.cmp; viewResult(); focusBack(`[data-cmp="${view.cmp}"]`); }));

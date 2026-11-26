@@ -3335,13 +3335,13 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .pl-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .pl-marks{position:absolute;inset:0}
 .pl-foot{position:absolute;border:2px dashed rgba(255,255,255,.95);box-shadow:0 0 0 1px rgba(20,20,20,.35),inset 0 0 0 1px rgba(20,20,20,.25);border-radius:4px;pointer-events:none;background:rgba(255,255,255,.08)}
-.pl-foot.on{border-color:var(--accent,#2C4A3E);background:rgba(44,74,62,.12)}
+.pl-foot.on{border-color:#2C4A3E;background:rgba(44,74,62,.12)}
 .pl-foot span{position:absolute;left:.25rem;bottom:calc(100% + .3rem);font-size:.75rem;font-weight:600;color:#fff;background:#22252A;background:rgba(34,37,42,.82);padding:.08rem .4rem;border-radius:999px;line-height:1.35;white-space:nowrap}
 .pl-foot.r span{left:auto;right:.25rem}
 .pl-foot span{display:none}.pl-foot.on span{display:block} /* only the chosen thing's label: side by side they covered each other (the number is on the pin) */
 .pl-dot{position:absolute;width:.6rem;height:.6rem;margin:-.3rem 0 0 -.3rem;border-radius:50%;background:#22252A;border:2px solid #fff;pointer-events:none}
 .pl-lead{position:absolute;height:2px;margin-top:-1px;background:#fff;box-shadow:0 0 0 1px rgba(20,20,20,.35);transform-origin:0 50%;pointer-events:none}
-.pl-foot.on span{background:var(--accent,#2C4A3E)}
+.pl-foot.on span{background:#2C4A3E}
 .pl-hintrow{display:flex;flex-wrap:wrap;align-items:center;gap:0 .6rem}
 .pl-undo{min-height:2.75rem;display:inline-flex;align-items:center;margin-top:.5rem}
 .pl-undo[hidden]{display:none}
@@ -3352,7 +3352,8 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .pl-empty .btn{min-height:2.75rem;display:inline-flex;align-items:center;gap:.4rem}
 .pl-empty .btn svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.7}
 .pl-steps li.now{color:var(--ink);font-weight:600}
-.pl-steps li.now b{background:var(--accent,#2C4A3E)}
+.pl-steps li.now b{background:#2C4A3E;color:#F7F7F4}
+:root[data-light=kvall] .pl-steps li.now b{background:#A9C3B5;color:#14211B}
 .pl-zoom[hidden]{display:none}
 @media (max-width:900px){
   .pl-left>.pl-pin{margin-top:.7rem;padding:.7rem .8rem;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .5rem;scroll-margin-bottom:calc(var(--dock-h) + 1rem)}
@@ -3363,7 +3364,7 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
   .pl-left>.pl-pin .pl-pin-a{flex-basis:100%}
 }
 .pl-pinb{position:absolute;transform:translate(-50%,-50%);width:2.75rem;height:2.75rem;border-radius:50%;border:2px solid #fff;background:#22252A;color:#F7F7F4;font-weight:700;font-size:1rem;box-shadow:0 2px 8px rgba(0,0,0,.35);touch-action:none;cursor:grab;display:grid;place-items:center;padding:0}
-.pl-pinb.on{background:var(--accent,#2C4A3E);transform:translate(-50%,-50%) scale(1.08)}
+.pl-pinb.on{background:#2C4A3E;transform:translate(-50%,-50%) scale(1.08)}
 .pl-pinb:focus-visible{outline:3px solid #fff;outline-offset:2px;box-shadow:0 0 0 6px #22252A}
 .pl-hint{min-height:1.4rem;margin:.5rem 0 0;font-size:.9rem;color:var(--muted)}
 .pl-pin,.pl-list,.pl-go{padding:.9rem 1rem;border:1px solid var(--line2);border-radius:var(--r);background:var(--paper)}
@@ -3371,10 +3372,10 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .pl-right{display:grid;gap:.9rem;align-content:start}
 .pl-pin-h{display:flex;align-items:center;gap:.6rem}
 .pl-pin-h b{flex:1;font-weight:600}
-.pl-n{display:inline-grid;place-items:center;min-width:1.7rem;height:1.7rem;border-radius:50%;background:#22252A;color:#F7F7F4;font-weight:700;font-size:.85rem}
+.pl-n{display:inline-grid;place-items:center;min-width:1.7rem;height:1.7rem;border-radius:50%;background:var(--fill);color:var(--on-fill);font-weight:700;font-size:.85rem}
 .pl-ask{margin:.5rem 0 .35rem;font-weight:600}
 .pl-ask.now{color:var(--accent,#2C4A3E)}
-.pl-pin .chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.pl-pin .chips{display:flex;flex-wrap:wrap;gap:.35rem}.pl-pin .chips[hidden]{display:none}
 .pl-pin .chip,.pl-pin .btn{min-height:2.75rem}
 .pl-pin .chip[aria-pressed=true]{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
 .pl-pin-tip{color:var(--muted);margin:.5rem 0}
@@ -3405,3 +3406,14 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .pl-res-a .btn,.pl-res-a .tlink{min-height:2.75rem}
 @media (prefers-reduced-motion:reduce){.pl-pinb{transition:none}}
 @media (max-width:900px){.pl-stage{margin:0 calc(-1 * var(--gutter));width:auto;border-radius:0}} /* a phone: the picture as wide as the screen, the pins as far apart as they can be */
+
+/* v15.7 review: a rug's footprint lies flat on the floor; the main button in reach; picker chips 44 px */
+.pl-foot.flat{transform:perspective(30em) rotateX(52deg);transform-origin:50% 100%}
+.pl-one{margin:.2rem 0 .3rem;color:var(--muted)}
+.sheet.rmpick .chip{min-height:2.75rem}
+.pl-self{padding:0 .2rem}
+@media (min-width:901px){.pl-right>.pl-pin{order:0}.pl-right>.pl-go{order:1}.pl-right>.pl-list{order:2}.pl-right>.pl-self{order:3}}
+@media (max-width:900px){
+  .pl-right>.pl-go{position:sticky;bottom:calc(var(--dock-h) + env(safe-area-inset-bottom) + 1.6rem);z-index:6;padding:.6rem .7rem;box-shadow:0 10px 30px -12px rgba(0,0,0,.35)}
+  .pl-right>.pl-go .small{margin-top:.35rem;font-size:.8rem}
+}

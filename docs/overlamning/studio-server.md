@@ -656,7 +656,16 @@ function placePrompt(pins: any[], info: any, fix: { i: number; colour: string }[
 ```
 
 In `attempt(again)`, for place mode with pins:
-`body: { prompt: placePrompt(pins, info, fix), image_urls: [roomUrl, ...pins.map((p) => cutUrl(p.h))], num_images: 1, output_format: "jpeg", aspect_ratio: ratio }`.
+`body: { prompt: placePrompt(pins, info, fix), image_urls: [roomUrl, ...pins.map((p) => refUrl(p))], num_images: 1, output_format: "jpeg", aspect_ratio: ratio }`.
+
+**Referensbilden per produkt (tillagt 26 nov):** klienten skickar `pin.cut`, produktens egen rumsbild som absolut adress.
+Exempel: `.../assets/img/cut/lin-kuddfodral-rum.webp` är en kudde i Havre, och `plad-ullblandning-havre-rum.webp` är
+plädet utan butiksfotots stång. Butikens frilagda bild av kuddfodralet visar två kuddar i två färger. Skickas den till
+AI:n ritar den två kuddar.
+- `refUrl(p)` = `p.cut` när adressen börjar med sajtens egen adress (GitHub Pages eller den egna domänen), annars `cutUrl(p.h)`.
+- Lägg till adressen i valideringen i 12.2, så att bara sajtens egna bilder hämtas.
+- När produkterna kommer från Shopify: lägg rumsbilden som en egen bild på produkten, eller som metafältet
+  `rumiq.room_image`.
 
 ## 12.4 Colour check per product (ΔE), with the one retry
 
@@ -727,3 +736,31 @@ Notes:
    - Skapa bilden asks for sign-in and consent;
    - each picture costs one AI picture;
    - the texts change by themselves ("5 AI-bilder gratis i månaden med konto").
+
+# 13. AI-stylisten och stilanalys från foton (förslag 2026-11-26, ingenting deployat)
+
+Jämförelsen med Lovable-studion visade två saker som kräver en server. Allt annat i den listan finns redan i sajten:
+Placera och skapa med fem saker, Köp allt i bilden, Byt produkt och färg i resultatet, rum per projekt i Mitt hem,
+"Vad tycker du?", och kärnflödet Svep → rumsförslag → Se det i ditt rum.
+
+## 13.1 AI-stylisten (`supabase/functions/stylist`)
+- Idag svarar stylisten med fasta regler och sortimentet. Sidan säger det ärligt ("inte med en AI-tjänst än").
+- Förslag: en funktion som tar frågan, rummet och stilen och svarar med råd plus högst fyra produkter.
+  - Produkterna väljs bara ur katalogen (handles som servern kontrollerar mot Shopify), aldrig påhittade.
+- Gränser, räknade på servern per dygn (Europe/Stockholm):
+  - gäst: 10 frågor per IP och webbläsar-id;
+  - konto: 30 frågor;
+  - Studio Plus: 60 frågor.
+- Kontots samtal sparas i `stylist_conversations` (avsnitt 8).
+- Klienten: `RQ_CONFIG.studio.stylistLive` (false tills grundaren slår på). När den är false visas dagens regelsvar.
+- Kostnad: ange modell och pris per 1 000 frågor innan den slås på. Grundaren bestämmer.
+
+## 13.2 Stilanalys från foton (`supabase/functions/analyse`)
+- Upp till 3 foton av ett rum. Svaret innehåller:
+  - stil (en av `RQ.STYLES`);
+  - 3–5 färger som hex;
+  - material;
+  - tre saker som skulle lyfta rummet, med produkter ur katalogen.
+- Kräver konto. Räknas som en AI-bild mot månadens gräns, så att det inte blir en ny gräns att förklara.
+- Fotona skickas bara när kunden trycker "Analysera". Inget sparas utan att kunden valt det.
+- Svaret sparas som rummets stil i Mitt hem och kan öppnas direkt i Placera och skapa.
