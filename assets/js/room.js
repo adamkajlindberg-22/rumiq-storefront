@@ -133,7 +133,8 @@
     const [kind0, cm] = meta(p), kind = over || kind0, M = MX || mapOf(), G = M || GENERIC;
     // in your own photo a curtain hangs down to the floor, so nothing is put on the floor in front of it
     const busy = (x, y, w) => ((M && M.busy) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && x + w * 0.32 > a && x - w * 0.32 < b); // something in the photo stands there
-    const overEdge = (x, y, w, k) => (k || kind) === "surface" && ((M && M.edge) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && (x - w * 0.4 < a || x + w * 0.4 > b)); // it would hang over the table's edge
+    const foot = /lampa|vas|ljus|kruka/.test(p.handle) ? 0.25 : 0.4; // a lamp's shade may reach past the edge, its foot may not; a tray or a box stands on all of its width
+    const overEdge = (x, y, w, k) => (k || kind) === "surface" && ((M && M.edge) || []).some(([a, b, yy]) => Math.abs(yy - y) < 4 && (x - w * foot < a || x + w * foot > b)); // it would hang over the table's edge
     const taken = (x, y, w, k) => busy(x, y, w) || overEdge(x, y, w, k) || list.some((it) => { const q = RQ.byHandle(it.h); return q && (SORT[it.on || kindOf(q)] === SORT[k || kind] || (!M && SORT[k || kind] === "f" && kindOf(q) === "window")) && Math.abs(it.y - y) < 7 && Math.abs(it.x - x) < Math.max(3, (it.w + w) * 0.42); });
     const L = (!M && !raw && ls.get(LEARN, {})) || {}, learned = L[kind];
     if (learned && isFinite(learned.x) && isFinite(learned.y)) {
