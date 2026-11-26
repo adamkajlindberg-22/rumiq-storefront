@@ -1308,7 +1308,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .rm-sugg-left{margin-top:.3rem;color:var(--ink2)}
 .rm-sugg-left b{font-weight:600}
 .rm-sugg .tlink{margin-top:.3rem;min-height:2.75rem;display:inline-flex;align-items:center}
-.rm-projs{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;margin:.4rem 0 .2rem}
+.rm-projs{display:flex;gap:.35rem;overflow-x:auto;scrollbar-width:none;margin:.4rem 0 .2rem;padding-block:.4rem;margin-block:0 -.2rem} /* room for the keyboard ring above and below (D10) */
 .rm-projs::-webkit-scrollbar{display:none}
 .rm-projs .chip{flex:none;min-height:2.6rem;display:inline-flex;align-items:center;gap:.35rem}
 .rm-projs .chip[aria-pressed=true]{background:var(--fill);color:var(--on-fill);border-color:var(--fill)}
@@ -1501,7 +1501,7 @@ section.rm{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:clamp(1.5r
 .sheet.open{pointer-events:auto}
 .sheet.open .sheet-scrim{opacity:1}
 .sheet.open .sheet-in{transform:none}
-.sheet-grab{position:sticky;top:0;z-index:3;height:1.6rem;display:grid;place-items:center;touch-action:none;margin-bottom:-1.6rem}
+.sheet-grab{position:relative;top:0;z-index:3;height:1.6rem;display:grid;place-items:center;touch-action:none;margin-bottom:-1.6rem} /* it scrolls away with the sheet: no handle floating over the text (D10) */
 .sheet-grab span{width:2.6rem;height:.3rem;border-radius:9px;background:var(--line);background:color-mix(in srgb,var(--ink) 25%,transparent)}
 .sheet-x{position:absolute;top:.7rem;right:.7rem;z-index:4;background:var(--paper);background:color-mix(in srgb,var(--paper) 85%,transparent);backdrop-filter:blur(8px)}
 .sheet-x svg{width:1.2rem;height:1.2rem}
@@ -1711,7 +1711,7 @@ html.sheet-lock{overflow:hidden}
 .sv-info{position:absolute;left:.7rem;right:.7rem;bottom:.7rem;background:rgba(247,247,244,.94);color:#22252A;border-radius:12px;padding:.75rem .9rem;display:grid;gap:.2rem;backdrop-filter:blur(8px)}
 .sv-info div{display:flex;justify-content:space-between;gap:.8rem;font-weight:600}
 .sv-info div span{white-space:nowrap}
-.sv-info div b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-width:0}
+.sv-info div b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;min-width:0;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word} /* the whole name, on up to three lines, also on a narrow card (D10) */
 .sv-info small{color:#696B68;font-size:.8rem}
 .sv-stamp{position:absolute;top:1.1rem;padding:.35rem .8rem;border-radius:8px;font-weight:700;font-size:1.05rem;letter-spacing:-.01em;opacity:0;border:2px solid currentColor;background:rgba(247,247,244,.85)}
 .sv-stamp.yes{left:1rem;color:#2C4A3E;transform:rotate(-8deg)}
@@ -1726,6 +1726,7 @@ html.sheet-lock{overflow:hidden}
 .sv-b.room{width:3rem;height:3rem}
 .sv-b.room[aria-pressed=true]{background:var(--fill);color:var(--on-fill)}
 .sv-meta{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;justify-content:center;font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.sv-meta .sv-chip{line-height:1.25;padding-top:.12rem;padding-bottom:.12rem} /* no taller than the count beside it: the card does not move when it appears (D10) */
 .sv-chip{background:color-mix(in srgb,var(--glow) 35%,transparent);color:var(--ink);padding:.25rem .7rem;border-radius:999px;font-weight:560;animation:rqRise .6s var(--ease) both}
 .sv-keys{text-align:center}
 .svep-result{max-width:40rem;text-align:center;display:grid;gap:.8rem;justify-items:center;outline:none;animation:rqRise .6s var(--ease) both}
@@ -2293,7 +2294,7 @@ body.on-checkout .tools{grid-column:3}
 }
 @media (max-width:900px) and (max-height:780px){.svep:has(.sv-scope) .sv-deck,.svep:has(.sv-scope) .sv-prog{width:min(26rem,86vw,max(13rem,calc((100svh - var(--nav-h) - var(--dock-h) - 16rem) * .77)))}} /* short phones: no lead above, so the card can use that height */
 /* the shortest phones (an iPhone SE shows 548 px between Safari's bars): tighter rows and a smaller card, so the buttons stay above the dock */
-@media (max-width:900px) and (max-height:640px){.svep .sv-head h1{font-size:1.4rem}.svep .sv-head{gap:.45rem}.svep .sv-wrap{margin-top:.55rem;gap:.4rem}
+@media (max-width:900px) and (max-height:640px){.svep .sv-info{font-size:.86rem}.svep .sv-info div{flex-direction:column;gap:0}.svep .sv-head h1{font-size:1.4rem}.svep .sv-head{gap:.45rem}.svep .sv-wrap{margin-top:.55rem;gap:.4rem}
   .svep:has(.sv-scope) .sv-deck,.svep:has(.sv-scope) .sv-prog{width:min(26rem,86vw,max(8.5rem,calc((100svh - var(--nav-h) - var(--dock-h) - env(safe-area-inset-bottom) - 14rem) * .77)))}}
 /* Svep never collapses: 320 px wide, a phone on its side and 200 % zoom (1.4.10). On its side the buttons sit beside the card. */
 @media (max-width:350px){.sv-ctrl{gap:.45rem}.sv-b{width:3.2rem;height:3.2rem}.sv-b.yes{width:3.7rem;height:3.7rem}.sv-b.room{width:2.75rem;height:2.75rem}.sv-b.bag{width:3rem;height:3rem}.sv-b.undo{width:2.5rem;height:2.5rem}}
@@ -2758,7 +2759,7 @@ footer.site .news .field .btn{flex:none;padding-inline:1rem;white-space:nowrap}
   .rm-acth > b{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:600}
   .rm-acth .rm-on{flex:none;gap:.4rem;color:var(--muted)}
   .rm-acth .rm-on select{min-height:2.5rem}
-  .rm-act .rm-bytbtn{flex-direction:row;min-height:2.75rem}
+  .rm-act .rm-bytbtn{flex-direction:row;min-height:2.75rem;padding:0 .8rem 0 .7rem} /* the label keeps air to the edge (D10) */
   .rm-bytbtn{display:inline-flex;align-items:center;gap:.35rem;flex:none;min-height:2.5rem;padding:0 .85rem;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font-weight:600;font-size:.88rem}
   .rm-swap,.rm-sugg{margin-left:var(--gutter);margin-right:var(--gutter)}
   .rm-cmp{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:84%;overflow-x:auto;scroll-snap-type:x mandatory;margin:1rem calc(-1*var(--gutter)) 0;padding:0 var(--gutter) .4rem;scrollbar-width:none}
@@ -3101,7 +3102,7 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .mb-wrap{padding:1.4rem var(--gutter) 2rem;display:grid;gap:1rem}
 @media (min-width:900px){.mb-wrap{padding:2rem}}
 .mb-head{display:grid;gap:.3rem;padding-right:3rem} /* clear of the grab handle, which has its own strip in the moodboard */
-.mb-sheet .sheet-grab{background:var(--paper);margin-bottom:0;border-radius:20px 20px 0 0} /* scrolled, the board passes under the handle, never behind a see-through bar */
+.mb-sheet .sheet-grab{position:sticky;background:var(--paper);margin-bottom:0;border-radius:20px 20px 0 0} /* scrolled, the board passes under the handle, never behind a see-through bar */
 .mb-board{isolation:isolate} /* the things' layers stay inside the board */
 .mb-name input{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:560;letter-spacing:-.02em;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);padding:.2rem 0;width:100%;border-radius:0}
 .mb-board{position:relative;aspect-ratio:4 / 3;width:min(100%,calc(58vh * 4 / 3));margin-inline:auto;background:#F4F2EE;border-radius:var(--r);overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 1px var(--line)}
@@ -3143,4 +3144,4 @@ input[type=checkbox][aria-invalid=true]{outline:2px solid var(--danger);outline-
 .rm-on select,.rm-acth .rm-on select{min-height:2.75rem}
 #rmCmpGo{min-height:2.75rem}
 #rmSelLink{display:inline-flex;align-items:center;min-height:2.75rem;min-width:2.75rem;justify-content:center}
-.rm-sugg-sty{flex-wrap:wrap}
+.rm-sugg-sty{flex-wrap:wrap;overflow:visible} /* wrapped, nothing scrolls: the keyboard ring round a chip is not clipped (D10) */
