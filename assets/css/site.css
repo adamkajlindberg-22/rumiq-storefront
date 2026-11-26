@@ -1718,7 +1718,7 @@ html.sheet-lock{overflow:hidden}
 .sv-info{position:absolute;left:.7rem;right:.7rem;bottom:.7rem;background:rgba(247,247,244,.94);color:#22252A;border-radius:12px;padding:.75rem .9rem;display:grid;gap:.2rem;backdrop-filter:blur(8px)}
 .sv-info div{display:flex;justify-content:space-between;gap:.8rem;font-weight:600}
 .sv-info div span{white-space:nowrap}
-.sv-info div b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;min-width:0;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word} /* the whole name, on up to three lines, also on a narrow card (D10) */
+.sv-info div b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;min-width:0;-webkit-hyphens:manual;hyphens:manual;overflow-wrap:break-word} /* the whole name, on up to three lines, broken at its spaces and never inside a word (D10, D8) */
 .sv-info small{color:#696B68;font-size:.8rem}
 .sv-stamp{position:absolute;top:1.1rem;padding:.35rem .8rem;border-radius:8px;font-weight:700;font-size:1.05rem;letter-spacing:-.01em;opacity:0;border:2px solid currentColor;background:rgba(247,247,244,.85)}
 .sv-stamp.yes{left:1rem;color:#2C4A3E;transform:rotate(-8deg)}
