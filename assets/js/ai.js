@@ -712,7 +712,7 @@
     const canWithdraw = finishing || (st.plan === "plus" && st.withdraw_until && new Date(st.withdraw_until) > new Date());
     node.innerHTML = `<div class="panel ai-acct"><div class="ai-acct-h"><div><span class="eyebrow">${st.plan === "plus" ? "Studio Plus" : "Gratis"}</span><b>${esc(balanceLine(st))}</b></div>${st.period_end && !st.demo ? `<span class="small">${st.plan === "plus" ? (st.sub_status === "canceled" ? "Gäller till" : "Förnyas") : "Nya bilder"} ${esc(d(st.period_end))}</span>` : ""}</div>
       <div class="ctrl-row">${st.plan === "plus" ? `<button class="btn ghost sm" type="button" id="aiPortal">Hantera abonnemang</button>${canWithdraw && !finishing ? `<button class="btn ghost sm" type="button" id="aiWithdraw">Ångra inom 14 dagar</button>` : ""}` : finishing ? `<button class="btn sm" type="button" id="aiWithdraw" data-q="1">Slutför ångern</button>` : `<a class="btn sm" href="#studio-plus">Studio Plus · ${PRICE} kr/mån</a>`}<button class="btn ghost sm" type="button" data-ai-create>Skapa AI-bild</button></div>
-      <p class="small" id="aiAcctMsg" role="status">${st.demo ? "Förhandsversion: abonnemang och AI-bilder fungerar på den riktiga sajten." : ""}</p></div>`;
+      <p class="small" id="aiAcctMsg" role="status">${st.demo ? "Förhandsversion: abonnemang och AI-bilder fungerar när butiken öppnar." : ""}</p></div>`;
     const msg = $("#aiAcctMsg", node);
     const p = $("#aiPortal", node); if (p) p.addEventListener("click", async () => { try { await AI.portal(); } catch (e) { msg.textContent = errText(e.message); } });
     const w = $("#aiWithdraw", node);
@@ -756,10 +756,10 @@
       if (st.plan === "plus") { buy.innerHTML = `<p class="sp-have">Du har Studio Plus. ${esc(balanceLine(st))}.</p><a class="btn ghost block" href="#konto">Hantera i Konto</a>`; return; }
       if (!st.signed_in) { buy.innerHTML = `<a class="btn block" href="#konto" data-after="studio-plus">Logga in för att teckna</a>`; return; }
       buy.innerHTML = `<label class="check sp-consent"><input type="checkbox" id="spOk"> Starta Studio Plus direkt. Jag förstår att om jag ångrar mig inom 14 dagar betalar jag för den del jag har använt.</label>
-        <button class="btn block" type="button" id="spGo" disabled>Teckna Studio Plus</button><p class="small" id="spMsg" role="status">${st.demo ? "Förhandsversion: betalningen öppnas på den riktiga sajten." : "Du betalar i Stripes säkra kassa. Vi ser aldrig ditt kort."}</p>`;
+        <button class="btn block" type="button" id="spGo" disabled>Teckna Studio Plus</button><p class="small" id="spMsg" role="status">${st.demo ? "Förhandsversion: betalningen öppnas när butiken är i gång." : "Du betalar i Stripes säkra kassa. Vi ser aldrig ditt kort."}</p>`;
       $("#spOk", root).addEventListener("change", (e) => ($("#spGo", root).disabled = !e.target.checked));
       $("#spGo", root).addEventListener("click", async (e) => {
-        if (st.demo) { $("#spMsg", root).textContent = "Förhandsversion: på den riktiga sajten öppnas Stripes kassa här."; return; }
+        if (st.demo) { $("#spMsg", root).textContent = "Förhandsversion: när butiken är i gång öppnas Stripes kassa här."; return; }
         e.currentTarget.disabled = true; $("#spMsg", root).textContent = "Öppnar kassan…";
         try { await AI.checkout(); } catch (x) { $("#spMsg", root).textContent = errText(x.message); e.currentTarget.disabled = false; }
       });

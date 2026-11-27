@@ -207,7 +207,7 @@ with sync_playwright() as p:
         go(pg, "svep", 1200)
         pg.focus("#svDeck")
         for i in range(10):
-            pg.keyboard.press("ArrowRight"); pg.wait_for_timeout(260)
+            pg.keyboard.press("1" if pg.evaluate("!!document.querySelector('#svDeck .sv-card.duel[aria-hidden=\"false\"]')") else "ArrowRight"); pg.wait_for_timeout(260)  # v15.9: a duel is decided with 1 or 2
         pg.wait_for_timeout(1800)
         card = pg.evaluate("(() => { const c = document.querySelector('.svep-result .hem-prop'); return c && [c.querySelector('h3').innerText, c.querySelectorAll('.hem-prop-items li').length, c.querySelector('.hem-promise').innerText]; })()")
         ok(card and card[0].startswith("Ditt vardagsrum i ") and card[1] >= 3 and card[2] == "Se ditt hem innan du köper.", f"{tag} the Svep result ends in a ready room proposal: {card}")

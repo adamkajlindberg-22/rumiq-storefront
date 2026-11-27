@@ -10,6 +10,7 @@ import base64, http.server, re, socketserver, sys, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 import sys as _s, os as _o; _s.path.insert(0, _o.path.dirname(_o.path.abspath(__file__))); import _edit_way  # noqa: E402,F401  the editor tests start in Justera själv
+SVYES = "(document.querySelector('#svDeck .sv-card.duel[aria-hidden=false] [data-duel-pick]') || document.getElementById('svYes')).click()"  # Spara, or the first side of a duel (v15.9)
 
 ROOT = Path(__file__).resolve().parent.parent
 fails, n = [], 0
@@ -172,7 +173,7 @@ with sync_playwright() as p:
                 go(pg, "svep", 900)
                 k = 0
                 while pg.evaluate("!!document.querySelector('#svDeck .sv-card')") and k < 30:
-                    pg.evaluate("document.getElementById('%s').click()" % ("svYes" if k % 3 != 1 else "svNo")); pg.wait_for_timeout(260); k += 1
+                    pg.evaluate(SVYES if k % 3 != 1 else "document.getElementById('svNo').click()"); pg.wait_for_timeout(260); k += 1
                 pg.wait_for_timeout(500)
                 SV = "(() => { const b = document.getElementById('svAll'); return [b.textContent, b.hasAttribute('data-open-cart')]; })()"
                 ok(pg.evaluate(SV)[0].startswith("Lägg de sparade i varukorgen"), f"{tag} Svep: the result adds first: {pg.evaluate(SV)}")

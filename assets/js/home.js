@@ -224,7 +224,7 @@
       const res = await RQ.subscribe({ email: v, lista: "Väntelista" });
       if (res === "error") { btn.disabled = false; btn.textContent = "Skriv upp mig"; err.textContent = "Det gick inte att skicka just nu. Försök igen om en stund."; return; }
       // nothing is connected to receive the address: say that, not "Tack. Du står på listan."
-      if (res === "preview") { const h = $("#formBox .ok h3", root); if (h) h.textContent = "Förhandsversion"; $("#okText", root).textContent = "Adressen sparas inte här. På den riktiga sajten hamnar du på listan."; }
+      if (res === "preview") { const h = $("#formBox .ok h3", root); if (h) h.textContent = "Förhandsversion"; $("#okText", root).textContent = "Adressen sparas inte ännu. När butiken öppnar hamnar du på listan."; }
       $("#formBox", root).classList.add("sent");
     });
 

@@ -211,6 +211,7 @@
     setQty(variantId, qty) {
       qty = Math.floor(+qty) || 0;
       S._cart = qty <= 0 ? S._cart.filter((x) => x.v !== variantId) : S._cart.map((x) => (x.v === variantId ? { ...x, q: Math.min(99, qty) } : x));
+      if (qty <= 0 && S._bundles.length) { const left = new Set(S._cart.map((x) => String(x.v).split("::")[0])), keep = S._bundles.filter((b) => b.items.every((x) => left.has(x))); if (keep.length !== S._bundles.length) { S._bundles = keep; store.set("rumiq-bundles", keep); } } /* a Svep-paket ends when a thing of it leaves the cart (review) */
       store.set("rumiq-cart", S._cart); emit("cart");
     },
     clearCart() { S._cart = []; S._bundles = []; store.set("rumiq-cart", S._cart); store.set("rumiq-bundles", []); emit("cart"); },
@@ -259,7 +260,7 @@
     _wish: words("rumiq-wish"),
     wishlist: () => S._wish.map(RQ.byHandle).filter(Boolean),
     isWished: (h) => S._wish.includes(h),
-    toggleWish(h) { S._wish = S._wish.includes(h) ? S._wish.filter((x) => x !== h) : [h, ...S._wish]; store.set("rumiq-wish", S._wish); emit("wish"); return S._wish.includes(h); },
+    toggleWish(h) { const off = S._wish.includes(h); S._wish = off ? S._wish.filter((x) => x !== h) : [h, ...S._wish]; store.set("rumiq-wish", S._wish); if (off && RQ.wishSrc) RQ.wishSrc.set(h, ""); emit("wish"); return S._wish.includes(h); }, /* a removed favourite forgets Svep and Älskar (review) */
     /* Named lists, for example one per room ("Spara i ett rum"). The favourites above are the default list. */
     lists: () => rows("rumiq-lists", (l) => isObj(l) && l.id && Array.isArray(l.handles)),
     createList(name) { const l = { id: "l" + Date.now(), name: String(name).slice(0, 40), handles: [], at: new Date().toISOString() }; store.set("rumiq-lists", [...S.lists(), l]); emit("lists"); return l; },

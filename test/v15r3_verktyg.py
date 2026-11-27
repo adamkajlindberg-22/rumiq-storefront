@@ -7,6 +7,7 @@ import http.server, json, re, socketserver, sys, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 import sys as _s, os as _o; _s.path.insert(0, _o.path.dirname(_o.path.abspath(__file__))); import _edit_way  # noqa: E402,F401  the editor tests start in Justera själv
+SVYES = "(document.querySelector('#svDeck .sv-card.duel[aria-hidden=false] [data-duel-pick]') || document.getElementById('svYes')).click()"  # Spara, or the first side of a duel (v15.9)
 
 ROOT = Path(__file__).resolve().parent.parent
 fails, n = [], 0
@@ -91,7 +92,7 @@ SAMPLE = """async (r) => { const im = new Image(); await new Promise((ok) => { i
 def finish_round(pg, pattern="Y"):
     k = 0
     while pg.evaluate("!!document.querySelector('#svDeck .sv-card')") and k < 30:
-        pg.evaluate("document.getElementById('%s').click()" % ("svYes" if pattern[k % len(pattern)] == "Y" else "svNo"))
+        pg.evaluate(SVYES if pattern[k % len(pattern)] == "Y" else "document.getElementById('svNo').click()")  # v15.9: Y on a duel picks the first
         pg.wait_for_timeout(280)
         k += 1
     pg.wait_for_timeout(400)

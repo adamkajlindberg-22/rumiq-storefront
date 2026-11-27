@@ -98,7 +98,7 @@
   const LOVE_ICO = '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M12 7.6l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/></svg>';
   const hasRoom = () => !!(RQ.room && RQ.room.has && RQ.room.has() && RQ.room.previewWith);
   const svCard = (p, i, why) => `<article class="sv-card" data-h="${p.handle}" data-img="0" style="--i:${i}" aria-hidden="${i ? "true" : "false"}">
-      <div class="sv-ims">${svImgs(p).map((m, k) => `<img class="${k ? "" : "on"}" src="${m.src}" srcset="${m.set}" sizes="(min-width:900px) 26rem, 88vw" alt="${esc(m.alt)}" draggable="false" ${i > 1 || k ? 'loading="lazy"' : ""}>`).join("")}${hasRoom() ? `<img class="sv-roomim" data-room-im alt="${esc(p.name)} i ditt rum" draggable="false">` : ""}</div>
+      <div class="sv-ims">${svImgs(p).map((m, k) => `<img class="${k ? "" : "on"}" src="${m.src}" srcset="${m.set}" sizes="(min-width:900px) 26rem, 88vw" alt="${esc(m.alt)}" draggable="false" ${i > 1 || k ? 'loading="lazy"' : ""}>`).join("")}${hasRoom() ? `<img class="sv-roomim" data-room-im alt="${esc(p.name)} i ditt rum" aria-hidden="true" draggable="false">` : ""}</div>
       ${hasRoom() && !i ? `<button type="button" class="sv-roompill" data-sv-room aria-label="Se ${esc(p.name)} i ditt rum">${RQ.roomIco}<span>I ditt rum</span></button>` : ""}
       ${!i && RQ.film && RQ.film(p) ? `<video class="sv-film" src="${RQ.film(p)}" muted playsinline loop autoplay preload="metadata" aria-hidden="true"></video>` : ""}
       ${!i && RQ.LAMPS && RQ.LAMPS.includes(p.handle) ? `<img class="sv-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" draggable="false" onerror="this.remove()">` : ""}
@@ -300,9 +300,10 @@
       // a key or a tap while the last card is still flying out waits its turn instead of being dropped
       if (busy) { if (!c0 && queue.length < 3) queue.push(dir); return; }
       const c = c0 || topCard(); if (!c) return;
-      if ((dir === 2 || dir === 3) && c.classList.contains("soon")) dir = 1;
-      if (dir === 3 && c.classList.contains("look")) dir = 1;
+      if (dir === 2 && c.classList.contains("soon")) dir = 1;
+      if (dir === 3 && (c.classList.contains("look") || c.classList.contains("duel") || c.classList.contains("soon"))) return; /* Älskar is for one thing: L does nothing on these cards (review) */
       if (c.classList.contains("duel") && dir !== -1 && !pick) { back(c); const sd = el("Said"); if (sd) sd.textContent = "Tryck på den du gillar mest, eller på Nej om ingen passar."; if (!reduced()) $$(".sv-duel-b", c).forEach((b) => b.animate([{ transform: "scale(1)" }, { transform: "scale(1.04)" }, { transform: "scale(1)" }], { duration: 360 })); return; }
+      if (lastTap) { clearTimeout(lastTap.t); lastTap = null; } /* a tap that was about to open the card's sheet is dropped (review) */
       busy = true; const h = c.dataset.h, isSoon = h.startsWith("soon:"), isLook = h.startsWith("look:"), isDuel = h.startsWith("duel:"), odd = isLook || isDuel;
       const rec = { h, dir, before: JSON.stringify(RQ.taste.get()), wish: false, bag: false, src: isSoon || odd ? undefined : RQ.wishSrc.get(h), soon: isSoon ? JSON.stringify([ls.get("rumiq-soon", {}), ls.get("rumiq-votes", [])]) : null, wishes: [], srcs: {}, saves: [], bags: [], ans: [] };
       /* a look or a duel saves several things, or one of two: each is undone on its own */
@@ -365,7 +366,7 @@
       if (!ims.length || nx === cur) { c.animate([{ transform: `translateX(${(d || 1) * 6}px)` }, { transform: "none" }], { duration: 180 }); return; }
       ims.forEach((im, k) => im.classList.toggle("on", k === nx)); dots.forEach((x, k) => x.classList.toggle("on", k === nx)); c.dataset.img = nx;
       const im = ims[nx], pill = $(".sv-roompill", c); if (pill) pill.classList.toggle("on", !!(im && im.hasAttribute("data-room-im")));
-      if (im && im.hasAttribute("data-room-im") && !im.getAttribute("src")) { c.classList.add("drawing"); $(".sv-ims", c).dataset.draw = tr("Ritar ditt rum …"); RQ.room.previewWith(c.dataset.h).then((u) => { c.classList.remove("drawing"); if (u) im.src = u; }).catch(() => c.classList.remove("drawing")); }
+      if (im && im.hasAttribute("data-room-im") && !im.getAttribute("src")) { c.classList.add("drawing"); $(".sv-ims", c).dataset.draw = tr("Ritar ditt rum …"); RQ.room.previewWith(c.dataset.h).then((u) => { c.classList.remove("drawing"); if (u) { im.src = u; im.removeAttribute("aria-hidden"); } }).catch(() => c.classList.remove("drawing")); }
     };
     // drag: sideways = save or skip; upwards = cart, with a mouse or pen only (a finger moving up scrolls the page).
     // A tap on the edges flips the picture, in the middle it opens the product.

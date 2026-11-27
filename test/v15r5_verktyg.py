@@ -7,6 +7,7 @@ import http.server, json, re, socketserver, sys, threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 import sys as _s, os as _o; _s.path.insert(0, _o.path.dirname(_o.path.abspath(__file__))); import _edit_way  # noqa: E402,F401  the editor tests start in Justera själv
+SVYES = "(document.querySelector('#svDeck .sv-card.duel[aria-hidden=false] [data-duel-pick]') || document.getElementById('svYes')).click()"  # Spara, or the first side of a duel (v15.9)
 
 ROOT = Path(__file__).resolve().parent.parent
 fails, n = [], 0
@@ -181,7 +182,7 @@ with sync_playwright() as p:
         ctx, pg, errs = new(b, mobile)
         go(pg, "svep", 1200)
         for i in range(10):
-            pg.click("#svYes"); pg.wait_for_timeout(420)
+            pg.evaluate(SVYES); pg.wait_for_timeout(420)  # v15.9: a duel picks the first
         pg.wait_for_timeout(1500)
         r = pg.evaluate("""(() => { const res = document.querySelector('.svep-result'); const vis = (e) => !!e && e.offsetParent !== null && getComputedStyle(e).visibility !== 'hidden';
           // svep2: 'Mer som det här' belongs to the saved things (it was a link on each one before), so it is counted with them

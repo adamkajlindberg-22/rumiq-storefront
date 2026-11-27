@@ -49,7 +49,7 @@
       [/^Inga träffar på [”"](.*)[”"]$/, (m) => `No results for “${m[1]}”`],
       [/^Inloggad med (.+) \(testkonto\)\.$/, (m) => `Signed in with ${m[1]} (test account).`],
       [/^Köpet ångrades redan (.+)\.$/, (m) => `The purchase was already cancelled ${m[1]}.`],
-      [/^På den riktiga sajten öppnas (\w+?)s egen inloggning, och du kommer tillbaka hit inloggad\. I förhandsversionen skapar vi ett testkonto i stället\.$/, (m) => `On the real site ${m[1]}'s own sign-in opens, and you come back here signed in. In the preview we create a test account instead.`],
+      [/^När inloggningen är kopplad öppnas (\w+?)s egen inloggning, och du kommer tillbaka hit inloggad\. I förhandsversionen skapar vi ett testkonto i stället\.$/, (m) => `Once sign-in is connected, ${m[1]}'s own sign-in opens, and you come back here signed in. In the preview we create a test account instead.`],
       [/^(.+) \((\d+)\)$/, (m) => { const a = one(m[1]); return a ? `${a} (${m[2]})` : null; }],
       /* Placera och skapa (v15.7): a room's name, and lists of things */
       [/^(\d+) (.+), (står|ligger|hänger) (på|i|vid) (golvet|bordet|väggen|sängen|soffan), flytta med piltangenterna$/, (m) => `${m[1]} ${one(m[2]) || m[2]}, ${{ "står": "stands", "ligger": "lies", "hänger": "hangs" }[m[3]]} ${m[4] === "vid" ? "by" : m[4] === "i" ? "in" : "on"} the ${PLC[m[5]]}, move with the arrow keys`],

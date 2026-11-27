@@ -68,10 +68,8 @@
  "AI-bild av ditt rum": "AI image of your room",
  "rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto tills du tar bort dem.": "the room photo is deleted after 30 days. The AI images stay in your account until you delete them.",
  "Jag godkänner att bilden skickas för att skapa AI-bilder.": "I agree that the picture is sent to create AI images.",
- "På den riktiga sajten blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.": "On the real site your arrangement becomes an AI image with real light and shadows. Here we show the arrangement as it is.",
  "AI-bild av ditt rum med produkterna": "AI image of your room with the products",
  "Logga in för att skapa AI-bilder.": "Sign in to create AI images.",
- "Förhandsversion: abonnemang och AI-bilder fungerar på den riktiga sajten.": "Preview: subscriptions and AI images work on the real site.",
  "Studio och AI-bilder": "Studio and AI images",
  "{0} AI-bilder i månaden": "{0} AI images a month",
  "Rumsfotot raderas efter 30 dagar. AI-bilderna sparas i ditt konto tills du tar bort dem. Vi tränar ingen AI på dem.": "The room photo is deleted after 30 days. The AI images stay in your account until you delete them. We train no AI on them.",
@@ -83,5 +81,12 @@
  "Med ett konto får du {0} AI-bilder per kalendermånad utan kostnad. Studio Plus kostar {1} kr per månad inklusive moms och ger {2} AI-bilder per betalningsperiod och möjlighet att prova väggfärg, golv, ljus och stil. Oanvända bilder sparas inte till nästa period. Det finns en gräns per dygn ({3} bilder utan abonnemang, {4} med Studio Plus).": "With an account you get {0} AI images per calendar month free of charge. Studio Plus costs {1} kr per month including VAT and gives {2} AI images per billing period and the option to try wall colour, floor, light and style. Unused pictures are not carried over to the next period. There is a daily limit ({3} pictures without a subscription, {4} with Studio Plus).",
  "Presentkort · gäller i ett år": "Gift card · valid for one year",
  "{PA} i rörelse": "{PA} in motion",
- "Samla produkter per rum eller projekt. Listorna finns i Mitt hem och i ditt konto.": "Gather products by room or project. The lists are in My home and in your account."
+ "Samla produkter per rum eller projekt. Listorna finns i Mitt hem och i ditt konto.": "Gather products by room or project. The lists are in My home and in your account.",
+ "Adressen sparas inte ännu. När butiken öppnar hamnar du på listan.": "The address is not saved yet. When the shop opens you go on the list.",
+ "Förhandsversion: adressen sparas inte ännu. När butiken öppnar hamnar du på listan.": "Preview: the address is not saved yet. When the shop opens you go on the list.",
+ "Här visar vi din uppställning som den är. När AI:n är på tar bilden 15–40 sekunder.": "Here we show your arrangement as it is. When the AI is on, the picture takes 15–40 seconds.",
+ "Förhandsversion: abonnemang och AI-bilder fungerar när butiken öppnar.": "Preview: subscriptions and AI pictures work when the shop opens.",
+ "När AI:n är på blir din uppställning en AI-bild med verkligt ljus och skuggor. Här visar vi uppställningen som den är.": "When the AI is on, your arrangement becomes an AI picture with real light and shadows. Here we show the arrangement as it is.",
+ "Förhandsversion: betalningen öppnas när butiken är i gång.": "Preview: payment opens when the shop is up and running.",
+ "Förhandsversion: när butiken är i gång öppnas Stripes kassa här.": "Preview: when the shop is up and running, Stripe's checkout opens here."
 }

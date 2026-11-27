@@ -60,7 +60,7 @@
           if (RQ.auth.mode === "down") { RQ.router(); return; }
           if (RQ.auth.mode === "demo") {
             main.hidden = true; step.hidden = false;
-            step.innerHTML = `<div class="sso-demo">${RQ.providerLogo(p)}<h2 class="h3">Fortsätt med ${name}</h2><p>På den riktiga sajten öppnas ${name}s egen inloggning, och du kommer tillbaka hit inloggad. I förhandsversionen skapar vi ett testkonto i stället.</p>
+            step.innerHTML = `<div class="sso-demo">${RQ.providerLogo(p)}<h2 class="h3">Fortsätt med ${name}</h2><p>När inloggningen är kopplad öppnas ${name}s egen inloggning, och du kommer tillbaka hit inloggad. I förhandsversionen skapar vi ett testkonto i stället.</p>
               <form id="ssoDemo" novalidate><label>E-post för testkontot<input type="email" name="email" autocomplete="email" required></label><button class="btn block" type="submit">Skapa testkonto</button><button class="link" type="button" id="back" style="border:0;background:none">Tillbaka</button><p class="status" id="ssoStatus" role="alert"></p></form></div>`;
             $("#back", step).addEventListener("click", () => { step.hidden = true; main.hidden = false; });
             $("#ssoDemo", step).addEventListener("submit", async (e) => { e.preventDefault(); const em = e.currentTarget.email.value.trim(); if (!emailOk(em)) return fail($("#ssoStatus", step), { message: "Skriv en giltig e-postadress." }); await RQ.auth.social(p, em); done(`Inloggad med ${name} (testkonto).`); });

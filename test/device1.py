@@ -263,7 +263,7 @@ with sync_playwright() as p:
     for W, Hh in ((375, 548), (402, 760)):
         c = new(W, Hh, True); pg = c.new_page(); go(pg, BASE + "svep/"); pg.wait_for_timeout(1000)
         for i in range(10):
-            pg.evaluate("document.querySelector('.sv-b.yes').click()"); pg.wait_for_timeout(620)
+            pg.evaluate("(document.querySelector('#svDeck .sv-card.duel[aria-hidden=\"false\"] [data-duel-pick]') || document.querySelector('.sv-b.yes')).click()"); pg.wait_for_timeout(620)  # v15.9: a duel picks the first
         pg.wait_for_timeout(900)
         see = pg.evaluate(R, ".svep-result [data-hem-see]"); dt = pg.evaluate(DOCK_TOP)
         ok(see and see[3] <= dt - 2 and see[1] >= 0, f"[D4 {W}x{Hh}] after ten cards Se det i ditt rum is above the dock: {see} dock {dt}")

@@ -254,7 +254,7 @@
         if (btn.disabled) return; btn.disabled = true; st.textContent = "";
         const res = await (RQ.subscribe ? RQ.subscribe({ email: v, lista: "Presentkort", roster: amt ? amt.gc + " kr" : "" }) : Promise.resolve("preview"));
         btn.disabled = false; st.classList.toggle("err", res === "error");
-        st.textContent = res === "error" ? "Det gick inte att skicka just nu. Försök igen om en stund." : res === "preview" ? "Förhandsversion: adressen sparas inte här. På den riktiga sajten hamnar du på listan." : "Tack. Vi mejlar när presentkorten går att köpa. Inget annat.";
+        st.textContent = res === "error" ? "Det gick inte att skicka just nu. Försök igen om en stund." : res === "preview" ? "Förhandsversion: adressen sparas inte ännu. När butiken öppnar hamnar du på listan." : "Tack. Vi mejlar när presentkorten går att köpa. Inget annat.";
         if (res === "sent") $("#gcEmail", root).value = "";
       });
     },
