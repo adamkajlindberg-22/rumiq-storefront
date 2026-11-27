@@ -180,7 +180,25 @@
       for (const c of cands) { while (c.look.items.every((h) => left[h] > 0)) { c.look.items.forEach((h) => left[h]--); out.push(c); } }
       return out;
     },
-    cartDiscount: (extra) => S.lookDiscounts(extra).reduce((s, d) => s + d.amount, 0),
+    /* Svep-paket and Gruppris (RQ_CONFIG.svepBundle): a set bought from a Svep result. Each set is kept with its things;
+       it counts while every one of them is in the cart, after the looks have taken theirs. Entries look like a look's
+       (look.items, amount) so the cart and the checkout show them the same way; look.label is the row's words. */
+    _bundles: rows("rumiq-bundles", (x) => isObj(x) && Array.isArray(x.items) && typeof x.id === "string").slice(0, 12),
+    bundleRule: () => { const b = (window.RQ_CONFIG || {}).svepBundle; return b && +b.rate > 0 ? { min: Math.max(2, +b.min || 3), rate: +b.rate } : null; },
+    addBundle(items, label) {
+      const rule = S.bundleRule(), hs = [...new Set(items.map((x) => String(x).split("::")[0]))].filter((h) => RQ.byHandle(h)); if (!rule || hs.length < rule.min) return null;
+      const id = hs.slice().sort().join(","); S._bundles = [{ id, items: hs, label: label || "Svep-paket" }, ...S._bundles.filter((b) => b.id !== id)].slice(0, 12);
+      store.set("rumiq-bundles", S._bundles); emit("cart"); return id; },
+    bundleSave: (items) => { const rule = S.bundleRule(), hs = [...new Set(items.map((x) => String(x).split("::")[0]))].filter((h) => RQ.byHandle(h)); return rule && hs.length >= rule.min ? Math.round(hs.reduce((s, h) => s + RQ.byHandle(h).price, 0) * rule.rate) : 0; },
+    allDiscounts(extra = []) {
+      const looks = S.lookDiscounts(extra), rule = S.bundleRule(); if (!rule || !S._bundles.length) return looks;
+      const left = {}; S.cartLines().forEach((l) => { left[l.product.handle] = (left[l.product.handle] || 0) + l.quantity; }); extra.forEach((h) => { left[h] = (left[h] || 0) + 1; });
+      looks.forEach((d) => d.look.items.forEach((h) => left[h]--));
+      const out = [...looks];
+      S._bundles.forEach((b) => { if (b.items.length < rule.min || !b.items.every((h) => left[h] > 0 && RQ.byHandle(h))) return; b.items.forEach((h) => left[h]--);
+        out.push({ look: { id: "b:" + b.id, name: b.label, label: b.label, items: b.items }, amount: Math.round(b.items.reduce((s, h) => s + RQ.byHandle(h).price, 0) * rule.rate) }); });
+      return out; },
+    cartDiscount: (extra) => S.allDiscounts(extra).reduce((s, d) => s + d.amount, 0),
     cartTotalBeforeShipping: () => S.cartSubtotal() - S.cartDiscount(),
     addToCart(variantId, qty = 1) {
       const hit = S.variantById(variantId); if (!hit || !hit.variant) return false;
@@ -195,7 +213,7 @@
       S._cart = qty <= 0 ? S._cart.filter((x) => x.v !== variantId) : S._cart.map((x) => (x.v === variantId ? { ...x, q: Math.min(99, qty) } : x));
       store.set("rumiq-cart", S._cart); emit("cart");
     },
-    clearCart() { S._cart = []; store.set("rumiq-cart", S._cart); emit("cart"); },
+    clearCart() { S._cart = []; S._bundles = []; store.set("rumiq-cart", S._cart); store.set("rumiq-bundles", []); emit("cart"); },
 
     /* Shipping options are examples until suppliers are confirmed. */
     SHIPPING: ((sh, d) => [ // delivery time read from config.js, a goal until the supplier has confirmed it

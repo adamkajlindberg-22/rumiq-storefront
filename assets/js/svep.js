@@ -47,10 +47,19 @@
 
   /* ---------------------------------------------------------------- the cards */
   const inScope = (p, scope) => !scope || p.rooms.includes(scope);
+  /* v15.9 Svep for the whole range: what kind of thing, which style, what it may cost (founder, 27 nov). Kept for the
+     browser; the room is the scope chips. A filter that leaves nothing says so and offers to clear it. */
+  const FKEY = "rumiq-svep-filter";
+  const FTYPES = [["nytt", "Nyheter", null], ["lampa", "Lampor och ljus", ["lampa", "ljus"]], ["textil", "Textil", ["textil"]], ["forvaring", "Förvaring", ["forvaring"]], ["vagg", "På väggen", ["vagg"]], ["detalj", "Vaser och detaljer", ["detalj"]], ["kok", "Kök och bad", ["kok", "bad"]]];
+  const FMAX = [300, 600, 1000, 2000];
+  const filt = () => { const f = ls.get(FKEY, {}) || {}; return { type: FTYPES.some((x) => x[0] === f.type) ? f.type : "", style: RQ.STYLES[f.style] ? f.style : "", max: FMAX.includes(+f.max) ? +f.max : 0 }; };
+  const NEWEST = () => new Set(RQ.PRODUCTS.slice().sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 8).map((p) => p.handle));
+  const fits = (p, f = filt()) => (!f.type || (f.type === "nytt" ? NEWEST().has(p.handle) : FTYPES.find((x) => x[0] === f.type)[2].includes(kindOf(p)))) && (!f.style || p.styles.includes(f.style)) && (!f.max || p.price <= f.max);
+  const inDeck = (p, scope) => inScope(p, scope) && fits(p);
   const EXPLORED = new Set();
   // the next cards: a varied opener, then the best match with every fourth card from somewhere else
-  const upcoming = (t, skip, n, step, scope) => {
-    const left = RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen) && !skip.has(p.handle));
+  const upcoming = (t, skip, n, step, scope, ok) => {
+    const left = RQ.PRODUCTS.filter((p) => (ok ? ok(p) : inScope(p, scope)) && !(p.handle in t.seen) && !skip.has(p.handle));
     const out = [];
     while (out.length < n && left.length) {
       const k = step + out.length; let pick;
@@ -66,15 +75,34 @@
   // "Kommer snart": one candidate product per round asks whether we should take it in (votes as on #rosta)
   const soonWrap = (c) => ({ soon: c, handle: "soon:" + c.id });
   const nextSoon = () => { const s = ls.get("rumiq-soon", {}); const c = RQ.CANDIDATES.find((x) => !(x.id in s)); return c ? soonWrap(c) : null; };
-  const resolve = (h) => (h.startsWith("soon:") ? (RQ.CANDIDATES.find((c) => "soon:" + c.id === h) ? soonWrap(RQ.CANDIDATES.find((c) => "soon:" + c.id === h)) : null) : RQ.byHandle(h));
+  /* v15.9 a whole look as one card (right saves all, up puts all in the cart, where a whole look is 10 % cheaper),
+     and a duel: two things of the same kind, you tap the one you like most (it is saved, the other counts a little less) */
+  const LKEY = "rumiq-svep-looks";
+  const lookWrap = (l) => (l ? { look: l, handle: "look:" + l.id } : null);
+  const duelWrap = (d) => (d && d.length === 2 && d.every(Boolean) ? { duel: d, handle: `duel:${d[0].handle}|${d[1].handle}` } : null);
+  const nextLook = (t) => { const seen = ls.get(LKEY, []) || [];
+    const c = RQ.LOOKS.filter((l) => !seen.includes(l.id) && l.items.every((h) => RQ.byHandle(h)) && !l.items.every((h) => S.isWished(h))).map((l) => ({ l, s: l.items.reduce((a, h) => a + RQ.taste.score(RQ.byHandle(h), t), 0) / l.items.length })).sort((a, b) => b.s - a.s)[0];
+    return c ? lookWrap(c.l) : null; };
+  const duelPair = (t, skip, scope) => { const by = {}; let best = null;
+    RQ.PRODUCTS.filter((p) => inDeck(p, scope) && !(p.handle in t.seen) && !skip.has(p.handle)).forEach((p) => (by[kindOf(p)] = by[kindOf(p)] || []).push(p));
+    Object.values(by).forEach((list) => { if (list.length < 2) return; const o = list.slice().sort((a, b) => RQ.taste.score(b, t) - RQ.taste.score(a, t) || (a.handle < b.handle ? -1 : 1)); const a = o[0], b = o.find((x) => x.styles[0] !== a.styles[0]) || o[1], sc = RQ.taste.score(a, t) + RQ.taste.score(b, t); if (!best || sc > best.sc) best = { a, b, sc }; });
+    return best ? duelWrap([best.a, best.b]) : null; };
+  const resolve = (h) => (h.startsWith("soon:") ? (RQ.CANDIDATES.find((c) => "soon:" + c.id === h) ? soonWrap(RQ.CANDIDATES.find((c) => "soon:" + c.id === h)) : null)
+    : h.startsWith("look:") ? lookWrap(RQ.LOOKS.find((l) => "look:" + l.id === h)) : h.startsWith("duel:") ? duelWrap(h.slice(5).split("|").map((x) => RQ.byHandle(x))) : RQ.byHandle(h));
 
   const svImgs = (p) => [{ src: RQ.img(p, 900), set: `${RQ.img(p, 600)} 600w, ${RQ.img(p, 900)} 900w`, alt: p.name }, { src: `assets/img/d/${p.handle}-1200.webp`, set: `assets/img/d/${p.handle}-600.webp 600w, assets/img/d/${p.handle}-1200.webp 1200w`, alt: `${p.name}, detalj` }];
-  const stamps = (yes, up) => `<span class="sv-stamp yes" aria-hidden="true">${yes}</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">${up}</span>`;
+  const stamps = (yes, up) => `<span class="sv-stamp yes" aria-hidden="true">${yes}</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">${up}</span><span class="sv-stamp love" aria-hidden="true">Älskar</span>`;
+  /* where a saved thing came from: Svep, or Svep with Älskar (Mitt hem's Favoriter sorts and filters by it) */
+  const MKEY = "rumiq-wish-src";
+  RQ.wishSrc = { get: (h) => (ls.get(MKEY, {}) || {})[h] || "", set(h, v) { const m = ls.get(MKEY, {}) || {}; if (v) m[h] = v; else delete m[h]; ls.set(MKEY, m); }, all: () => ls.get(MKEY, {}) || {} };
+  const LOVE_ICO = '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M12 7.6l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"/></svg>';
+  const hasRoom = () => !!(RQ.room && RQ.room.has && RQ.room.has() && RQ.room.previewWith);
   const svCard = (p, i, why) => `<article class="sv-card" data-h="${p.handle}" data-img="0" style="--i:${i}" aria-hidden="${i ? "true" : "false"}">
-      <div class="sv-ims">${svImgs(p).map((m, k) => `<img class="${k ? "" : "on"}" src="${m.src}" srcset="${m.set}" sizes="(min-width:900px) 26rem, 88vw" alt="${esc(m.alt)}" draggable="false" ${i > 1 || k ? 'loading="lazy"' : ""}>`).join("")}</div>
+      <div class="sv-ims">${svImgs(p).map((m, k) => `<img class="${k ? "" : "on"}" src="${m.src}" srcset="${m.set}" sizes="(min-width:900px) 26rem, 88vw" alt="${esc(m.alt)}" draggable="false" ${i > 1 || k ? 'loading="lazy"' : ""}>`).join("")}${hasRoom() ? `<img class="sv-roomim" data-room-im alt="${esc(p.name)} i ditt rum" draggable="false">` : ""}</div>
+      ${hasRoom() && !i ? `<button type="button" class="sv-roompill" data-sv-room aria-label="Se ${esc(p.name)} i ditt rum">${RQ.roomIco}<span>I ditt rum</span></button>` : ""}
       ${!i && RQ.film && RQ.film(p) ? `<video class="sv-film" src="${RQ.film(p)}" muted playsinline loop autoplay preload="metadata" aria-hidden="true"></video>` : ""}
       ${!i && RQ.LAMPS && RQ.LAMPS.includes(p.handle) ? `<img class="sv-off" src="assets/img/p/${p.handle}-off-1400.webp" alt="" aria-hidden="true" draggable="false" onerror="this.remove()">` : ""}
-      <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
+      <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i>${hasRoom() ? "<i></i>" : ""}</div>
       ${why ? `<span class="sv-why">${esc(why)}</span>` : ""}
       ${stamps("Spara", "I varukorgen")}
       <div class="sv-info"><div><b>${esc(p.name)}</b><span>${kr(p.price)}</span></div><small>${p.rooms.slice(0, 3).map((r) => `<span>${esc(RQ.roomById(r).name)}</span>`).join(" · ")}</small></div>
@@ -83,6 +111,20 @@
       <div class="sv-soon"><span class="sv-soon-tag">Kommer snart?</span>${c.img ? `<img class="sv-soon-img" src="${c.img}" alt="${esc(c.name)}" draggable="false">` : `<span class="sv-soon-sw" aria-hidden="true"></span>`}<b>${esc(c.name)}</b><p>${esc(c.line)}</p>
         <small><span class="sv-soon-why">Vi har inget eget lager, så vi kan fråga först.</span> <span>Svep höger om du vill att vi tar in den.</span></small></div>
       ${stamps("Ja tack", "Ja tack")}
+    </article>`;
+
+  const svLook = (L, i) => { const ps = L.items.map((h) => RQ.byHandle(h)).filter(Boolean), sum = ps.reduce((a, x) => a + x.price, 0), rate = +((window.RQ_CONFIG || {}).lookDiscount || 0);
+    return `<article class="sv-card look" data-h="look:${L.id}" style="--i:${i}" aria-hidden="${i ? "true" : "false"}">
+      <div class="sv-look"><img class="sv-look-bg" src="assets/img/rum/${L.room}-900.webp" alt="" draggable="false"${i > 1 ? ' loading="lazy"' : ""}><span class="sv-soon-tag">Hela looken</span>
+        <div class="sv-look-row">${ps.map((x) => `<span><img src="${RQ.cut(x)}" alt="${esc(x.name)}" draggable="false"></span>`).join("")}</div>
+        <b>${esc(L.name)}</b><p>${esc(L.lead)}</p><small><span>${ps.length} saker · ${kr(sum)}</span>${rate ? ` <span>Hela looken: ${Math.round(rate * 100)} % lägre.</span>` : ""}</small></div>
+      ${stamps("Spara alla", "Köp looken")}
+    </article>`; };
+  const svDuel = (d, i) => `<article class="sv-card duel" data-h="duel:${d[0].handle}|${d[1].handle}" style="--i:${i}" aria-hidden="${i ? "true" : "false"}">
+      <p class="sv-duel-q"><span class="sv-soon-tag">Duell</span><b>Vilken gillar du mest?</b></p>
+      <div class="sv-duel">${d.map((x, k) => `<button type="button" class="sv-duel-b" data-duel-pick="${x.handle}"${i ? ' tabindex="-1"' : ""} aria-label="Välj ${esc(x.name)}, ${kr(x.price)}"><img src="${RQ.cut(x)}" alt="" draggable="false"><b>${esc(x.name)}</b><span>${kr(x.price)}</span><kbd aria-hidden="true">${k + 1}</kbd></button>`).join("")}</div>
+      <small class="sv-duel-no">Ingen av dem? Tryck på Nej.</small>
+      ${stamps("Spara", "I varukorgen")}
     </article>`;
 
   const STYLE_KEYS = ["skandinavisk", "minimalistisk", "klassisk", "mjuk"];
@@ -199,8 +241,8 @@
   /* ---------------------------------------------------------------- deck markup and engine */
   const deckHtml = (px, compact) => `<div class="sv-wrap${compact ? " compact" : ""}">
       <div class="sv-prog" aria-hidden="true"><i id="${px}Bar"></i></div>
-      <p class="sv-meta"><span id="${px}Count"></span><span class="sv-chip" id="${px}Chip" hidden></span></p>
-      <div class="sv-deck" id="${px}Deck" tabindex="0" role="group" aria-label="Kortet"${compact ? "" : ' aria-keyshortcuts="ArrowRight ArrowLeft ArrowUp Backspace"'}></div>
+      <p class="sv-meta"><span id="${px}Count"></span><span class="sv-sum" id="${px}Sum" hidden></span><span class="sv-chip" id="${px}Chip" hidden></span></p>
+      <div class="sv-deck" id="${px}Deck" tabindex="0" role="group" aria-label="Kortet"${compact ? "" : ' aria-keyshortcuts="ArrowRight ArrowLeft ArrowUp L Backspace"'}></div>
       <p class="sr" id="${px}Said" role="status"></p>
       <div class="sv-ctrl" id="${px}Ctrl">
         ${compact ? "" : `<button class="sv-b undo" type="button" id="${px}Undo" aria-label="Ångra senaste" title="Ångra senaste" disabled>${SV.undo}<span class="sv-bl" aria-hidden="true">Ångra</span></button>`}
@@ -208,8 +250,9 @@
         ${compact ? "" : `<button class="sv-b room" type="button" id="${px}Room" aria-label="Ställ in i Mitt rum" title="Ställ in i Mitt rum">${RQ.roomIco}<span class="sv-bl" aria-hidden="true">Mitt rum</span></button>`}
         <button class="sv-b bag" type="button" id="${px}Bag" aria-label="Köp, lägg i varukorgen" title="Köp, lägg i varukorgen">${SV.bag}${compact ? "" : `<span class="sv-bl" aria-hidden="true">Köp</span>`}</button>
         <button class="sv-b yes" type="button" id="${px}Yes" aria-label="Spara" title="Spara">${ICO.heart}${compact ? "" : `<span class="sv-bl" aria-hidden="true">Spara</span>`}</button>
+        ${compact ? "" : `<button class="sv-b love" type="button" id="${px}Love" aria-label="Älskar, spara överst" title="Älskar">${LOVE_ICO}<span class="sv-bl" aria-hidden="true">Älskar</span></button>`}
       </div>
-      ${compact ? "" : `<p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. Backsteg ångrar.</p>`}
+      ${compact ? "" : `<p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. L betyder älskar. Backsteg ångrar.</p>`}
     </div>`;
 
   // cfg: px, ctx (for the counts), total(st, t), next(st, t, skip, n) -> cards, why(p, t), keys, hint, onFinish(st, deckEl), start
@@ -217,7 +260,7 @@
     const el = (n) => $(`#${cfg.px}${n}`, root);
     const deckEl = el("Deck");
     const st0 = cfg.start || {};
-    const st = { done: [...(st0.done || [])], answers: { ...(st0.answers || {}) }, saved: [...(st0.saved || [])], bagged: [...(st0.bagged || [])], forced: [...(st0.forced || [])], history: [], over: false, soonDone: !!st0.soonDone };
+    const st = { done: [...(st0.done || [])], answers: { ...(st0.answers || {}) }, saved: [...(st0.saved || [])], loved: [...(st0.loved || [])], bagged: [...(st0.bagged || [])], forced: [...(st0.forced || [])], history: [], over: false, soonDone: !!st0.soonDone, lookDone: !!st0.lookDone, duelDone: !!st0.duelDone };
     let stack = [], busy = false, queue = [];
     const cards = () => $$(".sv-card", deckEl);
     const topCard = () => cards().pop();
@@ -227,13 +270,17 @@
       stack = [...front, ...cfg.next(st, t, skip, 3 - front.length)].slice(0, 3);
       const total = cfg.total(st, t);
       if (!stack.length || st.done.length >= total) return finish();
-      deckEl.innerHTML = stack.map((it, k) => (it.soon ? svSoon(it.soon, k) : svCard(it, k, k || !cfg.why ? "" : cfg.why(it, t)))).reverse().join("");
+      deckEl.innerHTML = stack.map((it, k) => (it.soon ? svSoon(it.soon, k) : it.look ? svLook(it.look, k) : it.duel ? svDuel(it.duel, k) : svCard(it, k, k || !cfg.why ? "" : cfg.why(it, t)))).reverse().join("");
       const c = el("Count"); if (c) c.textContent = `${st.done.length + 1} av ${total}`;
-      const said = el("Said"), nx = stack[0]; if (said && said.dataset.msg != null) { said.textContent = `${said.dataset.msg} Nästa: ${nx.soon ? `Kommer snart? ${nx.soon.name}.` : `${nx.name}, ${kr(nx.price)}.`}`.trim(); delete said.dataset.msg; }
+      const sm = el("Sum"); if (sm) { const sv = st.saved.map((x) => RQ.byHandle(x)).filter(Boolean), off = S.bundleSave ? S.bundleSave(st.saved) : 0; sm.hidden = !sv.length; sm.innerHTML = sv.length ? `<span>Sparat ${sv.length} · ${kr(sv.reduce((a, x) => a + x.price, 0))}</span>${off ? `<span class="sv-sum-off">paketpris −${kr(off)}</span>` : ""}` : ""; }
+      const said = el("Said"), nx = stack[0]; if (said && said.dataset.msg != null) { said.textContent = `${said.dataset.msg} Nästa: ${nx.soon ? `Kommer snart? ${nx.soon.name}.` : nx.look ? `Hela looken ${nx.look.name}.` : nx.duel ? `Vilken gillar du mest, ${nx.duel[0].name} eller ${nx.duel[1].name}?` : `${nx.name}, ${kr(nx.price)}.`}`.trim(); delete said.dataset.msg; }
       const b = el("Bar"); if (b) b.style.width = `${(st.done.length / total) * 100}%`;
       const room = el("Room"), first = stack[0];
-      if (room) { room.disabled = !!first.soon; if (first.soon) delete room.dataset.roomBtn; else { room.dataset.roomBtn = first.handle; room.setAttribute("aria-pressed", !!(RQ.room && RQ.room.inScene(first.handle))); } }
-      const bag = el("Bag"); if (bag) bag.disabled = !!first.soon; // a "Kommer snart" card cannot be bought
+      const odd = !!(first.soon || first.look || first.duel);
+      if (room) { room.disabled = odd; if (odd) delete room.dataset.roomBtn; else { room.dataset.roomBtn = first.handle; room.setAttribute("aria-pressed", !!(RQ.room && RQ.room.inScene(first.handle))); } }
+      const bag = el("Bag"); if (bag) bag.disabled = !!(first.soon || first.duel); // a "Kommer snart" card cannot be bought; a duel is decided by a tap
+      const lv = el("Love"); if (lv) lv.disabled = odd;
+      const ye = el("Yes"); if (ye) ye.disabled = !!first.duel;
       const u = el("Undo"); if (u) u.disabled = !st.history.length;
       const top = RQ.taste.top(t)[0], chip = el("Chip");
       if (chip && t.n >= 5 && top) { chip.hidden = false; chip.textContent = `Din stil växer fram: ${RQ.STYLES[top].name}`; }
@@ -248,35 +295,53 @@
       cfg.onFinish(st, deckEl);
     };
     const flash = (c, cls) => { const s = $(`.sv-stamp.${cls}`, c); if (s) s.style.opacity = 1; };
-    const decide = (dir, c0) => {
+    const decide = (dir, c0, pick) => {
       if (st.over) return;
       // a key or a tap while the last card is still flying out waits its turn instead of being dropped
       if (busy) { if (!c0 && queue.length < 3) queue.push(dir); return; }
       const c = c0 || topCard(); if (!c) return;
-      if (dir === 2 && c.classList.contains("soon")) dir = 1;
-      busy = true; const h = c.dataset.h, isSoon = h.startsWith("soon:");
-      const rec = { h, dir, before: JSON.stringify(RQ.taste.get()), wish: false, bag: false, soon: isSoon ? JSON.stringify([ls.get("rumiq-soon", {}), ls.get("rumiq-votes", [])]) : null };
-      if (isSoon) {
+      if ((dir === 2 || dir === 3) && c.classList.contains("soon")) dir = 1;
+      if (dir === 3 && c.classList.contains("look")) dir = 1;
+      if (c.classList.contains("duel") && dir !== -1 && !pick) { back(c); const sd = el("Said"); if (sd) sd.textContent = "Tryck på den du gillar mest, eller på Nej om ingen passar."; if (!reduced()) $$(".sv-duel-b", c).forEach((b) => b.animate([{ transform: "scale(1)" }, { transform: "scale(1.04)" }, { transform: "scale(1)" }], { duration: 360 })); return; }
+      busy = true; const h = c.dataset.h, isSoon = h.startsWith("soon:"), isLook = h.startsWith("look:"), isDuel = h.startsWith("duel:"), odd = isLook || isDuel;
+      const rec = { h, dir, before: JSON.stringify(RQ.taste.get()), wish: false, bag: false, src: isSoon || odd ? undefined : RQ.wishSrc.get(h), soon: isSoon ? JSON.stringify([ls.get("rumiq-soon", {}), ls.get("rumiq-votes", [])]) : null, wishes: [], srcs: {}, saves: [], bags: [], ans: [] };
+      /* a look or a duel saves several things, or one of two: each is undone on its own */
+      const keep = (x) => { if (!S.isWished(x)) { S.toggleWish(x); rec.wishes.push(x); } if (!(x in rec.srcs)) rec.srcs[x] = RQ.wishSrc.get(x); if (RQ.wishSrc.get(x) !== "love") RQ.wishSrc.set(x, "svep"); if (!st.saved.includes(x)) { st.saved.push(x); rec.saves.push(x); } };
+      let label = "";
+      if (isLook) {
+        const L = RQ.LOOKS.find((l) => "look:" + l.id === h), items = L ? L.items.filter((x) => RQ.byHandle(x)) : [], seen = ls.get(LKEY, []) || [];
+        rec.lookSeen = seen; if (L && !seen.includes(L.id)) ls.set(LKEY, [...seen, L.id]); st.lookDone = true; label = L ? L.name : "";
+        if (dir === 1) items.forEach((x) => { keep(x); RQ.taste.add(x, 0.5); });
+        else if (dir === 2) { items.forEach((x) => { S.addToCart(x + "::0", 1); rec.bags.push(x); st.bagged.push(x); RQ.taste.add(x, 0.75); }); RQ.fly && RQ.fly($(".sv-look-row img", c)); }
+      } else if (isDuel) {
+        const [a, b] = h.slice(5).split("|"); st.duelDone = true;
+        if (pick) { const o = pick === a ? b : a; keep(pick); RQ.taste.add(pick, 1); RQ.taste.add(o, -0.25); st.answers[pick] = 1; st.answers[o] = 0; rec.ans = [a, b]; label = (RQ.byHandle(pick) || {}).name || ""; }
+        else { RQ.taste.add(a, -0.25); RQ.taste.add(b, -0.25); }
+      } else if (isSoon) {
         const id = h.slice(5), s = ls.get("rumiq-soon", {}); s[id] = dir === -1 ? 0 : 1; ls.set("rumiq-soon", s);
         if (dir !== -1) { const v = ls.get("rumiq-votes", []); if (!v.includes(id) && v.length < MAXV) ls.set("rumiq-votes", [...v, id]); }
         st.soonDone = true;
-      } else if (dir === 1) { if (!S.isWished(h)) { S.toggleWish(h); rec.wish = true; } RQ.taste.add(h, 1); st.saved.push(h); }
+      } else if (dir === 1 || dir === 3) { if (!S.isWished(h)) { S.toggleWish(h); rec.wish = true; } RQ.taste.add(h, dir === 3 ? 2 : 1); st.saved.push(h); if (dir === 3) st.loved = [...(st.loved || []), h];
+        if (dir === 3 || RQ.wishSrc.get(h) !== "love") RQ.wishSrc.set(h, dir === 3 ? "love" : "svep"); }
       else if (dir === 2) { S.addToCart(h + "::0", 1); rec.bag = true; RQ.taste.add(h, 1.5); st.bagged.push(h); RQ.fly && RQ.fly($(".sv-ims img.on", c)); }
       else RQ.taste.add(h, -0.5);
-      st.answers[h] = dir === -1 ? 0 : dir;
-      const said = el("Said"), nm = isSoon ? "" : (RQ.byHandle(h) || {}).name || ""; // read out by the next paint, with the next card
-      if (said) said.dataset.msg = isSoon ? (dir === -1 ? "Nej tack." : "Tack, vi räknar din röst.") : dir === 1 ? `Sparad: ${nm}.` : dir === 2 ? `I varukorgen: ${nm}.` : `Hoppade över ${nm}.`;
-      const choice = dir === 1 ? "save" : dir === 2 ? "cart" : "skip";
-      RQ.track && RQ.track("swipe", { item_id: h, choice });
-      stat(h, choice, cfg.ctx);
+      if (!odd) st.answers[h] = dir === -1 ? 0 : dir === 3 ? 1 : dir; /* a group link carries yes or no: Älskar counts as yes */
+      const said = el("Said"), nm = isSoon || odd ? "" : (RQ.byHandle(h) || {}).name || ""; // read out by the next paint, with the next card
+      if (said) said.dataset.msg = isLook ? (dir === -1 ? "Hoppade över looken." : dir === 2 ? `Hela looken ${label} ligger i varukorgen.` : `Sparade hela looken ${label}.`) : isDuel ? (pick ? `Sparad: ${label}.` : "Ingen av dem.")
+        : isSoon ? (dir === -1 ? "Nej tack." : "Tack, vi räknar din röst.") : dir === 1 ? `Sparad: ${nm}.` : dir === 3 ? `Älskar: ${nm}. Den ligger överst i Mitt hem.` : dir === 2 ? `I varukorgen: ${nm}.` : `Hoppade över ${nm}.`;
+      const choice = dir === 1 ? "save" : dir === 3 ? "love" : dir === 2 ? "cart" : "skip";
+      if (odd) RQ.track && RQ.track(isLook ? "swipe_look" : "swipe_duel", { item_id: pick || h, choice: isDuel ? (pick ? "pick" : "skip") : choice });
+      else { RQ.track && RQ.track("swipe", { item_id: h, choice }); stat(h, choice, cfg.ctx); }
+      if (isDuel && pick) stat(pick, "save", cfg.ctx);
       if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) {}
       st.history.push(rec); st.forced = st.forced.filter((x) => x !== h); st.done.push(h);
       cfg.onDecide && cfg.onDecide(st);
       const next = () => { busy = false; paint(); if (queue.length && !st.over) decide(queue.shift()); else queue = []; };
       if (reduced()) return next();
-      flash(c, dir === 1 ? "yes" : dir === 2 ? "up" : "no");
+      if (isDuel && pick) { const pb = $(`[data-duel-pick="${pick}"]`, c); if (pb) pb.classList.add("on"); }
+      else flash(c, dir === 1 ? "yes" : dir === 3 ? "love" : dir === 2 ? "up" : "no");
       c.style.transition = "transform .26s cubic-bezier(.3,.6,.2,1), opacity .26s";
-      c.style.transform = dir === 2 ? "translate(0,-120%) scale(.9)" : `translate(${dir * 130}%, -4%) rotate(${dir * 18}deg)`; c.style.opacity = 0;
+      c.style.transform = dir === 2 ? "translate(0,-120%) scale(.9)" : dir === 3 ? "translate(0,-8%) scale(1.08)" : `translate(${dir * 130}%, -4%) rotate(${dir * 18}deg)`; c.style.opacity = 0;
       setTimeout(next, 210);
     };
     const undo = () => {
@@ -285,27 +350,35 @@
       const r = st.history.pop(); vset("rumiq-taste", JSON.parse(r.before));
       if (r.soon) { const [s, v] = JSON.parse(r.soon); ls.set("rumiq-soon", s); ls.set("rumiq-votes", v); st.soonDone = false; }
       if (r.wish && S.isWished(r.h)) S.toggleWish(r.h);
+      if (r.src !== undefined) RQ.wishSrc.set(r.h, r.src); st.loved = (st.loved || []).filter((x) => x !== r.h);
+      (r.wishes || []).forEach((x) => S.isWished(x) && S.toggleWish(x)); Object.keys(r.srcs || {}).forEach((x) => RQ.wishSrc.set(x, r.srcs[x]));
+      (r.bags || []).forEach((x) => { const line = S.cartLines().find((l) => l.id === x + "::0"); if (line) S.setQty(line.id, line.quantity - 1); });
+      if (r.saves && r.saves.length) st.saved = st.saved.filter((x) => !r.saves.includes(x)); if (r.bags && r.bags.length) st.bagged = st.bagged.filter((x) => !r.bags.includes(x)); (r.ans || []).forEach((x) => delete st.answers[x]);
+      if (r.h.startsWith("look:")) { st.lookDone = false; if (r.lookSeen) ls.set(LKEY, r.lookSeen); } if (r.h.startsWith("duel:")) st.duelDone = false;
       if (r.bag) { const line = S.cartLines().find((l) => l.id === r.h + "::0"); if (line) S.setQty(line.id, line.quantity - 1); }
       st.saved = st.saved.filter((x) => x !== r.h); st.bagged = st.bagged.filter((x) => x !== r.h); delete st.answers[r.h];
       st.done = st.done.filter((x) => x !== r.h); st.forced = [r.h, ...st.forced]; paint();
       const c = topCard(); if (c && !reduced()) c.animate([{ transform: "translate(0,-30px) scale(.96)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 320, easing: "ease-out" });
     };
-    const flip = (c, d) => {
-      const ims = $$(".sv-ims img", c), dots = $$(".sv-dots i", c), cur = +c.dataset.img, nx = Math.max(0, Math.min(ims.length - 1, cur + d));
-      if (!ims.length || nx === cur) { c.animate([{ transform: `translateX(${d * 6}px)` }, { transform: "none" }], { duration: 180 }); return; }
+    const flip = (c, d, to) => {
+      const ims = $$(".sv-ims img", c), dots = $$(".sv-dots i", c), cur = +c.dataset.img, nx = to != null ? to : Math.max(0, Math.min(ims.length - 1, cur + d));
+      if (!ims.length || nx === cur) { c.animate([{ transform: `translateX(${(d || 1) * 6}px)` }, { transform: "none" }], { duration: 180 }); return; }
       ims.forEach((im, k) => im.classList.toggle("on", k === nx)); dots.forEach((x, k) => x.classList.toggle("on", k === nx)); c.dataset.img = nx;
+      const im = ims[nx], pill = $(".sv-roompill", c); if (pill) pill.classList.toggle("on", !!(im && im.hasAttribute("data-room-im")));
+      if (im && im.hasAttribute("data-room-im") && !im.getAttribute("src")) { c.classList.add("drawing"); $(".sv-ims", c).dataset.draw = tr("Ritar ditt rum …"); RQ.room.previewWith(c.dataset.h).then((u) => { c.classList.remove("drawing"); if (u) im.src = u; }).catch(() => c.classList.remove("drawing")); }
     };
     // drag: sideways = save or skip; upwards = cart, with a mouse or pen only (a finger moving up scrolls the page).
     // A tap on the edges flips the picture, in the middle it opens the product.
-    let drag = null, lastX = 0, tapped = null;
-    const down = (e) => { tapped = null; const c = e.target.closest(".sv-card"); if (!c || c !== topCard() || busy) return; c.classList.remove("hint"); drag = { c, x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0, touch: e.pointerType === "touch" }; c.setPointerCapture && c.setPointerCapture(e.pointerId); c.style.transition = "none"; };
+    let drag = null, lastX = 0, lastY = 0, tapped = null;
+    const down = (e) => { tapped = null; if (e.target.closest("[data-sv-room]")) return; const c = e.target.closest(".sv-card"); if (!c || c !== topCard() || busy) return; c.classList.remove("hint"); drag = { c, x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0, touch: e.pointerType === "touch" }; c.setPointerCapture && c.setPointerCapture(e.pointerId); c.style.transition = "none"; };
     const back = (c) => { c.style.transition = "transform .45s var(--spring)"; c.style.transform = ""; $$(".sv-stamp", c).forEach((s) => (s.style.opacity = 0)); };
     const move = (e) => {
       if (!drag) return; drag.dx = e.clientX - drag.x; drag.dy = e.clientY - drag.y; const { c, dx, dy } = drag;
       const upish = !drag.touch && dy < 0 && Math.abs(dy) > Math.abs(dx);
       c.style.transform = `translate(${dx}px, ${upish ? dy : drag.touch ? 0 : dy * 0.25}px) rotate(${upish ? 0 : dx / 18}deg)`;
       const kx = Math.min(1, Math.abs(dx) / 110), ky = Math.min(1, -dy / 120);
-      $(".sv-stamp.yes", c).style.opacity = !upish && dx > 0 ? kx : 0; $(".sv-stamp.no", c).style.opacity = !upish && dx < 0 ? kx : 0; $(".sv-stamp.up", c).style.opacity = upish ? ky : 0;
+      const sy = $(".sv-stamp.yes", c), sn = $(".sv-stamp.no", c), su = $(".sv-stamp.up", c); if (!sy || !sn || !su) return; if (c.classList.contains("duel")) { sn.style.opacity = !upish && dx < 0 ? kx : 0; return; }
+      sy.style.opacity = !upish && dx > 0 ? kx : 0; sn.style.opacity = !upish && dx < 0 ? kx : 0; su.style.opacity = upish ? ky : 0;
     };
     // the browser took the gesture (page scroll) or the pointer was lost: nothing is decided, the card goes back
     const cancel = () => { if (!drag) return; const c = drag.c; drag = null; back(c); };
@@ -313,7 +386,8 @@
       if (!drag) return; const { c, dx, dy, t, touch } = drag; drag = null;
       const ms = Math.max(1, performance.now() - t), vx = Math.abs(dx) / ms, vy = -dy / ms, w = c.offsetWidth, hgt = c.offsetHeight;
       if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
-        c.style.transform = ""; if (c.classList.contains("soon")) return;
+        c.style.transform = ""; if (c.classList.contains("duel")) { const hit = document.elementFromPoint(lastX, lastY), b = hit && hit.closest && hit.closest("[data-duel-pick]"); if (b && c.contains(b)) decide(1, c, b.dataset.duelPick); return; }
+        if (c.classList.contains("soon") || c.classList.contains("look")) return;
         const r = c.getBoundingClientRect(), x = (lastX - r.left) / r.width;
         if (x < 0.3) return flip(c, -1); if (x > 0.7) return flip(c, 1);
         tapped = c; return; // opened by the click that follows: opening here let that click close the sheet again on phones
@@ -323,11 +397,17 @@
       if (!touch && !sideways && dy < 0 && (-dy > hgt * 0.22 || vy > 0.6)) return decide(2, c);
       back(c);
     };
-    const pdown = (e) => { lastX = e.clientX; down(e); }, pup = (e) => { lastX = e.clientX; up(); };
-    const tap = (e) => { const c = tapped; tapped = null; if (c && c === topCard() && e.target.closest(".sv-card") === c && !RQ.sheet.isOpen()) RQ.sheet.open(c.dataset.h, { from: c }); };
+    const pdown = (e) => { lastX = e.clientX; lastY = e.clientY; down(e); }, pup = (e) => { lastX = e.clientX; lastY = e.clientY; up(); };
+    let lastTap = null;
+    const tap = (e) => { const dp = e.detail === 0 && e.target.closest && e.target.closest("[data-duel-pick]"); if (dp) { const dc = dp.closest(".sv-card"); if (dc === topCard()) decide(1, dc, dp.dataset.duelPick); return; } /* the keyboard (a pointer is handled on release) */
+      const pill = e.target.closest && e.target.closest("[data-sv-room]"); if (pill) { const pc = pill.closest(".sv-card"), ims = $$(".sv-ims img", pc), k = ims.findIndex((x) => x.hasAttribute("data-room-im")); if (pc && k >= 0) flip(pc, 0, +pc.dataset.img === k ? 0 : k); return; } /* "I ditt rum": the thing in your own room (v15.9) */
+      const c = tapped; tapped = null; if (!c || c !== topCard() || e.target.closest(".sv-card") !== c || RQ.sheet.isOpen()) return;
+      if (cfg.love && lastTap && lastTap.c === c && Date.now() - lastTap.at < 320) { clearTimeout(lastTap.t); lastTap = null; if (!c.classList.contains("soon")) decide(3, c); return; } /* a double tap: Älskar */
+      if (!cfg.love) { RQ.sheet.open(c.dataset.h, { from: c }); return; }
+      const t2 = setTimeout(() => { lastTap = null; if (c === topCard() && !RQ.sheet.isOpen() && !st.over) RQ.sheet.open(c.dataset.h, { from: c }); }, 320); lastTap = { c, at: Date.now(), t: t2 }; };
     deckEl.addEventListener("pointerdown", pdown); deckEl.addEventListener("click", tap); addEventListener("pointermove", move); addEventListener("pointerup", pup); addEventListener("pointercancel", cancel);
     const on = (n, f) => { const b = el(n); if (b) b.addEventListener("click", f); };
-    on("No", () => decide(-1)); on("Yes", () => decide(1)); on("Bag", () => decide(2)); on("Undo", undo);
+    on("No", () => decide(-1)); on("Yes", () => decide(1)); on("Bag", () => decide(2)); on("Love", () => decide(3)); on("Undo", undo);
     // the arrows work as soon as a round starts: in the deck, or when the focus is on no control at all (the page itself)
     let auto = false; // the deck has the focus only because the round started there
     deckEl.addEventListener("blur", () => { auto = false; });
@@ -340,6 +420,8 @@
       if (e.key === "ArrowRight") { e.preventDefault(); decide(1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); decide(-1); }
       if (e.key === "ArrowUp") { e.preventDefault(); decide(2); }
+      if ((e.key === "1" || e.key === "2") && !e.metaKey && !e.ctrlKey) { const tc = topCard(), pb = tc && tc.classList.contains("duel") && $$("[data-duel-pick]", tc)[+e.key - 1]; if (pb) { e.preventDefault(); decide(1, tc, pb.dataset.duelPick); } }
+      if ((e.key === "l" || e.key === "L") && !e.metaKey && !e.ctrlKey && (!free || deckEl.contains(document.activeElement)) && cfg.love) { e.preventDefault(); decide(3); }
       if (e.key === "Backspace" || (e.key === "z" && (e.metaKey || e.ctrlKey))) { e.preventDefault(); undo(); }
     };
     if (cfg.keys) addEventListener("keydown", key);
@@ -535,6 +617,8 @@
   };
 
   /* ---------------------------------------------------------------- Svep (the full page) */
+  const voteLine = (st) => { const h = st.done.find((x) => x.startsWith("soon:")), c = h && RQ.CANDIDATES.find((x) => "soon:" + x.id === h); if (!c || (ls.get("rumiq-soon", {}) || {})[c.id] !== 1) return "";
+    return `<p class="small sv-vote"><span>Du röstade på</span> <b>${esc(c.name)}</b>. <span>Vi tar in det som flest vill ha.</span> <a href="#onska">Se alla förslag</a></p>`; };
   const roundAnswers = (st) => { const hs = st.done.filter((h) => !h.startsWith("soon:") && RQ.byHandle(h)); return { hs, a: hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join("") }; };
   // long Swedish compounds in narrow tiles break where the words meet ("Skrivbords-organisatör"), never mid-syllable
   RQ.shy = (s) => (window.RQ_LANG === "en" ? String(s) : String(s).replace(/(skrivbords|förvarings|terrakotta|uppladdnings|förråds|våffel|keramik|ull|jute|linne|bords)(?=[a-zåäö]{4,})/giu, "$1\u00AD"));
@@ -548,6 +632,13 @@
     const low = (n) => n.charAt(0).toLocaleLowerCase("sv") + n.slice(1);
     return ns.length < 2 ? `<span>${esc(ns[0])}</span>` : / och /.test(ns[1]) ? `<span>${esc(ns[0])}</span>, <span>${esc(low(ns[1]))}</span>` : `<span>${esc(ns[0])}</span> <span>och</span> <span>${esc(low(ns[1]))}</span>`;
   };
+  /* "Din stil per typ": for each kind of thing you liked, the materials and the colour (v15.9) */
+  const KIND_NAME = { lampa: "Lampor", ljus: "Ljus", textil: "Textil", vagg: "På väggen", forvaring: "Förvaring", detalj: "Detaljer", kok: "Kök", bad: "Bad" };
+  const MATS = ["opalglas", "keramik", "stengods", "terrakotta", "mässing", "jute", "lin", "ull", "bomull", "filt", "glas", "ek", "papper", "vax"];
+  const matOf = (p) => { const m = String(p.material || "").toLowerCase(); return MATS.find((w) => new RegExp(`(^|[^a-zåäö])${w}`).test(m)) || ""; };
+  const perKind = (t) => { const g = {}; likedOf(t).forEach((p) => { const k = kindOf(p); (g[k] = g[k] || []).push(p); });
+    return Object.entries(g).sort((a, b) => b[1].length - a[1].length).slice(0, 4).map(([k, ps]) => { const mats = [...new Set(ps.map(matOf).filter(Boolean))].slice(0, 2), tone = nearestTone(ps[0].tone[0]).name;
+      return { k, name: KIND_NAME[k] || "Annat", words: [mats.join(" och "), mats.includes(tone.toLocaleLowerCase("sv")) ? "" : tone.toLocaleLowerCase("sv")].filter(Boolean).join(" · ") }; }).filter((x) => x.words); };
   const resultHtml = (st, scope) => {
     const t = RQ.taste.get(), prof = RQ.styleProfile(t), top = prof.mix.filter((m) => m.pct >= 25).slice(0, 2);
     const more = RQ.PRODUCTS.some((p) => inScope(p, scope) && !(p.handle in t.seen));
@@ -563,9 +654,11 @@
       ${top.length && RQ.hem ? RQ.hem.slot({ type: scope || "vardagsrum", style: top[0].id, from: "svep", compact: true, prefer: saved.map((p) => p.handle) }) : ""}
       ${prof.mix.length ? `<div class="sp-grid"><div class="sp-mix" role="group" aria-label="Din stil i procent">${prof.mix.map((m) => `<div class="sp-row"><span>${esc(m.name)}</span><span class="sp-bar"><i style="width:${m.pct}%"></i></span><b>${m.pct} %</b></div>`).join("")}</div>
         ${prof.tones.length ? `<div class="sp-tones"><span class="eyebrow">Dina färger</span><div>${prof.tones.map((x) => `<span class="sp-tone"><i style="background:${x.hex}"></i>${esc(x.name)}</span>`).join("")}</div></div>` : ""}</div>` : ""}
+      ${perKind(t).length ? `<div class="sp-kinds"><span class="eyebrow">Din stil per typ</span><ul>${perKind(t).map((x) => `<li><b>${esc(x.name)}</b><span>${esc(x.words)}</span></li>`).join("")}</ul></div>` : ""}
       ${saved.length ? `<div class="sp-saved"><span class="eyebrow">Sparat i den här rundan · ${saved.length}</span>${savedTiles(saved, true)}
 </div>` : ""}
       ${st.bagged.length ? `<p class="small">${st.bagged.length} ${st.bagged.length === 1 ? "vara ligger" : "varor ligger"} redan i varukorgen. <a href="#kassa">Till kassan</a></p>` : ""}
+      ${voteLine(st)}
       ${prof.look || ra.hs.length >= 3 ? `<div class="sp-next">` : ""}${prof.look ? `<a class="sp-look" href="#look-${prof.look.id}"><span class="sp-look-ims">${prof.look.items.slice(0, 4).map((h) => `<img src="${RQ.cut(RQ.byHandle(h))}" alt="">`).join("")}</span><span><span class="eyebrow">En look för dig</span><b>${esc(prof.look.name)}</b><small>${esc(prof.look.lead)}</small></span></a>` : ""}
       ${ra.hs.length >= 3 ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Inreder ni tillsammans?</b><p>Skicka samma kort till en eller flera. När de har svept ser ni vad ni gillar gemensamt.</p>
         <button class="btn ghost sm" type="button" id="svTwoOpen" aria-expanded="false" aria-controls="svTwo">${SV.link}<span>Skicka korten</span></button>
@@ -580,6 +673,7 @@
   // keys where there is a keyboard and a mouse; on touch screens the same rows show the gesture and the button's own icon
   const legend = `<ul class="sv-legend">
       <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true">${ICO.heart}</i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar i Mitt hem och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">L</kbd><i class="sv-ti" aria-hidden="true">${LOVE_ICO}</i><div><b>Älskar</b><span><em class="sv-tc">Dubbeltryck på kortet. </em>Sparas överst i Mitt hem och väger tyngre för din stil.</span></div></li>
       <li><kbd aria-hidden="true">←</kbd><i class="sv-ti" aria-hidden="true">${ICO.x}</i><div><b>Hoppa över</b><span><em class="sv-tc">Svep åt vänster. </em>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><i class="sv-ti" aria-hidden="true">${SV.bag}</i><div><b>Lägg i varukorgen</b><span><em class="sv-tc">Svep uppåt. </em>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><i class="sv-ti" aria-hidden="true">${SV.undo}</i><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
@@ -588,6 +682,19 @@
   // a room with fewer cards left than a full round: how many there are (0 = a normal round of ten)
   const roomLeft = (scope) => { if (!scope) return 0; const t = RQ.taste.get(), n = RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length; return n && n < ROUND ? n : 0; };
   const KEEP = "rumiq-svep-result"; // the finished round, kept for this tab so that Back and reload show the profile again
+  /* the filter: one quiet line that says what you sweep and how much of it you have seen; it opens to three rows of chips */
+  const filterHtml = (scope) => { const f = filt(), t = RQ.taste.get(), pool = RQ.PRODUCTS.filter((p) => inDeck(p, scope)), seen = pool.filter((p) => p.handle in t.seen).length;
+    const words = [f.type ? FTYPES.find((x) => x[0] === f.type)[1] : "", f.style ? RQ.STYLES[f.style].name : "", f.max ? `under ${kr(f.max)}` : ""].filter(Boolean);
+    const chip = (k, v, label) => `<button type="button" class="chip" data-svf="${k}:${v}" aria-pressed="${String(f[k]) === String(v) || (!v && !f[k])}">${esc(label)}</button>`;
+    return `<details class="sv-filter"${words.length ? " open" : ""}><summary><span class="sv-f-what">${words.length ? `Filter: ${esc(words.join(" · "))}` : "Filtrera: typ, stil, budget"}</span><span class="sv-f-n" id="svSeen">${pool.length ? `Sett ${seen} av ${pool.length}` : "Inget passar"}</span></summary>
+      <div class="sv-f-in"><div class="sv-f-row" role="group" aria-label="Typ">${chip("type", "", "Alla sorter")}${FTYPES.map(([id, n]) => chip("type", id, n)).join("")}</div>
+      <div class="sv-f-row" role="group" aria-label="Stil">${chip("style", "", "Alla stilar")}${Object.entries(RQ.STYLES).map(([k, x]) => chip("style", k, x.name)).join("")}</div>
+      <div class="sv-f-row" role="group" aria-label="Budget">${chip("max", "", "Alla priser")}${FMAX.map((m) => chip("max", m, `Under ${kr(m)}`)).join("")}</div>
+      ${!pool.length ? `<p class="small sv-f-none">Inget i butiken passar alla filtren just nu. <button type="button" class="tlink" data-svf="clear:">Rensa filtren</button></p>` : ""}</div></details>`; };
+  /* a new filter starts a new round of what fits (what you said stays) */
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-svf]"); if (!b) return; const [k, v] = b.dataset.svf.split(":"), f = filt();
+    const nf = k === "clear" ? {} : { ...f, [k]: k === "max" ? +v || 0 : v }; ls.set(FKEY, nf); ss.del(KEEP); ss.del("rumiq-svep-carry"); RQ.router();
+    requestAnimationFrame(() => { const d = document.querySelector(".sv-filter"); if (d) { const nf2 = filt(); d.open = !!(nf2.type || nf2.style || nf2.max); const again = d.querySelector(`[data-svf="${b.dataset.svf}"]`); if (again) again.focus({ preventScroll: true }); } }); });
   V.svep = (scope) => {
     const room = scope ? RQ.roomById(scope) : null; if (scope && !room) return V.notfound();
     return {
@@ -595,6 +702,7 @@
       html: `<section class="wrap svep" aria-label="Svep">
         <div class="sv-head">${RQ.crumbs(room ? [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], [room.name]] : [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep"]])}<h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           ${scopeNav(scope)}
+          ${filterHtml(scope)}
           ${legend}
           <p class="small sv-after">Tryck på bildens kanter för fler bilder, eller mitt på bilden för att läsa mer. ${roomLeft(scope) ? `<span>${roomLeft(scope)}</span> <span>kort för</span> <span>${esc(room.name.toLowerCase())}</span>, <span>sedan får du din stilprofil.</span>` : "Efter tio kort får du din stilprofil."}</p>
           <a class="sv-two-link" href="#svep-ihop">${SV.two}<span>Inreder ni tillsammans? <b>Svep tillsammans</b></span></a></div>
@@ -606,16 +714,22 @@
         const seedHs = String(seedH || "").split(",").filter((h) => RQ.byHandle(h));
         const seed = seedHs.length ? RQ.moreLikeMany(seedHs, 8).filter((x) => !(x.p.handle in t0.seen)).slice(0, 4) : [], seedWhy = Object.fromEntries(seed.map((x) => [x.p.handle, `Mer som ${RQ.byHandle(x.from).name}`]));
         const carry = !keep && !scope && (seed.length ? { forced: seed.map((x) => x.p.handle) } : ss.get("rumiq-svep-carry", null)); // dropped once this page takes the round further
-        const unseen = (t, st) => RQ.PRODUCTS.filter((p) => inScope(p, scope) && !(p.handle in t.seen)).length;
+        const unseen = (t, st) => RQ.PRODUCTS.filter((p) => inDeck(p, scope) && !(p.handle in t.seen)).length;
         // "Kommer snart" comes as card six, so it only counts in a round that gets that far
-        const soonOpen = (st, t) => !scope && !st.soonDone && st.done.length <= 5 && st.done.length + unseen(t, st) >= 5 && !!nextSoon();
+        const plain = () => !scope && !filt().type && !filt().style && !filt().max;
+        const soonOpen = (st, t) => plain() && !st.soonDone && st.done.length <= 5 && st.done.length + unseen(t, st) >= 5 && !!nextSoon();
+        const lookOpen = (st, t) => plain() && !st.lookDone && st.done.length <= 3 && st.done.length + unseen(t, st) >= 4 && !!nextLook(t);
+        const duelOpen = (st, t) => !st.duelDone && t.likes >= 2 && st.done.length <= 7 && st.done.length + unseen(t, st) >= 9 && !!duelPair(t, new Set(st.done), scope);
         const cur = $(".sv-scope [aria-current]", root), nav = cur && cur.parentNode; if (nav && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
         return runDeck(root, {
-          px: "sv", ctx: scope ? "svep:" + scope : "svep", keys: true, start: keep || carry, finished: !!keep, onDecide: () => ss.del("rumiq-svep-carry"),
-          total: (st, t) => Math.min(ROUND, st.done.length + unseen(t, st) + (soonOpen(st, t) ? 1 : 0)),
+          px: "sv", ctx: scope ? "svep:" + scope : "svep", keys: true, love: true, start: keep || carry, finished: !!keep, onDecide: () => ss.del("rumiq-svep-carry"),
+          total: (st, t) => Math.min(ROUND, st.done.length + unseen(t, st) + (soonOpen(st, t) ? 1 : 0) + (lookOpen(st, t) ? 1 : 0) - (duelOpen(st, t) ? 1 : 0)),
           next: (st, t, skip, n) => {
-            const out = upcoming(t, skip, n, st.done.length, scope);
-            if (n === 3 && st.done.length === 5 && soonOpen(st, t)) { out.unshift(nextSoon()); out.length = Math.min(out.length, 3); }
+            const out = upcoming(t, skip, n, st.done.length, scope, (p) => inDeck(p, scope));
+            const put = (x) => { if (!x) return; const hs = x.duel ? x.duel.map((q) => q.handle) : []; for (let i = out.length - 1; i >= 0; i--) if (hs.includes(out[i].handle)) out.splice(i, 1); out.unshift(x); out.length = Math.min(out.length, 3); };
+            if (n === 3 && st.done.length === 3 && lookOpen(st, t)) put(nextLook(t));
+            if (n === 3 && st.done.length === 5 && soonOpen(st, t)) put(nextSoon());
+            if (n === 3 && st.done.length === 7 && duelOpen(st, t)) put(duelPair(t, skip, scope));
             return out;
           },
           // a true reason on the top card: what it is like that you liked, or your style; none on the cards picked for variety
@@ -626,7 +740,7 @@
             { const see = $("[data-hem-see]", res); if (see && see.getBoundingClientRect().bottom > innerHeight - 90) see.scrollIntoView({ block: "nearest" }); } // a short phone: the room proposal's first button above the dock (D4)
             const tl = $(".sv-two-link", root); if (tl) tl.hidden = true; // the result asks "Inreder ni tillsammans?" itself, once
             const fresh = !(keep && keep.done.length === st.done.length);
-            if (st.done.length) ss.set(KEEP, { scope: scope || "", done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged, soonDone: st.soonDone });
+            if (st.done.length) ss.set(KEEP, { scope: scope || "", done: st.done, answers: st.answers, saved: st.saved, bagged: st.bagged, soonDone: st.soonDone, lookDone: st.lookDone, duelDone: st.duelDone });
             if (fresh && r.top.length) RQ.styleLog.add(RQ.styleProfile(), scope);
             if (fresh) RQ.track && RQ.track("swipe_round", { saved: r.saved.length, bagged: st.bagged.length, style: r.top.length ? r.top[0].id : "", scope: scope || "" });
             // a new round is drawn in place: no detour through another page, so Back still leads where you came from
@@ -637,7 +751,7 @@
               RQ.taste.reset(); try { localStorage.removeItem("rumiq-style"); } catch (er) {} again();
             });
             const m = $("#svMore", root); m && m.addEventListener("click", again);
-            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda")); RQ.addAllBtn(all, () => r.saved.map((p) => p.handle), () => `Lägg de sparade i varukorgen (${r.saved.length})`); /* one total on the page: the proposal's (review) */
+            const all = $("#svAll", root); all && all.addEventListener("click", () => { S.addBundle(r.saved.map((p) => p.handle), "Svep-paket"); RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda"); }); RQ.addAllBtn(all, () => r.saved.map((p) => p.handle), () => `Lägg de sparade i varukorgen (${r.saved.length})`); /* one total on the page: the proposal's (review) */
             const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => toRoom(r.saved.map((p) => p.handle)));
             const sh = $("#svShare", root); sh && sh.addEventListener("click", () => shareStyle(r.top, (r.saved.length ? r.saved : RQ.styleProfile().liked.map(RQ.byHandle)).filter(Boolean)));
             const ans = roundAnswers(st);
@@ -691,7 +805,7 @@
     return `<div class="gr-room" data-gr-r="${esc(r.id)}"><span class="eyebrow">I Mitt hem</span><h3 class="h3" tabindex="-1">${esc(H.name(r))}</h3>
         ${w ? `<p class="small">${esc(w.charAt(0).toLocaleUpperCase("sv") + w.slice(1))}, er gemensamma stil.</p>` : ""}
         <span class="gr-room-ims" aria-hidden="true">${its.slice(0, 5).map((it) => `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">`).join("")}</span>
-        <div class="ai-row"><button class="btn" type="button" data-gr-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-gr-buy>Köp allt · ${kr(H.money(r).total)}</button></div>
+        <div class="ai-row"><button class="btn" type="button" data-gr-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-gr-buy>Köp allt · ${kr(H.money(r).total - S.bundleSave(H.items(r).map((it) => it.h)))}</button></div>${S.bundleSave(H.items(r).map((it) => it.h)) ? `<p class="small hem-bundle">Gruppris: ${Math.round(S.bundleRule().rate * 100)} % lägre pris när ni köper allt ni gillar, ${kr(H.money(r).total)} utan gruppris.</p>` : ""}
         <div class="ai-row small-row"><button class="tlink" type="button" data-gr-ask>Vad tycker du?</button><a class="tlink" href="#mitt-hem" data-hem-open="${esc(r.id)}">Öppna i Mitt hem</a></div></div>`;
   };
   const groupResult = (g) => {
@@ -751,7 +865,7 @@
       if (b.matches("[data-gr-cart]")) { RQ.addMany(keep, b, "Det ni gillar"); return; }
       const r = room();
       if (b.matches("[data-gr-see]") && r) { H.openInRoom({ room: r.type, items: H.items(r), style: r.style, budget: r.budget, project: r.id }); return; }
-      if (b.matches("[data-gr-buy]") && r) { RQ.addMany(H.items(r).map((it) => it.h + "::" + (it.v || 0)), b, H.name(r)); return; }
+      if (b.matches("[data-gr-buy]") && r) { S.addBundle(H.items(r).map((it) => it.h), "Gruppris"); RQ.addMany(H.items(r).map((it) => it.h + "::" + (it.v || 0)), b, H.name(r)); return; }
       if (b.matches("[data-gr-ask]") && r) { H.askLink(r, b); return; }
       if (b.matches("[data-gr-join]")) { ss.set("rumiq-svep-join", g.id); RQ.router(); scrollTo(0, 0); return; }
       // tapped the wrong name: this browser is nobody in the group again, and swipes the cards itself

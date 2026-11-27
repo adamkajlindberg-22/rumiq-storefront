@@ -1026,8 +1026,8 @@
     return best;
   };
   // the same look twice is one row ("2 × ...")
-  RQ.discRows = (disc) => { const g = new Map(); disc.forEach((d) => { const x = g.get(d.look.id) || { name: d.look.name, n: 0, amount: 0 }; x.n++; x.amount += d.amount; g.set(d.look.id, x); });
-    return [...g.values()].map((x) => `<div class="sum disc"><span>${x.n > 1 ? x.n + " × " : ""}Hela looken ${esc(x.name)}</span><span>−${kr(x.amount)}</span></div>`).join(""); };
+  RQ.discRows = (disc) => { const g = new Map(); disc.forEach((d) => { const x = g.get(d.look.id) || { name: d.look.name, label: d.look.label || "", n: 0, amount: 0 }; x.n++; x.amount += d.amount; g.set(d.look.id, x); });
+    return [...g.values()].map((x) => `<div class="sum disc"><span>${x.n > 1 ? x.n + " × " : ""}${x.label ? esc(x.label) : `Hela looken ${esc(x.name)}`}</span><span>−${kr(x.amount)}</span></div>`).join(""); };
   function renderCart() {
     const lines = S.cartLines();
     const body = $("#cart .body"), foot = $("#cart footer");
@@ -1039,7 +1039,7 @@
       body.innerHTML = RQ.emptyCartHtml();
       foot.innerHTML = ""; refocus(); return;
     }
-    const sub = S.cartSubtotal(), disc = S.lookDiscounts(), net = sub - S.cartDiscount(), free = !!(S.freeShipping && S.freeShipping()), ship = S.shippingCost ? S.shippingCost("ombud") : 0, nudge = lookNudge(lines);
+    const sub = S.cartSubtotal(), disc = S.allDiscounts(), net = sub - S.cartDiscount(), free = !!(S.freeShipping && S.freeShipping()), ship = S.shippingCost ? S.shippingCost("ombud") : 0, nudge = lookNudge(lines);
     // the things that make up a whole look carry its name, so removing one is not a surprise
     const inLook = {}; disc.forEach((d) => d.look.items.forEach((h) => { if (!inLook[h]) inLook[h] = d.look.name; }));
     body.innerHTML = RQ.freeShipHtml(net) + (nudge ? `<div class="gap look-nudge"><p class="eyebrow">Nästan hela looken ${esc(nudge.look.name)}</p><div class="gap-i"><img src="${RQ.cut(nudge.p)}" alt="" width="42" height="42" loading="lazy"><span><b>${esc(nudge.p.name)}</b><small>Lägg till och spara ${kr(nudge.save)}</small></span><button class="btn sm ghost" type="button" data-add="${nudge.p.handle}::0" aria-label="Lägg ${esc(nudge.p.name)} i varukorgen">Lägg till</button></div></div>` : RQ.fillGapHtml(lines, net)) + lines.map((l) => `<div class="line"><a href="#produkt-${l.product.handle}" data-close tabindex="-1" aria-hidden="true"><img src="${RQ.img(l.product, 600)}" alt="" width="74" height="92" loading="lazy" decoding="async"></a><div><h3><a href="#produkt-${l.product.handle}" data-close>${esc(l.product.name)}</a></h3>${l.variant.title !== "Standard" ? `<div class="v">${esc(l.variant.title)}</div>` : ""}${inLook[l.product.handle] ? `<div class="v lk-tag"><span>Ingår i looken</span> <span>${esc(inLook[l.product.handle])}</span></div>` : ""}<div class="qty"><button type="button" data-line="${l.id}" data-d="-1" aria-label="Minska antalet ${esc(l.product.name)}"${l.quantity <= 1 ? " disabled" : ""}>−</button><input value="${l.quantity}" aria-label="Antal ${esc(l.product.name)}" readonly tabindex="-1"><button type="button" data-line="${l.id}" data-d="1" aria-label="Öka antalet ${esc(l.product.name)}"${l.quantity >= 99 ? " disabled" : ""}>+</button></div><button class="rm" type="button" data-rm="${l.id}" aria-label="Ta bort ${esc(l.product.name)}">Ta bort</button></div><span class="lp">${kr(l.lineTotal)}${l.quantity > 1 ? `<small>${kr(l.variant.price)}/st</small>` : ""}</span></div>`).join("") +

@@ -764,3 +764,20 @@ Placera och skapa med fem saker, Köp allt i bilden, Byt produkt och färg i res
 - Kräver konto. Räknas som en AI-bild mot månadens gräns, så att det inte blir en ny gräns att förklara.
 - Fotona skickas bara när kunden trycker "Analysera". Inget sparas utan att kunden valt det.
 - Svaret sparas som rummets stil i Mitt hem och kan öppnas direkt i Placera och skapa.
+
+## 14. Svep v15.9: röstresultat och Svep-paket (förslag, inget är byggt på servern)
+
+**Röstresultat för "Kommer snart".** I dag sparas varje besökares röst bara i webbläsaren (`rumiq-soon`, `rumiq-votes`).
+Resultatsidan i Svep visar därför bara den egna rösten ("Du röstade på …"). För att visa hur alla röstar behövs:
+
+- en tabell `soon_votes (candidate_id text, voter uuid, vote smallint, created_at timestamptz)` med en rad per besökare
+  och kandidat (unik på `candidate_id, voter`), `voter` = inloggad användare eller ett anonymt id från webbläsaren;
+- en vy eller edge function `soon-results` som returnerar `{ candidate_id, yes, total }` per kandidat, cachad några minuter;
+- RLS: alla får läsa summorna, bara ägaren får skriva sin egen rad.
+- Klienten: Svep skickar rösten när `RQ_CONFIG.studio.serverSync` är på, och resultatsidan visar "62 % vill ha den" bredvid
+  den egna rösten. Ingenting visas förrän servern svarar, så siffror hittas aldrig på.
+
+**Svep-paket och Gruppris (10 % från tre saker).** Rabatten räknas i dag i webbläsaren (`S.allDiscounts`, `rumiq-bundles`).
+Innan lansering måste samma regel finnas i Shopify som en automatisk rabatt, annars betalar kunden fullt pris i kassan.
+Förslag: en Shopify Function (Discount) som läser ett line-item-attribut `_bundle=<id>` som sajten sätter på varorna i paketet,
+och ger `RQ_CONFIG.svepBundle.rate` på de raderna när minst `svepBundle.min` av dem finns i varukorgen.

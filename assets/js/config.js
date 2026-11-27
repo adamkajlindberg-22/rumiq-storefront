@@ -27,6 +27,9 @@
    OFFERS
    lookDiscount: share off when every product in a ready-made look is in the cart (0.10 = 10 %). 0 = off.
                  The same discount must exist in Shopify (automatic discount) before launch.
+   svepBundle: Svep-paket and Gruppris. What you saved in one Svep round (or what a Svep tillsammans group liked) and
+               buy together, from `min` things, costs `rate` less (0.10 = 10 %). null = off. Like lookDiscount it must
+               also exist in Shopify (an automatic discount) before launch.
    freeShippingFrom: order value in kr from which shipping is free, shown as a meter in the cart.
                      null = no meter (do not promise free shipping before it is decided).
 
@@ -53,6 +56,7 @@ window.RQ_CONFIG = {
   waitlist: { table: "waitlist", offer: "10 % på första köpet när vi öppnar" },
   showNews: false, // true once there are real new arrivals; until then Nyheter is hidden from the menus
   lookDiscount: 0.1,
+  svepBundle: { min: 3, rate: 0.1 }, // founder 27 nov: 10 % from three things; adjusted in Shopify when it is connected
   freeShippingFrom: 799,
   shipping: { pickup: 49, home: 89 }, // kr to pickup point/parcel locker and to the door (examples until the carrier is chosen)
   payments: [], // e.g. ["Kort", "Klarna", "Swish", "Apple Pay", "Google Pay"] once they are switched on in Shopify

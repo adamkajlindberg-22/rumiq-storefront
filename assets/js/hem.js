@@ -160,7 +160,7 @@
       ${pr.left.length ? `<p class="small hem-left">Budgeten räcker till ${its.length} av ${its.length + pr.left.length}. Kvar: ${pr.left.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
       ${s.compact ? "" : budgetHtml}
       <div class="hem-prop-sum"><span>${its.length} ${its.length === 1 ? "produkt" : "produkter"}</span><b>${kr(pr.total)}</b></div>
-      <div class="ai-row hem-prop-acts"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-hem-buy>Köp allt · ${kr(pr.total)}</button></div>
+      <div class="ai-row hem-prop-acts"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-hem-buy>Köp allt · ${kr(pr.total - (s.from === "svep" ? S.bundleSave(pr.items.map((it) => it.h)) : 0))}</button></div>${s.from === "svep" && S.bundleSave(pr.items.map((it) => it.h)) ? `<p class="small hem-bundle">Svep-paket: ${Math.round(S.bundleRule().rate * 100)} % lägre pris när du köper allt, ${kr(pr.total)} utan paket.</p>` : ""}
       <div class="ai-row small-row">${s.noAsk ? "" : `<button class="tlink" type="button" data-hem-ask>Vad tycker du?</button>`}<button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button>${room || s.compact ? "" : `<button class="tlink" type="button" data-hem-keep>Spara rummet</button>`}</div>
       ${s.compact ? outNote : ""}
       ${s.compact ? `<details class="hem-more"${s.open ? " open" : ""}><summary>Ändra rum och budget</summary><div class="hem-more-in">${typeChips(s, pr, types)}${budgetHtml}</div></details>` : ""}
@@ -186,7 +186,7 @@
     if (b.matches("[data-hem-type]")) { s.type = b.dataset.hemType; repaint(box, `[data-hem-type="${s.type}"]`); return; }
     if (b.matches("[data-hem-all]")) { s.all = !s.all; repaint(box, "[data-hem-all]"); return; }
     if (b.matches("[data-hem-reroll]")) { s.avoid = [...new Set([...(s.avoid || []), ...s.pr.items.map((it) => it.h)])].slice(-12); repaint(box, "[data-hem-reroll]"); return; }
-    if (b.matches("[data-hem-buy]")) { RQ.addMany(s.pr.items.map((it) => it.h + "::" + it.v), b, H.title(s.pr)); return; }
+    if (b.matches("[data-hem-buy]")) { if (s.from === "svep") S.addBundle(s.pr.items.map((it) => it.h), "Svep-paket"); RQ.addMany(s.pr.items.map((it) => it.h + "::" + it.v), b, H.title(s.pr)); return; } /* from Svep: the set is a Svep-paket in the cart */
     if (b.matches("[data-hem-keep]")) { const r = ensureRoom(s); if (s.room === r.id) H.patch(r.id, { items: s.pr.items, style: s.pr.style, budget: s.budget || r.budget }); repaint(box); RQ.toast(`${esc(H.name(r))} är sparat. <a href="#mitt-hem">Visa i Mitt hem</a>`); return; }
     if (b.matches("[data-hem-see]")) { const r = ensureRoom(s), had = H.items(r), other = had.length && !H.sameSet(r.type, s.pr.items);
       // the proposal goes into the room you have; what stood there comes back with Ångra

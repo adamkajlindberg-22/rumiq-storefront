@@ -60,10 +60,20 @@
       [/^, under (.+), på den här enheten\.$/, (m) => `, under ${one(m[1]) || m[1]}, on this device.`],
       [/^Fick inte plats: (.+)\. Det finns ingen ledig bordsyta för (den|dem) i rummet\.$/, (m) => `No room for: ${list(m[1])}. There is no free table top for ${m[2] === "den" ? "it" : "them"} in the room.`],
       [/^Väntar: (.+)\.$/, (m) => `Waiting: ${list(m[1])}.`],
+      [/^Filter: (.+)$/, (m) => `Filter: ${m[1].split(" · ").map((x) => one(x) || x.replace(/^under /, "under ")).join(" · ")}`],
       [/^(.+) är med nu\.$/, (m) => `${list(m[1])} ${m[1].includes(", ") ? "are" : "is"} in now.`],
       [/^(.+) är borttagen\.$/, (m) => `${list(m[1])} is removed.`],
       [/^(.+) är med i bilden\. (.+) väntar, bilden tar fem saker åt gången\.$/, (m) => `${list(m[1])} is in the picture. ${list(m[2])} is waiting; the picture takes five things at a time.`],
       [/^(.+) är med i bilden nu\. (.+) väntar\.$/, (m) => `${list(m[1])} is in the picture now. ${list(m[2])} is waiting.`],
+      /* Svep v15.9: a duel, a whole look, the thing in your room */
+      [/^Välj (.+), (\d{1,3}(?:[  ]\d{3})*) kr$/, (m) => `Choose ${one(m[1]) || m[1]}, ${fmtNum(m[2])} kr`],
+      [/^Se (.+) i ditt rum$/, (m) => `See ${one(m[1]) || m[1]} in your room`],
+      [/^(.+) i ditt rum$/, (m) => { const a = one(m[1]); return a ? `${a} in your room` : null; }],
+      [/^(.+?[.?]) (Nästa: .+)$/, (m) => { const x = translate(m[1]), y = translate(m[2]); return x && y ? `${x} ${y}` : null; }],
+      [/^Sparade hela looken ([^.]+)\.$/, (m) => `Saved the whole look ${one(m[1]) || m[1]}.`],
+      [/^Hela looken ([^.]+) ligger i varukorgen\.$/, (m) => `The whole look ${one(m[1]) || m[1]} is in the cart.`],
+      [/^Nästa: Hela looken ([^.]+)\.$/, (m) => `Next: the whole look ${one(m[1]) || m[1]}.`],
+      [/^Nästa: Kommer snart\? ([^.]+)\.$/, (m) => `Next: Coming soon? ${one(m[1]) || m[1]}.`],
       [/^(Står|Ligger|Hänger) (på|i) (golvet|bordet|väggen|sängen|soffan), alltid\.$/, (m) => `${{ "Står": "Stands", "Ligger": "Lies", "Hänger": "Hangs" }[m[1]]} on the ${{ golvet: "floor", bordet: "table", "väggen": "wall", "sängen": "bed", soffan: "sofa" }[m[3]]}, always.`],
     ];
     const PLC = { golvet: "floor", bordet: "table", "väggen": "wall", "sängen": "bed", soffan: "sofa" };
@@ -80,7 +90,7 @@
       if (!out) for (const [re, fn] of RULES) { const m = s.match(re); if (m && (out = fn(m))) break; }
       if (!out && s.includes(", ")) { const p = s.split(", ").map(one); if (p.every(Boolean)) out = p.join(", "); }
       // "Svep · Kök", "1 st · Havre" and page titles ("Populärt · RumIQ"): each part on its own, the brand stays
-      if (!out && s.includes(" · ")) { const p = s.split(" · ").map((x) => (/^RumIQ( Studio)?$/.test(x) || !/[A-Za-zÅÄÖåäö]/.test(x) ? x : x === "RumIQ Magasin" ? "RumIQ Magazine" : translate(x))); if (p.every(Boolean)) out = p.join(" · "); }
+      if (!out && s.includes(" · ")) { const p = s.split(" · ").map((x) => (/^RumIQ( Studio)?$/.test(x) || !/[A-Za-zÅÄÖåäö]/.test(x) ? x : /^[−-]?\d[\d  ]* ?kr$/.test(x) ? x.replace(/\d{1,3}(?:[  ]\d{3})+/g, fmtNum) : x === "RumIQ Magasin" ? "RumIQ Magazine" : translate(x))); if (p.every(Boolean)) out = p.join(" · "); }
       if (!out) { // runs of known sentences, e.g. advice paragraphs put together
         const sent = (s.match(/(?:[^.!?]|[.!?](?![.!?]*(?:\s|$)))+[.!?]*\s*|[.!?]+\s*/g) || []).map((x) => x.trim()).filter(Boolean); const parts = []; let i = 0;
         while (i < sent.length) { let j = sent.length, hit = null; for (; j > i; j--) { const k = sent.slice(i, j).join(" "); if ((hit = one(k))) break; } if (!hit) { parts.length = 0; break; } parts.push(hit); i = j; }

@@ -837,6 +837,16 @@
         const r = w * (k === "throw" || k === "cushion" || k === "bedding" ? 0.42 : 0.5); cx.save(); cx.translate(x + w / 2, y + h - h * 0.015); cx.scale(1, 0.14); const g = cx.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, "rgba(30,24,18,.42)"); g.addColorStop(0.55, "rgba(30,24,18,.18)"); g.addColorStop(1, "rgba(30,24,18,0)"); cx.fillStyle = g; cx.beginPath(); cx.arc(0, 0, r, 0, Math.PI * 2); cx.fill(); cx.restore(); }
       cx.save(); cx.filter = lf(it.light || 100); if (k !== "rug") { cx.shadowColor = sf === "vagg" ? "rgba(20,16,12,.28)" : "rgba(20,16,12,.18)"; cx.shadowBlur = Math.max(2, w * 0.03); cx.shadowOffsetY = sf === "vagg" ? Math.max(1, w * 0.015) : 0; cx.shadowOffsetX = sf === "vagg" ? Math.max(1, w * 0.01) : 0; } if (it.flip) { cx.translate(x + w, y); cx.scale(-1, 1); cx.drawImage(src, 0, 0, w, h); } else cx.drawImage(src, x, y, w, h); cx.restore(); }
     return cv; };
+  /* Svep (v15.9): the room as it stands with one more thing placed the way "Prova i Mitt rum" would place it, nothing saved.
+     null without a room. Cached per thing and scene, so flipping back and forth is instant. */
+  const withCache = new Map();
+  R.previewWith = async (h, W = 720) => { if (!room) return null; const p = RQ.byHandle(h); if (!p) return null;
+    const base = R.scene().filter((it) => it.h !== h), key = `${h}|${keyNow() || ""}|${JSON.stringify(base.map((it) => [it.h, it.x, it.y, it.w]))}|${W}`; if (withCache.has(key)) return withCache.get(key);
+    const job = (async () => { const list = base.map((it) => ({ ...it })), sp = spotFor(p, list, false, null, null, true), tw = trueW({ h, x: sp.x, y: sp.y, sy: sp.sy, on: sp.moved });
+      list.push({ h, x: sp.x, y: sp.y, w: tw || sp.w, ...(sp.row ? { row: true, on: sp.table ? "bord" : "golv" } : {}), ...(sp.sy && sp.sy !== 1 ? { sy: sp.sy } : {}), ...(sp.moved ? { on: sp.moved } : {}), flip: false, light: 100 });
+      if (sp.row) spreadRows(list);
+      const cv = await drawScene(await imgOf(R.url()), list.slice(-PLACE_MAX), W, lightFilter, true); return cv.toDataURL("image/jpeg", 0.82); })();
+    withCache.set(key, job); if (withCache.size > 24) withCache.delete(withCache.keys().next().value); job.catch(() => withCache.delete(key)); return job; };
   R.picture = async (W) => { if (!room) return null; return drawScene(await imgOf(R.url()), R.scene(), W, lightFilter); }; // the room as it stands, as a canvas
   R.snapshot = async (id, W = 900) => {
     const pr = projOf(id); if (!pr) return null; const key = `${id}|${W}|${pr.updated || pr.at || ""}`; if (snapCache.has(key)) return snapCache.get(key);
