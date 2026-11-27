@@ -44,6 +44,8 @@
     });
     // the dock counts while it is slid away on scrolling: it comes back while the toast is still up
     const d = $("#dock"); if (d && d.offsetHeight && getComputedStyle(d).visibility !== "hidden" && !$("#cart.open")) top = Math.min(top, d.offsetTop);
+    /* bars that float above the dock (Skapa bilden in Placera och skapa): the toast goes above them too (QA) */
+    document.querySelectorAll("[data-toast-above]").forEach((b) => { if (!b.offsetHeight || getComputedStyle(b).position !== "fixed") return; const r = b.getBoundingClientRect(); if (r.top > H * 0.5) top = Math.min(top, r.top); });
     return Math.max(0, Math.round(H - top));
   };
   /* where the toast goes: above the bars at the bottom, unless that covers what the customer needs next: the control just used
@@ -106,7 +108,7 @@
   RQ.toast = (html, ms) => {
     const t = $("#toast"); t._at = Date.now(); t.innerHTML = html; toastText(t); t.style.setProperty("--toast-lift", toastLift() + "px"); toastPlace(t); t.classList.add("show");
     // a toast with a link stays 6 s, and waits while the pointer or the focus is on it (2.2.1)
-    const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":hover, :focus-within")) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); };
+    const wait = ms || (/<a |<button/.test(html) ? 6000 : 3600), hide = () => { if (t.matches(":focus-within") || (matchMedia("(hover: hover)").matches && t.matches(":hover"))) toastT = setTimeout(hide, 1500); else t.classList.remove("show"); }; /* a touch screen keeps no real hover: a tap left there must not hold the toast up (QA) */
     clearTimeout(toastT); toastT = setTimeout(hide, wait);
   };
   const swatches = (p) => (p.variants ? `<span class="swatches" role="img" aria-label="${p.variants.length} färger">${p.tone.slice(0, p.variants.length).map((c) => `<i style="background:${c}"></i>`).join("")}</span>` : "");
@@ -1233,7 +1235,7 @@
      "open" class, so a new layer only needs to be a dialog directly in <body> (or be added to LAYERS). */
   const LAYERS = "#cart, #search, #mnav, .lb, body > [role=dialog]:not(#sheet):not(#cookie)";
   RQ.layers = (() => {
-    let watched = [], hold = false, navFrom = null;
+    let watched = [], hold = false, navFrom = null; const layerMo = new MutationObserver(() => sync());
     const dlg = () => $("dialog.m3d[open]");
     const anyOpen = () => watched.some((el) => el.classList.contains("open")) || !!dlg();
     const onTop = () => !!(history.state && history.state.rqLayer);
@@ -1247,7 +1249,7 @@
       closeAll();
       watched.forEach((el) => { if (!el.classList.contains("open")) return;
         if (el.classList.contains("lb")) RQ.lightbox.close();
-        else { const x = el.querySelector("[data-sheet-close], .sheet-x, [data-close], .close"); if (x) x.click(); else el.classList.remove("open"); } });
+        else { const x = el.querySelector("[data-sheet-close], .sheet-x, [data-close], .close, [data-hem-close]:not(.sheet-scrim), [data-mb-close]:not(.sheet-scrim)"); if (x) x.click(); else el.classList.remove("open"); } });
       const d = dlg(); if (d) d.close();
     };
     if (window.navigation && navigation.addEventListener) navigation.addEventListener("currententrychange", (e) => { navFrom = e.from ? e.from.index : null; });
@@ -1271,12 +1273,13 @@
     }, true);
     document.addEventListener("DOMContentLoaded", () => {
       if (onTop()) { try { history.replaceState(null, "", location.href); } catch (e) {} } // reloaded with a layer open: the layer is gone
-      watched = $$(LAYERS);
-      const mo = new MutationObserver(sync);
-      watched.forEach((el) => mo.observe(el, { attributes: true, attributeFilter: ["class"] }));
+      watched = [...new Set([...$$(LAYERS), ...watched])];
+      watched.forEach((el) => layerMo.observe(el, { attributes: true, attributeFilter: ["class"] }));
       if (RQ.p3d && RQ.p3d.open) { const open3d = RQ.p3d.open; RQ.p3d.open = function (...a) { const r = open3d.apply(this, a), d = dlg(); if (d) { sync(); d.addEventListener("close", () => setTimeout(sync, 0)); } return r; }; }
     });
-    return { sync, anyOpen };
+    /* a sheet made later (Mitt hem's room sheet, the moodboard) joins the layers, so Back closes it too (QA) */
+    const watch = (el) => { if (!el || watched.includes(el)) return; watched.push(el); layerMo.observe(el, { attributes: true, attributeFilter: ["class"] }); };
+    return { sync, anyOpen, watch };
   })();
   // the name that shows on a hotspot under the pointer or the focus can be put away with Escape (1.4.13)
   document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; const h = document.querySelector(".hs:hover, .hs:focus-visible"); if (!h) return; h.classList.add("hush"); const off = () => h.classList.remove("hush"); h.addEventListener("mouseleave", off, { once: true }); h.addEventListener("blur", off, { once: true }); });

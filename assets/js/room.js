@@ -447,7 +447,7 @@
     /* a set handed to your own photo starts calm (studio3 review N1): at most three, the ones that stand well on their own
        first (floor, rug, curtain, then a print); a thing for a table only when the room knows a table (table: left out, said);
        the rest waits (later), one tap away. A sample room takes the whole set. */
-    calmSet(items) { const its = items.filter((it) => RQ.byHandle(it.h)); if (mapOf()) return { put: its, table: [], later: [] };
+    calmSet(items) { const its = items.filter((it) => RQ.byHandle(it.h)); if (mapOf()) return { put: its.filter((it) => /lampa/.test(it.h)).concat(its.filter((it) => !/lampa/.test(it.h))), table: [], later: [] }; /* a lamp gets the table before a candlestick or a vase (QA) */
       const rank = { floor: 0, rug: 1, window: 2, wall: 3, throw: 4, cushion: 4, bedding: 5, surface: 6 }, k = (it) => kindOf(RQ.byHandle(it.h));
       const table = tableKnown() ? [] : its.filter((it) => k(it) === "surface").map((it) => it.h), ok = its.filter((it) => !table.includes(it.h)).sort((a, b) => (rank[k(a)] ?? 9) - (rank[k(b)] ?? 9));
       if (!ok.length && table.length) ok.push(its.find((it) => it.h === table.shift())); // only table things: one stands in front, to be dragged to the table
@@ -986,14 +986,14 @@
           </div><div class="pl-right">
             <div class="pl-pin" id="plPin" role="group" aria-labelledby="plPinT" hidden></div>
             <div class="pl-list"><div class="pl-list-h"><h2 class="h3" id="plListT">Dina saker</h2><span class="small" id="plCount"></span></div><ol id="plList" aria-labelledby="plListT"></ol><p class="small pl-out" id="plOut" hidden></p><button type="button" class="btn ghost sm" id="plAdd">${ICO.plus}<span>Lägg till en sak</span></button></div>
-            <div class="pl-go"><button type="button" class="btn block pl-create" id="plCreate">${ICO.spark}<span>Skapa bilden</span></button><p class="small" id="plGoNote"></p></div>
+            <div class="pl-go" data-toast-above><button type="button" class="btn block pl-create" id="plCreate">${ICO.spark}<span>Skapa bilden</span></button><p class="small" id="plGoNote"></p></div>
             <p class="pl-self"><button type="button" class="tlink" id="plSelf">Justera själv</button><span class="small"> Flytta och ändra storlek för hand.</span></p>
           </div></div>
           <div class="pl-result" id="plResult" role="region" aria-label="Bilden" hidden></div>
         </section>`,
       mount(root) {
         const stage = $("#plStage", root), marks = $("#plMarks", root), pin = $("#plPin", root), hint = $("#plHint", root), narrow = matchMedia("(max-width: 900px)"); let sel = null, drag = null;
-        let lastN = -1; const panTo = (pins) => { if (!pins.length || stage.scrollWidth <= stage.clientWidth + 2) return; const mid = pins.reduce((t, x) => t + x.x, 0) / pins.length; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * mid / 100 - stage.clientWidth / 2), behavior: calmNow() ? "auto" : "smooth" }); };
+        let lastN = -1, sugKey = ""; const panTo = (pins) => { if (!pins.length || stage.scrollWidth <= stage.clientWidth + 2) return; const mid = pins.reduce((t, x) => t + x.x, 0) / pins.length; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * mid / 100 - stage.clientWidth / 2), behavior: calmNow() ? "auto" : "smooth" }); };
         const undoB = $("#plUndo", root), say = (t, undo) => { hint.textContent = ""; undoB.hidden = !undo; setTimeout(() => { hint.textContent = t; }, 30); };
         const stepNow = (n) => root.querySelectorAll("[data-step]").forEach((li) => { const on = +li.dataset.step === n; li.classList.toggle("now", on); if (on) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current"); });
         const name = (h) => RQ.byHandle(h).name;
@@ -1026,12 +1026,13 @@
           out.hidden = !lo.length && !lt.length;
           out.innerHTML = (lo.length ? `<span>Fick inte plats: ${esc(lo.map(name).join(", "))}. Det finns ingen ledig bordsyta för ${lo.length === 1 ? "den" : "dem"} i rummet.</span>` : "")
             + (lt.length ? `<span>Väntar: ${esc(lt.map(name).join(", "))}.</span> <button type="button" class="tlink" id="plLater">Lägg till ${lt.length === 1 ? "den" : "dem"}</button>` : ""); /* your own photo starts calm; what waits is one tap away here too */
+          if (sugKey && sugKey !== pins.map((x) => x.h).join()) { sugKey = ""; hint.textContent = ""; undoB.hidden = true; } /* the suggestion's sum no longer tells the truth once the things change (QA) */
           stepNow(pins.length ? 3 : 2); $("#plZoom", root).hidden = !pins.length;
           $("#plCreate", root).disabled = !pins.length; $("#plAdd", root).disabled = false; $(".pl-go", root).classList.toggle("none", !pins.length);
           $("#plEmpty", root).hidden = !!pins.length;
           if (pins.length !== lastN) { const was = lastN; lastN = pins.length; if (was >= 0 || pins.length) requestAnimationFrame(() => panTo(pins)); } /* new things: the picture pans to them (review N3) */
           paintPin(); };
-        const paintPin = () => { const list = R.scene(), i = list.findIndex((it) => it.h === sel), it = list[i]; pin.hidden = !it || i >= PLACE_MAX; if (pin.hidden) return;
+        const paintPin = () => { const list = R.scene(), i = list.findIndex((it) => it.h === sel), it = list[i]; pin.hidden = !it || i >= PLACE_MAX; root.querySelector("#pl").classList.toggle("pinopen", !pin.hidden); if (pin.hidden) return;
           const p = RQ.byHandle(it.h), k = kindOf(p), z = measures(p), sure = widthAt(it).sure, ask = !mapOf() && !it.pc;
           pin.innerHTML = `<div class="pl-pin-h"><span class="pl-n">${i + 1}</span><b id="plPinT">${esc(p.name)}</b><button type="button" class="iconbtn" id="plPinX" aria-label="Klar med ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
             <p class="small">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek i bilden"}` : "Mått kommer. Storleken i bilden är ungefärlig."}${!mapOf() && !(room.known && room.known.cm > 0) ? ` <button type="button" class="tlink" id="plMeasure">Ange en känd längd</button> ger rätt skala.` : ""}</p>
@@ -1074,14 +1075,14 @@
         $("#plEmpty", root).addEventListener("click", (e) => { if (e.target.closest("[data-pl-add]")) R.openPicker(); else if (e.target.closest("[data-pl-suggest]")) { const s2 = $("#plSuggest", root); if (s2) s2.click(); } });
         $("#plList", root).addEventListener("click", (e) => { if (!e.target.closest("#plSuggest")) return; const set = R.suggestSet(); const hs = set.items.slice(0, PLACE_MAX).map((x) => x.h);
           if (!hs.length) { say("Vi hittade inget som passar just det här rummet. Lägg till en sak själv."); return; }
-          R.group(() => hs.forEach((h) => R.add(h, true))); say(`${hs.length} saker föreslagna, ${kr(hs.reduce((t, h) => t + RQ.byHandle(h).price, 0))}. Flytta nålarna dit du vill ha dem.`); const f = $("[data-pin]", marks); if (f) f.focus({ preventScroll: true }); });
+          R.group(() => hs.forEach((h) => R.add(h, true))); say(`${hs.length} saker föreslagna, ${kr(hs.reduce((t, h) => t + RQ.byHandle(h).price, 0))}. Flytta nålarna dit du vill ha dem.`); sugKey = R.scene().slice(0, PLACE_MAX).map((x) => x.h).join(); const f = $("[data-pin]", marks); if (f) f.focus({ preventScroll: true }); });
         /* a phone: the chosen thing's controls sit right under the picture, so they are in view above the dock (review M3) */
         const placePin = () => { if (narrow.matches) stage.after(pin); else $(".pl-right", root).prepend(pin); };
         placePin(); if (narrow.addEventListener) narrow.addEventListener("change", placePin);
         // a phone: the picture twice as wide (swipe sideways), so pins close together are easy to tell apart and to place
         const zoomTo = (h, now) => { const it = h && R.scene().find((x) => x.h === h); if (!it || stage.scrollWidth <= stage.clientWidth + 2) return; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * it.x / 100 - stage.clientWidth / 2), behavior: now || calmNow() ? "auto" : "smooth" }); }; /* a phone shows the room tall and wider than the screen: it follows the chosen pin */
         $("#plZoom", root).addEventListener("click", (e) => { const on = !stage.classList.contains("big"); stage.classList.toggle("big", on); e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Visa hela bilden" : "Förstora bilden"; zoomTo(sel || (R.scene()[0] || {}).h); });
-        $("#plSelf", root).addEventListener("click", () => { R.setWay("edit"); RQ.router(); scrollTo(0, 0); });
+        $("#plSelf", root).addEventListener("click", () => { R.setWay("edit"); try { history.pushState({ rqWay: "edit" }, "", location.href); R._wayPushed = true; } catch (e) {} RQ.router(); scrollTo(0, 0); }); /* Back returns to Placera och skapa (QA) */
         $("#plCreate", root).addEventListener("click", async () => {
           const detail = { pins: R.pins(), room: { src: R.url(), w: room.w, h: room.h, type: room.type || null, sample: !!room.sample, map: room.map || null, known: room.known || null } };
           const ev = new CustomEvent("rq-place-create", { detail, cancelable: true }); document.dispatchEvent(ev); if (ev.defaultPrevented) return; // the AI side makes the picture
@@ -1104,6 +1105,9 @@
       },
     };
   };
+  /* the two ways in Mitt rum share one address: Justera själv puts an entry in the history, so Back and Forward move between them */
+  addEventListener("popstate", (e) => { if (!/^(mitt-rum|studio)/.test((RQ.currentRoute && RQ.currentRoute()) || "")) return;
+    const toEdit = !!(e.state && e.state.rqWay === "edit"); if (!toEdit && !R._wayPushed) return; const want = toEdit ? "edit" : "place"; if (!toEdit) R._wayPushed = false; if (!room || R.way() === want) return; R.setWay(want); setTimeout(() => { RQ.router(); scrollTo(0, 0); }); });
   V.myRoom = (pre) => {
     /* the thing you came with from a product page while there was no room yet ("Prova med ett exempelrum", or your own photo):
        it goes in as soon as there is a room, in Placera och skapa as in Justera själv, and it is the chosen one (review B1) */
@@ -1660,7 +1664,7 @@
         /* ---- your rooms (Mitt hem): one tap opens another one, with its things */
         root.addEventListener("click", (e) => { const b = e.target.closest("[data-proj]"); if (!b || !RQ.hem) return; const r = RQ.hem.room(b.dataset.proj); if (!r || b.getAttribute("aria-pressed") === "true") return;
           $$("[data-proj]", root).forEach((x) => x.setAttribute("aria-pressed", x === b)); R.openWith({ room: r.type, items: RQ.hem.items(r), style: r.style, budget: r.budget, project: r.id }); });
-        $("#rmToPlace", root).addEventListener("click", () => { R.setWay("place"); RQ.router(); scrollTo(0, 0); });
+        $("#rmToPlace", root).addEventListener("click", () => { if (history.state && history.state.rqWay === "edit") { history.back(); return; } R.setWay("place"); RQ.router(); scrollTo(0, 0); });
         if (RQ.ss && RQ.ss.get("rumiq-room-measure") === "1") { RQ.ss.set("rumiq-room-measure", ""); if (!mapOf()) setTimeout(() => measure(true), 300); } // from Placera och skapa: "Ange en känd längd"
         $("#rmSuggest", root).addEventListener("click", () => suggest()); $("#rmSuggest0", root).addEventListener("click", () => suggest());
         $("#rmAdd", root).addEventListener("click", () => { select(null); if (view.on) scrollTo({ top: Math.max(0, stage.getBoundingClientRect().top + scrollY - ((document.querySelector("header") || {}).offsetHeight || 58) - 8) }); RQ.room.openPicker(); });

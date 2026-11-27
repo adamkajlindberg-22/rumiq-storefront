@@ -149,7 +149,7 @@
     const types = ["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor"];
     const budgetHtml = `<label class="hem-budget"><span>Budget <b>${kr(s.budget || pr.fullTotal)}</b></span><input type="range" data-hem-budget min="${Math.max(100, Math.floor(pr.min / 100) * 100)}" max="${Math.ceil(pr.fullTotal / 100) * 100}" step="100" value="${s.budget || Math.ceil(pr.fullTotal / 100) * 100}" aria-label="Budget i kronor" aria-valuetext="${esc(kr(s.budget || pr.fullTotal))}"></label>`;
     /* review N8: on the Svep result the card leads with what it offers; what is left out follows the buttons */
-    const outNote = pr.out.length ? `<p class="small hem-left">${pr.out.length === 1 ? "1 sak får" : `${pr.out.length} saker får`} inte plats i rummet och är inte med: ${pr.out.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : "";
+    const outNote = pr.out.length ? `<p class="small hem-left">${pr.out.length === 1 ? "1 sak får" : `${pr.out.length} saker får`} inte plats på borden i rummet och är inte med: ${pr.out.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : "";
     return `<div class="hem-prop-h"><span class="eyebrow">${s.from === "room" ? "Förslag för rummet" : "Ett färdigt rumsförslag"}</span><h3 class="h3">${esc(H.title(pr))}</h3>
         <p class="small hem-promise">${PROMISE}</p></div>
       ${s.compact ? "" : typeChips(s, pr, types)}

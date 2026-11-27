@@ -152,7 +152,7 @@
   const sheet = document.createElement("div");
   sheet.className = "sheet ai-sheet hem-sheet"; sheet.id = "hemSheet"; sheet.setAttribute("aria-hidden", "true"); sheet.inert = true;
   sheet.innerHTML = `<div class="sheet-scrim" data-hem-close></div><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="hemTitle" tabindex="-1"><div class="sheet-grab" aria-hidden="true"><span></span></div><button class="iconbtn sheet-x" type="button" data-hem-close aria-label="Stäng">${RQ.ICO5 ? RQ.ICO5.x : "×"}</button><div class="hem-body"></div></div>`;
-  document.body.appendChild(sheet);
+  document.body.appendChild(sheet); if (RQ.layers && RQ.layers.watch) RQ.layers.watch(sheet);
   const sbody = $(".hem-body", sheet), sbox = $(".sheet-in", sheet);
   let sret = null, sid = null, undoRoom = null;
   const sopen = () => { sret = document.activeElement; RQ.closeAll && RQ.closeAll(); sheet.inert = false; sheet.classList.add("open"); sheet.setAttribute("aria-hidden", "false"); document.documentElement.classList.add("sheet-lock"); setTimeout(() => { const f = document.activeElement; if (!sbox.contains(f)) sbox.focus({ preventScroll: true }); }, 40); };
@@ -241,7 +241,7 @@
   const board = document.createElement("div");
   board.className = "sheet ai-sheet hem-sheet mb-sheet"; board.id = "mbSheet"; board.setAttribute("aria-hidden", "true"); board.inert = true;
   board.innerHTML = `<div class="sheet-scrim" data-mb-close></div><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="mbTitle" tabindex="-1"><div class="sheet-grab" aria-hidden="true"><span></span></div><button class="iconbtn sheet-x" type="button" data-mb-close aria-label="Stäng">${RQ.ICO5 ? RQ.ICO5.x : "×"}</button><div class="mb-body"></div></div>`;
-  document.body.appendChild(board);
+  document.body.appendChild(board); if (RQ.layers && RQ.layers.watch) RQ.layers.watch(board);
   const mbody = $(".mb-body", board), mbox = $(".sheet-in", board);
   let justDragged = false, B = null, sel = null, mret = null, addOpen = false, addTab = "fav", addQ = "", tryOpen = false;
   const mopen = () => { mret = document.activeElement; board.inert = false; board.classList.add("open"); board.setAttribute("aria-hidden", "false"); document.documentElement.classList.add("sheet-lock"); setTimeout(() => { if (!mbox.contains(document.activeElement)) mbox.focus({ preventScroll: true }); }, 40); };

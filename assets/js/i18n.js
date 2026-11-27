@@ -52,6 +52,8 @@
       [/^På den riktiga sajten öppnas (\w+?)s egen inloggning, och du kommer tillbaka hit inloggad\. I förhandsversionen skapar vi ett testkonto i stället\.$/, (m) => `On the real site ${m[1]}'s own sign-in opens, and you come back here signed in. In the preview we create a test account instead.`],
       [/^(.+) \((\d+)\)$/, (m) => { const a = one(m[1]); return a ? `${a} (${m[2]})` : null; }],
       /* Placera och skapa (v15.7): a room's name, and lists of things */
+      [/^(\d+) (.+), (står|ligger|hänger) (på|i|vid) (golvet|bordet|väggen|sängen|soffan), flytta med piltangenterna$/, (m) => `${m[1]} ${one(m[2]) || m[2]}, ${{ "står": "stands", "ligger": "lies", "hänger": "hangs" }[m[3]]} ${m[4] === "vid" ? "by" : m[4] === "i" ? "in" : "on"} the ${PLC[m[5]]}, move with the arrow keys`],
+      [/^Öppna (.+)$/, (m) => { const a = one(m[1]); return a ? `Open ${a}` : null; }],
       [/^(står|ligger|hänger) (på|i|vid) (golvet|bordet|väggen|sängen|soffan)( · .+)?$/, (m) => `${{ "står": "stands", "ligger": "lies", "hänger": "hangs" }[m[1]]} ${m[2] === "vid" ? "by" : m[2] === "i" ? "in" : "on"} the ${PLC[m[3]]}${m[4] ? " · " + (one(m[4].slice(3)) || m[4].slice(3)) : ""}`],
       [/^(.+) (står|ligger|hänger) (på|i|vid) (golvet|bordet|väggen|sängen|soffan)\.$/, (m) => `${list(m[1])} ${{ "står": "stands", "ligger": "lies", "hänger": "hangs" }[m[2]]} ${m[3] === "vid" ? "by" : m[3] === "i" ? "in" : "on"} the ${PLC[m[4]]}.`],
       [/^Bilden finns nu i (.+) under$/, (m) => `The image is now in ${one(m[1]) || m[1]} under`],

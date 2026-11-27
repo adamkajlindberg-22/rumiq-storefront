@@ -647,7 +647,11 @@
         const c = e.target.closest("[data-cheaper]"); if (c) { ask(`Billigare förslag, högst ${kr(+c.dataset.cheaper)}`, { q: c.dataset.q || "detaljer", max: +c.dataset.cheaper }); return; }
         const r = e.target.closest("[data-inroom]"); if (!r) return;
         const hs = r.dataset.inroom.split(","), R = RQ.room;
-        const put = () => { const n = hs.filter((h) => R.add(h, true)).length; RQ.toast(n ? `${n} ${n === 1 ? "sak står" : "saker står"} nu i ditt rum. <a href="#mitt-rum">Öppna</a>` : 'De står redan i ditt rum. <a href="#mitt-rum">Öppna</a>'); };
+        /* only what belongs in this kind of room (QA: a soap pump and kitchen jars stood on the living-room floor); the rest is named */
+        const put = () => { const t = (R.get() || {}).type, fit = t ? hs.filter((h) => { const q = RQ.byHandle(h); return q && (!q.rooms || q.rooms.includes(t)); }) : hs, rest = hs.length - fit.length;
+          if (!fit.length) { RQ.toast(`De här passar bättre i andra rum än ${esc(((RQ.roomById(t) || {}).name || "det här").toLowerCase())}. <a href="#mitt-rum">Byt rum i Mitt rum</a>`); return; }
+          const n = fit.filter((h) => R.add(h, true)).length, more = rest ? ` ${rest === 1 ? "En sak passar" : `${rest} saker passar`} bättre i andra rum och är inte med.` : "";
+          RQ.toast(n ? `${n} ${n === 1 ? "sak står" : "saker står"} nu i ditt rum.${more} <a href="#mitt-rum">Öppna</a>` : `De står redan i ditt rum.${more} <a href="#mitt-rum">Öppna</a>`); };
         if (R.has()) put(); else R.openSetup(put, { add: hs });
       });
       return () => removeEventListener("resize", fit);
