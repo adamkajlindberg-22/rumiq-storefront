@@ -619,7 +619,7 @@
 
   /* ---------------------------------------------------------------- Svep (the full page) */
   const voteLine = (st) => { const h = st.done.find((x) => x.startsWith("soon:")), c = h && RQ.CANDIDATES.find((x) => "soon:" + x.id === h); if (!c || (ls.get("rumiq-soon", {}) || {})[c.id] !== 1) return "";
-    return `<p class="small sv-vote"><span>Du röstade på</span> <b>${esc(c.name)}</b>. <span>Vi tar in det som flest vill ha.</span> <a href="#onska">Se alla förslag</a></p>`; };
+    return `<p class="small sv-vote"><span>Du röstade på</span> <b>${esc(c.name)}</b>. <span>Vi tar in det som flest vill ha.</span></p>`; }; /* no link: the result keeps few actions */
   const roundAnswers = (st) => { const hs = st.done.filter((h) => !h.startsWith("soon:") && RQ.byHandle(h)); return { hs, a: hs.map((h) => ((st.answers[h] || 0) > 0 ? 1 : 0)).join("") }; };
   // long Swedish compounds in narrow tiles break where the words meet ("Skrivbords-organisatör"), never mid-syllable
   RQ.shy = (s) => (window.RQ_LANG === "en" ? String(s) : String(s).replace(/(skrivbords|förvarings|terrakotta|uppladdnings|förråds|våffel|keramik|ull|jute|linne|bords)(?=[a-zåäö]{4,})/giu, "$1\u00AD"));
@@ -687,21 +687,24 @@
   const filterHtml = (scope) => { const f = filt(), t = RQ.taste.get(), pool = RQ.PRODUCTS.filter((p) => inDeck(p, scope)), seen = pool.filter((p) => p.handle in t.seen).length;
     const words = [f.type ? FTYPES.find((x) => x[0] === f.type)[1] : "", f.style ? RQ.STYLES[f.style].name : "", f.max ? `under ${kr(f.max)}` : ""].filter(Boolean);
     const chip = (k, v, label) => `<button type="button" class="chip" data-svf="${k}:${v}" aria-pressed="${String(f[k]) === String(v) || (!v && !f[k])}">${esc(label)}</button>`;
-    return `<details class="sv-filter"${words.length ? " open" : ""}><summary><span class="sv-f-what">${words.length ? `Filter: ${esc(words.join(" · "))}` : "Filtrera: typ, stil, budget"}</span><span class="sv-f-n" id="svSeen">${pool.length ? `Sett ${seen} av ${pool.length}` : "Inget passar"}</span></summary>
+    return `<details class="sv-filter"${words.length && !phoneF() ? " open" : ""}><summary><span class="sv-f-short">${words.length ? `Filter (${words.length})` : "Filter"}</span><span class="sv-f-what">${words.length ? `Filter: ${esc(words.join(" · "))}` : "Filtrera: typ, stil, budget"}</span><span class="sv-f-n" id="svSeen">${pool.length ? `Sett ${seen} av ${pool.length}` : "Inget passar"}</span></summary>
       <div class="sv-f-in"><div class="sv-f-row" role="group" aria-label="Typ">${chip("type", "", "Alla sorter")}${FTYPES.map(([id, n]) => chip("type", id, n)).join("")}</div>
       <div class="sv-f-row" role="group" aria-label="Stil">${chip("style", "", "Alla stilar")}${Object.entries(RQ.STYLES).map(([k, x]) => chip("style", k, x.name)).join("")}</div>
       <div class="sv-f-row" role="group" aria-label="Budget">${chip("max", "", "Alla priser")}${FMAX.map((m) => chip("max", m, `Under ${kr(m)}`)).join("")}</div>
       ${!pool.length ? `<p class="small sv-f-none">Inget i butiken passar alla filtren just nu. <button type="button" class="tlink" data-svf="clear:">Rensa filtren</button></p>` : ""}</div></details>`; };
+  /* on a phone the filter is a small button beside the title and opens over the page (the card keeps its size) */
+  const phoneF = () => matchMedia("(max-width:900px)").matches;
+  document.addEventListener("click", (e) => { if (!phoneF() || !e.target.closest) return; const d = document.querySelector(".sv-filter[open]"); if (d && !e.target.closest(".sv-filter")) d.open = false; });
   /* a new filter starts a new round of what fits (what you said stays) */
   document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-svf]"); if (!b) return; const [k, v] = b.dataset.svf.split(":"), f = filt();
     const nf = k === "clear" ? {} : { ...f, [k]: k === "max" ? +v || 0 : v }; ls.set(FKEY, nf); ss.del(KEEP); ss.del("rumiq-svep-carry"); RQ.router();
-    requestAnimationFrame(() => { const d = document.querySelector(".sv-filter"); if (d) { const nf2 = filt(); d.open = !!(nf2.type || nf2.style || nf2.max); const again = d.querySelector(`[data-svf="${b.dataset.svf}"]`); if (again) again.focus({ preventScroll: true }); } }); });
+    requestAnimationFrame(() => { const d = document.querySelector(".sv-filter"); if (d) { const nf2 = filt(); d.open = phoneF() || !!(nf2.type || nf2.style || nf2.max); const again = d.querySelector(`[data-svf="${b.dataset.svf}"]`); if (again) again.focus({ preventScroll: true }); } }); });
   V.svep = (scope) => {
     const room = scope ? RQ.roomById(scope) : null; if (scope && !room) return V.notfound();
     return {
       title: room ? `Svep · ${room.name} · RumIQ` : "Svep · RumIQ",
       html: `<section class="wrap svep" aria-label="Svep">
-        <div class="sv-head">${RQ.crumbs(room ? [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], [room.name]] : [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep"]])}<h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
+        <div class="sv-head has-filter">${RQ.crumbs(room ? [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep", "svep"], [room.name]] : [["Hem", "hem"], ["Upptäck", "upptack"], ["Svep"]])}<h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           ${scopeNav(scope)}
           ${filterHtml(scope)}
           ${legend}

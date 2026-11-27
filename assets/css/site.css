@@ -3591,3 +3591,18 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .sv-sum-off::before{content:" · "}
 @media (max-width:520px){.sv-sum:not([hidden])~.sv-chip{display:none}.sv-sum-off{display:none}}
 .sv-sum:not([hidden])~.sv-chip{display:none}
+
+/* v15.9 phones: the filter is a small button beside the title, its choices open over the page; six Svep buttons fit at 320 px */
+.sv-f-short{display:none}
+@media (max-width:900px){
+  .svep .sv-head.has-filter{display:flex;flex-wrap:wrap;align-items:center;column-gap:.6rem;position:relative}
+  .svep .sv-head.has-filter>*{flex:1 1 100%;order:3;min-width:0}
+  .svep .sv-head.has-filter>:first-child{order:0}
+  .svep .sv-head.has-filter>h1{flex:1 1 0;order:1}
+  .svep .sv-head.has-filter>.sv-filter{flex:0 0 auto;order:2;margin:0;border-radius:999px}
+  .sv-head.has-filter .sv-filter>summary{min-height:2.25rem;padding:.15rem .8rem;gap:.45rem;font-size:.86rem}
+  .sv-head.has-filter .sv-f-short{display:inline}
+  .sv-head.has-filter .sv-f-what,.sv-head.has-filter .sv-f-n{display:none}
+  .sv-head.has-filter .sv-filter>.sv-f-in{position:absolute;left:0;right:0;z-index:30;margin-top:.45rem;padding:.9rem;background:#F7F7F4;background:var(--paper);border:1px solid var(--line2);border-radius:var(--r);box-shadow:0 22px 44px -22px rgba(0,0,0,.4)}
+}
+@media (max-width:350px){.sv-ctrl{gap:.25rem}.sv-b,.sv-b.room,.sv-b.bag,.sv-b.love,.sv-b.undo{width:2.5rem;height:2.5rem}.sv-b.no{width:2.6rem;height:2.6rem}.sv-b.yes{width:3.1rem;height:3.1rem}.sv-bl{font-size:.62rem}}

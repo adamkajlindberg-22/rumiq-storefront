@@ -32,7 +32,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=09544791">
+<link rel="stylesheet" href="assets/css/site.min.css?v=06679a41">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -99,9 +99,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 
 <noscript><p class="noscript">Butiken behöver JavaScript för varukorg, sök och Mitt rum. Slå på det i webbläsaren, så fungerar allt.</p></noscript>
 <main id="view" class="view first" tabindex="-1"><section class="wrap svep" aria-label="Svep">
-        <div class="sv-head"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="upptack/">Upptäck</a></li><li><a href="svep/">Svep</a></li><li><span aria-current="page">Vardagsrum</span></li></ol></nav><h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
+        <div class="sv-head has-filter"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="upptack/">Upptäck</a></li><li><a href="svep/">Svep</a></li><li><span aria-current="page">Vardagsrum</span></li></ol></nav><h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           <nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="svep/">Hela butiken</a><a class="chip" href="svep-rum-vardagsrum/" aria-current="true">Vardagsrum</a><a class="chip" href="svep-rum-sovrum/">Sovrum</a><a class="chip" href="svep-rum-kok/">Kök</a><a class="chip" href="svep-rum-badrum/">Badrum</a><a class="chip" href="svep-rum-hall/">Hall</a><a class="chip" href="svep-rum-hemmakontor/">Hemmakontor</a><a class="chip" href="svep-rum-uteliv/">Uteliv</a></nav>
-          <details class="sv-filter"><summary><span class="sv-f-what">Filtrera: typ, stil, budget</span><span class="sv-f-n" id="svSeen">Sett 0 av 14</span></summary>
+          <details class="sv-filter"><summary><span class="sv-f-short">Filter</span><span class="sv-f-what">Filtrera: typ, stil, budget</span><span class="sv-f-n" id="svSeen">Sett 0 av 14</span></summary>
       <div class="sv-f-in"><div class="sv-f-row" role="group" aria-label="Typ"><button type="button" class="chip" data-svf="type:" aria-pressed="true">Alla sorter</button><button type="button" class="chip" data-svf="type:nytt" aria-pressed="false">Nyheter</button><button type="button" class="chip" data-svf="type:lampa" aria-pressed="false">Lampor och ljus</button><button type="button" class="chip" data-svf="type:textil" aria-pressed="false">Textil</button><button type="button" class="chip" data-svf="type:forvaring" aria-pressed="false">Förvaring</button><button type="button" class="chip" data-svf="type:vagg" aria-pressed="false">På väggen</button><button type="button" class="chip" data-svf="type:detalj" aria-pressed="false">Vaser och detaljer</button><button type="button" class="chip" data-svf="type:kok" aria-pressed="false">Kök och bad</button></div>
       <div class="sv-f-row" role="group" aria-label="Stil"><button type="button" class="chip" data-svf="style:" aria-pressed="true">Alla stilar</button><button type="button" class="chip" data-svf="style:skandinavisk" aria-pressed="false">Skandinavisk</button><button type="button" class="chip" data-svf="style:minimalistisk" aria-pressed="false">Minimalistisk</button><button type="button" class="chip" data-svf="style:klassisk" aria-pressed="false">Klassisk</button><button type="button" class="chip" data-svf="style:mjuk" aria-pressed="false">Mjuk och ombonad</button></div>
       <div class="sv-f-row" role="group" aria-label="Budget"><button type="button" class="chip" data-svf="max:" aria-pressed="true">Alla priser</button><button type="button" class="chip" data-svf="max:300" aria-pressed="false">Under 300 kr</button><button type="button" class="chip" data-svf="max:600" aria-pressed="false">Under 600 kr</button><button type="button" class="chip" data-svf="max:1000" aria-pressed="false">Under 1&nbsp;000 kr</button><button type="button" class="chip" data-svf="max:2000" aria-pressed="false">Under 2&nbsp;000 kr</button></div>
@@ -201,8 +201,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=2ffff423"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=b1250292"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=6cea66bb"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
-<script src="assets/js/i18n.min.js?v=e10977cd"></script>
-<script src="assets/js/site.min.js?v=cb7cda83"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=b1250292"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=0f972833"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
+<script src="assets/js/i18n.min.js?v=ccf2b7f9"></script>
+<script src="assets/js/site.min.js?v=8a341740"></script>
 </body>
 </html>
