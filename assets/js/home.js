@@ -60,7 +60,7 @@
       <section class="sec roomhero dark" id="ditt-rum">
         <div class="wrap rh">
           <div class="rh-copy">
-            <span class="eyebrow rh-promise">Se ditt hem innan du köper.</span>
+            <span class="eyebrow rh-promise">Mitt rum</span>
             <h2 class="display">Prova produkterna i ditt rum.</h2>
             <p class="lead">Ta en bild av ditt rum, eller börja i ett exempelrum. Peka ut var sakerna ska stå och se bilden med dem på plats. Sedan handlar du allt med en knapp.</p>
             <ol class="rh-steps"><li><b>Välj rum</b><span>Ta en bild med telefonen, eller börja i ett exempelrum.</span></li><li><b>Peka ut</b><span>Välj upp till fem saker och visa var de ska stå.</span></li><li><b>Skapa bilden</b><span>Se rummet med sakerna på plats och handla allt med en knapp.</span></li></ol>
@@ -119,7 +119,7 @@
     return `<figure class="rh-fig bav" style="--ba:${start}%">${stage}
       <span class="ba-tag ba-before" aria-hidden="true">Före</span><span class="ba-tag ba-now" aria-hidden="true">Med RumIQ</span><span class="ba-line" aria-hidden="true"><i></i></span>
       <input class="ba-range" type="range" min="0" max="100" value="${start}" aria-label="Jämför rummet före och efter. Dra åt vänster för att visa fler produkter."></div>
-      <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total).replace(/ (?=kr$)/, "\u00a0")}</span></span>${o && o.bare ? "" : `<a class="btn sm" href="${mine ? "#mitt-rum" : "#butik"}">${mine ? "Fortsätt" : "Till butiken"}</a>`}</figcaption></figure>`;
+      <figcaption class="rh-card"><span><b>${mine ? "Ditt rum" : "Hela rummet"}</b><span>${items.length} produkter · ${S.kr(total).replace(/ (?=kr$)/, "\u00a0")}</span></span>${o && o.bare ? "" : (mine ? `<a class="btn sm" href="#mitt-rum">Fortsätt</a>` : `<button class="btn sm" type="button" data-rh-try="${items.map((it) => it.h).join(",")}">Prova det här rummet</button>`)}</figcaption></figure>`;
   }
 
   /* Why RumIQ: four reasons to trust a new shop, every figure read from RQ_CONFIG */
@@ -209,6 +209,9 @@
 
 
     if (RQ.svepHome) off.push(RQ.svepHome.mount(root));
+    /* review N9: the sample card opens these very things in the bedroom, not the whole shop */
+    const tryRoom = (e) => { const t = e.target.closest("[data-rh-try]"); if (!t || !RQ.room.place) return; RQ.room.place({ room: "sovrum", items: t.dataset.rhTry.split(",").map((h) => ({ h })) }); };
+    root.addEventListener("click", tryRoom); off.push(() => root.removeEventListener("click", tryRoom));
     off.push(RQ.mountRowNav(root));
 
     // waiting list

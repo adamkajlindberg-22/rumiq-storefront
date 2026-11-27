@@ -875,7 +875,7 @@
   };
   const setupBlock = (want) => `<div class="rm-empty">
       <div class="rm-empty-in">
-        ${want ? `<p class="rm-want"><img src="${RQ.cut(want)}" alt=""><span><b>${esc(want.name)}</b> står i rummet så fort bilden är inne.</span></p>` : ""}
+        ${want ? `<p class="rm-want"><img src="${RQ.cut(want)}" alt=""><span><b>${esc(want.name)}</b> kommer in i rummet så fort bilden är inne.</span></p>` : ""}
         <h2 class="h2">Börja med en bild av ditt rum.</h2>
         <p class="lead">Sedan pekar du ut var sakerna ska stå och får en bild av rummet med dem på plats, i rätt storlek.</p>
         <div class="ctrl-row rm-empty-acts" style="margin-top:1.6rem">${S.customer() ? `<button class="btn" type="button" data-room-setup>Lägg in ditt rum</button><button class="btn ghost" type="button" data-room-sample-now="#mitt-rum">Prova med ett exempelrum</button>` // signed in: your own room first; signed out: the free sample room is the main way in
@@ -970,6 +970,8 @@
   /* ---- the Placera och skapa view (the main way in Mitt rum once there is a room) */
   const verbOf = (it) => { const k = kindOf(RQ.byHandle(it.h)), sf = surfKey(it); return sf === "vagg" ? (k === "window" ? "hänger vid" : "hänger på") : k === "rug" || k === "throw" || k === "bedding" || k === "cushion" ? "ligger på" : "står på"; }; /* textiles lie, on the floor too (review P10) */
   const calmNow = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* "står på bordet", "ligger i soffan": the place in a sentence (the chips keep the short words) */
+  const onSurf = (it) => { const sf = surfKey(it), v = verbOf(it); return sf === "soffa" && v === "ligger på" ? "ligger i soffan" : `${v} ${({ golv: "golvet", bord: "bordet", vagg: "väggen", sang: "sängen", soffa: "soffan" })[sf] || SURF[sf]}`; };
   const placeView = () => {
     const live = !!(window.RQ_CONFIG && RQ_CONFIG.studio && RQ_CONFIG.studio.aiLive);
     return {
@@ -978,7 +980,7 @@
         <section class="wrap pl" id="pl">
           <ol class="pl-steps" aria-label="Så går det till"><li data-step="1"><b>1</b> ${room.sample ? esc(room.name || "Exempelrummet") : "Ditt rum"} <button type="button" class="tlink" data-room-setup>Byt rum</button></li><li data-step="2"><b>2</b> Välj saker</li><li data-step="3"><b>3</b> Peka ut</li><li data-step="4"><b>4</b> Skapa bilden</li></ol>
           <div class="pl-grid"><div class="pl-left">
-            <div class="pl-stage" id="plStage"><div class="pl-in" id="plIn" style="aspect-ratio:${room.w} / ${room.h};--ar:${(room.w / room.h).toFixed(4)}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div></div>
+            <div class="pl-stage" id="plStage"><div class="pl-in" id="plIn" style="aspect-ratio:${room.w} / ${room.h};--ar:${(room.w / room.h).toFixed(4)}"><img class="pl-bg" src="${R.url()}" alt="${room.sample ? "Exempelrummet" : "Ditt rum"}" draggable="false" decoding="async"><div class="pl-marks" id="plMarks"></div></div><div class="pl-emptyover" id="plEmpty" hidden><p>Välj saker att se i rummet.</p><div><button type="button" class="btn sm" data-pl-suggest>${ICO.wand}<span>Föreslå saker</span></button><button type="button" class="btn ghost sm" data-pl-add>${ICO.plus}<span>Lägg till en sak</span></button></div></div></div>
             <button type="button" class="tlink pl-zoom" id="plZoom" aria-pressed="false">Förstora bilden</button>
             <div class="pl-hintrow"><p class="pl-hint" id="plHint" role="status"></p><button type="button" class="tlink pl-undo" id="plUndo" hidden>Ångra</button></div>
           </div><div class="pl-right">
@@ -991,10 +993,11 @@
         </section>`,
       mount(root) {
         const stage = $("#plStage", root), marks = $("#plMarks", root), pin = $("#plPin", root), hint = $("#plHint", root), narrow = matchMedia("(max-width: 900px)"); let sel = null, drag = null;
+        let lastN = -1; const panTo = (pins) => { if (!pins.length || stage.scrollWidth <= stage.clientWidth + 2) return; const mid = pins.reduce((t, x) => t + x.x, 0) / pins.length; stage.scrollTo({ left: Math.max(0, inner.offsetWidth * mid / 100 - stage.clientWidth / 2), behavior: calmNow() ? "auto" : "smooth" }); };
         const undoB = $("#plUndo", root), say = (t, undo) => { hint.textContent = ""; undoB.hidden = !undo; setTimeout(() => { hint.textContent = t; }, 30); };
         const stepNow = (n) => root.querySelectorAll("[data-step]").forEach((li) => { const on = +li.dataset.step === n; li.classList.toggle("now", on); if (on) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current"); });
         const name = (h) => RQ.byHandle(h).name;
-        const pinLabel = (it, i) => `${i + 1} ${name(it.h)}, ${verbOf(it)} ${SURF[surfKey(it)]}, flytta med piltangenterna`;
+        const pinLabel = (it, i) => `${i + 1} ${name(it.h)}, ${onSurf(it)}, flytta med piltangenterna`;
         const boxOf = (it) => { const p = RQ.byHandle(it.h), k = kindOf(p), ar = room.w / room.h, hP = k === "rug" ? it.w * 0.2 * ar : it.w * meta(p)[2] * (it.sy || 1) * ar; return { l: it.x - it.w / 2, t: it.y - hP, w: it.w, h: hP }; };
         /* pins close together on a small screen are pushed apart so each can be tapped (review M2); a small dot and a line
            keep showing the exact spot the thing stands on */
@@ -1016,7 +1019,7 @@
           if (focusH) { const f = $(`[data-pin="${focusH}"]`, marks); if (f) f.focus({ preventScroll: true }); }
           $("#plCount", root).textContent = list.length > PLACE_MAX ? `${PLACE_MAX} i bilden · ${list.length} i rummet` : `${list.length} av ${PLACE_MAX}`; /* the room bar and the badge count the whole room (review P8) */
           $("#plList", root).innerHTML = list.map((it, i) => { const p = RQ.byHandle(it.h), z = measures(p);
-            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i < PLACE_MAX ? `${verbOf(it)} ${SURF[surfKey(it)]} · ` : "Väntar, tryck för att ta med · "}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty"><span class="small">Inga saker än. Lägg till en, eller låt oss föreslå några som passar rummet.</span><button type="button" class="btn ghost sm" id="plSuggest">${ICO.wand}<span>Föreslå saker</span></button></li>`;
+            return `<li class="${i >= PLACE_MAX ? "out" : ""}${sel === it.h ? " on" : ""}"><button type="button" class="pl-li" data-pick="${it.h}" aria-pressed="${sel === it.h}"><span class="pl-n">${i < PLACE_MAX ? i + 1 : "–"}</span><img src="${RQ.cut(p)}" alt=""><span class="pl-li-t"><b>${esc(p.name)}</b><span class="small">${i < PLACE_MAX ? `${onSurf(it)} · ` : "Väntar, tryck för att ta med · "}${z ? esc(z) : "Mått kommer"}</span></span></button></li>`; }).join("") || `<li class="pl-empty"><span class="small">Inga saker än. Lägg till en, eller låt oss föreslå några som passar rummet.</span><button type="button" class="btn ghost sm" id="plSuggest">${ICO.wand}<span>Föreslå saker</span></button></li>`;
           const over = list.length - PLACE_MAX; $("#plGoNote", root).textContent = !pins.length ? "Lägg till minst en sak först." : over > 0 ? `Bilden tar fem saker åt gången, de fem första. ${over === 1 ? "En till" : over + " till"} väntar.` : live ? "Det tar en liten stund." : "AI-bilden slås på snart. Nu ser du en förhandsvisning.";
           const lo = list.some((it) => it.sg) ? R.leftOut().filter((h) => RQ.byHandle(h) && !R.inScene(h)) : [], out = $("#plOut", root); out.hidden = !lo.length;
           const lt = list.some((it) => it.sg) ? (R._later || []).filter((h) => RQ.byHandle(h) && !R.inScene(h)) : [];
@@ -1024,14 +1027,16 @@
           out.innerHTML = (lo.length ? `<span>Fick inte plats: ${esc(lo.map(name).join(", "))}. Det finns ingen ledig bordsyta för ${lo.length === 1 ? "den" : "dem"} i rummet.</span>` : "")
             + (lt.length ? `<span>Väntar: ${esc(lt.map(name).join(", "))}.</span> <button type="button" class="tlink" id="plLater">Lägg till ${lt.length === 1 ? "den" : "dem"}</button>` : ""); /* your own photo starts calm; what waits is one tap away here too */
           stepNow(pins.length ? 3 : 2); $("#plZoom", root).hidden = !pins.length;
-          $("#plCreate", root).disabled = !pins.length; $("#plAdd", root).disabled = false;
+          $("#plCreate", root).disabled = !pins.length; $("#plAdd", root).disabled = false; $(".pl-go", root).classList.toggle("none", !pins.length);
+          $("#plEmpty", root).hidden = !!pins.length;
+          if (pins.length !== lastN) { const was = lastN; lastN = pins.length; if (was >= 0 || pins.length) requestAnimationFrame(() => panTo(pins)); } /* new things: the picture pans to them (review N3) */
           paintPin(); };
         const paintPin = () => { const list = R.scene(), i = list.findIndex((it) => it.h === sel), it = list[i]; pin.hidden = !it || i >= PLACE_MAX; if (pin.hidden) return;
           const p = RQ.byHandle(it.h), k = kindOf(p), z = measures(p), sure = widthAt(it).sure, ask = !mapOf() && !it.pc;
           pin.innerHTML = `<div class="pl-pin-h"><span class="pl-n">${i + 1}</span><b id="plPinT">${esc(p.name)}</b><button type="button" class="iconbtn" id="plPinX" aria-label="Klar med ${esc(p.name)}"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
             <p class="small">${z ? `${esc(z)}, ${sure ? "i rätt skala" : "ungefärlig storlek i bilden"}` : "Mått kommer. Storleken i bilden är ungefärlig."}${!mapOf() && !(room.known && room.known.cm > 0) ? ` <button type="button" class="tlink" id="plMeasure">Ange en känd längd</button> ger rätt skala.` : ""}</p>
             <p class="pl-ask${ask ? " now" : ""}">${ask ? "Var står den?" : verbOf(it).replace(/^./, (c) => c.toUpperCase())}</p>
-            ${(CAN[k] || ["golv"]).length < 2 ? `<p class="small pl-one">${verbOf(it).replace(/^./, (c) => c.toUpperCase())} ${SURF[surfKey(it)]}, alltid.</p>` : ""}<div class="chips" role="group" aria-label="Yta"${(CAN[k] || ["golv"]).length < 2 ? " hidden" : ""}>${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
+            ${(CAN[k] || ["golv"]).length < 2 ? `<p class="small pl-one">${onSurf(it).replace(/^./, (c) => c.toUpperCase())}, alltid.</p>` : ""}<div class="chips" role="group" aria-label="Yta"${(CAN[k] || ["golv"]).length < 2 ? " hidden" : ""}>${(CAN[k] || ["golv"]).map((sf) => `<button type="button" class="chip" data-surf="${sf}" aria-pressed="${!ask && surfKey(it) === sf}">${SURF[sf]}</button>`).join("")}</div>
             <p class="small pl-pin-tip">Tryck i bilden där den ska stå, eller dra nålen.</p>
             <div class="pl-pin-a"><button type="button" class="btn ghost sm" data-ord="-1"${i ? "" : " disabled"}>Tidigare</button><button type="button" class="btn ghost sm" data-ord="1"${i < Math.min(list.length, PLACE_MAX) - 1 ? "" : " disabled"}>Senare</button><button type="button" class="btn ghost sm" id="plDel">Ta bort</button></div>`; };
         const select = (h, quiet, fromList) => { sel = h; paint(); if (!h || quiet) return; zoomTo(h); if (narrow.matches && !pin.hidden && !fromList) requestAnimationFrame(() => { const hd = (document.querySelector("header") || {}).offsetHeight || 58, dk = document.querySelector(".dock"), low = dk && dk.getClientRects().length && getComputedStyle(dk).display !== "none" ? Math.min(innerHeight, dk.getBoundingClientRect().top) : innerHeight, sr = stage.getBoundingClientRect(), pr = pin.getBoundingClientRect();
@@ -1042,19 +1047,19 @@
         stage.addEventListener("pointermove", (e) => { if (!drag) return; if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return; drag.moved = true; const [x, y] = at(e); drag.b.style.left = x + "%"; drag.b.style.top = y + "%"; drag.x = x; drag.y = y; });
         let dragged = 0; // a drag is not also a click
         /* where it ended up, and why when that is not where it was put (a full table, a rug that stays on the floor) */
-        const moved = (h) => { const it = R.scene().find((x) => x.h === h); if (it) say(R.pinNote || `${name(h)} ${verbOf(it)} ${SURF[surfKey(it)]}.`); };
+        const moved = (h) => { const it = R.scene().find((x) => x.h === h); if (it) say(R.pinNote || `${name(h)} ${onSurf(it)}.`); };
         const endDrag = () => { if (!drag) return; const d = drag; drag = null; if (d.moved) { dragged = Date.now(); sel = d.h; R.movePin(d.h, d.x, d.y); moved(d.h); } };
         stage.addEventListener("pointerup", endDrag); stage.addEventListener("pointercancel", () => { drag = null; paint(); });
         // a tap, a click or Enter on a pin chooses it; a tap elsewhere in the picture moves the chosen one there
         stage.addEventListener("click", (e) => { const pb = e.target.closest("[data-pin]"); if (pb) { if (Date.now() - dragged > 300) select(sel === pb.dataset.pin && e.detail !== 0 ? null : pb.dataset.pin); return; } if (!sel) { say(R.scene().length ? "Välj först en sak, i listan eller på en nål." : "Lägg till en sak först."); return; } const [x, y] = at(e); R.movePin(sel, x, y); moved(sel); });
         marks.addEventListener("keydown", (e) => { const b = e.target.closest("[data-pin]"); if (!b) return; const h = b.dataset.pin, it = R.scene().find((x) => x.h === h); if (!it) return;
           const st = e.shiftKey ? 5 : 1, mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
-          if (mv) { e.preventDefault(); sel = h; R.movePin(h, it.x + mv[0], it.y + mv[1]); const n = R.scene().find((x) => x.h === h); if (n) say(`${Math.round(n.x)} % från vänster, ${Math.round(n.y)} % ned, ${verbOf(n)} ${SURF[surfKey(n)]}.${R.pinNote ? " " + R.pinNote : ""}`); return; }
+          if (mv) { e.preventDefault(); sel = h; R.movePin(h, it.x + mv[0], it.y + mv[1]); const n = R.scene().find((x) => x.h === h); if (n) say(`${Math.round(n.x)} % från vänster, ${Math.round(n.y)} % ned, ${onSurf(n)}.${R.pinNote ? " " + R.pinNote : ""}`); return; }
           if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); R.remove(h); say(`${name(h)} är borttagen.`, true); const f = $("[data-pin]", marks); if (f) f.focus(); else undoB.focus(); return; }
           if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) { e.preventDefault(); if (R.undo()) { say("Klart, ångrat."); const f = $(`[data-pin="${h}"]`, marks) || $("[data-pin]", marks); if (f) f.focus(); } return; }
           if (e.key === "Escape") { select(null); } });
         pin.addEventListener("click", (e) => { if (!sel) return; const it = R.scene().find((x) => x.h === sel); if (!it) return;
-          const sf = e.target.closest("[data-surf]"); if (sf) { R.movePin(sel, it.x, it.y, sf.dataset.surf); const n = R.scene().find((x) => x.h === sel); say(`${name(sel)} ${verbOf(n)} ${SURF[surfKey(n)]}.`); const f = $(`[data-surf="${sf.dataset.surf}"]`, pin); if (f) f.focus({ preventScroll: true }); return; }
+          const sf = e.target.closest("[data-surf]"); if (sf) { R.movePin(sel, it.x, it.y, sf.dataset.surf); const n = R.scene().find((x) => x.h === sel); say(`${name(sel)} ${onSurf(n)}.`); const f = $(`[data-surf="${sf.dataset.surf}"]`, pin); if (f) f.focus({ preventScroll: true }); return; }
           const o = e.target.closest("[data-ord]"); if (o) { R.pinOrder(sel, +o.dataset.ord); const f = $(`[data-ord="${o.dataset.ord}"]`, pin); if (f && !f.disabled) f.focus({ preventScroll: true }); else { const g = $(`[data-pin="${sel}"]`, marks); if (g) g.focus(); } return; }
           if (e.target.closest("#plMeasure")) { RQ.ss && RQ.ss.set("rumiq-room-measure", "1"); R.setWay("edit"); RQ.router(); scrollTo(0, 0); return; }
           if (e.target.closest("#plDel")) { const h = sel; sel = null; R.remove(h); say(`${name(h)} är borttagen.`, true); undoB.focus({ preventScroll: true }); return; }
@@ -1066,6 +1071,7 @@
         undoB.addEventListener("click", () => { if (!R.undo()) return; say("Klart, den är tillbaka."); const f = $("[data-pin]", marks); if (f) f.focus({ preventScroll: true }); });
         $("#plOut", root).addEventListener("click", (e) => { if (!e.target.closest("#plLater")) return; const lt = (R._later || []).filter((h) => RQ.byHandle(h) && !R.inScene(h)); R._later = [];
           R.group(() => lt.forEach((h) => R.add(h, true))); say(`${lt.map(name).join(", ")} är med nu.`); const f = $("[data-pin]", marks); if (f) f.focus({ preventScroll: true }); });
+        $("#plEmpty", root).addEventListener("click", (e) => { if (e.target.closest("[data-pl-add]")) R.openPicker(); else if (e.target.closest("[data-pl-suggest]")) { const s2 = $("#plSuggest", root); if (s2) s2.click(); } });
         $("#plList", root).addEventListener("click", (e) => { if (!e.target.closest("#plSuggest")) return; const set = R.suggestSet(); const hs = set.items.slice(0, PLACE_MAX).map((x) => x.h);
           if (!hs.length) { say("Vi hittade inget som passar just det här rummet. Lägg till en sak själv."); return; }
           R.group(() => hs.forEach((h) => R.add(h, true))); say(`${hs.length} saker föreslagna, ${kr(hs.reduce((t, h) => t + RQ.byHandle(h).price, 0))}. Flytta nålarna dit du vill ha dem.`); const f = $("[data-pin]", marks); if (f) f.focus({ preventScroll: true }); });
@@ -1093,7 +1099,7 @@
         const nw = RQ.ss && RQ.ss.get("rumiq-room-new"); if (nw && R.inScene(nw)) { RQ.ss.set("rumiq-room-new", ""); sel = nw;
           const l = R.scene(), i = l.findIndex((x) => x.h === nw); if (i >= PLACE_MAX) { const [it] = l.splice(i, 1); l.splice(PLACE_MAX - 1, 0, it); R.saveScene(l, true); } } // the five are full: the one you came with takes the fifth place
         paint(); requestAnimationFrame(() => { const l = R.scene().slice(0, PLACE_MAX); if (!l.length || stage.scrollWidth <= stage.clientWidth + 2) return; if (sel) return zoomTo(sel, true); const mid = l.reduce((t, x) => t + x.x, 0) / l.length; stage.scrollLeft = Math.max(0, inner.offsetWidth * mid / 100 - stage.clientWidth / 2); }); /* where the things are */
-        if (sel) say(`${name(sel)} är vald. Tryck i bilden där den ska stå.`); else if (R.scene().length) say("Tryck på en nål och sedan där i bilden den ska stå."); /* a first instruction (review P5) */
+        if (sel) say(`${name(sel)} är vald. Tryck i bilden där den ska stå.`); else if (R.scene().length) say(narrow.matches && inner.offsetWidth > stage.clientWidth + 2 ? "Tryck på en nål och sedan där den ska stå. Svep i bilden för att se hela rummet." : "Tryck på en nål och sedan där i bilden den ska stå."); /* a first instruction (review P5, N3) */
         return () => { document.removeEventListener("rq-room", onRoom); if (ro) ro.disconnect(); };
       },
     };

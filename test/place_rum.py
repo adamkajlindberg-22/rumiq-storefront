@@ -145,7 +145,7 @@ with sync_playwright() as p:
         rug = next(x for x in pins if x["h"] == "strand-jutematta"); glob = next(x for x in pins if x["h"] == "glob-bordslampa-opalglas")
         ok(rug["size"] == {"w": 160, "d": 230} and rug["scale"]["sure"] and glob["size"] is None and not glob["scale"]["sure"], f"{tag} measurements and an honest scale (sure for the rug, ungefär for the lamp)")
         labels = pg.evaluate("[...document.querySelectorAll('[data-pin]')].map((b) => b.getAttribute('aria-label'))")
-        ok(labels[0] == "1 Glob bordslampa opalglas, står på bord, flytta med piltangenterna" and len(labels) == 4, f"{tag} each pin is a button with its number, name and surface: {labels[0]}")
+        ok(labels[0] == "1 Glob bordslampa opalglas, står på bordet, flytta med piltangenterna" and len(labels) == 4, f"{tag} each pin is a button with its number, name and surface: {labels[0]}")
         sizes = pg.evaluate("[...document.querySelectorAll('[data-pin], #plPin button, #pl .pl-li, #plAdd, #plCreate, #plSelf, .pl-steps .tlink')].filter((e) => e.offsetParent).map((e) => { const r = e.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })")
         ok(all(w >= 44 and h >= 44 for w, h in sizes), f"{tag} every tap target is at least 44 px: {[s for s in sizes if min(s) < 44][:3]}")
         fw = pg.evaluate("(() => { const st = document.getElementById('plIn').getBoundingClientRect(); return [...document.querySelectorAll('.pl-foot')].map((f) => +(f.getBoundingClientRect().width / st.width * 100).toFixed(1)); })()")

@@ -52,6 +52,8 @@
       [/^På den riktiga sajten öppnas (\w+?)s egen inloggning, och du kommer tillbaka hit inloggad\. I förhandsversionen skapar vi ett testkonto i stället\.$/, (m) => `On the real site ${m[1]}'s own sign-in opens, and you come back here signed in. In the preview we create a test account instead.`],
       [/^(.+) \((\d+)\)$/, (m) => { const a = one(m[1]); return a ? `${a} (${m[2]})` : null; }],
       /* Placera och skapa (v15.7): a room's name, and lists of things */
+      [/^(står|ligger|hänger) (på|i|vid) (golvet|bordet|väggen|sängen|soffan)( · .+)?$/, (m) => `${{ "står": "stands", "ligger": "lies", "hänger": "hangs" }[m[1]]} ${m[2] === "vid" ? "by" : m[2] === "i" ? "in" : "on"} the ${PLC[m[3]]}${m[4] ? " · " + (one(m[4].slice(3)) || m[4].slice(3)) : ""}`],
+      [/^(.+) (står|ligger|hänger) (på|i|vid) (golvet|bordet|väggen|sängen|soffan)\.$/, (m) => `${list(m[1])} ${{ "står": "stands", "ligger": "lies", "hänger": "hangs" }[m[2]]} ${m[3] === "vid" ? "by" : m[3] === "i" ? "in" : "on"} the ${PLC[m[4]]}.`],
       [/^Bilden finns nu i (.+) under$/, (m) => `The image is now in ${one(m[1]) || m[1]} under`],
       [/^, under (.+), på den här enheten\.$/, (m) => `, under ${one(m[1]) || m[1]}, on this device.`],
       [/^Fick inte plats: (.+)\. Det finns ingen ledig bordsyta för (den|dem) i rummet\.$/, (m) => `No room for: ${list(m[1])}. There is no free table top for ${m[2] === "den" ? "it" : "them"} in the room.`],
@@ -60,8 +62,9 @@
       [/^(.+) är borttagen\.$/, (m) => `${list(m[1])} is removed.`],
       [/^(.+) är med i bilden\. (.+) väntar, bilden tar fem saker åt gången\.$/, (m) => `${list(m[1])} is in the picture. ${list(m[2])} is waiting; the picture takes five things at a time.`],
       [/^(.+) är med i bilden nu\. (.+) väntar\.$/, (m) => `${list(m[1])} is in the picture now. ${list(m[2])} is waiting.`],
-      [/^(Står|Ligger|Hänger) på (golv|bord|vägg|säng|soffa), alltid\.$/, (m) => `${{ "Står": "Stands", "Ligger": "Lies", "Hänger": "Hangs" }[m[1]]} on the ${{ golv: "floor", bord: "table", "vägg": "wall", "säng": "bed", soffa: "sofa" }[m[2]]}, always.`],
+      [/^(Står|Ligger|Hänger) (på|i) (golvet|bordet|väggen|sängen|soffan), alltid\.$/, (m) => `${{ "Står": "Stands", "Ligger": "Lies", "Hänger": "Hangs" }[m[1]]} on the ${{ golvet: "floor", bordet: "table", "väggen": "wall", "sängen": "bed", soffan: "sofa" }[m[3]]}, always.`],
     ];
+    const PLC = { golvet: "floor", bordet: "table", "väggen": "wall", "sängen": "bed", soffan: "sofa" };
     const list = (x) => x.split(", ").map((n) => one(n) || n).join(", ");
     function one(s) {
       if (s in D) return D[s];

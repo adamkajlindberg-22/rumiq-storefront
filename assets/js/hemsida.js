@@ -20,7 +20,7 @@
         <label>Rummets namn<input name="label" maxlength="40" placeholder="Till exempel Vardagsrum" autocomplete="off"></label>
         <label>Slags rum<select name="type">${typeOpts("vardagsrum")}</select></label>
         <fieldset class="hem-first-st"><legend>Stil <small>valfritt</small></legend><div class="chips">${styleChips(null, "data-first-style")}</div></fieldset>
-        <div class="ai-row"><button class="btn" type="submit" name="go" value="sample">Börja med ett exempelrum</button><button class="btn ghost" type="submit" name="go" value="own">Använd ditt eget foto</button></div>
+        <div class="ai-row"><button class="btn" type="submit" name="go" value="sample">Börja med ett exempelrum</button><button class="btn ghost" type="submit" name="go" value="own">Lägg in ditt rum</button></div>
         <p class="small">${S.customer() ? "" : "<span>Ditt eget foto kräver ett gratis konto. Exempelrummen är fria.</span> "}${RQ.ai && RQ.ai.promise ? (S.customer() && RQ.ai.live && RQ.ai.live() ? "" : `<span>${RQ.ai.promise(true)}</span>`) : ""}</p></form></div>`;
   const benefits = () => S.customer() ? "" : `<ul class="hem-bens" aria-label="Det här får du här">
       <li><b>Före och efter sparas</b><span>Varje AI-bild hamnar i rummet, med bilden före.</span></li>

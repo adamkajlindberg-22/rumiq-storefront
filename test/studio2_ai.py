@@ -292,7 +292,7 @@ with sync_playwright() as p:
         look = pg.evaluate("RQ.LOOKS.find((l) => l.id === 'mjuk-kvall').items.slice().sort()")
         ok(pg.evaluate("RQ.currentRoute()") == "mitt-rum" and sorted(pg.evaluate("RQ.room.scene().map((i) => i.h)")) == look, f"{tag} a look opens in Se det i ditt rum")
         go(pg, "", 1200)
-        ok(pg.evaluate("(document.querySelector('.rh-promise') || {}).innerText") == "Se ditt hem innan du köper.", f"{tag} the promise on the home page's Studio section")
+        ok(pg.evaluate("(document.querySelector('.rh-promise') || {}).innerText") == "Mitt rum", f"{tag} the home page's tool section is named for the tool (v15.8: the promise is in the hero, not repeated)")
         ok(not errs, f"{tag} no script errors: {errs[:3]}")
         ctx.close()
 

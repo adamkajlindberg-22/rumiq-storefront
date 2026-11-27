@@ -541,7 +541,7 @@
         // sticky buy bar once the buy button scrolls away (desktop); always on phones
         const bar = $("#buybar", root), buy = $(".buy", root);
         /* on a phone it comes once the customer has started to scroll: on a short screen, at first load it would lie over the name and the price (D9) */
-        let lastE = null; const showBar = () => { const e = lastE; if (e) bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || (matchMedia("(max-width:900px)").matches && scrollY > 40))); };
+        let lastE = null; const showBar = () => { const e = lastE; if (e) bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || (matchMedia("(max-width:900px)").matches && (scrollY > 40 || e.boundingClientRect.top > innerHeight - 8)))); /* a phone where the buy button starts below the first screen: the bar from the start (review) */ };
         io2 = new IntersectionObserver(([e]) => { lastE = e; showBar(); }, { threshold: [0, 0.9] });
         const onSc = () => { if (scrollY > 40) { removeEventListener("scroll", onSc); showBar(); } }; addEventListener("scroll", onSc, { passive: true }); offScroll = () => removeEventListener("scroll", onSc);
         io2.observe($("#add", root));
@@ -1290,7 +1290,7 @@
 
   // cookie banner. On Studio pages a slim strip under the header that makes room for itself, so it never covers a tool;
   // its height is --ck-h, and the room editor is told when it comes and goes (rq-cookie)
-  let ckH = -1; const ckSize = () => requestAnimationFrame(() => { const b = $("#cookie"), h = b.classList.contains("show") && (document.body.classList.contains("on-studio") || matchMedia("(max-width: 700px)").matches) ? b.offsetHeight : 0; /* a phone: the strip under the header on every page */ if (h === ckH) return; ckH = h; document.documentElement.style.setProperty("--ck-h", h + "px"); document.dispatchEvent(new CustomEvent("rq-cookie")); });
+  let ckH = -1; const ckSize = () => requestAnimationFrame(() => { const b = $("#cookie"), h = b.classList.contains("show") && (document.body.classList.contains("on-studio") || (matchMedia("(max-width: 700px)").matches && !document.body.classList.contains("on-home"))) ? b.offsetHeight : 0; /* a phone: the strip under the header on every page */ if (h === ckH) return; ckH = h; document.documentElement.style.setProperty("--ck-h", h + "px"); document.dispatchEvent(new CustomEvent("rq-cookie")); });
   addEventListener("resize", () => { if ($("#cookie").classList.contains("show")) ckSize(); });
   new MutationObserver(ckSize).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   RQ.showCookies = (force) => {

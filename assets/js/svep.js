@@ -570,9 +570,9 @@
       ${ra.hs.length >= 3 ? `<div class="sp-two"><span class="sp-two-ic" aria-hidden="true">${SV.two}</span><div class="sp-two-tx"><b>Inreder ni tillsammans?</b><p>Skicka samma kort till en eller flera. När de har svept ser ni vad ni gillar gemensamt.</p>
         <button class="btn ghost sm" type="button" id="svTwoOpen" aria-expanded="false" aria-controls="svTwo">${SV.link}<span>Skicka korten</span></button>
         ${linkForm("svTwo", "Ditt namn", "Skicka korten", ls.get(NKEY, ""), "").replace("<form ", "<form hidden ")}</div></div>` : ""}${prof.look || ra.hs.length >= 3 ? "</div>" : ""}
-      <div class="ctrl-row sp-main" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn" type="button" id="svMore">Svep tio till</button>` : `<a class="btn" href="#for-dig">Butiken för dig</a>`}</div>
+      <div class="ctrl-row sp-main" style="margin-top:.6rem;justify-content:center">${more ? `<button class="btn ghost" type="button" id="svMore">Svep tio till</button>` : `<a class="btn ghost" href="#for-dig">Butiken för dig</a>`}</div>
       <details class="sp-more"><summary>Fler val</summary><div class="sp-more-in">
-        ${saved.length ? `<button class="tlink" type="button" id="svAll">Lägg de sparade i varukorgen · ${kr(saved.reduce((s, p) => s + p.price, 0))}</button><button class="tlink" type="button" id="svRoomAll">Se de sparade i ditt rum</button>` : ""}
+        ${saved.length ? `<button class="tlink" type="button" id="svAll">Lägg de sparade i varukorgen (${saved.length})</button><button class="tlink" type="button" id="svRoomAll">Se de sparade i ditt rum</button>` : ""}
         ${more ? `<a class="tlink" href="#for-dig">Butiken för dig</a>` : ""}${top.length ? `<button class="tlink" type="button" id="svShare">Dela min stil</button>` : ""}<button class="tlink" type="button" id="svAgain">Börja om från början</button></div></details>
       <p class="small" id="svAgainNote" role="status"></p></div>` }; // few actions: two buttons, two quiet links
   };
@@ -637,7 +637,7 @@
               RQ.taste.reset(); try { localStorage.removeItem("rumiq-style"); } catch (er) {} again();
             });
             const m = $("#svMore", root); m && m.addEventListener("click", again);
-            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda")); RQ.addAllBtn(all, () => r.saved.map((p) => p.handle), () => `Lägg de sparade i varukorgen · ${kr(r.saved.reduce((s, p) => s + p.price, 0))}`);
+            const all = $("#svAll", root); all && all.addEventListener("click", () => RQ.addMany(r.saved.map((p) => p.handle), all, "Din runda")); RQ.addAllBtn(all, () => r.saved.map((p) => p.handle), () => `Lägg de sparade i varukorgen (${r.saved.length})`); /* one total on the page: the proposal's (review) */
             const ra = $("#svRoomAll", root); ra && ra.addEventListener("click", () => toRoom(r.saved.map((p) => p.handle)));
             const sh = $("#svShare", root); sh && sh.addEventListener("click", () => shareStyle(r.top, (r.saved.length ? r.saved : RQ.styleProfile().liked.map(RQ.byHandle)).filter(Boolean)));
             const ans = roundAnswers(st);

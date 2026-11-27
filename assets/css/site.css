@@ -2168,14 +2168,14 @@ body.on-studio:has(.cookie.show) .view{padding-top:calc(var(--nav-h) + var(--ck-
 /* v15.8 (review: the cookie box covered Lägg i varukorgen): on a phone it is the same slim strip under the header on every
    page, in the page's own flow, never over a button */
 @media (max-width:700px){
-  .cookie{position:absolute;top:var(--nav-h);bottom:auto;left:0;right:0;width:auto;max-width:none;transform:translateY(-140%);opacity:0;border-radius:0;border-width:0 0 1px;box-shadow:none;padding:.5rem var(--gutter);display:none;align-items:center;gap:.35rem .8rem;z-index:55;grid-template-columns:none}
-  .cookie.show{display:flex;flex-wrap:wrap;transform:none;opacity:1}
-  .cookie p{flex:1 1 100%;margin:0;font-size:.78rem;line-height:1.35}
-  .cookie .row{display:flex;gap:.4rem;flex:1 1 100%}
-  .cookie .row .btn{min-height:2.75rem;font-size:.8rem;padding-inline:.6rem;white-space:nowrap;flex:1 1 auto}
-  .cookie .row #ckMore{flex:0 0 auto}
-  .cookie .opts{flex-basis:100%}
-  html:has(.cookie.show) .view{padding-top:calc(var(--nav-h) + var(--ck-h,0px))}
+  body:not(.on-home) .cookie{position:absolute;top:var(--nav-h);bottom:auto;left:0;right:0;width:auto;max-width:none;transform:translateY(-140%);opacity:0;border-radius:0;border-width:0 0 1px;box-shadow:none;padding:.5rem var(--gutter);display:none;align-items:center;gap:.35rem .8rem;z-index:55;grid-template-columns:none}
+  body:not(.on-home) .cookie.show{display:flex;flex-wrap:wrap;transform:none;opacity:1}
+  body:not(.on-home) .cookie p{flex:1 1 100%;margin:0;font-size:.78rem;line-height:1.35}
+  body:not(.on-home) .cookie .row{display:flex;gap:.4rem;flex:1 1 100%}
+  body:not(.on-home) .cookie .row .btn{min-height:2.75rem;font-size:.8rem;padding-inline:.6rem;white-space:nowrap;flex:1 1 auto}
+  body:not(.on-home) .cookie .row #ckMore{flex:0 0 auto}
+  body:not(.on-home) .cookie .opts{flex-basis:100%}
+  html:has(body:not(.on-home) .cookie.show) .view{padding-top:calc(var(--nav-h) + var(--ck-h,0px))}
 }
 /* Mitt rum before a photo: text left, the result right */
 .rm-empty{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(1.5rem,4vw,4rem);align-items:center;background-image:none}
@@ -3426,7 +3426,9 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .pl-self{padding:0 .2rem}
 @media (min-width:901px){.pl-right>.pl-pin{order:0}.pl-right>.pl-go{order:1}.pl-right>.pl-list{order:2}.pl-right>.pl-self{order:3}}
 @media (max-width:900px){
-  .pl-right>.pl-go{position:sticky;bottom:calc(var(--dock-h) + env(safe-area-inset-bottom) + 1.6rem);z-index:6;padding:.6rem .7rem;box-shadow:0 10px 30px -12px rgba(0,0,0,.35)}
+  .pl-right>.pl-go{position:fixed;left:var(--gutter);right:var(--gutter);bottom:calc(var(--dock-h) + env(safe-area-inset-bottom) + 1.1rem);z-index:60;padding:.55rem .65rem;box-shadow:0 12px 32px -10px rgba(0,0,0,.4)} /* review N1: above the dock, never under it */
+  .pl-right>.pl-go.none{display:none}
+  section.pl{padding-bottom:7.5rem}
   .pl-right>.pl-go .small{margin-top:.35rem;font-size:.8rem}
 }
 
@@ -3473,3 +3475,20 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .roomhero.dark .btn:focus-visible{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--ink)}
 .promise + .roomhero.dark{margin-top:0}
 .roomhero.dark + .hrooms{padding-top:clamp(2.5rem,5vw,4rem)}
+
+/* review N2: an empty room says what to do on the picture itself */
+.pl-stage{position:relative}
+.pl-emptyover{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:.7rem;padding:1rem;text-align:center;background:rgba(20,22,26,.28);pointer-events:auto;cursor:default}
+.pl-emptyover[hidden]{display:none}
+.pl-emptyover p{margin:0;color:#fff;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.pl-emptyover div{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.pl-emptyover .btn{min-height:2.75rem;display:inline-flex;align-items:center;gap:.4rem}
+.pl-emptyover .btn svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:1.7}
+.pl-emptyover .btn.ghost{background:#F7F7F4;color:#22252A;border-color:#F7F7F4}
+.pl-emptyover .btn:not(.ghost){background:#22252A;color:#F7F7F4;border-color:#22252A}
+/* review N10: on a phone the steps keep to one row (the step you are on says its name) */
+@media (max-width:600px){.pl-steps{gap:.35rem .6rem;flex-wrap:nowrap}.pl-steps li[data-step]:not([data-step="1"]):not(.now){font-size:0;gap:0}.pl-steps li[data-step]:not([data-step="1"]):not(.now) b{font-size:.78rem}}
+/* review: evening mode, the dark home section stands apart from the dark page */
+:root[data-light=kvall] .roomhero.dark{--bg:#2A2D31;--paper:#32363B;--line:#454A51;--line2:#3D4248}
+/* review N11: Svep's room chips are 44 px */
+.sv-scope .chip{min-height:2.75rem}

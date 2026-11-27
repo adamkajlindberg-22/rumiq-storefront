@@ -148,18 +148,21 @@
     const its = pr.items.map((it) => RQ.byHandle(it.h)), room = s.room ? H.room(s.room) : null;
     const types = ["vardagsrum", "sovrum", "kok", "hall", "badrum", "hemmakontor"];
     const budgetHtml = `<label class="hem-budget"><span>Budget <b>${kr(s.budget || pr.fullTotal)}</b></span><input type="range" data-hem-budget min="${Math.max(100, Math.floor(pr.min / 100) * 100)}" max="${Math.ceil(pr.fullTotal / 100) * 100}" step="100" value="${s.budget || Math.ceil(pr.fullTotal / 100) * 100}" aria-label="Budget i kronor" aria-valuetext="${esc(kr(s.budget || pr.fullTotal))}"></label>`;
+    /* review N8: on the Svep result the card leads with what it offers; what is left out follows the buttons */
+    const outNote = pr.out.length ? `<p class="small hem-left">${pr.out.length === 1 ? "1 sak får" : `${pr.out.length} saker får`} inte plats i rummet och är inte med: ${pr.out.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : "";
     return `<div class="hem-prop-h"><span class="eyebrow">${s.from === "room" ? "Förslag för rummet" : "Ett färdigt rumsförslag"}</span><h3 class="h3">${esc(H.title(pr))}</h3>
         <p class="small hem-promise">${PROMISE}</p></div>
       ${s.compact ? "" : typeChips(s, pr, types)}
       ${pr.colours.length ? `<div class="hem-cols" role="img" aria-label="Färgerna i förslaget">${pr.colours.map((c) => `<i style="background:${esc(c)}"></i>`).join("")}</div>` : ""}
       ${s.compact ? `<div class="hem-prop-row${s.all ? " open" : ""}"><span class="hem-prop-thumbs" aria-hidden="true">${its.slice(0, 2).map((p) => `<img src="${RQ.cut(p)}" alt="">`).join("")}${its.length > 2 ? `<i>+${its.length - 2}</i>` : ""}</span><b>${kr(pr.total)}</b>${its.length > 3 ? `<button class="tlink" type="button" data-hem-all aria-expanded="${!!s.all}">${s.all ? "Visa färre" : `Visa alla ${its.length}`}</button>` : ""}</div>` : ""}
       <ul class="hem-prop-items${s.compact ? " compact" : ""}${s.all ? " open" : ""}">${its.map((p) => { const w = why(s, room, p); return `<li data-h="${p.handle}">${s.compact ? `<span class="hem-prop-im"><img src="${RQ.cut(p)}" alt=""></span>` : `<button type="button" data-sheet="${p.handle}" aria-label="Snabbtitt på ${esc(p.name)}"><img src="${RQ.cut(p)}" alt=""></button>`}<span>${esc(p.name)}${w ? `<small class="why">${esc(w)}</small>` : ""}</span><b>${kr(p.price)}</b></li>`; }).join("")}</ul>
-      ${pr.out.length ? `<p class="small hem-left">${pr.out.length === 1 ? "1 sak får" : `${pr.out.length} saker får`} inte plats i rummet och är inte med: ${pr.out.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
+      ${s.compact ? "" : outNote}
       ${pr.left.length ? `<p class="small hem-left">Budgeten räcker till ${its.length} av ${its.length + pr.left.length}. Kvar: ${pr.left.map((h) => esc(RQ.byHandle(h).name)).join(", ")}.</p>` : ""}
       ${s.compact ? "" : budgetHtml}
       <div class="hem-prop-sum"><span>${its.length} ${its.length === 1 ? "produkt" : "produkter"}</span><b>${kr(pr.total)}</b></div>
       <div class="ai-row hem-prop-acts"><button class="btn" type="button" data-hem-see>${RQ.roomIco}<span>Se det i ditt rum</span></button><button class="btn ghost" type="button" data-hem-buy>Köp allt · ${kr(pr.total)}</button></div>
       <div class="ai-row small-row">${s.noAsk ? "" : `<button class="tlink" type="button" data-hem-ask>Vad tycker du?</button>`}<button class="tlink" type="button" data-hem-reroll>Ett annat förslag</button>${room || s.compact ? "" : `<button class="tlink" type="button" data-hem-keep>Spara rummet</button>`}</div>
+      ${s.compact ? outNote : ""}
       ${s.compact ? `<details class="hem-more"${s.open ? " open" : ""}><summary>Ändra rum och budget</summary><div class="hem-more-in">${typeChips(s, pr, types)}${budgetHtml}</div></details>` : ""}
       <p class="small" role="status" data-hem-msg>${room ? `Hör till ${esc(H.name(room))}.` : ""}</p>`;
   };
