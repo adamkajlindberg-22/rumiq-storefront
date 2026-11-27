@@ -3701,3 +3701,8 @@ section.pl{margin-top:.4rem;margin-bottom:3rem}
 .mh-quiet>summary:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink);border-radius:4px}
 .mh-quiet>summary .small{color:var(--muted)}
 .mh-quiet[open] .mh-quiet-in{margin-top:.6rem}
+/* the one image corner, and one gap between Veckans rum and the looks (design checks) */
+.hd-im,.wk-im{border-radius:var(--r-img)}
+.wk + .looks-sec{padding-top:0}
+.wk-it img{border-radius:var(--r-img)}
+@media (max-width:820px) and (max-height:700px){.hdemo{display:none}} /* a short phone: the title needs the room */

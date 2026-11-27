@@ -30,7 +30,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=bbab513e">
+<link rel="stylesheet" href="assets/css/site.min.css?v=27828cac">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -109,9 +109,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <div class="band settle"><h1>Ditt hem.<br>Din vision.<br>Din stil.</h1><p class="sub"><b>Se ditt hem innan du köper.</b> Noga utvald belysning, textil och förvaring, och verktyg som visar allt i ditt eget rum.</p>
               <div class="row"><a class="btn" href="mitt-rum/">Prova i Mitt rum</a><a class="btn ghost" href="butik/">Upptäck butiken</a></div></div>
           </div>
-          <a class="hdemo run" href="mitt-rum/" aria-label="Så fungerar Mitt rum: peka ut var sakerna ska stå och se dem i rummet innan du köper">
-      <span class="hd-im"><img class="rh-flip hd-before" src="assets/img/rum/sovrum-fore-600.webp" alt="" width="600" height="336" decoding="async"><img class="rh-flip hd-after" src="assets/img/rum/sovrum-efter-600.webp" alt="" width="600" height="336" decoding="async">
-        <i class="hd-pin" style="left:86%;top:41%;--k:0"></i><i class="hd-pin" style="left:44%;top:51%;--k:1"></i><i class="hd-pin" style="left:75%;top:68%;--k:2"></i><span class="hd-tag hd-t1">Ditt rum</span><span class="hd-tag hd-t2">Med RumIQ</span></span>
+          <a class="hdemo run" href="mitt-rum/">
+      <span class="hd-im"><img class="rh-flip hd-before" src="assets/img/rum/sovrum-fore-600.webp" alt="" width="600" height="336" decoding="async" fetchpriority="low"><img class="rh-flip hd-after" src="assets/img/rum/sovrum-efter-600.webp" alt="" width="600" height="336" decoding="async" loading="lazy" fetchpriority="low">
+        <i class="hd-pin" style="left:86%;top:41%;--k:0"></i><i class="hd-pin" style="left:44%;top:51%;--k:1"></i><i class="hd-pin" style="left:75%;top:68%;--k:2"></i><span class="hd-tag hd-t1" aria-hidden="true">Ditt rum</span><span class="hd-tag hd-t2" aria-hidden="true">Med RumIQ</span></span>
       <span class="hd-cap"><b>Så fungerar det</b><span>Peka ut var sakerna ska stå. Se dem i rummet.</span></span></a>
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>
         </div>
@@ -351,8 +351,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=2ffff423"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=959303fd"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9592d200"; window.RQ_HEADS_SRC = "assets/heads.json?v=d0831fc7";</script>
-<script src="assets/js/i18n.min.js?v=cb074465"></script>
-<script src="assets/js/site.min.js?v=ea28786a"></script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=3688b71e"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=467b1d86"; window.RQ_HEADS_SRC = "assets/heads.json?v=d0831fc7";</script>
+<script src="assets/js/i18n.min.js?v=2bf88f92"></script>
+<script src="assets/js/site.min.js?v=3358fe30"></script>
 </body>
 </html>

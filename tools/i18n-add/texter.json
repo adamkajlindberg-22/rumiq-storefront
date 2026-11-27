@@ -106,7 +106,6 @@
  "Studio · RumIQ": "Studio · RumIQ",
  "Så fungerar det": "How it works",
  "Peka ut var sakerna ska stå. Se dem i rummet.": "Point out where the things go. See them in the room.",
- "Så fungerar Mitt rum: peka ut var sakerna ska stå och se dem i rummet innan du köper": "How My room works: point out where the things go and see them in the room before you buy",
  "Som present: inga priser på följesedeln och en hälsning på ett kort. Du väljer det i kassan.": "As a gift: no prices on the packing slip and a greeting on a card. You choose it at checkout.",
  "Så kan du göra:": "What you can do:",
  "Mått:": "Size:",
@@ -126,5 +125,6 @@
  "{0} kr kvar av budgeten": "{0} kr left of the budget",
  "{0} kr över budgeten": "{0} kr over the budget",
  "Färdiga uppställningar som hör ihop, {0} % lägre när du tar hela looken.": "Ready arrangements that go together, {0} % less when you take the whole look.",
- "Färdiga uppställningar som hör ihop.": "Ready arrangements that go together."
+ "Färdiga uppställningar som hör ihop.": "Ready arrangements that go together.",
+ "Så fungerar det: peka ut var sakerna ska stå och se dem i rummet innan du köper": "How it works: point out where the things go and see them in the room before you buy"
 }
