@@ -101,8 +101,14 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <main id="view" class="view first" tabindex="-1"><section class="wrap svep" aria-label="Svep">
         <div class="sv-head"><nav aria-label="Brödsmulor"><ol class="crumbs"><li><a href="./">Hem</a></li><li><a href="upptack/">Upptäck</a></li><li><a href="svep/">Svep</a></li><li><span aria-current="page">Hemmakontor</span></li></ol></nav><h1 class="h1">Svep fram din stil.</h1><p class="lead">Höger sparar, vänster hoppar över. Tryck på kortet för att läsa mer.</p>
           <nav class="sv-scope" aria-label="Vad vill du svepa?"><a class="chip" href="svep/">Hela butiken</a><a class="chip" href="svep-rum-vardagsrum/">Vardagsrum</a><a class="chip" href="svep-rum-sovrum/">Sovrum</a><a class="chip" href="svep-rum-kok/">Kök</a><a class="chip" href="svep-rum-badrum/">Badrum</a><a class="chip" href="svep-rum-hall/">Hall</a><a class="chip" href="svep-rum-hemmakontor/" aria-current="true">Hemmakontor</a><a class="chip" href="svep-rum-uteliv/">Uteliv</a></nav>
+          <details class="sv-filter"><summary><span class="sv-f-what">Filtrera: typ, stil, budget</span><span class="sv-f-n" id="svSeen">Sett 0 av 3</span></summary>
+      <div class="sv-f-in"><div class="sv-f-row" role="group" aria-label="Typ"><button type="button" class="chip" data-svf="type:" aria-pressed="true">Alla sorter</button><button type="button" class="chip" data-svf="type:nytt" aria-pressed="false">Nyheter</button><button type="button" class="chip" data-svf="type:lampa" aria-pressed="false">Lampor och ljus</button><button type="button" class="chip" data-svf="type:textil" aria-pressed="false">Textil</button><button type="button" class="chip" data-svf="type:forvaring" aria-pressed="false">Förvaring</button><button type="button" class="chip" data-svf="type:vagg" aria-pressed="false">På väggen</button><button type="button" class="chip" data-svf="type:detalj" aria-pressed="false">Vaser och detaljer</button><button type="button" class="chip" data-svf="type:kok" aria-pressed="false">Kök och bad</button></div>
+      <div class="sv-f-row" role="group" aria-label="Stil"><button type="button" class="chip" data-svf="style:" aria-pressed="true">Alla stilar</button><button type="button" class="chip" data-svf="style:skandinavisk" aria-pressed="false">Skandinavisk</button><button type="button" class="chip" data-svf="style:minimalistisk" aria-pressed="false">Minimalistisk</button><button type="button" class="chip" data-svf="style:klassisk" aria-pressed="false">Klassisk</button><button type="button" class="chip" data-svf="style:mjuk" aria-pressed="false">Mjuk och ombonad</button></div>
+      <div class="sv-f-row" role="group" aria-label="Budget"><button type="button" class="chip" data-svf="max:" aria-pressed="true">Alla priser</button><button type="button" class="chip" data-svf="max:300" aria-pressed="false">Under 300 kr</button><button type="button" class="chip" data-svf="max:600" aria-pressed="false">Under 600 kr</button><button type="button" class="chip" data-svf="max:1000" aria-pressed="false">Under 1&nbsp;000 kr</button><button type="button" class="chip" data-svf="max:2000" aria-pressed="false">Under 2&nbsp;000 kr</button></div>
+      </div></details>
           <ul class="sv-legend">
       <li><kbd aria-hidden="true">→</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></i><div><b>Spara</b><span><em class="sv-tc">Svep åt höger. </em>Hamnar i Mitt hem och lär oss din stil.</span></div></li>
+      <li><kbd aria-hidden="true">L</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path><path d="M12 7.6l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"></path></svg></i><div><b>Älskar</b><span><em class="sv-tc">Dubbeltryck på kortet. </em>Sparas överst i Mitt hem och väger tyngre för din stil.</span></div></li>
       <li><kbd aria-hidden="true">←</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg></i><div><b>Hoppa över</b><span><em class="sv-tc">Svep åt vänster. </em>Du får se mindre av sådant framöver.</span></div></li>
       <li><kbd aria-hidden="true">↑</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg></i><div><b>Lägg i varukorgen</b><span><em class="sv-tc">Svep uppåt. </em>Direkt, utan att lämna svepet. Väskan under kortet gör samma sak.</span></div></li>
       <li><kbd aria-hidden="true">⌫</kbd><i class="sv-ti" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg></i><div><b>Ångra</b><span>Ändrade du dig? Backa ett steg.</span></div></li>
@@ -112,30 +118,33 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <a class="sv-two-link" href="svep-ihop/"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="16.5" cy="9.5" r="2.4"></circle><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14.5 19a4.3 4.3 0 0 1 6.5-3.6"></path></svg><span>Inreder ni tillsammans? <b>Svep tillsammans</b></span></a></div>
         <div class="sv-wrap">
       <div class="sv-prog" aria-hidden="true"><i id="svBar" style="width: 0%;"></i></div>
-      <p class="sv-meta"><span id="svCount">1 av 3</span><span class="sv-chip" id="svChip" hidden=""></span></p>
-      <div class="sv-deck" id="svDeck" tabindex="0" role="group" aria-label="Kortet" aria-keyshortcuts="ArrowRight ArrowLeft ArrowUp Backspace"><article class="sv-card" data-h="forvaringslada-filt" data-img="0" style="--i:2" aria-hidden="true">
+      <p class="sv-meta"><span id="svCount">1 av 3</span><span class="sv-sum" id="svSum" hidden=""></span><span class="sv-chip" id="svChip" hidden=""></span></p>
+      <div class="sv-deck" id="svDeck" tabindex="0" role="group" aria-label="Kortet" aria-keyshortcuts="ArrowRight ArrowLeft ArrowUp L Backspace"><article class="sv-card" data-h="forvaringslada-filt" data-img="0" style="--i:2" aria-hidden="true">
       <div class="sv-ims"><img class="on" src="assets/img/p/forvaringslada-filt-900.webp" srcset="assets/img/p/forvaringslada-filt-600.webp 600w, assets/img/p/forvaringslada-filt-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Förvaringslåda filt" draggable="false" loading="lazy"><img class="" src="assets/img/d/forvaringslada-filt-1200.webp" srcset="assets/img/d/forvaringslada-filt-600.webp 600w, assets/img/d/forvaringslada-filt-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Förvaringslåda filt, detalj" draggable="false" loading="lazy"></div>
+      
       
       
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
-      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
+      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span><span class="sv-stamp love" aria-hidden="true">Älskar</span>
       <div class="sv-info"><div><b>Förvaringslåda filt</b><span>199 kr</span></div><small><span>Sovrum</span> · <span>Hall</span> · <span>Hemmakontor</span></small></div>
     </article><article class="sv-card" data-h="affisch-linje-ekram" data-img="0" style="--i:1" aria-hidden="true">
       <div class="sv-ims"><img class="on" src="assets/img/p/affisch-linje-ekram-900.webp" srcset="assets/img/p/affisch-linje-ekram-600.webp 600w, assets/img/p/affisch-linje-ekram-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Affisch Linje med ekram, 50 × 70" draggable="false"><img class="" src="assets/img/d/affisch-linje-ekram-1200.webp" srcset="assets/img/d/affisch-linje-ekram-600.webp 600w, assets/img/d/affisch-linje-ekram-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Affisch Linje med ekram, 50 × 70, detalj" draggable="false" loading="lazy"></div>
       
       
+      
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
-      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
+      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span><span class="sv-stamp love" aria-hidden="true">Älskar</span>
       <div class="sv-info"><div><b>Affisch Linje med ekram, 50 × 70</b><span>549 kr</span></div><small><span>Vardagsrum</span> · <span>Hemmakontor</span> · <span>Hall</span></small></div>
     </article><article class="sv-card" data-h="skrivbordsorganisator-ek" data-img="0" style="--i:0" aria-hidden="false">
       <div class="sv-ims"><img class="on" src="assets/img/p/skrivbordsorganisator-ek-900.webp" srcset="assets/img/p/skrivbordsorganisator-ek-600.webp 600w, assets/img/p/skrivbordsorganisator-ek-900.webp 900w" sizes="(min-width:900px) 26rem, 88vw" alt="Skrivbordsorganisatör ek" draggable="false"><img class="" src="assets/img/d/skrivbordsorganisator-ek-1200.webp" srcset="assets/img/d/skrivbordsorganisator-ek-600.webp 600w, assets/img/d/skrivbordsorganisator-ek-1200.webp 1200w" sizes="(min-width:900px) 26rem, 88vw" alt="Skrivbordsorganisatör ek, detalj" draggable="false" loading="lazy"></div>
       
       
+      
       <div class="sv-dots" aria-hidden="true"><i class="on"></i><i></i></div>
       
-      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span>
+      <span class="sv-stamp yes" aria-hidden="true">Spara</span><span class="sv-stamp no" aria-hidden="true">Nej tack</span><span class="sv-stamp up" aria-hidden="true">I varukorgen</span><span class="sv-stamp love" aria-hidden="true">Älskar</span>
       <div class="sv-info"><div><b>Skrivbordsorganisatör ek</b><span>349 kr</span></div><small><span>Hemmakontor</span></small></div>
     </article></div>
       <p class="sr" id="svSaid" role="status"></p>
@@ -145,8 +154,9 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
         <button class="sv-b room" type="button" id="svRoom" aria-label="Ställ in i Mitt rum" title="Ställ in i Mitt rum" data-room-btn="skrivbordsorganisator-ek" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><span class="sv-bl" aria-hidden="true">Mitt rum</span></button>
         <button class="sv-b bag" type="button" id="svBag" aria-label="Köp, lägg i varukorgen" title="Köp, lägg i varukorgen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg><span class="sv-bl" aria-hidden="true">Köp</span></button>
         <button class="sv-b yes" type="button" id="svYes" aria-label="Spara" title="Spara"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><span class="sv-bl" aria-hidden="true">Spara</span></button>
+        <button class="sv-b love" type="button" id="svLove" aria-label="Älskar, spara överst" title="Älskar"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path><path d="M12 7.6l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"></path></svg><span class="sv-bl" aria-hidden="true">Älskar</span></button>
       </div>
-      <p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. Backsteg ångrar.</p>
+      <p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. L betyder älskar. Backsteg ångrar.</p>
     </div></section></main>
 
 <footer class="site">
