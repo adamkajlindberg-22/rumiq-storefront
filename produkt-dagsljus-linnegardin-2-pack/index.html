@@ -33,7 +33,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=6759306f">
+<link rel="stylesheet" href="assets/css/site.min.css?v=bbab513e">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -128,6 +128,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <form id="newList" style="display:flex;gap:.5rem;margin-top:.8rem"><label class="sr" for="nl">Ny lista</label><input id="nl" placeholder="Ny lista, till exempel Sommarstugan" maxlength="40"><button class="btn sm" type="submit">Skapa</button></form></div>
             <div class="lk" role="group" aria-label="Leveranskoll"><p class="lk-h">Leveranskoll</p>
         <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="on"><i></i><b>Skickas från</b><span>Lager i EU</span></li><li class="on"><i></i><b>Målet: hos dig</b><span>tis 1 dec. – fre 4 dec.</span></li></ol>
+        <p class="lk-x">Målet: hemma före jul om du beställer senast onsdag 16 december.</p>
+        <p class="lk-g">Som present: inga priser på följesedeln och en hälsning på ett kort. Du väljer det i kassan.</p>
         <p class="lk-f">30 dagars öppet köp. Returen skickas till en adress i Sverige. Fri frakt till ombud och paketskåp från 799 kr.</p></div>
             <a class="hf hf-ask" href="mitt-hem/"><span class="hf-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></span><span><b>Ryms den hos dig?</b><small>Mät fönstret och spara måttet i Mitt hem, så räknar vi ut det åt dig.</small></span></a>
             <div class="example-note"><span>●</span><div><p><b>Exempelprodukt.</b> Den går inte att köpa än. Du kan prova varukorgen och kassan, men inget betalas. Bilderna är skapade med AI, så färg och detaljer kan skilja sig.</p><form class="notify" data-notify="dagsljus-linnegardin-2-pack" novalidate="">
@@ -137,9 +139,10 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <div class="ptabs" data-ptabs="">
               <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
               <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>Linnegardiner är det snabbaste sättet att göra ett rum mjukare. De filtrerar dagsljuset så att det sprider sig, och de skrynkliga vecken gör att de ser lika bra ut slarvigt dragna som perfekt hängda.</p><h2>Så använder du den</h2><ul><li>Häng dem högt, nära taket, så ser fönstret större ut.</li><li>Låt dem gå ända ner till golvet eller någon centimeter ovanför.</li><li>Två längder per fönster ger fina, fylliga veck.</li></ul><div class="p-looks"><span class="eyebrow">Ingår i looks</span><div class="chips"><a class="chip" href="look-sov-gott/">Sov gott</a></div></div><div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
-              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden=""><h2>Passar den hemma?</h2><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="mitt-rum-dagsljus-linnegardin-2-pack/">Mitt rum</a>.</li><li>Fråga <a href="studio-stylist/">stylisten</a> om vad som passar ihop.</li></ul><h2>Material och skötsel</h2><p><b>Material:</b> Tvättat lin, halvtransparent</p><p style="margin-top:.6rem">Tvätta på 40 °C, gärna med liknande färger. Låt lufttorka och skaka ut före torkning så slipper du stryka.</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h2>Mått och fakta</h2><ul class="facts" style="margin-top:0;border-top:0">
+              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden=""><h2>Passar den hemma?</h2><p><b>Mått:</b> 140 × 250 cm.</p><figure class="szf"><svg viewBox="0 0 167 194" width="167" height="194" role="img" aria-label="Dagsljus linnegardin, 2‑pack, 140 × 250 cm, i samma skala som en person, 170 cm"><rect class="szf-p" x="1" y="2.0" width="106.4" height="190.0" rx="3"></rect><g class="szf-r"><g transform="translate(145.5,192)"><circle cx="0" cy="-121.7" r="7.5"></circle><path d="M-13.0,0 L-10.3,-100.8 Q0,-111.1 10.3,-100.8 L13.0,0 Z"></path></g></g></svg>
+      <figcaption><span><i class="szf-k p"></i>Dagsljus linnegardin, 2‑pack</span><span><i class="szf-k r"></i>Bredvid en person, 170 cm</span></figcaption></figure><p>Så kan du göra:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="mitt-rum-dagsljus-linnegardin-2-pack/">Mitt rum</a>.</li><li>Fråga <a href="studio-stylist/">stylisten</a> om vad som passar ihop.</li></ul><h2>Material och skötsel</h2><p><b>Material:</b> Tvättat lin, halvtransparent</p><p style="margin-top:.6rem">Tvätta på 40 °C, gärna med liknande färger. Låt lufttorka och skaka ut före torkning så slipper du stryka.</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h2>Mått och fakta</h2><ul class="facts" style="margin-top:0;border-top:0">
                 <li><span>Artikel</span><span>RQ-1017</span></li>
-                <li><span>Mått</span><span class="pending">Bekräftas när produkten är verifierad</span></li>
+                <li><span>Mått</span><span>140 × 250 cm</span></li>
                 <li><span>Vikt</span><span class="pending">Bekräftas</span></li>
                 <li><span>Material</span><span>Tvättat lin, halvtransparent</span></li>
                 <li><span>Färger</span><span>Havre, Vit</span></li>
@@ -232,8 +235,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=2ffff423"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=905d2327"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9592d200"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=959303fd"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9592d200"; window.RQ_HEADS_SRC = "assets/heads.json?v=d0831fc7";</script>
 <script src="assets/js/i18n.min.js?v=cb074465"></script>
-<script src="assets/js/site.min.js?v=ad91b20f"></script>
+<script src="assets/js/site.min.js?v=ea28786a"></script>
 </body>
 </html>

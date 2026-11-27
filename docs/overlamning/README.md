@@ -19,7 +19,36 @@ Bekräftat på riktiga enheter (BrowserStack, iPhone 18 Pro, iPhone SE iOS 15 oc
 - lampan från produktsidan hamnar på bordet
 - iPhone SE-sidorna fungerar
 
-## 2. Live nu: v15.8 (commit fbfdd37 på `main`, 27 november)
+## 2. Senast: v15.9 (Svep) och v15.10 (utvärderingen 27 november)
+
+**v15.9, publicerad 27 november (commit 2f2d3f3):** Svep med filter (typ, stil, budget, Nyheter), Älskar, Svep-paket och
+Gruppris 10 % från tre saker, stil per typ, looks- och duellkort, kortet "I ditt rum", summan för det sparade och den egna
+rösten på resultatet. Underlag: dokumentet "Svep – analys och plan för att göra den unik".
+
+**v15.10, utifrån "RumIQ – utvärdering inför publicering med riktiga produkter" (betyg 7,5):**
+- Svep börjar med tre knappar (Nej, Köp, Spara). Ångra kommer efter första svaret, Älskar och Mitt rum efter tre.
+- Rumsförslaget visar Svep-paketets pris med det ordinarie priset överstruket bredvid.
+- /studio/ är en egen sida: "Var ska jag börja?" (Svep, Hitta rätt, Mitt rum) och resten av verktygen.
+- Förstasidans topp visar verktyget: en liten slinga där tre platser pekas ut och rummet sedan visas med sakerna.
+- Cookierutan på förstasidan (telefon) är smalare, ungefär en tiondel av skärmen.
+- Produktsidan: mått och en bild i skala (bredvid ett A4-papper, en person eller en soffa) när måtten finns. Leveranskollen
+  säger att varan kan skickas som present och, från november, sista dag för leverans före jul (målet, utifrån config.js).
+- Mitt hem: menyn visar bara delar som har något. De tomma ligger ihopfällda under "Här hamnar också".
+- Rummet som projekt: kvar av budgeten, och "Markera som klart".
+- "Veckans rum" på förstasidan: en look per vecka som provas i sitt rum med ett tryck.
+- "Föreslå saker" i Placera och skapa sprider sakerna över rummet, inte fyra vid samma bord.
+
+**Kvar efter v15.10 (tekniskt):** Dela upp huvudskriptet så att förstasidan laddar under 100 kB komprimerat. I dag:
+site.min.js cirka 217 kB komprimerat. Största delarna: room.js (52 kB), app.js (37 kB), svep.js (27 kB) och ai.js (21 kB).
+Plan: 1) ai.js till verktygsskriptet, och Mitt rum väntar på det som Hitta rätt gör i dag; 2) room.js delas i en kärna
+(rummet, scenen, API:t som produktsidan använder) och redigeraren (Placera och skapa, bladet, väljaren); 3) svep.js och
+myhome.js laddas när sidorna öppnas. Varje steg kräver hela testsviten, eftersom Mitt rum är kärnan.
+
+**Kvar som kräver grundaren eller Shopify:** produktdata (mått, yta, frilagd bild, rum, stilar, färgtoner, leveranstid),
+rabatterna i Shopify (Svep-paket, looks, nyhetsbrev), betalning (Klarna, Swish), AI-bilden, inloggning och synk,
+företagsuppgifter, "Se det hemma"-garantin, omdömen och "Så blev det hemma", användartest med fem personer per kundtyp.
+
+## 2b. v15.8 (commit fbfdd37, 27 november)
 
 v15.7 (Placera och skapa och Svep 2) och v15.8 är publicerade. v15.8 bygger på utvärderingen av hela sajten
 ("RumIQ – granskning av hela sajten (v15.7) mot marknaden"), två oberoende granskningar och en buggjakt.

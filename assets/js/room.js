@@ -432,12 +432,14 @@
         .forEach((q) => { if (cand.length < 6 && cand.filter((c) => c.cat === q.cat).length < 2) cand.push(q); });
       if (!cand.length && avoid.length) return R.suggestSet({ style, budget }); // every other set has been shown: start over
       // where each would stand, in order: a table thing with no table free is left out (said, not put on the floor)
-      const sim = base.map((it) => ({ ...it })), fit = [], noRoom = [];
+      const sim = base.map((it) => ({ ...it })), fit = [], noRoom = [], crowd = [];
       cand.forEach((q) => { const sp = spotFor(q, sim, false, null, null, true), k = kindOf(q);
         if ((sp.moved === "floor" && k !== "floor" && k !== "rug") || (k === "surface" && !tableKnown())) { noRoom.push(q.handle); return; }
         if (/lampa/.test(q.handle) && fit.some((f) => /lampa/.test(f.handle))) return; // one lamp in a set, not two on one small table (studio3 review minor 8)
         if (!mapOf() && k !== "floor" && fit.some((f) => kindOf(f) === k)) return; // your own photo: one print, one rug, one curtain (not two posters leaning side by side)
+        if (mapOf() && sim.filter((o) => Math.abs(o.x - sp.x) < 9 && Math.abs(o.y - sp.y) < 8).length >= 2) { crowd.push(q); return; } /* a sample room: not a third thing in the same corner, the set spreads over the room (evaluation 27 nov) */
         sim.push({ h: q.handle, x: sp.x, y: sp.y, w: sp.w, ...(sp.moved ? { on: sp.moved } : {}) }); fit.push(q); });
+      crowd.forEach((q) => { if (fit.length < 3) fit.push(q); });
       // a room of table things (a kitchen) in your own photo: one of them comes in on the floor in front, to be dragged to the
       // table; once the room knows where the table is, "Ställ dem på bordet" brings the others there (never at a guessed height)
       if (!mapOf() && !tableKnown() && fit.length < 2 && noRoom.length) { const q = RQ.byHandle(noRoom.shift()); fit.unshift(q); }

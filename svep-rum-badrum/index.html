@@ -32,7 +32,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=6759306f">
+<link rel="stylesheet" href="assets/css/site.min.css?v=bbab513e">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -149,12 +149,12 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
     </article></div>
       <p class="sr" id="svSaid" role="status"></p>
       <div class="sv-ctrl" id="svCtrl">
-        <button class="sv-b undo" type="button" id="svUndo" aria-label="Ångra senaste" title="Ångra senaste" disabled=""><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg><span class="sv-bl" aria-hidden="true">Ångra</span></button>
+        <button class="sv-b undo" type="button" id="svUndo" aria-label="Ångra senaste" title="Ångra senaste" disabled="" hidden=""><svg viewBox="0 0 24 24"><path d="M9 7L4 12l5 5"></path><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"></path></svg><span class="sv-bl" aria-hidden="true">Ångra</span></button>
         <button class="sv-b no" type="button" id="svNo" aria-label="Nej tack" title="Nej tack"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg><span class="sv-bl" aria-hidden="true">Nej</span></button>
-        <button class="sv-b room" type="button" id="svRoom" aria-label="Ställ in i Mitt rum" title="Ställ in i Mitt rum" data-room-btn="vaffelhandduk-bomull" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><span class="sv-bl" aria-hidden="true">Mitt rum</span></button>
+        <button class="sv-b room" type="button" id="svRoom" aria-label="Ställ in i Mitt rum" title="Ställ in i Mitt rum" data-room-btn="vaffelhandduk-bomull" aria-pressed="false" hidden=""><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg><span class="sv-bl" aria-hidden="true">Mitt rum</span></button>
         <button class="sv-b bag" type="button" id="svBag" aria-label="Köp, lägg i varukorgen" title="Köp, lägg i varukorgen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path></svg><span class="sv-bl" aria-hidden="true">Köp</span></button>
         <button class="sv-b yes" type="button" id="svYes" aria-label="Spara" title="Spara"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><span class="sv-bl" aria-hidden="true">Spara</span></button>
-        <button class="sv-b love" type="button" id="svLove" aria-label="Älskar, spara överst" title="Älskar"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path><path d="M12 7.6l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"></path></svg><span class="sv-bl" aria-hidden="true">Älskar</span></button>
+        <button class="sv-b love" type="button" id="svLove" aria-label="Älskar, spara överst" title="Älskar" hidden=""><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path><path d="M12 7.6l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z"></path></svg><span class="sv-bl" aria-hidden="true">Älskar</span></button>
       </div>
       <p class="small sv-keys">Piltangenter: höger sparar, vänster hoppar över, uppåt lägger i varukorgen. L betyder älskar. Backsteg ångrar.</p>
     </div></section></main>
@@ -201,8 +201,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=2ffff423"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=905d2327"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9592d200"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=959303fd"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9592d200"; window.RQ_HEADS_SRC = "assets/heads.json?v=d0831fc7";</script>
 <script src="assets/js/i18n.min.js?v=cb074465"></script>
-<script src="assets/js/site.min.js?v=ad91b20f"></script>
+<script src="assets/js/site.min.js?v=ea28786a"></script>
 </body>
 </html>

@@ -33,7 +33,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=6759306f">
+<link rel="stylesheet" href="assets/css/site.min.css?v=bbab513e">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -128,6 +128,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
       <form id="newList" style="display:flex;gap:.5rem;margin-top:.8rem"><label class="sr" for="nl">Ny lista</label><input id="nl" placeholder="Ny lista, till exempel Sommarstugan" maxlength="40"><button class="btn sm" type="submit">Skapa</button></form></div>
             <div class="lk" role="group" aria-label="Leveranskoll"><p class="lk-h">Leveranskoll</p>
         <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="on"><i></i><b>Skickas från</b><span>Lager i EU</span></li><li class="on"><i></i><b>Målet: hos dig</b><span>tis 1 dec. – fre 4 dec.</span></li></ol>
+        <p class="lk-x">Målet: hemma före jul om du beställer senast onsdag 16 december.</p>
+        <p class="lk-g">Som present: inga priser på följesedeln och en hälsning på ett kort. Du väljer det i kassan.</p>
         <p class="lk-f">30 dagars öppet köp. Returen skickas till en adress i Sverige. Fri frakt till ombud och paketskåp från 799 kr.</p></div>
             
             <div class="example-note"><span>●</span><div><p><b>Exempelprodukt.</b> Den går inte att köpa än. Du kan prova varukorgen och kassan, men inget betalas. Bilderna är skapade med AI, så färg och detaljer kan skilja sig.</p><form class="notify" data-notify="stilla-ljusstake-massing-2-pack" novalidate="">
@@ -240,8 +242,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=2ffff423"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=905d2327"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9592d200"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=959303fd"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=9592d200"; window.RQ_HEADS_SRC = "assets/heads.json?v=d0831fc7";</script>
 <script src="assets/js/i18n.min.js?v=cb074465"></script>
-<script src="assets/js/site.min.js?v=ad91b20f"></script>
+<script src="assets/js/site.min.js?v=ea28786a"></script>
 </body>
 </html>

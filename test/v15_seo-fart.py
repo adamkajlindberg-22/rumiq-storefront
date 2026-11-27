@@ -117,7 +117,7 @@ for r, target in list(build.ALIAS.items()) + [("mitt-rum-lysa-keramiklampa", "mi
 sm = ET.parse(ROOT / "sitemap.xml").getroot()
 locs = [e.text for e in sm.iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")]
 ok(sorted(locs) == sorted(url(r) for r in shown), f"sitemap lists exactly the findable pages ({len(locs)})")
-ok(not any(url(r) in locs for r in ("kassa", "konto", "mitt-rum-lysa-keramiklampa", "studio", "svep-rum-kok")), "sitemap leaves out personal pages, aliases and near-copies")
+ok(not any(url(r) in locs for r in ("kassa", "konto", "mitt-rum-lysa-keramiklampa", "svep-rum-kok")), "sitemap leaves out personal pages, aliases and near-copies")
 ok((ROOT / "robots.txt").read_text() == "User-agent: *\nDisallow: /\n", "robots.txt keeps search engines out of the test site")
 items = ET.parse(ROOT / "feed/products.xml").getroot().find("channel").findall("item")
 g = "{http://base.google.com/ns/1.0}"
@@ -151,7 +151,8 @@ m = {"title": "T", "description": "D", "canonical": "butik", "noindex": build.is
 ok('content="index,follow,max-image-preview:large"' in build.render_head("butik", m, "<head><base href=\"./\"><!--seo--></head>"), "launch: a shop page can be found")
 m["noindex"] = build.is_hidden("kassa")
 ok('content="noindex,follow"' in build.render_head("kassa", m, "<head><!--seo--></head>"), "launch: the checkout stays hidden")
-ok(all(build.is_hidden(r) for r in ("konto", "mitt-rum-lysa-keramiklampa", "svep-rum-kok", "studio", "rosta", "nyheter")) and not any(build.is_hidden(r) for r in ("", "butik", "mitt-rum", "svep", "faq", "produkt-lysa-keramiklampa")), "launch: the right pages are hidden")
+ok(not build.is_hidden("studio") and url("studio") in locs, "Studio is its own page now (evaluation 27 nov), listed for search engines")
+ok(all(build.is_hidden(r) for r in ("konto", "mitt-rum-lysa-keramiklampa", "svep-rum-kok", "rosta", "nyheter")) and not any(build.is_hidden(r) for r in ("", "butik", "mitt-rum", "svep", "faq", "produkt-lysa-keramiklampa")), "launch: the right pages are hidden")
 build.LAUNCH = False
 
 
