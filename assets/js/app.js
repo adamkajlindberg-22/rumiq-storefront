@@ -705,7 +705,7 @@
           <h2 class="h3 st-h">Mer i Studio</h2>
           <div class="st-mores">
             ${more("svep-ihop", "Svep tillsammans", "Skicka korten till den du bor med och se vad ni båda gillar.")}
-            ${more("looks", "Looks", "Färdiga uppställningar som hör ihop, 10 % lägre när du tar hela looken.")}
+            ${more("looks", "Looks", +(window.RQ_CONFIG || {}).lookDiscount ? `Färdiga uppställningar som hör ihop, ${Math.round(window.RQ_CONFIG.lookDiscount * 100)} % lägre när du tar hela looken.` : "Färdiga uppställningar som hör ihop.")}
             ${more("studio-stylist", "Stylisten", "Beskriv rummet med egna ord och få förslag.")}
             ${more("mitt-hem", "Mitt hem", "Det du har sparat, dina rum och din stil på ett ställe.")}
           </div></section>`,

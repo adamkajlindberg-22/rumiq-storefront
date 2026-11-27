@@ -46,7 +46,9 @@ myhome.js laddas när sidorna öppnas. Varje steg kräver hela testsviten, efter
 
 **Kvar som kräver grundaren eller Shopify:** produktdata (mått, yta, frilagd bild, rum, stilar, färgtoner, leveranstid),
 rabatterna i Shopify (Svep-paket, looks, nyhetsbrev), betalning (Klarna, Swish), AI-bilden, inloggning och synk,
-företagsuppgifter, "Se det hemma"-garantin, omdömen och "Så blev det hemma", användartest med fem personer per kundtyp.
+företagsuppgifter, omdömen och "Så blev det hemma", användartest med fem personer per kundtyp.
+
+**Beslut 27 november:** ingen "Se det hemma"-garanti (grundaren).
 
 ## 2b. v15.8 (commit fbfdd37, 27 november)
 

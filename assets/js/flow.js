@@ -126,7 +126,7 @@
     xmas(c, now = new Date()) {
       if (!c.maxDays || now.getMonth() < 10) return null; const eve = new Date(now.getFullYear(), 11, 23, 23, 59);
       const end = (d) => { const x = new Date(d); x.setHours(10, 0, 0, 0); if (x.getDay() === 0 || x.getDay() === 6) while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() + 1); let left = c.maxDays; while (left > 0) { x.setDate(x.getDate() + 1); if (x.getDay() !== 0 && x.getDay() !== 6) left--; } return x; };
-      let last = null; for (let i = 0; i < 62; i++) { const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 10); if (end(d) <= eve) last = d; else if (last) break; }
+      let last = null; for (let i = now.getHours() >= (c.cutoffHour || 14) ? 1 : 0; i < 62; i++) { const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 10); if (end(d) <= eve) last = d; else if (last) break; } /* after the cut-off hour today no longer counts (review) */
       return last && last.getFullYear() === now.getFullYear() ? last : null;
     },
     html(p) {

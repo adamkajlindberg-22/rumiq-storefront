@@ -100,7 +100,6 @@
  "Ställ det i ett exempelrum eller i ett foto av ditt eget rum och se storleken.": "Put it in a sample room or in a photo of your own room and see the size.",
  "Mer i Studio": "More in Studio",
  "Skicka korten till den du bor med och se vad ni båda gillar.": "Send the cards to the person you live with and see what you both like.",
- "Färdiga uppställningar som hör ihop, 10 % lägre när du tar hela looken.": "Ready arrangements that go together, 10 % less when you take the whole look.",
  "Beskriv rummet med egna ord och få förslag.": "Describe the room in your own words and get suggestions.",
  "Det du har sparat, dina rum och din stil på ett ställe.": "What you have saved, your rooms and your style in one place.",
  "Alla verktyg": "All tools",
@@ -125,5 +124,7 @@
  "Veckans rum · vecka {0}": "Room of the week · week {0}",
  "hela looken {0} % lägre": "the whole look {0} % less",
  "{0} kr kvar av budgeten": "{0} kr left of the budget",
- "{0} kr över budgeten": "{0} kr over the budget"
+ "{0} kr över budgeten": "{0} kr over the budget",
+ "Färdiga uppställningar som hör ihop, {0} % lägre när du tar hela looken.": "Ready arrangements that go together, {0} % less when you take the whole look.",
+ "Färdiga uppställningar som hör ihop.": "Ready arrangements that go together."
 }

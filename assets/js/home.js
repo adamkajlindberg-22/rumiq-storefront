@@ -164,7 +164,7 @@
      three places pointed out, then the same room with the things in it (the photos of the before/after below). */
   const HD = [[86, 47], [44, 57], [75, 74]];
   const heroDemo = () => `<a class="hdemo" href="#mitt-rum" aria-label="Så fungerar Mitt rum: peka ut var sakerna ska stå och se dem i rummet innan du köper">
-      <span class="hd-im"><img class="rh-flip hd-before" src="assets/img/rum/sovrum-fore-600.webp" alt="" width="600" height="336" decoding="async"><img class="rh-flip hd-after" src="assets/img/rum/sovrum-efter-600.webp" alt="" width="600" height="336" decoding="async">
+      <span class="hd-im"><img class="rh-flip hd-before" src="assets/img/rum/sovrum-fore-600.webp" alt="" width="600" height="336" decoding="async" fetchpriority="low"><img class="rh-flip hd-after" src="assets/img/rum/sovrum-efter-600.webp" alt="" width="600" height="336" decoding="async" loading="lazy" fetchpriority="low">
         ${HD.map(([x, y], k) => `<i class="hd-pin" style="left:${x}%;top:${y - 6}%;--k:${k}"></i>`).join("")}<span class="hd-tag hd-t1">Ditt rum</span><span class="hd-tag hd-t2">Med RumIQ</span></span>
       <span class="hd-cap"><b>Så fungerar det</b><span>Peka ut var sakerna ska stå. Se dem i rummet.</span></span></a>`;
 
