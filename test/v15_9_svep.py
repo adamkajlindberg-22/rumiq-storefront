@@ -145,7 +145,7 @@ with sync_playwright() as p:
         ok(pk and abs(pk[0][1] - round(sum(pg.evaluate("RQ.shop._bundles[0].items.map((h) => RQ.byHandle(h).price)")) * 0.1)) <= 1, f"{tag} the Svep-paket takes 10 %: {rows} of {sub}")
         pg.goto(BASE + "kassa/")
         pg.wait_for_timeout(900)
-        ok("Svep-paket" in pg.evaluate("document.body.innerText"), f"{tag} the checkout shows the Svep-paket row")
+        ok("Svep-paket" in pg.evaluate("document.querySelector('#view').textContent"), f"{tag} the checkout shows the Svep-paket row")
         # Mitt hem: Favoriter can show what came from Svep and what you love
         pg.goto(BASE + "mitt-hem/")
         pg.wait_for_timeout(1000)

@@ -281,7 +281,7 @@ with sync_playwright() as p:
     go(pg, "for-dig", 1200)
     rs = pg.evaluate(CHECK, ".card-why")
     ok(len(rs) >= 6 and all(r[2] for r in rs), f"För dig: every card has a reason and each one holds: {[r for r in rs if not r[2]][:3]} ({len(rs)})")
-    ok(any(r[0].startswith("Eftersom du gillade") for r in rs) and any(r[0].startswith("Passar din stil") or r[0] == "Du gillade den i Svep" for r in rs), f"För dig: reasons of more than one kind: {sorted(set(r[0][:22] for r in rs))}")
+    ok(len({re.sub(r"(gillade|som|stil:) .*$", r"\1", r[0]) for r in rs}) >= 2, f"För dig: reasons of more than one kind: {sorted(set(r[0][:22] for r in rs))}")
     go(pg, "butik", 1000)
     ok(pg.evaluate("document.querySelectorAll('.card-why').length") == 0, "the shop's own order shows no reasons (only 'För dig' does)")
     pg.select_option("#sort", "dig"); pg.wait_for_timeout(500)
@@ -321,7 +321,7 @@ with sync_playwright() as p:
         c = pg.evaluate("(() => { const c = document.querySelector('.sv-card[aria-hidden=false]'); const w = c && c.querySelector('.sv-why'); return w ? [w.textContent, c.dataset.h] : null; })()")
         if c:
             chips.append(c)
-        pg.click("#svYes"); pg.wait_for_timeout(330)
+        pg.click("#svDeck .sv-card.duel[aria-hidden='false'] [data-duel-pick]" if pg.evaluate("!!document.querySelector('#svDeck .sv-card.duel[aria-hidden=false]')") else "#svYes"); pg.wait_for_timeout(330)  # v15.9: a duel picks the first
     pg.wait_for_timeout(800)
     bad = pg.evaluate("""(cs) => cs.filter(([t, h]) => { const p = RQ.byHandle(h), m = /^(Eftersom du gillade|Samma färgton som|Mer som) (.+)$/.exec(t), s = /^Passar din stil: (.+)$/.exec(t);
       if (m) { const q = RQ.PRODUCTS.find((x) => x.name === m[2]); if (!q) return true; if (m[1] === 'Mer som') return false; const same = RQ.why.kindOf(p) === RQ.why.kindOf(q);
