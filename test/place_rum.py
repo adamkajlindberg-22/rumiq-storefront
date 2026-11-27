@@ -289,7 +289,7 @@ with sync_playwright() as p:
     pg.mouse.click(st[0] + st[2] * 0.30, st[1] + st[3] * 0.35); pg.wait_for_timeout(400)
     ps = {x["h"]: x for x in pg.evaluate(PINS)}; gl, va = ps["glob-bordslampa-opalglas"], ps["glod-doftljus-keramik"]
     ok(gl["surface"] in ("bord", "golv") and (gl["surface"] != va["surface"] or abs(gl["x"] - va["x"]) > (gl["w"] + va["w"]) * 0.4) and not any(o["h"] != gl["h"] and o["x"] == gl["x"] and o["y"] == gl["y"] for o in ps.values()), f"[M1] the lamp put on the wall stands on a free place, not on the candle: {gl} / {va}")
-    ok("kan stå på bord eller golv" in pg.evaluate("document.getElementById('plHint').textContent") or "fullt" in pg.evaluate("document.getElementById('plHint').textContent"), f"[M1] and the page says why: {pg.evaluate('document.getElementById(\"plHint\").textContent')}")
+    ok("kan stå på bordet eller golvet" in pg.evaluate("document.getElementById('plHint').textContent") or "fullt" in pg.evaluate("document.getElementById('plHint').textContent"), f"[M1] and the page says why: {pg.evaluate('document.getElementById(\"plHint\").textContent')}")
     ok(not pg.errs, f"[B2/M1] no script errors: {pg.errs[:2]}")
     c.close()
 

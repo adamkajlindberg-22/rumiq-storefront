@@ -33,7 +33,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=c3ad1053">
+<link rel="stylesheet" href="assets/css/site.min.css?v=0059fb78">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -115,7 +115,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
             <p class="small qty-note" id="qtyNote" role="status"></p><p class="sr" id="qtySaid" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>
-            <a class="roomcta" href="mitt-rum-sand-keramikvas/"><span class="rc-img"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></span><span><b>Prova i Mitt rum</b><small>I ett exempelrum eller i en bild av ditt eget rum.</small></span><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></a>
+            <a class="roomcta" href="mitt-rum-sand-keramikvas/"><span class="rc-img"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></span><span><b>Prova i Mitt rum</b><small>I ett exempelrum eller i en bild av ditt eget rum.</small></span><svg class="rc-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a>
             <button type="button" class="roomcta p3d-btn" data-3d="sand-keramikvas"><span class="rc-img"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"></path><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"></path></svg></span><span><b>Visa i 3D</b><small>Snurra och zooma. På mobilen kan du ställa den i rummet med kameran.</small></span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg></button>
             <div class="pactions">
               <button type="button" data-wish="sand-keramikvas" aria-pressed="false" aria-label="Spara Sand keramikvas"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><span aria-hidden="true">Spara</span></button>
@@ -232,8 +232,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=fb2c4be9"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=1dd301e8"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=6d26792d"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=1dd301e8"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
 <script src="assets/js/i18n.min.js?v=fc22acdb"></script>
-<script src="assets/js/site.min.js?v=c63220ea"></script>
+<script src="assets/js/site.min.js?v=e8d4b3f5"></script>
 </body>
 </html>

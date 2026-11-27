@@ -80,6 +80,7 @@ def shot(pg, name):
 
 def first_room(pg, label="Vardagsrummet", style="skandinavisk", how="sample"):
     go(pg, "mitt-hem", 1300)
+    pg.evaluate("document.querySelectorAll('.hem-first-wrap').forEach((d) => { d.open = true; })")  # v15.8: behind one button when other things are saved
     pg.fill("#hemFirstF [name=label]", label)
     if style:
         pg.evaluate("(s) => document.querySelector(`#hemFirstF [data-first-style=${s}]`).click()", style)
@@ -417,6 +418,7 @@ with sync_playwright() as p:
         # your own photo from Skapa ditt första rum: the room type and style go with it, the editor never asks again
         pg.evaluate("RQ.hem.rooms().forEach((r) => RQ.hem.remove(r.id))")  # the demo picture above was saved into a room of its own (M8); this part starts with none
         go(pg, "mitt-hem", 1200)
+        pg.evaluate("document.querySelectorAll('.hem-first-wrap').forEach((d) => { d.open = true; })")
         pg.fill("#hemFirstF [name=label]", "Hallen"); pg.select_option("#hemFirstF select[name=type]", "hall")
         pg.evaluate("document.querySelector('#hemFirstF [data-first-style=minimalistisk]').click()")
         pg.evaluate("document.querySelector('#hemFirstF button[value=own]').click()"); pg.wait_for_timeout(900)

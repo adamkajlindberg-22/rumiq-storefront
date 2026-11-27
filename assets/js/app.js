@@ -395,7 +395,7 @@
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
             <p class="small qty-note" id="qtyNote" role="status"></p><p class="sr" id="qtySaid" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>${part("pay", () => RQ.payRow())}
-            <a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${hasRoom ? part("room", () => RQ.room.thumb(), RQ.roomIco) : RQ.roomIco}</span><span><b>Prova i Mitt rum</b><small>${hasRoom ? "Se den hemma hos dig och handla hela rummet på en gång." : "I ett exempelrum eller i en bild av ditt eget rum."}</small></span>${RQ.roomIco}</a>
+            <a class="roomcta" href="#mitt-rum-${p.handle}"><span class="rc-img">${hasRoom ? part("room", () => RQ.room.thumb(), RQ.roomIco) : RQ.roomIco}</span><span><b>Prova i Mitt rum</b><small>${hasRoom ? "Se den hemma hos dig och handla hela rummet på en gång." : "I ett exempelrum eller i en bild av ditt eget rum."}</small></span><svg class="rc-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>
             ${RQ.p3d ? part("3d", () => RQ.p3d.card(p)) : ""}
             <div class="pactions">
               <button type="button" data-wish="${p.handle}" aria-pressed="${S.isWished(p.handle)}" aria-label="Spara ${esc(p.name)}">${I.heart}<span aria-hidden="true">${S.isWished(p.handle) ? "Sparad" : "Spara"}</span></button>

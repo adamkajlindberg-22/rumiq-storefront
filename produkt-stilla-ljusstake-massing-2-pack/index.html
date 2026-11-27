@@ -33,7 +33,7 @@ var d=new Date(),h=d.getHours()+d.getMinutes()/60,S=[[8.7,15],[7.6,16.3],[6.3,17
 var eve=h<S[0]||h>=Math.max(S[1],17),t=m==="dag"?"dag":m==="kvall"?"kvall":(eve?"kvall":"dag"),r=document.documentElement;
 r.setAttribute("data-light",t);r.setAttribute("data-light-mode",m);
 var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kvall"?"#191A18":"#EDEDEA";})();</script>
-<link rel="stylesheet" href="assets/css/site.min.css?v=c3ad1053">
+<link rel="stylesheet" href="assets/css/site.min.css?v=0059fb78">
 </head>
 <body>
 <a class="skip" href="#view">Hoppa till innehållet</a>
@@ -104,7 +104,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
           <div class="pg">
             <div class="pg-grid" id="pgGrid" style="--tone:#C9A36A22"><button type="button" class="pg-item" data-gi="0"><img class="fade ok" src="assets/img/p/stilla-ljusstake-massing-2-pack-1400.webp" alt="Stilla ljusstake mässing, 2‑pack, miljöbild" style="view-transition-name:pimg" fetchpriority="high" decoding="async" width="1400" height="1750" onerror="this.closest('.pg-item').remove()"><span class="tag">Exempel</span><span class="zhint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"></path></svg>Zooma</span></button><button type="button" class="pg-item" data-gi="1"><img class="fade ok" src="assets/img/d/stilla-ljusstake-massing-2-pack-1200.webp" alt="Stilla ljusstake mässing, 2‑pack, detalj" loading="lazy" decoding="async" width="1200" height="1200" onerror="this.closest('.pg-item').remove()"><span class="zhint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"></path></svg>Zooma</span></button><button type="button" class="pg-item cut" data-gi="2"><img class="fade ok" src="assets/img/cut/stilla-ljusstake-massing-2-pack.webp" alt="Stilla ljusstake mässing, 2‑pack, frilagd" loading="lazy" decoding="async" onerror="this.closest('.pg-item').remove()"><span class="zhint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4.2-4.2M11 8.5v5M8.5 11h5"></path></svg>Zooma</span></button></div>
             
-            <div class="pg-dots" id="pgDots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+            <div class="pg-dots" id="pgDots" aria-hidden="true"></div>
           </div>
           <div class="pinfo">
             <a class="eyebrow" href="kategori-belysning-atmosfar/">Belysning &amp; atmosfär</a>
@@ -115,7 +115,7 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
             <div class="buy"><div class="qty"><button type="button" data-q="-1" aria-label="Minska">−</button><input id="qty" type="number" value="1" min="1" max="99" aria-label="Antal" inputmode="numeric"><button type="button" data-q="1" aria-label="Öka">+</button></div><button class="btn" type="button" id="add">Lägg i varukorgen</button></div>
             <p class="small qty-note" id="qtyNote" role="status"></p><p class="sr" id="qtySaid" role="status"></p>
             <p class="buy-alt">Vill du handla direkt? <button type="button" class="tlink" id="buyNow">Gå till kassan</button></p>
-            <a class="roomcta" href="mitt-rum-stilla-ljusstake-massing-2-pack/"><span class="rc-img"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></span><span><b>Prova i Mitt rum</b><small>I ett exempelrum eller i en bild av ditt eget rum.</small></span><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></a>
+            <a class="roomcta" href="mitt-rum-stilla-ljusstake-massing-2-pack/"><span class="rc-img"><svg viewBox="0 0 24 24"><path d="M3.5 20V10l8.5-6 8.5 6v10"></path><path d="M9 20v-5.5h6V20"></path></svg></span><span><b>Prova i Mitt rum</b><small>I ett exempelrum eller i en bild av ditt eget rum.</small></span><svg class="rc-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></a>
             
             <div class="pactions">
               <button type="button" data-wish="stilla-ljusstake-massing-2-pack" aria-pressed="false" aria-label="Spara Stilla ljusstake mässing, 2‑pack"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg><span aria-hidden="true">Spara</span></button>
@@ -240,8 +240,8 @@ var tc=document.querySelector('meta[name=theme-color]');if(tc)tc.content=t==="kv
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="assets/js/config.js?v=5b483374"></script>
-<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=fb2c4be9"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=1dd301e8"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
+<script>window.RQ_TOOLS_SRC = "assets/js/site-tools.min.js?v=6d26792d"; window.RQ_EN_SRC = "assets/js/i18n-en.min.js?v=1dd301e8"; window.RQ_HEADS_SRC = "assets/heads.json?v=5e190c88";</script>
 <script src="assets/js/i18n.min.js?v=fc22acdb"></script>
-<script src="assets/js/site.min.js?v=c63220ea"></script>
+<script src="assets/js/site.min.js?v=e8d4b3f5"></script>
 </body>
 </html>

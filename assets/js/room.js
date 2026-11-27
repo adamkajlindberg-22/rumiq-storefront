@@ -936,8 +936,8 @@
     if ((CAN[k] || []).includes(sOn)) it.on = sOn; delete it.row; delete it.sg; it.pc = true;
     const wa = widthAt(it); it.w = wa.w; if (wa.sure) it.real = true; else delete it.real;
     /* why it is not where it was put: said by the page (R.pinNote) */
-    const far = Math.hypot(it.x - x, (it.y - y) * 1.6) > 6, nm = p.name, vb = verbOf(it), can = (CAN[k] || ["golv"]).map((c) => SURF[c]);
-    R.pinNote = full ? `${SURF_DEF[s2].replace(/^./, (c) => c.toUpperCase())} är fullt, så den ${vb} ${SURF_DEF[sOn]} nu.` : low ? `${nm} ${vb} ${SURF_DEF.golv}, så den kan inte flyttas högre upp.` : far && !sf ? `${nm} kan ${INF[vb] || "stå på"} ${can.length > 1 ? can.slice(0, -1).join(", ") + " eller " + can[can.length - 1] : can[0]}, så den ${vb} ${SURF_DEF[sOn]} nu.` : far ? `Där var det fullt, så den ${vb} på närmaste lediga plats.` : "";
+    const far = Math.hypot(it.x - x, (it.y - y) * 1.6) > 6, nm = p.name, vb = verbOf(it), can = (CAN[k] || ["golv"]).map((c) => SURF_DEF[c]); /* "kan stå på bordet eller golvet" */
+    R.pinNote = full ? `${SURF_DEF[s2].replace(/^./, (c) => c.toUpperCase())} är fullt, så den ${vb} ${SURF_DEF[sOn]} nu.` : low && far ? `${nm} ${vb} ${SURF_DEF.golv}, så den kan inte flyttas högre upp.` : far && !sf ? `${nm} kan ${INF[vb] || "stå på"} ${can.length > 1 ? can.slice(0, -1).join(", ") + " eller " + can[can.length - 1] : can[0]}, så den ${vb} ${SURF_DEF[sOn]} nu.` : far ? `Där var det fullt, så den ${vb} på närmaste lediga plats.` : "";
     list[i] = it; return R.saveScene(list); };
   const SURF_DEF = { golv: "golvet", bord: "bordet", vagg: "väggen", sang: "sängen", soffa: "soffan" }, INF = { "står på": "stå på", "ligger på": "ligga på", "hänger på": "hänga på", "hänger vid": "hänga vid" };
   /* the order of the pins: one step earlier or later (the number on the pin follows) */
