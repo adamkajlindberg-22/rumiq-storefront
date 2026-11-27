@@ -51,7 +51,6 @@
             <div class="band settle"><h1>Ditt hem.<br>Din vision.<br>Din stil.</h1><p class="sub"><b>Se ditt hem innan du köper.</b> Noga utvald belysning, textil och förvaring, och verktyg som visar allt i ditt eget rum.</p>
               <div class="row">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a>` : `<a class="btn" href="#mitt-rum">Prova i Mitt rum</a>`}<a class="btn ghost" href="#butik">Upptäck butiken</a></div></div>
           </div>
-          ${heroDemo()}
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>
         </div>
       </section>
@@ -116,7 +115,7 @@
     const sizes = "(max-width: 900px) 100vw, 60vw";
     const stage = mine
       ? `<div class="rh-stage" style="aspect-ratio:${R.get().w} / ${R.get().h}"><img class="rh-bg" src="${R.url()}" alt="Ditt rum med produkterna du ställt in" loading="lazy"><div class="ba-after">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-item" style="left:${it.x}%;top:${it.y}%;width:${it.w}%"><img src="${R.cutIn ? R.cutIn(p) : RQ.cut(p)}" alt="" loading="lazy" style="${it.sy ? `aspect-ratio:1 / ${(R.PLACE[it.h][2] * it.sy).toFixed(3)};` : ""}filter:${R.lightFilter(it.light)}"></span>`; }).join("")}</div>`
-      : `<div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-fore-900.webp" srcset="${set("fore")}" sizes="${sizes}" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async" width="1344" height="752"><div class="ba-after"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-efter-900.webp" srcset="${set("efter")}" sizes="${sizes}" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async" width="1344" height="752">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-tag${it.l ? " l" : ""}" style="left:${it.x}%;top:${it.y}%"><i></i><span><b>${RQ.esc(p.name)}</b> ${S.kr(p.price)}</span></span>`; }).join("")}</div>`;
+      : `<div class="rh-stage rh-photo" style="aspect-ratio:1344 / 752"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-fore-900.webp" srcset="${set("fore")}" sizes="${sizes}" alt="Ett ljust sovrum innan, med tomt nattduksbord och bar säng" loading="lazy" decoding="async" width="1344" height="752"><div class="ba-after"><img class="rh-bg rh-flip" src="assets/img/rum/sovrum-efter-900.webp" srcset="${set("efter")}" sizes="${sizes}" alt="Samma sovrum med Lysa keramiklampa, Pläd ullblandning havre och Flätad förvaringskorg" loading="lazy" decoding="async" width="1344" height="752">${items.map((it) => { const p = RQ.byHandle(it.h); return `<span class="rh-tag${it.l ? " l" : ""}" style="left:${it.x}%;top:${it.y}%"><i></i><span><b>${RQ.esc(p.name)}</b> ${S.kr(p.price)}</span></span>`; }).join("")}</div>${items.map((it, k) => `<i class="bav-pin" aria-hidden="true" style="left:${it.x}%;top:${it.y - 6}%;--k:${k}"></i>`).join("")}`;
     // the line starts left of the things, so every one of them shows "after" at first
     const start = mine ? Math.round(Math.max(10, Math.min(50, Math.min(...items.map((it) => it.x - it.w / 2)) - 4))) : 31;
     return `<figure class="rh-fig bav" style="--ba:${start}%">${stage}
@@ -160,17 +159,8 @@
           <div class="ctrl-row"><button class="btn" type="button" data-rh-try="${ps.map((p) => p.handle).join(",")}" data-rh-room="${l.room}">${RQ.roomIco}<span>Prova rummet</span></button><a class="btn ghost" href="#look-${l.id}">Se looken</a></div>
           <p class="small wk-next">Ett nytt rum varje måndag.</p></div></div></section>`; };
 
-  /* evaluation 27 nov: the first screen shows the tool, not only a mood. A small loop in the hero: the bedroom before,
-     three places pointed out, then the same room with the things in it (the photos of the before/after below). */
-  const HD = [[86, 47], [44, 57], [75, 74]];
-  const heroDemo = () => `<a class="hdemo" href="#mitt-rum">
-      <span class="hd-im"><img class="rh-flip hd-before" src="assets/img/rum/sovrum-fore-600.webp" alt="" width="600" height="336" decoding="async" fetchpriority="low"><img class="rh-flip hd-after" src="assets/img/rum/sovrum-efter-600.webp" alt="" width="600" height="336" decoding="async" loading="lazy" fetchpriority="low">
-        ${HD.map(([x, y], k) => `<i class="hd-pin" style="left:${x}%;top:${y - 6}%;--k:${k}"></i>`).join("")}<span class="hd-tag hd-t1" aria-hidden="true">Ditt rum</span><span class="hd-tag hd-t2" aria-hidden="true">Med RumIQ</span></span>
-      <span class="hd-cap"><b>Så fungerar det</b><span>Peka ut var sakerna ska stå. Se dem i rummet.</span></span></a>`;
-
   function mountHome(root) {
     const off = [];
-    { const hd = $(".hdemo", root); if (hd && window.IntersectionObserver) { const io = new IntersectionObserver((es) => es.forEach((e) => hd.classList.toggle("run", e.isIntersecting))); io.observe(hd); off.push(() => io.disconnect()); } } /* the demo plays only while it is seen */
     const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); off.push(() => t.removeEventListener(ev, fn, o)); };
     const hero = $("#hero", root), video = $("#heroVideo", root), first = $(".stage .first", root), wide = $(".stage .wide", root), cue = $("#cue", root);
     let isStatic = staticHero(); const html = document.documentElement;

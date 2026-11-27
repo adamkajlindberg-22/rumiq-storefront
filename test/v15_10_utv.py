@@ -62,10 +62,14 @@ with sync_playwright() as p:
         pg.goto(BASE + "studio/"); pg.wait_for_timeout(900)
         ok(pg.evaluate("document.querySelector('#view h1').textContent") == "Studio" and pg.evaluate("document.querySelectorAll('.st-step').length") == 3, f"{tag} /studio/ is the Studio page with three steps")
         ok(pg.evaluate("[...document.querySelectorAll('.st-step')].map((a) => a.getAttribute('href').replace(/^#|\\/$/g, ''))") == ["svep", "hitta-ratt", "mitt-rum"], f"{tag} Studio: Svep, Hitta rätt, Mitt rum in that order")
-        # the hero shows the tool
-        pg.goto(BASE); pg.wait_for_timeout(1800)
-        hd = pg.evaluate("(() => { const a = document.querySelector('.hdemo'); if (!a) return null; const r = a.getBoundingClientRect(); return [a.getAttribute('href'), r.top >= 0 && r.bottom <= innerHeight, getComputedStyle(a).opacity, document.querySelectorAll('.hdemo .hd-pin').length]; })()")
-        ok(hd and hd[0].strip("#/") == "mitt-rum" and hd[1] and float(hd[2]) > 0.9 and hd[3] == 3, f"{tag} the hero shows how Mitt rum works, in view: {hd}")
+        # the hero is calm (founder 27 nov); the tool is shown in "Prova produkterna i ditt rum": pins, then the slide
+        pg.goto(BASE); pg.wait_for_timeout(1200)
+        ok(not pg.evaluate("!!document.querySelector('#hero .hdemo, #hero a.hdemo')"), f"{tag} the hero holds only the picture, the title and two buttons")
+        ok(pg.evaluate("document.querySelectorAll('.bav .bav-pin').length") == 3 and pg.evaluate("document.querySelector('.bav .ba-range').value") == "100", f"{tag} the sample room waits as it is, with three pins to come")
+        pg.evaluate("document.querySelector('.bav').scrollIntoView({ block: 'center' })"); pg.wait_for_timeout(1000)
+        ok("pinning" in pg.evaluate("document.querySelector('.bav').className"), f"{tag} in view, the places are pointed out")
+        pg.wait_for_timeout(3000)
+        ok(pg.evaluate("[document.querySelector('.bav .ba-range').value, document.querySelector('.bav').classList.contains('placed')]") == ["31", True], f"{tag} then the picture slides to the room with the things in it")
         # Veckans rum
         wk = pg.evaluate("(() => { const s = document.getElementById('veckans-rum'); return s && [s.querySelector('.eyebrow').textContent, s.querySelectorAll('.wk-it').length, !!s.querySelector('[data-rh-try][data-rh-room]')]; })()")
         ok(wk and wk[0].startswith("Veckans rum · vecka ") and wk[1] >= 3 and wk[2], f"{tag} Veckans rum: one look this week, tried in its room: {wk}")
@@ -127,7 +131,7 @@ with sync_playwright() as p:
     pg.goto(BASE + "studio/"); pg.wait_for_timeout(1000)
     ok("Where do I start?" in pg.evaluate("document.body.innerText"), "en: Studio in English")
     pg.goto(BASE); pg.wait_for_timeout(1400)
-    ok("How it works" in pg.evaluate("document.querySelector('.hdemo').innerText") and "Room of the week" in pg.evaluate("document.getElementById('veckans-rum').innerText"), "en: the hero demo and Veckans rum in English")
+    ok("Room of the week" in pg.evaluate("document.getElementById('veckans-rum').innerText"), "en: Veckans rum in English")
     ctx.close()
     b.close()
 

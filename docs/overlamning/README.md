@@ -29,7 +29,8 @@ rösten på resultatet. Underlag: dokumentet "Svep – analys och plan för att 
 - Svep börjar med tre knappar (Nej, Köp, Spara). Ångra kommer efter första svaret, Älskar och Mitt rum efter tre.
 - Rumsförslaget visar Svep-paketets pris med det ordinarie priset överstruket bredvid.
 - /studio/ är en egen sida: "Var ska jag börja?" (Svep, Hitta rätt, Mitt rum) och resten av verktygen.
-- Förstasidans topp visar verktyget: en liten slinga där tre platser pekas ut och rummet sedan visas med sakerna.
+- Förstasidans topp är lugn (bild, rubrik, två knappar, grundarens beslut). Verktyget visas i "Prova produkterna i ditt
+  rum": tre nålar pekar ut platserna, sedan glider bilden över till rummet med sakerna.
 - Cookierutan på förstasidan (telefon) är smalare, ungefär en tiondel av skärmen.
 - Produktsidan: mått och en bild i skala (bredvid ett A4-papper, en person eller en soffa) när måtten finns. Leveranskollen
   säger att varan kan skickas som present och, från november, sista dag för leverans före jul (målet, utifrån config.js).

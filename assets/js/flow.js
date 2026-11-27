@@ -659,9 +659,20 @@
         // a product's name steps aside too while the line runs through it, so no name is ever shown cut in half
         const s0r = st.getBoundingClientRect(); $$(".rh-tag > span", fig).forEach((t) => { const tr = t.getBoundingClientRect(); if (tr.width) t.classList.toggle("off", x > tr.left - s0r.left - 6 && x < tr.right - s0r.left + 6); }); };
       set(s0);
-      const onIn = () => { fig.classList.add("touched"); set(r.value); };
+      const onIn = () => { fig.classList.add("touched", "placed"); set(r.value); };
       r.addEventListener("input", onIn); offs.push(() => r.removeEventListener("input", onIn));
-      if (!reduced() && "IntersectionObserver" in window) {
+      const pins = $$(".bav-pin", fig);
+      if (pins.length && !reduced() && "IntersectionObserver" in window) {
+        /* the sample room on the home page (founder, 27 nov): the room as it is, three places pointed out, then the picture
+           slides to the room with the things in it; a touch takes over at once */
+        r.value = 100; set(100);
+        const io = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io.disconnect(); if (fig.classList.contains("touched")) return;
+          fig.classList.add("pinning");
+          setTimeout(() => { if (fig.classList.contains("touched")) return; let t0 = 0; const ease = (k) => 1 - Math.pow(1 - k, 3);
+            const run = (t) => { if (fig.classList.contains("touched")) return; if (!t0) t0 = t; const k = Math.min(1, (t - t0) / 1500), v = Math.round(100 + (s0 - 100) * ease(k)); r.value = v; set(v); if (k > 0.55) fig.classList.add("placed"); if (k < 1) requestAnimationFrame(run); };
+            requestAnimationFrame(run); }, 1700); }, { threshold: 0.55 });
+        io.observe(fig); offs.push(() => io.disconnect());
+      } else if (!reduced() && "IntersectionObserver" in window) {
         const io = new IntersectionObserver(([e]) => { if (!e.isIntersecting) return; io.disconnect(); if (fig.classList.contains("touched")) return;
           let t0 = 0; const run = (t) => { if (fig.classList.contains("touched")) return; if (!t0) t0 = t; const k = Math.min(1, (t - t0) / 1600); const v = Math.round(s0 + Math.min(48, 94 - s0) * Math.sin(k * Math.PI)); r.value = v; set(v); if (k < 1) requestAnimationFrame(run); };
           setTimeout(() => requestAnimationFrame(run), 400); }, { threshold: 0.6 });
