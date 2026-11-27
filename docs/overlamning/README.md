@@ -6,7 +6,7 @@ rot för regler, bygge, tester och arkitektur.
 > Filerna i `briefs/` och `granskningar/` skrevs i den gamla miljön. Där står ibland sökvägar som `/home/claude/wt20` eller
 > `/home/claude/v15/...`. De finns inte längre. Det som gäller är grenarna nedan och filerna i den här mappen.
 
-## 1. Live nu: v15.6 (commit c4c7aadd på `main`)
+## 1. Tidigare: v15.6 (commit c4c7aadd)
 https://adamkajlindberg-22.github.io/rumiq-storefront/
 
 Bekräftat på riktiga enheter (BrowserStack, iPhone 18 Pro, iPhone SE iOS 15 och Galaxy S26):
@@ -19,41 +19,35 @@ Bekräftat på riktiga enheter (BrowserStack, iPhone 18 Pro, iPhone SE iOS 15 oc
 - lampan från produktsidan hamnar på bordet
 - iPhone SE-sidorna fungerar
 
-## 2. v15.7 (publiceras från `claude/serene-bohr-7fc3mj`)
+## 2. Live nu: v15.8 (commit fbfdd37 på `main`, 27 november)
 
-Ihopslaget: `place-merge`, `rum-d7`, `s2-ai`, `device-fix` och `svep2`, plus två omgångar rättningar.
+v15.7 (Placera och skapa och Svep 2) och v15.8 är publicerade. v15.8 bygger på utvärderingen av hela sajten
+("RumIQ – granskning av hela sajten (v15.7) mot marknaden"), två oberoende granskningar och en buggjakt.
 
-**Granskning 2 av Placera och skapa (26 nov, före rättningarna):** telefon 6,5/10, dator 7/10. Förra granskningen
-gav 5 och 6,5. Rättat efter den:
-- iPhone SE: bilden stannar i synfältet när en nål väljs.
-- En sak som läggs till när bilden redan har fem tar femte platsen, och sidan säger vilken som väntar.
-- En väntande sak i listan tas med med ett tryck.
-- Kudden och plädens rumsbilder: en kudde i Havre och en pläd utan stången (`assets/img/cut/*-rum.webp`).
-- Mattans fotavtryck ligger platt.
-- En första instruktion visas, och "Skapa bilden" är klistrig ovanför docken på telefon och står först i högerkolumnen på dator.
-- Kvällsläget har kontrast på den valda nålen.
-- Räknaren visar "5 i bilden · 6 i rummet".
-- Ctrl+Z ångrar, och Enter släpper inte en vald nål.
-- Textilier ligger, även på golvet. En yta som är den enda möjliga sägs i stället för att visas som knapp.
-- Väljaren heter "Lägg till en sak" och filterknapparna är 44 px.
-- AI-resultatet på dator: bilden står i höjd med rubriken och är klistrig, utan tomrum ovanför.
+**Buggjakten:** 140 sidor på telefon och dator, i kvällsläge och på engelska. Den hittade inga skriptfel och inga trasiga
+sidor. Alla 28 testfiler är gröna.
 
-**Svep:** de sparade sakerna är en rad att svepa i på telefon, så resultatet är en skärm kortare.
+**Ändrat i v15.8:**
+- **Namn:** "Mitt rum" är verktyget och "Mitt hem" det sparade. "Sparat" är borta.
+- **Cookierutan:** på telefon en smal rad under sidhuvudet, utom på förstasidan. Den täcker aldrig knappar.
+- **Placera och skapa på telefon:**
+  - Rumsbilden tar ungefär halva skärmen, och man sveper i sidled.
+  - "Skapa bilden" ligger ovanför docken och kliver undan när en sak är vald.
+  - Ett tomt rum visar "Föreslå saker" och "Lägg till en sak" direkt på bilden.
+- **Svep-resultatet:** en huvudknapp och en total. Resten ligger under "Fler val".
+- **Mitt rum före ett rum:** tre sätt att börja (Svep, Svep tillsammans, stylisten). Ingen separat Studio-sida, eftersom
+  det hade blivit ett namn till.
+- **Förstasidan:** "Prova produkterna i ditt rum" kommer som andra sektion, mörk och helbredd. Kortet heter
+  "Prova det här rummet".
+- **Mitt hem:** med sparade saker men inget rum kommer det sparade först.
+- **Bakåt-knappen:** fungerar mellan Justera själv och Placera och skapa, och stänger rumsbladet i Mitt hem.
+- **Text:** "står på bordet", "ligger i soffan", "en verklighetstrogen bild". Engelska finns för allt nytt.
 
-**Fart:** längsta låsningen när bilden skapas är ungefär 200 ms vid 4× långsammare processor (förut 572 ms).
-
-Kvar:
-- Mattan i förhandsvisningen är jämnt belyst och dominerar förgrunden. Det löses av AI-bilden.
-- Riktiga mått från Shopify.
-- En tredje granskning, och kontroll på BrowserStack av den publicerade versionen.
-
-**Grundarens beslut 26 nov:**
-- Kundomdömen och "Så blev det hemma" väntar tills det finns riktiga kunder.
-- Publicera när det är klart.
-
-**Jämförelse med Lovable-studion:** allt i den listan finns redan, utom AI-stylisten med dagsgränser och stilanalys från
-foton. Båda kräver server och står som förslag i `studio-server.md`, avsnitt 13. Miljöbilder och korta före/efter-videor
-till marknadsföringen kostar krediter (Higgsfield) och görs först när grundaren godkänt priset.
+**Kvar:**
+- I Mitt hem kan formuläret fortfarande ta plats när man saknar rum och sparade saker.
+- Kontroll på riktiga telefoner: BrowserStack-kontots testtid är slut, och grundaren har sagt att det får vänta.
+- Allt som kräver Shopify, servern eller grundarens beslut: produkter, mått, omdömen, betalning, AI-bilden,
+  att ta bort det som står i rummet, synk, klubb och prisgaranti.
 
 ## 3. Efter v15.7
 
