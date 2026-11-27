@@ -30,8 +30,14 @@
     return `<article class="hem-card${big ? " big" : ""}" data-room-card="${esc(r.id)}"><button type="button" class="hem-card-im" data-hem-open="${esc(r.id)}" aria-label="Öppna ${esc(H.name(r))}"><img src="${esc(H.picture(r) || sampleImg(r.type))}" alt="" data-room-pic="${esc(r.id)}" loading="lazy">${H.picture(r) ? "" : collage(r)}</button>
       <div class="hem-card-tx"><h3 class="h3"><button type="button" class="hem-card-name" data-hem-open="${esc(r.id)}">${esc(H.name(r))}</button></h3>${r.group ? `<p class="small hem-card-grp">${withWho(r.group)}</p>` : ""}
         <p class="hem-prog" data-room-prog="${esc(r.id)}">${progHtml(r, 0)}</p>
-        <p class="small">${its.length ? `${its.length} ${its.length === 1 ? "produkt" : "produkter"} · ${kr(m.total)}${r.budget ? ` · budget ${kr(r.budget)}` : ""}` : typeName(r.type)}</p>
-        <button class="btn${big ? "" : " ghost"} sm" type="button" data-hem-next="${esc(r.id)}">${esc(H.progress(r, 0).next.label)}</button></div></article>`; };
+        <p class="small">${its.length ? `${its.length} ${its.length === 1 ? "produkt" : "produkter"} · ${kr(m.total)}${r.budget ? (r.budget >= m.total ? ` · ${kr(r.budget - m.total)} kvar av budgeten` : ` · ${kr(m.total - r.budget)} över budgeten`) : ""}` : typeName(r.type)}</p>
+        <div class="hem-card-acts">${r.done ? "" : `<button class="btn${big ? "" : " ghost"} sm" type="button" data-hem-next="${esc(r.id)}">${esc(H.progress(r, 0).next.label)}</button>`}<button class="hem-done" type="button" data-hem-done="${esc(r.id)}" aria-pressed="${!!r.done}">${r.done ? "✓ Rummet är klart" : "Markera som klart"}</button></div></div></article>`; };
+  /* a link to a part that waits in "Här hamnar också" opens it first, so the jump lands on it */
+  document.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest('a[href^="#mh-"]'); if (!a) return; const t = document.getElementById(a.getAttribute("href").slice(1)), d = t && t.closest("details.mh-quiet"); if (d) d.open = true; }, true);
+  new MutationObserver(() => { const id = (location.hash || "").slice(1); if (!/^mh-/.test(id)) return; const t = document.getElementById(id), d = t && t.closest("details.mh-quiet:not([open])"); if (d) { d.open = true; t.scrollIntoView(); } }).observe(document.getElementById("view") || document.body, { childList: true });
+  /* a room marked done: the card says so and stops asking for the next step (evaluation 27 nov, "Rummet som projekt") */
+  document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest("[data-hem-done]"); if (!b) return; const id = b.dataset.hemDone, r = H.room(id); if (!r) return;
+    H.patch(id, { done: !r.done }); RQ.toast(r.done ? `${H.name(r)} är inte markerat som klart.` : `${H.name(r)} är klart. Snyggt!`); if (RQ.currentRoute && RQ.currentRoute() === "mitt-hem") RQ.router(); });
   // never an empty room on a card: the products' cut-outs over the sample photo, until the editor can draw the room (R.snapshot)
   const collage = (r) => { const its = H.items(r).slice(0, 4); return its.length ? `<span class="hem-card-col" data-room-col="${esc(r.id)}">${its.map((it) => `<img src="${RQ.cut(RQ.byHandle(it.h))}" alt="">`).join("")}</span>` : ""; };
   const snap = (r, im) => { const R = RQ.room; if (!R || typeof R.snapshot !== "function" || !im) return; Promise.resolve(R.snapshot(r.id, 900)).then((u) => { if (!u || !im.isConnected || im.closest(".hem-card").classList.contains("has-pic")) return; im.src = u; const c = im.parentNode.querySelector(".hem-card-col"); if (c) c.remove(); im.closest(".hem-card").classList.add("snap"); }).catch(() => {}); };
@@ -89,9 +95,10 @@
     return {
       title: "Mitt hem · RumIQ",
       html: `<header class="page-head wrap">${RQ.crumbs([["Hem", "hem"], ["Mitt hem"]])}<span class="eyebrow">Ditt hem</span><h1 class="h1">Mitt hem</h1><p class="lead">Dina rum, bilderna, det du gillar och din stil, samlat så att du kan fortsätta där du slutade. Allt du sparar här är privat.</p>
-          <nav class="jump-nav" aria-label="På sidan">${order.map((x) => x[2]).join("")}</nav></header>
+          <nav class="jump-nav" aria-label="På sidan">${order.filter((x) => x[0] === "rum" || x[1]).map((x) => x[2]).join("")}</nav></header>
         <section class="wrap mh" style="padding-bottom:5rem;display:grid;gap:3.2rem">
-          ${order.map((x) => x[3]).join("\n          ")}
+          ${order.filter((x) => x[0] === "rum" || x[1]).map((x) => x[3]).join("\n          ")}
+          ${order.some((x) => x[0] !== "rum" && !x[1]) ? `<details class="mh-quiet"><summary><span class="h3">Här hamnar också</span><span class="small">${order.filter((x) => x[0] !== "rum" && !x[1]).map((x) => ({ bilder: "Alla bilder", fav: "Produkter", stil: "Min stil", chat: "Stylistsamtal", looks: "Looks och moodboards", art: "Artiklar" })[x[0]]).filter(Boolean).join(", ")}</span></summary><div class="mh-quiet-in">${order.filter((x) => x[0] !== "rum" && !x[1]).map((x) => x[3]).join("")}</div></details>` : ""}
           <div class="panel"><h3 class="h3">Dina uppgifter</h3><p class="small" style="margin-top:.5rem">${RQ.vault.where() === "account" ? "Det du sparar följer med ditt konto. Du kan ta bort allt när du vill." : "I förhandsversionen finns allt du sparat bara i den här webbläsaren. Inget skickas till oss. Du kan ta bort allt när du vill."}</p><button class="btn ghost sm" type="button" id="clearAll" style="margin-top:1rem">Rensa allt sparat</button><p class="small" id="clearNote" role="status" style="margin-top:.6rem"></p></div>
         </section>`,
       mount(root) {

@@ -65,6 +65,10 @@
       [/^(.+) är borttagen\.$/, (m) => `${list(m[1])} is removed.`],
       [/^(.+) är med i bilden\. (.+) väntar, bilden tar fem saker åt gången\.$/, (m) => `${list(m[1])} is in the picture. ${list(m[2])} is waiting; the picture takes five things at a time.`],
       [/^(.+) är med i bilden nu\. (.+) väntar\.$/, (m) => `${list(m[1])} is in the picture now. ${list(m[2])} is waiting.`],
+      [/^Målet: hemma före jul om du beställer senast (.+)\.$/, (m) => `Target: home before Christmas if you order by ${m[1]}.`],
+      [/^(.+), (\d+) × (\d+) cm, i samma skala som (.+)$/, (m) => `${one(m[1]) || m[1]}, ${m[2]} × ${m[3]} cm, at the same scale as ${({ "ett A4-papper": "an A4 sheet", "en person, 170 cm": "a person, 170 cm", "en soffa, 200 × 90 cm": "a sofa, 200 × 90 cm" })[m[4]] || m[4]}`],
+      [/^(.+) är klart\. Snyggt!$/, (m) => `${one(m[1]) || m[1]} is done. Nice!`],
+      [/^(.+) är inte markerat som klart\.$/, (m) => `${one(m[1]) || m[1]} is no longer marked as done.`],
       /* Svep v15.9: a duel, a whole look, the thing in your room */
       [/^Välj (.+), (\d{1,3}(?:[  ]\d{3})*) kr$/, (m) => `Choose ${one(m[1]) || m[1]}, ${fmtNum(m[2])} kr`],
       [/^Se (.+) i ditt rum$/, (m) => `See ${one(m[1]) || m[1]} in your room`],

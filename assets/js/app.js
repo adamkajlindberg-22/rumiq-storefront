@@ -144,6 +144,18 @@
   RQ.crumbs = crumbs;
   const head = (kicker, title, lead, extra = "") => `<header class="page-head wrap">${kicker}<h1 class="h1">${title}</h1>${lead ? `<p class="lead">${lead}</p>` : ""}${extra}</header>`;
   RQ.head = head;
+  /* evaluation 27 nov, "Mått som man ser": the product drawn to scale beside something everyone knows. Small things beside an
+     A4 sheet, tall things beside a person (170 cm), a rug from above beside a three-seat sofa (200 × 90 cm). */
+  RQ.sizeFig = (p) => {
+    const z = p.size; if (!z || !z.w) return "";
+    const flat = !z.h && z.d, W = z.w, H = z.h || z.d, big = Math.max(W, H) > 90;
+    const ref = flat ? { w: 200, h: 90, name: "en soffa, 200 × 90 cm", sofa: true } : big ? { w: 45, h: 170, name: "en person, 170 cm", person: true } : { w: 21, h: 29.7, name: "ett A4-papper" };
+    const k = 190 / Math.max(H, ref.h), gap = 22, pw = W * k, ph = H * k, rw = ref.w * k, rh = ref.h * k, vw = Math.ceil(pw + gap + rw + 4), vh = Math.ceil(Math.max(ph, rh) + 4), base = vh - 2;
+    const refShape = ref.person ? `<g transform="translate(${(pw + gap + rw / 2).toFixed(1)},${base})"><circle cx="0" cy="${(-rh + rw * 0.22).toFixed(1)}" r="${(rw * 0.22).toFixed(1)}"/><path d="M${(-rw * 0.38).toFixed(1)},0 L${(-rw * 0.3).toFixed(1)},${(-rh * 0.78).toFixed(1)} Q0,${(-rh * 0.86).toFixed(1)} ${(rw * 0.3).toFixed(1)},${(-rh * 0.78).toFixed(1)} L${(rw * 0.38).toFixed(1)},0 Z"/></g>`
+      : `<rect x="${(pw + gap).toFixed(1)}" y="${(base - rh).toFixed(1)}" width="${rw.toFixed(1)}" height="${rh.toFixed(1)}" rx="${ref.sofa ? 6 : 1}"/>`;
+    return `<figure class="szf"><svg viewBox="0 0 ${vw} ${vh}" width="${vw}" height="${vh}" role="img" aria-label="${esc(p.name)}, ${W} × ${H} cm, i samma skala som ${ref.name}"><rect class="szf-p" x="1" y="${(base - ph).toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" rx="3"/><g class="szf-r">${refShape}</g></svg>
+      <figcaption><span><i class="szf-k p"></i>${esc(p.name)}</span><span><i class="szf-k r"></i>${flat ? "Sett ovanifrån, bredvid" : "Bredvid"} ${ref.name}</span></figcaption></figure>`;
+  };
 
   /* ---------------------------------------------------------------- views */
   const V = (RQ.views = {});
@@ -411,9 +423,9 @@
             <div class="ptabs" data-ptabs>
               <div class="ptab-bar" role="tablist" aria-label="Mer om produkten"><button type="button" role="tab" id="ptb-om" aria-controls="pt-om" aria-selected="true">Om</button><button type="button" role="tab" id="ptb-matt" aria-controls="pt-matt" aria-selected="false" tabindex="-1">Mått och skötsel</button><button type="button" role="tab" id="ptb-frakt" aria-controls="pt-frakt" aria-selected="false" tabindex="-1">Frakt och retur</button></div>
               <div class="ptab" role="tabpanel" id="pt-om" aria-labelledby="ptb-om"><p>${esc(p.story)}</p><h2>Så använder du den</h2><ul>${p.use.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>${RQ.LOOKS && RQ.LOOKS.some((l) => l.items.includes(p.handle)) ? `<div class="p-looks"><span class="eyebrow">Ingår i looks</span><div class="chips">${RQ.LOOKS.filter((l) => l.items.includes(p.handle)).map((l) => `<a class="chip" href="#look-${l.id}">${esc(l.name)}</a>`).join("")}</div></div>` : ""}<div class="p-reviews"><span class="eyebrow">Omdömen</span><p>Inga omdömen ännu. Kunder som köpt får en fråga om produkten när de haft den i tio dagar, och svaren visas här, även de kritiska.</p></div></div>
-              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h2>Passar den hemma?</h2><p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p><ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#mitt-rum-${p.handle}">Mitt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h2>Material och skötsel</h2><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h2>Mått och fakta</h2><ul class="facts" style="margin-top:0;border-top:0">
+              <div class="ptab" role="tabpanel" id="pt-matt" aria-labelledby="ptb-matt" hidden><h2>Passar den hemma?</h2>${p.size && p.size.w ? `<p><b>Mått:</b> ${p.size.w} × ${p.size.h || p.size.d} cm${p.size.d && !p.size.h ? " (bredd × längd)" : ""}.</p>${RQ.sizeFig(p)}<p>Så kan du göra:</p>` : "<p>Exakta mått visas här när produkten är verifierad. Till dess kan du:</p>"}<ul><li>Mäta platsen där den ska stå, både bredd, djup och höjd.</li><li>Prova produkten i ett foto av ditt rum i <a href="#mitt-rum-${p.handle}">Mitt rum</a>.</li><li>Fråga <a href="#studio-stylist">stylisten</a> om vad som passar ihop.</li></ul><h2>Material och skötsel</h2><p><b>Material:</b> ${esc(p.material)}</p><p style="margin-top:.6rem">${esc(care)}</p><p class="small" style="margin-top:.6rem">Allmänna råd för materialet. Följ alltid tillverkarens skötselråd när produkten levereras.</p><h2>Mått och fakta</h2><ul class="facts" style="margin-top:0;border-top:0">
                 <li><span>Artikel</span><span>${esc(p.sku || "RQ-" + (1001 + RQ.PRODUCTS.indexOf(p)))}</span></li>
-                <li><span>Mått</span><span class="pending">Bekräftas när produkten är verifierad</span></li>
+                <li><span>Mått</span>${p.size && p.size.w ? `<span>${p.size.w} × ${p.size.h || p.size.d} cm</span>` : `<span class="pending">Bekräftas när produkten är verifierad</span>`}</li>
                 <li><span>Vikt</span><span class="pending">Bekräftas</span></li>
                 <li><span>Material</span><span>${esc(p.material)}</span></li>
                 ${p.variants ? `<li><span>Färger</span><span>${esc(p.variants.join(", "))}</span></li>` : ""}
@@ -677,7 +689,28 @@
   // "/varukorg" (typed, shared or opened in a new tab): the shop with the cart open on top
   // the address becomes the shop's at once, so closing the cart leaves you in the shop and a reload does not open it again
   V.cartLink = () => { const v = V.butik(); return { ...v, mount(root) { const un = v.mount ? v.mount(root) : null, t = setTimeout(() => { if (current === "varukorg") { current = "butik"; try { history.replaceState(history.state, "", pathFor("butik")); } catch (e) {} } RQ.openCart(); }, 80); return () => { clearTimeout(t); if (typeof un === "function") un(); }; } }; };
-  V.studio = () => V.myRoom(); // Studio is no longer its own place: the tools live in Mitt rum, Svep, Hitta rätt and Looks
+  /* Studio: one page that gathers the tools and says which one to start with (evaluation 27 nov: /studio/ showed Mitt rum) */
+  V.studio = () => {
+    const step = (n, q, a, href, name, ico) => `<a class="st-step" href="#${href}"><span class="st-n" aria-hidden="true">${n}</span><span class="st-q">${q}</span><b>${ico}<span>${name}</span></b><span class="st-a">${a}</span></a>`;
+    const more = (href, name, text) => `<a class="st-more" href="#${href}"><b>${name}</b><span>${text}</span></a>`;
+    return {
+      title: "Studio · RumIQ",
+      html: `${RQ.head(RQ.crumbs([["Hem", "hem"], ["Studio"]]), "Studio", "Verktygen som hjälper dig att välja, se det hemma och bestämma tillsammans. Gratis och utan konto.")}
+        <section class="wrap st"><h2 class="h3 st-h">Var ska jag börja?</h2>
+          <div class="st-steps">
+            ${step(1, "Vet du inte riktigt vad du gillar?", "Svep tio kort så ser du din stil, dina färger och vad som passar.", "svep", "Svep", I.heart)}
+            ${step(2, "Vet du vad du behöver?", "Säg vilket rum, vad det ska vara och budget, så får du förslag.", "hitta-ratt", "Hitta rätt", I.search)}
+            ${step(3, "Har du hittat något?", "Ställ det i ett exempelrum eller i ett foto av ditt eget rum och se storleken.", "mitt-rum", "Mitt rum", RQ.roomIco)}
+          </div>
+          <h2 class="h3 st-h">Mer i Studio</h2>
+          <div class="st-mores">
+            ${more("svep-ihop", "Svep tillsammans", "Skicka korten till den du bor med och se vad ni båda gillar.")}
+            ${more("looks", "Looks", "Färdiga uppställningar som hör ihop, 10 % lägre när du tar hela looken.")}
+            ${more("studio-stylist", "Stylisten", "Beskriv rummet med egna ord och få förslag.")}
+            ${more("mitt-hem", "Mitt hem", "Det du har sparat, dina rum och din stil på ett ställe.")}
+          </div></section>`,
+    };
+  };
 
   /* ---------------------------------------------------------------- router */
   const ROUTES = [
@@ -734,7 +767,7 @@
      no head for. Without it (English, an older build) the router writes the head itself: RQ.META[route] =
      { title, description, image } wins when provided; otherwise the view's own title and lead are used.
      Routes that show another page point their canonical address at that page. */
-  const CANON = { studio: "mitt-rum", "studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", kollektioner: "looks", ideer: "onska", rosta: "onska", jamfor: "mitt-hem", presentguiden: "hitta-ratt-present", "studio-sok": "hitta-ratt-ord", "studio-hemurval": "hitta-ratt" };
+  const CANON = { "studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", kollektioner: "looks", ideer: "onska", rosta: "onska", jamfor: "mitt-hem", presentguiden: "hitta-ratt-present", "studio-sok": "hitta-ratt-ord", "studio-hemurval": "hitta-ratt" };
   const HOME_TITLE = "RumIQ – skandinavisk inredning du ser i ditt eget rum";
   const metaEl = (sel) => document.head.querySelector(sel);
   const HEAD0 = { desc: (metaEl('meta[name="description"]') || {}).content || "", image: (metaEl('meta[property="og:image"]') || {}).content || "" };

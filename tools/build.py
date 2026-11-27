@@ -44,7 +44,7 @@ ESBUILD = os.environ.get("ESBUILD", "npx --yes esbuild").split()
 
 # routes that show another page (tools that were merged, old names): they point their canonical
 # address at that page and are never listed for search engines
-ALIAS = {"studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", "studio": "mitt-rum", "kollektioner": "looks",
+ALIAS = {"studio-analys": "mitt-rum", "studio-kombinera": "mitt-rum", "kollektioner": "looks",
          "studio-sok": "hitta-ratt", "studio-hemurval": "hitta-ratt", "hitta-ratt-ord": "hitta-ratt", "presentguiden": "hitta-ratt-present",
          "rosta": "onska", "ideer": "onska", "studio-stil": "svep", "jamfor": "mitt-hem",
          "varukorg": "butik"}

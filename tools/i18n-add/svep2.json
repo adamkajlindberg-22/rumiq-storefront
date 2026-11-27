@@ -343,5 +343,7 @@
  "I ditt rum": "In your room",
  "Ritar ditt rum …": "Drawing your room …",
  "Filter": "Filter",
- "Filter ({0})": "Filter ({0})"
+ "Filter ({0})": "Filter ({0})",
+ "Ordinarie pris": "Regular price",
+ "Svep-paket: {0} % lägre pris när du köper allt.": "Svep bundle: {0} % lower price when you buy it all."
 }

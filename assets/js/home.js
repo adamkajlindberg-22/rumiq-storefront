@@ -51,6 +51,7 @@
             <div class="band settle"><h1>Ditt hem.<br>Din vision.<br>Din stil.</h1><p class="sub"><b>Se ditt hem innan du köper.</b> Noga utvald belysning, textil och förvaring, och verktyg som visar allt i ditt eget rum.</p>
               <div class="row">${RQ.room.has() ? `<a class="btn" href="#mitt-rum">Öppna Mitt rum</a>` : `<a class="btn" href="#mitt-rum">Prova i Mitt rum</a>`}<a class="btn ghost" href="#butik">Upptäck butiken</a></div></div>
           </div>
+          ${heroDemo()}
           <div class="cue" id="cue" aria-hidden="true"><span>Scrolla</span><i></i></div>
         </div>
       </section>
@@ -84,6 +85,8 @@
       ${RQ.svepHome ? RQ.svepHome.html() : ""}
 
 
+
+      ${weekly()}
 
       <section class="sec looks-sec" id="looks-hem">
         <div class="wrap"><div class="sec-row"><div class="sec-head"><h2 class="h2">Looks</h2><p>Tre eller fyra saker som hör ihop. Ett tryck, så ligger allt i varukorgen.</p></div><span class="sec-end">${RQ.rowNav("homeLooks", "looks")}<a class="link" href="#looks">Alla looks</a></span></div>
@@ -145,8 +148,29 @@
   // Before launch, paste the Formspree form URL here (https://formspree.io/f/xxxxxxx).
   RQ.FORM_ENDPOINT = (window.RQ_CONFIG && window.RQ_CONFIG.formEndpoint) || "";
 
+  /* evaluation 27 nov, "Ett skäl att komma tillbaka": Veckans rum, one of the looks each ISO week, in its own sample room */
+  const isoWeek = (d = new Date()) => { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); return Math.ceil(((t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7); };
+  const weekly = () => { const L = RQ.LOOKS || []; if (!L.length) return ""; const w = isoWeek(), l = L[w % L.length], ps = l.items.map((h) => RQ.byHandle(h)).filter(Boolean); if (!ps.length) return "";
+    const rate = +((window.RQ_CONFIG || {}).lookDiscount || 0), sum = ps.reduce((a, p) => a + p.price, 0);
+    return `<section class="sec wk" id="veckans-rum" aria-labelledby="wkH"><div class="wrap wk-in">
+        <a class="wk-im" href="#look-${l.id}" tabindex="-1" aria-hidden="true"><img src="assets/img/rum/${l.room}-900.webp" srcset="${RQ.srcset(`assets/img/rum/${l.room}-900.webp`)}" sizes="(max-width: 900px) 100vw, 50vw" alt="" loading="lazy" decoding="async" width="1600" height="893"></a>
+        <div class="wk-tx"><span class="eyebrow">Veckans rum · vecka ${w}</span><h2 class="h2" id="wkH">${esc(l.name)}</h2><p class="lead">${esc(l.lead)}</p>
+          <div class="wk-items">${ps.map((p) => `<a href="#produkt-${p.handle}" class="wk-it"><img src="${RQ.cut(p)}" alt="" loading="lazy"><span>${esc(p.name)}</span></a>`).join("")}</div>
+          <p class="small"><span>${ps.length} saker · ${S.kr(sum)}</span>${rate ? ` · <span>hela looken ${Math.round(rate * 100)} % lägre</span>` : ""}</p>
+          <div class="ctrl-row"><button class="btn" type="button" data-rh-try="${ps.map((p) => p.handle).join(",")}" data-rh-room="${l.room}">${RQ.roomIco}<span>Prova rummet</span></button><a class="btn ghost" href="#look-${l.id}">Se looken</a></div>
+          <p class="small wk-next">Ett nytt rum varje måndag.</p></div></div></section>`; };
+
+  /* evaluation 27 nov: the first screen shows the tool, not only a mood. A small loop in the hero: the bedroom before,
+     three places pointed out, then the same room with the things in it (the photos of the before/after below). */
+  const HD = [[86, 47], [44, 57], [75, 74]];
+  const heroDemo = () => `<a class="hdemo" href="#mitt-rum" aria-label="Så fungerar Mitt rum: peka ut var sakerna ska stå och se dem i rummet innan du köper">
+      <span class="hd-im"><img class="rh-flip hd-before" src="assets/img/rum/sovrum-fore-600.webp" alt="" width="600" height="336" decoding="async"><img class="rh-flip hd-after" src="assets/img/rum/sovrum-efter-600.webp" alt="" width="600" height="336" decoding="async">
+        ${HD.map(([x, y], k) => `<i class="hd-pin" style="left:${x}%;top:${y - 6}%;--k:${k}"></i>`).join("")}<span class="hd-tag hd-t1">Ditt rum</span><span class="hd-tag hd-t2">Med RumIQ</span></span>
+      <span class="hd-cap"><b>Så fungerar det</b><span>Peka ut var sakerna ska stå. Se dem i rummet.</span></span></a>`;
+
   function mountHome(root) {
     const off = [];
+    { const hd = $(".hdemo", root); if (hd && window.IntersectionObserver) { const io = new IntersectionObserver((es) => es.forEach((e) => hd.classList.toggle("run", e.isIntersecting))); io.observe(hd); off.push(() => io.disconnect()); } } /* the demo plays only while it is seen */
     const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); off.push(() => t.removeEventListener(ev, fn, o)); };
     const hero = $("#hero", root), video = $("#heroVideo", root), first = $(".stage .first", root), wide = $(".stage .wide", root), cue = $("#cue", root);
     let isStatic = staticHero(); const html = document.documentElement;
@@ -210,7 +234,7 @@
 
     if (RQ.svepHome) off.push(RQ.svepHome.mount(root));
     /* review N9: the sample card opens these very things in the bedroom, not the whole shop */
-    const tryRoom = (e) => { const t = e.target.closest("[data-rh-try]"); if (!t || !RQ.room.place) return; RQ.room.place({ room: "sovrum", items: t.dataset.rhTry.split(",").map((h) => ({ h })) }); };
+    const tryRoom = (e) => { const t = e.target.closest("[data-rh-try]"); if (!t || !RQ.room.place) return; RQ.room.place({ room: t.dataset.rhRoom || "sovrum", items: t.dataset.rhTry.split(",").map((h) => ({ h })) }); };
     root.addEventListener("click", tryRoom); off.push(() => root.removeEventListener("click", tryRoom));
     off.push(RQ.mountRowNav(root));
 

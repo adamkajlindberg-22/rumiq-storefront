@@ -122,10 +122,19 @@
       const f = (d) => add(d).toLocaleDateString(window.RQ_LANG === "en" ? "en-GB" : "sv-SE", { weekday: "short", day: "numeric", month: "short" });
       return `${f(c.minDays)} – ${f(c.maxDays)}`;
     },
+    /* the last day to order for the target to be home before Christmas Eve (from 1 Nov, never after that day) */
+    xmas(c, now = new Date()) {
+      if (!c.maxDays || now.getMonth() < 10) return null; const eve = new Date(now.getFullYear(), 11, 23, 23, 59);
+      const end = (d) => { const x = new Date(d); x.setHours(10, 0, 0, 0); if (x.getDay() === 0 || x.getDay() === 6) while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() + 1); let left = c.maxDays; while (left > 0) { x.setDate(x.getDate() + 1); if (x.getDay() !== 0 && x.getDay() !== 6) left--; } return x; };
+      let last = null; for (let i = 0; i < 62; i++) { const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i, 10); if (end(d) <= eve) last = d; else if (last) break; }
+      return last && last.getFullYear() === now.getFullYear() ? last : null;
+    },
     html(p) {
       const c = this.cfg(p), r = this.range(c);
       return `<div class="lk" role="group" aria-label="Leveranskoll"><p class="lk-h">Leveranskoll</p>
         <ol><li class="on"><i></i><b>Beställ</b><span>Idag</span></li><li class="${c.fromCountry ? "on" : ""}"><i></i><b>Skickas från</b><span>${c.fromCountry ? esc(c.fromCountry) : PENDING}</span></li><li class="${r ? "on" : ""}"><i></i><b>Målet: hos dig</b><span>${r || PENDING}</span></li></ol>
+        ${(() => { const d = this.xmas(c); return d ? `<p class="lk-x">Målet: hemma före jul om du beställer senast ${d.toLocaleDateString(window.RQ_LANG === "en" ? "en-GB" : "sv-SE", { weekday: "long", day: "numeric", month: "long" })}.</p>` : ""; })()}
+        <p class="lk-g">Som present: inga priser på följesedeln och en hälsning på ett kort. Du väljer det i kassan.</p>
         <p class="lk-f">${c.openPurchaseDays ? `${c.openPurchaseDays} dagars öppet köp.` : "14 dagars ångerrätt."} ${c.returnText ? esc(c.returnText) : "Hur returen går till står här när den är bekräftad."}${(window.RQ_CONFIG || {}).freeShippingFrom ? ` Fri frakt till ombud och paketskåp från ${kr(window.RQ_CONFIG.freeShippingFrom)}.` : ""}</p></div>`;
     },
   };
@@ -663,7 +672,7 @@
   };
   RQ.voteTeaser = () => `<a class="vtz" href="#onska"><div class="vtz-sw" aria-hidden="true">${RQ.CANDIDATES.slice(0, 5).map((c) => c.img ? `<img src="${c.img}" alt="" loading="lazy">` : `<span style="background:${c.tone}"></span>`).join("")}</div><div><span class="eyebrow">Önska</span><h3>Vad ska vi ta in härnäst?</h3><p>Vi har inget eget lager, så vi kan lyssna först. Välj upp till tre saker.</p></div><span class="link">Rösta nu</span></a>`;
   RQ.toolStrip = () => `<nav class="tools-strip" aria-label="Verktyg"><span>Verktyg</span>
-      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Looks</a></nav>`;
+      <a class="chip" href="#mitt-rum">Mitt rum</a><a class="chip" href="#svep">Svep</a><a class="chip" href="#hitta-ratt">Hitta rätt</a><a class="chip" href="#looks">Looks</a><a class="chip" href="#studio">Alla verktyg</a></nav>`;
 
   /* ------------------------------------------------------------------ Upptäck */
   V.upptack = () => ({

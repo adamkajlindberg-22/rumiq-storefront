@@ -280,6 +280,9 @@
       if (room) { room.disabled = odd; if (odd) delete room.dataset.roomBtn; else { room.dataset.roomBtn = first.handle; room.setAttribute("aria-pressed", !!(RQ.room && RQ.room.inScene(first.handle))); } }
       const bag = el("Bag"); if (bag) bag.disabled = !!(first.soon || first.duel); // a "Kommer snart" card cannot be bought; a duel is decided by a tap
       const lv = el("Love"); if (lv) lv.disabled = odd;
+      /* a first round starts with three buttons, Nej, Köp and Spara; Ångra comes with the first answer, Älskar and Mitt rum after three (evaluation 27 nov) */
+      if (cfg.love) { const learn = (t.n || 0) < 3, rv = el("Room"), uu = el("Undo"); [lv, rv].forEach((b) => { if (b && b.hidden !== learn) { b.hidden = learn; if (!learn && !reduced()) b.animate([{ transform: "scale(.6)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 320, easing: "cubic-bezier(.3,1.4,.5,1)" }); } });
+        if (uu) uu.hidden = learn && !st.history.length; }
       const ye = el("Yes"); if (ye) ye.disabled = !!first.duel;
       const u = el("Undo"); if (u) u.disabled = !st.history.length;
       const top = RQ.taste.top(t)[0], chip = el("Chip");
