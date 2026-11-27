@@ -541,7 +541,7 @@
         // sticky buy bar once the buy button scrolls away (desktop); always on phones
         const bar = $("#buybar", root), buy = $(".buy", root);
         /* on a phone it comes once the customer has started to scroll: on a short screen, at first load it would lie over the name and the price (D9) */
-        let lastE = null; const showBar = () => { const e = lastE; if (e) bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || (matchMedia("(max-width:900px)").matches && (scrollY > 40 || e.boundingClientRect.top > innerHeight - 8)))); /* a phone where the buy button starts below the first screen: the bar from the start (review) */ };
+        let lastE = null; const showBar = () => { const e = lastE; if (e) bar.classList.toggle("show", e.intersectionRatio < 0.9 && (e.boundingClientRect.top < 0 || (matchMedia("(max-width:900px)").matches && (scrollY > 40 || (innerHeight >= 700 && e.boundingClientRect.top > innerHeight - 8))))); /* a phone where the buy button starts below the first screen: the bar from the start (review); not on a short screen, where it would lie over the name (D9) */ };
         io2 = new IntersectionObserver(([e]) => { lastE = e; showBar(); }, { threshold: [0, 0.9] });
         const onSc = () => { if (scrollY > 40) { removeEventListener("scroll", onSc); showBar(); } }; addEventListener("scroll", onSc, { passive: true }); offScroll = () => removeEventListener("scroll", onSc);
         io2.observe($("#add", root));
